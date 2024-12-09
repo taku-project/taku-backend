@@ -5,10 +5,10 @@ import com.ani.taku_backend.example.model.entity.Example;
 import com.ani.taku_backend.example.model.dto.ExampleCreateRequest;
 import com.ani.taku_backend.example.model.dto.ExampleDetailResponse;
 import com.ani.taku_backend.example.repository.ExampleRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
