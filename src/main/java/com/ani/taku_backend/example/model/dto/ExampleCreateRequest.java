@@ -2,9 +2,8 @@ package com.ani.taku_backend.example.model.dto;
 
 import com.ani.taku_backend.example.model.entity.Example;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-
-import javax.validation.constraints.NotBlank;
 
 @Schema(description = "예제 생성 요청")
 @Data
