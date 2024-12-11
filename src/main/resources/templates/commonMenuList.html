@@ -1,0 +1,126 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div id="layoutSidenav_nav" th:fragment="commonMenuList">
+    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+        <div class="sb-sidenav-menu">
+            <div class="nav">
+                <div class="sb-sidenav-menu-heading">Core</div>
+                <a class="nav-link" href="/admin">
+                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    Dashboard
+                </a>
+                <div class="sb-sidenav-menu-heading">Interface</div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                    <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                    관리자 메뉴
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseForbidden" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                            금칙어 관리
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseForbidden" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="/forbiddenList">금칙어 목록</a>
+                                <a class="nav-link" href="#">금칙어 추가</a>
+                            </nav>
+                        </div>
+                    </nav>
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPagesCategory">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseCategory" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                            카테고리 관리
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseCategory" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPagesCategory">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">카테고리 목록</a>
+                                <a class="nav-link" href="#">카테고리 추가</a>
+                            </nav>
+                        </div>
+                    </nav>
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPagesComment">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseComment" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                            댓글 관리
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseComment" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPagesComment">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">댓글 목록</a>
+                            </nav>
+                        </div>
+                    </nav>
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPagesReport">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseReport" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                            신고 관리
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseReport" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPagesReport">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">게시글 신고 목록</a>
+                                <a class="nav-link" href="#">댓글 신고 목록</a>
+                            </nav>
+                        </div>
+                    </nav>
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPagesBlack">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseBlack" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                            블랙사용자 관리
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseBlack" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPagesBlack">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">블랙사용자 목록</a>
+                                <a class="nav-link" href="#">블랙사용자 추가/해제</a>
+                                <a class="nav-link" href="#">차단</a>
+                            </nav>
+                        </div>
+                    </nav>
+                </div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePagesEtc" aria-expanded="false" aria-controls="collapsePages">
+                    <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                    기타 메뉴
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapsePagesEtc" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPagesEtc">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseEtc" aria-expanded="false" aria-controls="pagesCollapseError">
+                            기타메뉴(필요시 추가)
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseEtc" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPagesEtc">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="charts.html">기타메뉴(차트예시)</a>
+                            </nav>
+                        </div>
+                    </nav>
+                </div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePagesErr" aria-expanded="false" aria-controls="collapsePages">
+                    <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                    에러 예시
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapsePagesErr" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages3">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                            Error
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages3">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="401.html">401 Page</a>
+                                <a class="nav-link" href="404.html">404 Page</a>
+                                <a class="nav-link" href="500.html">500 Page</a>
+                            </nav>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <div class="sb-sidenav-footer">
+            <div class="small">Logged in as:</div>
+            Start Bootstrap
+        </div>
+    </nav>
+</div>
+</html>
