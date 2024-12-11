@@ -21,4 +21,5 @@ public class ExampleCustomRepositoryImpl implements ExampleCustomRepository {
                 .orderBy(example.exampleId.asc())
                 .fetch();
     }
+//    테스트
 }
