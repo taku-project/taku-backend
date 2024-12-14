@@ -1,5 +1,7 @@
 package com.ani.taku_backend.common.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
  * 시스템에서 지원하는 OAuth2 인증 제공자 관리
  */
@@ -40,7 +42,12 @@ public enum ProviderType {
       return value;
   }
 
-  // String을 Enum으로 변환하는 메서드 추가
+  /**
+   * String을 Enum으로 변환하는 메서드
+   * @param text 변환할 문자열
+   * @return 변환된 Enum
+   */
+  @JsonCreator
   public static ProviderType fromString(String text) {
       for (ProviderType type : ProviderType.values()) {
           if (type.value.equalsIgnoreCase(text)) {

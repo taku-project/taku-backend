@@ -1,4 +1,4 @@
-package com.ani.taku_backend.auth.model.entity;
+package com.ani.taku_backend.user.model.entity;
 
 import java.time.LocalDateTime;
 
@@ -6,9 +6,13 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.ani.taku_backend.common.enums.ProviderType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -27,8 +31,9 @@ import lombok.NoArgsConstructor;
 public class User {
 
     @Id
-    @Column(name = "user_id", columnDefinition = "BIGINT")
-    private String userId;                // 유저 고유 식별자
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "nickname", length = 255)
     private String nickname;              // 닉네임

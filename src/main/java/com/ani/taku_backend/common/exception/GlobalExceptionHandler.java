@@ -3,6 +3,7 @@ package com.ani.taku_backend.common.exception;
 import com.ani.taku_backend.common.ApiConstants;
 import com.ani.taku_backend.common.model.MainResponse;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,40 @@ public class GlobalExceptionHandler {
                 new MainResponse<>(
                         ApiConstants.Status.ERROR,
                         parseMessage != null ? parseMessage : ApiConstants.Message.BAD_REQUEST
+                )
+        );
+    }
+
+    // UserNotFoundException
+    // 204 : No Content
+    @ExceptionHandler(UserException.UserNotFoundException.class)
+    public ResponseEntity<MainResponse<Void>> handleUserNotFoundException(UserException.UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        ex.getMessage()
+                )
+        );
+    }
+
+    // UserAlreadyExistsException
+    @ExceptionHandler(UserException.UserAlreadyExistsException.class)
+    public ResponseEntity<MainResponse<Void>> handleUserAlreadyExistsException(UserException.UserAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        ex.getMessage()
+                )
+        );
+    }
+
+    // InvalidTokenException
+    @ExceptionHandler(JwtException.InvalidTokenException.class)
+    public ResponseEntity<MainResponse<Void>> handleInvalidTokenException(JwtException.InvalidTokenException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        ex.getMessage()
                 )
         );
     }
