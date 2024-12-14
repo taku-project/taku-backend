@@ -41,6 +41,7 @@ public class JwtUtil {
         // 필요한 정보만 claims에 저장
         claims.put("email", kakaoAccount.get("email"));
         claims.put("nickname", ((Map<String, Object>)kakaoAccount.get("profile")).get("nickname"));
+        claims.put("profile_image_url", ((Map<String, Object>)kakaoAccount.get("profile")).get("profile_image_url"));
         claims.put("type", "TEMPORARY");
         
         return createToken(claims, temporaryTokenValidityTime);
@@ -85,7 +86,11 @@ public class JwtUtil {
         return kakaoInfo;
     }
 
-    // 토큰 유효성 검증
+    /**
+     * 토큰 유효성 검증
+     * @param token
+     * @return 유효성 검증 결과 (true : 유효, false : 유효하지 않음)
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -104,7 +109,7 @@ public class JwtUtil {
     }
 
     // 토큰에서 모든 클레임 추출
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
             .setSigningKey(key)
             .build()

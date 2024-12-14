@@ -37,14 +37,24 @@ public class SecurityConfig {
                 .frameOptions(frame -> frame.disable())
             )
             .authorizeHttpRequests(auth -> auth
+            // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
                 .requestMatchers(
                     "/",
                     "/login",
                     "/oauth2/authorization/**",
                     "/login/oauth2/code/**",
-                    "/api/auth/**"
+                    "/api/auth/**",
+                    "/api/user/**",
+                    "/api/user/register",
+                    "/h2-console/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**"
                 ).permitAll()
                 .anyRequest().authenticated()
+                // .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo -> userInfo
@@ -63,6 +73,9 @@ public class SecurityConfig {
                 .failureHandler((request, response, exception) -> {
                     if (exception instanceof OAuth2AuthenticationException) {
                         OAuth2Error error = ((OAuth2AuthenticationException) exception).getError();
+
+                        log.error("OAuth2 인증 실패 - Error: {}, Description: {}", 
+                            error.getErrorCode(), error.getDescription());
                         
                         // TODO : 어떠한 에러인지 확인 후 처리 또는 로깅 필요
                         if (!"invalid_request".equals(error.getErrorCode())) {
