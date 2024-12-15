@@ -1,7 +1,10 @@
 package com.ani.taku_backend.auth.service;
 
 import java.util.Map;
+import java.util.Optional;
 
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -29,6 +32,8 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     private String webUrl;
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -36,18 +41,19 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        String email = (String) kakaoAccount.get("email");
 
-        // TODO : User Select
-        String user = null;
-        if(user == null) {
+        String email = (String) kakaoAccount.get("email");
+        // User Select
+        Optional<User> findOptUser = userRepository.findByEmail(email);
+        if (findOptUser.isEmpty()) {
+
             // 임시 토큰 생성
             String temporaryToken = jwtUtil.createTemporaryToken(attributes);
 
             // 회원가입 URL 생성
             UriComponentsBuilder redirectUrl = UriComponentsBuilder
-                .fromUriString(webUrl)
-                .queryParam("token", temporaryToken);
+                    .fromUriString(webUrl)
+                    .queryParam("token", temporaryToken);
 
             log.info("회원가입 URL: {}", redirectUrl.toUriString());
 
