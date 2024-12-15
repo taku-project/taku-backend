@@ -61,6 +61,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // FileUploadException
+    @ExceptionHandler(FileException.FileUploadException.class)
+    public ResponseEntity<MainResponse<Void>> handleFileUploadException(FileException.FileUploadException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        ex.getMessage()
+                )
+        );
+    }
+
     // 공통 Exception
     @ExceptionHandler(Exception.class)
     @ResponseBody
