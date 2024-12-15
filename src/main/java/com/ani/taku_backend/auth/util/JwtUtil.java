@@ -3,6 +3,9 @@ package com.ani.taku_backend.auth.util;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.ani.taku_backend.user.model.entity.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -20,15 +23,20 @@ public class JwtUtil {
     private final Key key;
     private final long accessTokenValidityTime;
     private final long temporaryTokenValidityTime;
-
+    private final long refreshTokenValidityTime;
+    private final ObjectMapper objectMapper;
     public JwtUtil(
         @Value("${jwt.secret}") String secret,
         @Value("${jwt.access-token-validity}") long accessTokenValidityTime,
-        @Value("${jwt.temporary-token-validity}") long temporaryTokenValidityTime
+        @Value("${jwt.temporary-token-validity}") long temporaryTokenValidityTime,
+        @Value("${jwt.refresh-token-validity}") long refreshTokenValidityTime,
+        ObjectMapper objectMapper
     ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.accessTokenValidityTime = accessTokenValidityTime;
         this.temporaryTokenValidityTime = temporaryTokenValidityTime;
+        this.refreshTokenValidityTime = refreshTokenValidityTime;
+        this.objectMapper = objectMapper;
     }
 
     // 임시 토큰 생성 (회원가입용)
@@ -48,13 +56,21 @@ public class JwtUtil {
     }
 
     // 액세스 토큰 생성
-    public String createAccessToken(String email, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
-        claims.put("role", role);
+    public String createAccessToken(User user) {
+        Map<String, Object> claims = this.objectMapper.convertValue(user, Map.class);
         claims.put("type", "ACCESS");
-        
         return createToken(claims, accessTokenValidityTime);
+    }
+
+    // 리프레시 토큰 생성
+    public String createRefreshToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", user.getUserId());
+        claims.put("email", user.getEmail());
+        claims.put("iat", System.currentTimeMillis() / 1000); // 발행 시간
+        claims.put("exp", System.currentTimeMillis() / 1000 + refreshTokenValidityTime); // 만료 시간 (예: 7일)
+        claims.put("type", "REFRESH");
+        return createToken(claims, refreshTokenValidityTime);
     }
 
     // 토큰 생성 기본 메소드
@@ -115,6 +131,12 @@ public class JwtUtil {
             .build()
             .parseClaimsJws(token)
             .getBody();
+    }
+
+    // 토큰에서 유저 정보 추출
+    public User getUserFromToken(String token) {
+        Claims claims = extractAllClaims(token);
+        return this.objectMapper.convertValue(claims, User.class);
     }
 
     // Bearer 토큰에서 실제 토큰 추출
