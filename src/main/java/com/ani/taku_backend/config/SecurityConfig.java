@@ -1,12 +1,15 @@
 package com.ani.taku_backend.config;
 
+import com.ani.taku_backend.auth.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.ani.taku_backend.auth.service.OAuth2UserService;
@@ -15,6 +18,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.Collection;
 
 
 @Configuration
@@ -25,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class SecurityConfig {
 
     private final OAuth2UserService oAuth2UserService;
+    private final JwtUtil jwtUtil;
     
     @Value("${client.web-url}")
     private String webUrl;
@@ -61,14 +68,19 @@ public class SecurityConfig {
                     .userService(oAuth2UserService)
                 )
                 .successHandler((request, response, authentication) -> {
-                    log.info("OAuth2 인증 최종 성공 - User: {}", 
-                        authentication.getName());
+                    log.info("OAuth2 인증 최종 성공 - User: {}", authentication.getName());
 
-                        // 토큰 만들기
+                    OAuth2User principal = (OAuth2User) authentication.getPrincipal();
+                    String email = principal.getAttribute("email");
 
-                        // URL 만들기 + 토큰 넣어서
+                    // 토큰 만들기
+                    String accessToken = jwtUtil.createAccessToken(authentication.getAuthorities().toString(), email);
 
-                        // 리다이렉트 하기
+                    // URL 만들기 + 토큰 넣어서
+                    String redirectUrl = UriComponentsBuilder.fromUriString(webUrl).queryParam(accessToken).build().toUriString();
+
+                    // 리다이렉트 하기
+                    response.sendRedirect(redirectUrl);
                 })
                 .failureHandler((request, response, exception) -> {
                     if (exception instanceof OAuth2AuthenticationException) {
