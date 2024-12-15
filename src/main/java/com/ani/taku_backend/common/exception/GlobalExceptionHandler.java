@@ -27,11 +27,11 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // UserNotFoundException
+    // UserNotFoundException , UserAlreadyDeletedException
     // 204 : No Content
-    @ExceptionHandler(UserException.UserNotFoundException.class)
+    @ExceptionHandler({UserException.UserNotFoundException.class, UserException.UserAlreadyDeletedException.class})
     public ResponseEntity<MainResponse<Void>> handleUserNotFoundException(UserException.UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 new MainResponse<>(
                         ApiConstants.Status.ERROR,
                         ex.getMessage()
