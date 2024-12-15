@@ -11,8 +11,8 @@ import com.ani.taku_backend.user.model.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  // 도메스틱ID와 상태로 유저 조회
-  Optional<User> findByDomesticIdAndStatus(String domesticId, String status);
+  // 도메스틱ID와 상태로 유저 조회 -> 이메일과 상태로 유저 조회로 변경
+  Optional<User> findByEmailAndStatus(String email, String status);
 
   // 닉네임 조회
   Optional<User> findByNickname(String nickname);
@@ -25,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Query("UPDATE User u SET u.status = :status WHERE u.userId = :userId")
   int updateUserStatus(@Param("userId") Long userId, @Param("status") String status);
 
+  // 이메일로 유저 조회
+  Optional<User> findByEmail(String email);
 }

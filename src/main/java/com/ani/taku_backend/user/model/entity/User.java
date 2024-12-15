@@ -67,4 +67,7 @@ public class User {
     @Column(name = "role", length = 10)
     private String role;                  // 사용자 역할 (예: USER, ADMIN)
 
+    @Column(name = "email", length = 20)
+    private String email;                 // email
+
 }
