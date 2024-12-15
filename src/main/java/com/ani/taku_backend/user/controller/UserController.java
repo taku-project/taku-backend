@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,7 +71,7 @@ public class UserController {
 				mediaType = "application/json",
 				schema = @Schema(implementation = RequestRegisterUser.class)
 			)
-		) RequestRegisterUser user,
+		) RequestRegisterUser requestRegisterUser,
 	
 		@RequestPart(value = "profileImage", required = false) @Parameter(
 			description = "프로필 이미지 파일 <code>png, jpg, jpeg만 가능</code>",
@@ -88,14 +90,14 @@ public class UserController {
 	) throws IllegalArgumentException {
 		
 		log.info("registrationToken : {}", registrationToken);
-		log.info("user : {}", user);
+		log.info("requestRegisterUser : {}", requestRegisterUser);
 
 		if (!this.jwtUtil.validateToken(registrationToken)) {
 			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
 		}
 
-		OAuthUserInfo userInfo = OAuthUserInfo.of(user.getProviderType(), this.jwtUtil.extractAllClaims(registrationToken));
-		log.info("userInfo : {}", userInfo);
+		OAuthUserInfo userInfo = OAuthUserInfo.of(requestRegisterUser.getProviderType(), this.jwtUtil.extractAllClaims(registrationToken));
+		userInfo.setNickname(requestRegisterUser.getNickname());
 
 		// 이미 가입된 유저인지 확인
 		Optional<User> byDomesticId = this.userService.getUser(userInfo.getEmail());
@@ -108,7 +110,6 @@ public class UserController {
 		if (profileImage != null) {	
 			try {
 				userInfo.setImageUrl(this.fileService.uploadFile(profileImage));
-				throw new IOException("파일 업로드 실패");
 			} catch (IOException e) {
 				throw new FileException.FileUploadException("파일 업로드 실패");
 			}
@@ -120,6 +121,21 @@ public class UserController {
 		// TODO : 바로 로그인한다면 토큰을 던져주고 , 바로로그인 안한면 아무것도 던지지 않을 예정
 		return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(null));
 	}
+
 	
+	@GetMapping("/nickname/{nickname}")
+	@Operation(
+		summary = "닉네임 중복여부 확인",
+		description = "닉네임 중복여부 확인"
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "닉네임 중복여부 확인 성공 <code>true : 중복, false : 중복X</code>"),
+	})
+	public ResponseEntity<MainResponse<Boolean>> checkNickname(@PathVariable("nickname") @Parameter(
+		description = "닉네임",
+		example = "looco"
+	) String nickname) {
+		return ResponseEntity.ok(MainResponse.getSuccessResponse(this.userService.checkNickname(nickname)));
+	}
 }
 

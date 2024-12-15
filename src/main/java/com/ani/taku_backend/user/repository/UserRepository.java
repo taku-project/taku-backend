@@ -11,4 +11,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
   // 도메스틱ID와 상태로 유저 조회
   Optional<User> findByDomesticIdAndStatus(String domesticId, String status);
 
+  // 닉네임 조회
+  Optional<User> findByNickname(String nickname);
+
 }

@@ -24,7 +24,7 @@ public class UserService {
     User user = User.builder()
       .domesticId(userInfo.getEmail())
       .status("ACTIVE")
-      .nickname(userInfo.getName())
+      .nickname(userInfo.getNickname())
       .profileImg(userInfo.getImageUrl())
       .providerType(userInfo.getProviderType().toString())
       .role(UserRole.USER.toString())
@@ -41,6 +41,10 @@ public class UserService {
     Optional<User> byDomesticId = this.userRepository.findByDomesticIdAndStatus(domesticId, "ACTIVE");
     return byDomesticId;
   }
-  
+
+  // 닉네임 체크
+  public boolean checkNickname(String nickname) {
+    return this.userRepository.findByNickname(nickname).isPresent();
+  }
 }
 
