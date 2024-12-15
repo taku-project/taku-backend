@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-devtools'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     implementation "com.querydsl:querydsl-jpa:$queryDslVersion:jakarta"
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.691'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
