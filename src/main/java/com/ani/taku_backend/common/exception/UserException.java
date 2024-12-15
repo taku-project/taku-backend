@@ -21,4 +21,11 @@ public class UserException extends RuntimeException {
       super(message);
     }
   }
+
+  // 이미 삭제된 유저에 대한 예외
+  public static class UserAlreadyDeletedException extends UserException {
+    public UserAlreadyDeletedException(String message) {
+      super(message);
+    }
+  }
 }
