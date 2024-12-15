@@ -3,6 +3,7 @@ package com.ani.taku_backend.user.service;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
@@ -45,6 +46,17 @@ public class UserService {
   // 닉네임 체크
   public boolean checkNickname(String nickname) {
     return this.userRepository.findByNickname(nickname).isPresent();
+  }
+
+  // 유저 삭제
+  public Optional<User> findByUserIdAndStatus(Long userId, String status) {
+    return this.userRepository.findByUserIdAndStatus(userId, status);
+  }
+
+  // 유저 상태 업데이트
+  @Transactional
+  public int updateUserStatus(Long userId, String status) {
+    return this.userRepository.updateUserStatus(userId, status);
   }
 }
 

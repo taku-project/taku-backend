@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +42,7 @@ import lombok.extern.log4j.Log4j2;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/api/user")
@@ -53,7 +55,7 @@ public class UserController {
 	private final UserService userService;
 	private final FileService fileService;
 
-	@PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 		summary = "유저 등록",
 		description = "유저를 등록합니다."
@@ -136,6 +138,40 @@ public class UserController {
 		example = "looco"
 	) String nickname) {
 		return ResponseEntity.ok(MainResponse.getSuccessResponse(this.userService.checkNickname(nickname)));
+	}
+
+
+	@DeleteMapping("/{userId}")
+	@Operation(
+		summary = "유저 삭제",
+		description = "유저 삭제",
+		security = { @SecurityRequirement(name = "Bearer Auth") }
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "유저 삭제 성공"),
+		@ApiResponse(responseCode = "404", description = "존재 하지 않거나,이미 삭제된 유저입니다."),
+	})
+	public ResponseEntity<MainResponse<String>> deleteUser(
+		@PathVariable("userId") @Parameter(
+			description = "유저 ID",
+			example = "1"
+		) Long userId
+	) {
+
+		// 유저 조회 
+		Optional<User> user = this.userService.findByUserIdAndStatus(userId, "ACTIVE");
+		user.orElseThrow(() -> {
+			log.info("여기니?");
+			return new UserException.UserNotFoundException("존재 하지 않거나,이미 삭제된 유저입니다.");
+		});
+
+		// 유저 삭제
+		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), "INACTIVE");
+		if(updateUserStatus == 0) {
+			throw new UserException.UserAlreadyDeletedException("이미 삭제된 유저입니다.");
+		}
+
+		return ResponseEntity.ok(MainResponse.getSuccessResponse(null));
 	}
 }
 
