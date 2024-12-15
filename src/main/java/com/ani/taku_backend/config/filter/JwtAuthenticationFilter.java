@@ -1,0 +1,76 @@
+package com.ani.taku_backend.config.filter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.ApiConstants;
+import com.ani.taku_backend.common.model.MainResponse;
+import com.ani.taku_backend.user.model.entity.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.ExpiredJwtException;
+
+import java.io.IOException;
+
+/**
+ * JWT 토큰 인증 필터
+ */
+@Component
+@RequiredArgsConstructor
+@Log4j2
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final ObjectMapper objectMapper;
+
+    private final JwtUtil jwtUtil;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String authorizationHeader = request.getHeader("Authorization");
+        
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String accessToken = authorizationHeader.substring(7);
+
+            try {
+                User user = jwtUtil.getUserFromToken(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(user, null, null)
+                );
+
+            } catch (ExpiredJwtException e) {
+                // 토큰이 만료되었을 때 요청 속성에 더 자세한 정보를 담아서 전달
+                request.setAttribute("expired", true);
+                request.setAttribute("expiredToken", accessToken);  // 만료된 토큰 정보
+                request.setAttribute("expiredTokenClaims", e.getClaims());  // 만료된 토큰의 클레임 정보
+            } catch (Exception e) {
+                handleInvalidToken(response, e);
+                return;
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
+    
+    private void handleInvalidToken(HttpServletResponse response, Exception e) throws IOException {
+        log.error("유효하지 않은 토큰", e);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType("application/json;charset=UTF-8");
+        
+        MainResponse<Void> errorResponse = new MainResponse<>(
+            ApiConstants.Status.ERROR,
+            "유효하지 않은 토큰입니다."
+        );
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    }
+}
