@@ -45,24 +45,10 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
             // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
-                .requestMatchers(
-                    "/",
-                    "/login",
-                    "/oauth2/authorization/**",
-                    "/login/oauth2/code/**",
-                    "/h2-console/**",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/swagger-ui.html",
-                    "/swagger-resources/**",
-                    "/webjars/**"
-                ).permitAll()
-
-                // 유저 관련 요청 허용 (조회 , 등록)
-                .requestMatchers(HttpMethod.POST,"/api/user/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/user/**").permitAll()
+                .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
+                .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
+                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
                 .anyRequest().authenticated()
-                // .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo -> userInfo
@@ -76,5 +62,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-  
 }

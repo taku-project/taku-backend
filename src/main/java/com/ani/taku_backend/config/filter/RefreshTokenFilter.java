@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.exception.UserException.UserNotFoundException;
+import com.ani.taku_backend.config.SecurityPathConfig;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 
@@ -139,5 +140,14 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
     private void handleUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write(message);
+    }
+
+    // 필터 스킵 여부 결정
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return SecurityPathConfig.shouldSkipFilter(
+            request.getRequestURI(), 
+            request.getMethod()
+        );
     }
 }

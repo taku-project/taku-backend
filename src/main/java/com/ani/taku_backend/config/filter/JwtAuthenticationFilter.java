@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.ApiConstants;
 import com.ani.taku_backend.common.model.MainResponse;
+import com.ani.taku_backend.config.SecurityPathConfig;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,5 +92,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "Cannot find Authorization key in Request Header"
         );
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    }
+
+    // 필터 스킵 여부 결정
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return SecurityPathConfig.shouldSkipFilter(
+            request.getRequestURI(),
+            request.getMethod()
+        );
     }
 }
