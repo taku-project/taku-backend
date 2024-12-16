@@ -23,11 +23,14 @@ public class UserService {
   // 유저 등록
   public User registerUser(OAuthUserInfo userInfo) {
     User user = User.builder()
-      .domesticId(userInfo.getEmail())
+      .email(userInfo.getEmail())
+      .domesticId(userInfo.getDomesticId())
       .status("ACTIVE")
       .nickname(userInfo.getNickname())
       .profileImg(userInfo.getImageUrl())
       .providerType(userInfo.getProviderType().toString())
+      .gender(userInfo.getGender())
+      .ageRange(userInfo.getAgeRange())
       .role(UserRole.USER.toString())
       .build();
 
@@ -38,8 +41,8 @@ public class UserService {
   }
 
   // 유저 조회
-  public Optional<User>  getUser(String domesticId) {
-    Optional<User> byDomesticId = this.userRepository.findByDomesticIdAndStatus(domesticId, "ACTIVE");
+  public Optional<User>  getUser(String email) {
+    Optional<User> byDomesticId = this.userRepository.findByEmailAndStatus(email, "ACTIVE");
     return byDomesticId;
   }
 

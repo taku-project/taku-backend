@@ -26,6 +26,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class OAuthUserInfo {
     private String email;
+    private String domesticId;
+    private String gender;
+    private String ageRange;
     private String nickname;
     private String imageUrl;
     private ProviderType providerType;
@@ -45,7 +48,10 @@ public class OAuthUserInfo {
     private static OAuthUserInfo ofKakao(Claims claims) {
         OAuthUserInfo userInfo = new OAuthUserInfo();
         userInfo.email = claims.get("email", String.class);
+        userInfo.domesticId = claims.get("id", String.class);
         userInfo.nickname = claims.get("nickname", String.class);
+        userInfo.gender = claims.get("gender", String.class);
+        userInfo.ageRange = claims.get("age_range", String.class);
         userInfo.imageUrl = claims.get("profile_image_url", String.class);
         userInfo.providerType = ProviderType.KAKAO;
         return userInfo;
@@ -55,8 +61,11 @@ public class OAuthUserInfo {
     private static OAuthUserInfo ofGoogle(Claims claims) {
         OAuthUserInfo userInfo = new OAuthUserInfo();
         userInfo.email = claims.get("email", String.class);
+        userInfo.domesticId = claims.get("id", String.class);
         userInfo.nickname = claims.get("name", String.class);
         userInfo.imageUrl = claims.get("picture", String.class);
+        userInfo.gender = claims.get("gender", String.class);
+        userInfo.ageRange = claims.get("age_range", String.class);
         userInfo.providerType = ProviderType.GOOGLE;
         return userInfo;
     }
