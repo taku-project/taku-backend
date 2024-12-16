@@ -2,6 +2,7 @@ package com.ani.taku_backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,8 +50,6 @@ public class SecurityConfig {
                     "/login",
                     "/oauth2/authorization/**",
                     "/login/oauth2/code/**",
-                    "/api/user/**",
-                    "/api/user/register",
                     "/h2-console/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
@@ -58,6 +57,10 @@ public class SecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
+
+                // 유저 관련 요청 허용 (조회 , 등록)
+                .requestMatchers(HttpMethod.POST,"/api/user/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/user/**").permitAll()
                 .anyRequest().authenticated()
                 // .anyRequest().permitAll()
             )
