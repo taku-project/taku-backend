@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.exception.UserException.UserNotFoundException;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 
 import io.jsonwebtoken.Claims;
@@ -122,8 +123,10 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
         log.info("New Access Token generated: {}", newAccessToken);
         response.setHeader("Authorization", "Bearer " + newAccessToken);
         
+
+        PrincipalUser principalUser = new PrincipalUser(user);
         SecurityContextHolder.getContext().setAuthentication(
-            new UsernamePasswordAuthenticationToken(user, null, null)
+            new UsernamePasswordAuthenticationToken(principalUser, null, null)
         );
     }
 
