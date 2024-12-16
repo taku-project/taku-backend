@@ -23,7 +23,7 @@ public class AdminController {
         model.addAttribute("d2", str);
         model.addAttribute("d3", num);
 
-        return "admin";
+        return "index";
     }
 
     @GetMapping("forbiddenList")
