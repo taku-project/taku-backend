@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.ApiConstants;
 import com.ani.taku_backend.common.model.MainResponse;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,9 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String accessToken = authorizationHeader.substring(7);
 
             try {
-                User user = jwtUtil.getUserFromToken(accessToken);
+                PrincipalUser principalUser = new PrincipalUser(jwtUtil.getUserFromToken(accessToken));
                 SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(user, null, null)
+                    new UsernamePasswordAuthenticationToken(principalUser, null, null)
                 );
 
             } catch (ExpiredJwtException e) {
@@ -58,10 +59,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 handleInvalidToken(response, e);
                 return;
             }
+        }else{
+            handleNotFoundToken(response, null);
+            return;
         }
         filterChain.doFilter(request, response);
     }
     
+    // 유효하지 않은 토큰 처리
     private void handleInvalidToken(HttpServletResponse response, Exception e) throws IOException {
         log.error("유효하지 않은 토큰", e);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -70,6 +75,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         MainResponse<Void> errorResponse = new MainResponse<>(
             ApiConstants.Status.ERROR,
             "유효하지 않은 토큰입니다."
+        );
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    }
+
+    // 토큰을 헤더에서 발견하지 못했을때
+    private void handleNotFoundToken(HttpServletResponse response, Exception e) throws IOException {
+        log.error("토큰이 없습니다.", e);
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType("application/json;charset=UTF-8");
+        
+        MainResponse<Void> errorResponse = new MainResponse<>(
+            ApiConstants.Status.ERROR,
+            // Cannot find Authorization key in Request Header
+            "Cannot find Authorization key in Request Header"
         );
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
