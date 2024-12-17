@@ -34,8 +34,8 @@ public class OAuth2AuthenticationHandler {
     @Value("${jwt.refresh-token-validity}")
     private Long refreshTokenValidityTime;
 
-    @Value("${client.web-url}")
-    private String webUrl;
+    @Value("${client.login-success-url}")
+    private String loginSuccessUrl;
 
     @Component
     public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -66,7 +66,7 @@ public class OAuth2AuthenticationHandler {
 
             // URL 만들기 + 토큰 넣어서
             String redirectUrl = UriComponentsBuilder
-                .fromUriString(webUrl)
+                .fromUriString(loginSuccessUrl)
                 .queryParam("accessToken", accessToken)
                 .build()
                 .toUriString();

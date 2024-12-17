@@ -38,8 +38,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
     private final String ACCESS_TOKEN_KEY = "accessToken";
 
-    @Value("${client.web-url}")
-    private String webUrl;
+
+    @Value("${client.registration-url}")
+    private String registrationUrl;
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
@@ -67,7 +68,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
             // 회원가입 URL 생성
             UriComponentsBuilder redirectUrl = UriComponentsBuilder
-                    .fromUriString(webUrl)
+                    .fromUriString(registrationUrl)
                     .queryParam("token", temporaryToken);
 
             log.info("회원가입 URL: {}", redirectUrl.toUriString());

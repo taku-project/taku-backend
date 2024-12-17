@@ -33,9 +33,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RefreshTokenFilter refreshTokenFilter;
     
-    @Value("${client.web-url}")
-    private String webUrl;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
