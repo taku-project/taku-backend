@@ -173,5 +173,6 @@ public class UserController {
 
 		return ResponseEntity.ok(MainResponse.getSuccessResponse(null));
 	}
+
 }
 

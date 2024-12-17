@@ -1,67 +1,50 @@
 package com.ani.taku_backend.auth.service;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.service.RedisService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2LogoutService {
 
     private final RedisService redisService;
     private final JwtUtil jwtUtil;
-    private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${kakao.client-id}")
-    private String kakaoClientId;
+    public String logout(String accessTokenHeader) {
+        String extractedToken = extractBearerToken(accessTokenHeader);
+        log.info("Extracted Token: {}", extractedToken);
 
-    @Value("${kakao.logout-redirect-uri}")
-    private String logoutRedirectUri;
-
-    /**
-     * 일반 로그아웃처리: 카카오 토큰 무효화 및 Redis access token 제거
-     */
-    public String logout(String accessToken) {
-        // TODO: 구글 로그아웃 반영 필요함
-        boolean kakaoLogoutSuccess = kakaoCallLogoutAPI(accessToken);
-
-        String email = jwtUtil.getEmailFromToken(accessToken);
-        invalidateTokens(email);
-
-        if (kakaoLogoutSuccess) {
-            return "카카오 로그아웃 성공 및 토큰 삭제 완료";
-        } else {
-            return "카카오 로그아웃 실패 및 토큰 삭제됨: 재로그인 필요함";
+        if (extractedToken == null || extractedToken.isEmpty()) {
+            throw new JwtException.InvalidTokenException("토큰이 없거나 조작되었습니다.");
         }
-    }
 
-    /**
-     * 레디스에서 토큰들 제거하기
-     */
-    private void invalidateTokens(String email) {
-        redisService.deleteKeyValue("accessToken:"+ email);
-        redisService.deleteKeyValue("refreshToken:"+ email);
-    }
-
-    /**
-     * kakao 일반 로그아웃
-     */
-    private boolean kakaoCallLogoutAPI(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        HttpEntity<Object> request = new HttpEntity<>(headers);
         try {
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity("https://kapi.kakao.com/v1/user/logout", request, String.class);
-            return response.getStatusCode().is2xxSuccessful();
+            String email = jwtUtil.getEmailFromToken(extractedToken);
+            redisService.deleteKeyValue("accessToken:" + email);
+            redisService.deleteKeyValue("refreshToken:" + email);
+            return "로그아웃 성공";
         } catch (Exception e) {
-            return false;
+            log.error("로그아웃 중 오류 발생", e);
+            throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
         }
+    }
+
+
+    private String extractBearerToken(String accessTokenHeader) {
+        if (accessTokenHeader != null && accessTokenHeader.startsWith("Bearer ")) {
+            return accessTokenHeader.substring(7);
+        }
+        return null;
     }
 }
