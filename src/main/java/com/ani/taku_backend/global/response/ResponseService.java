@@ -20,6 +20,14 @@ public class ResponseService {
         return response;
     }
 
+    public CommonResponse getErrorResponse(int code, String message){
+        CommonResponse response= new CommonResponse();
+        response.success= false;
+        response.code=code;
+        response.message=message;
+        return response;
+    }
+
     private void setSuccessResponse(CommonResponse response) {
         response.setCode(0);
         response.setSuccess(true);
