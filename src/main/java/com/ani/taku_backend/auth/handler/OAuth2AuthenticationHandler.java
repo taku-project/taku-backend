@@ -31,6 +31,9 @@ public class OAuth2AuthenticationHandler {
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
 
+    @Value("${jwt.access-token-validity}")
+    private Long accessTokenValidityTime;
+
     @Value("${jwt.refresh-token-validity}")
     private Long refreshTokenValidityTime;
 
@@ -54,6 +57,9 @@ public class OAuth2AuthenticationHandler {
 
             // 토큰 만들기
             String accessToken = jwtUtil.createAccessToken(user);
+
+            // redis에 access token 저장
+            redisService.setKeyValue("accessToken:%s".formatted(user.getEmail()), accessToken, Duration.ofMillis(accessTokenValidityTime));
 
             // refresh token 만들기
             String refreshToken = jwtUtil.createRefreshToken(user);

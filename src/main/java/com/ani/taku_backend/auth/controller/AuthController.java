@@ -1,16 +1,13 @@
 package com.ani.taku_backend.auth.controller;
 
+import com.ani.taku_backend.auth.service.OAuth2LogoutService;
+import com.ani.taku_backend.auth.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.ani.taku_backend.common.enums.ProviderType;
@@ -34,8 +31,21 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class AuthController {
 
-    @GetMapping("/test")
-    public String test() {
-        return "test";
+    private final OAuth2LogoutService logoutService;
+
+    /**
+     * 로그아웃 요청 -> 반환
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<MainResponse<String>> logout(@RequestHeader("Authorization") String accessTokenHeader) {
+        log.info("로그아웃 컨트롤러 시작");
+
+        // 서비스 레이어에서 예외 발생 시 GlobalExceptionHandler에서 처리
+        String logoutMessage = logoutService.logout(accessTokenHeader);
+        log.info("로그아웃 성공");
+
+        return ResponseEntity.ok(new MainResponse<>("SUCCESS", logoutMessage));
     }
+
+
 }
