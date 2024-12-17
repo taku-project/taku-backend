@@ -1,6 +1,7 @@
 package com.ani.taku_backend.global.response;
 
 import com.ani.taku_backend.global.exception.CustomException;
+import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.global.exception.ExceptionDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +24,7 @@ public record ApiResponse<T>(
         return new ApiResponse<>(HttpStatus.CREATED, true, data, null);
     }
 
-    public static <T> ApiResponse<T> fail(final CustomException e) {
-        return new ApiResponse<>(e.getErrorCode().getHttpStatus(), false, null, ExceptionDto.of(e.getErrorCode()));
+    public static <T> ApiResponse<T> fail(final ErrorCode c) {
+        return new ApiResponse<>(c.getHttpStatus(), false, null, ExceptionDto.of(c));
     }
 }

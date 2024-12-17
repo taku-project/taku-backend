@@ -9,13 +9,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Slf4j
 @RestControllerAdvice
-
 public class ExceptionController {
     // 존재하지 않는 요청에 대한 예외
     @ExceptionHandler(value = {NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
     public ApiResponse<?> handleNoPageFoundException(Exception e) {
         log.error("GlobalExceptionHandler catch NoHandlerFoundException : {}", e.getMessage());
-        return ApiResponse.fail(new CustomException(ErrorCode.NOT_FOUND_END_POINT));
+        return ApiResponse.fail(ErrorCode.NOT_FOUND_END_POINT);
     }
 
 
@@ -23,7 +22,7 @@ public class ExceptionController {
     @ExceptionHandler(value = {CustomException.class})
     public ApiResponse<?> handleCustomException(CustomException e) {
         log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage());
-        return ApiResponse.fail(e);
+        return ApiResponse.fail(e.getErrorCode());
     }
 
     // 기본 예외
@@ -31,6 +30,6 @@ public class ExceptionController {
     public ApiResponse<?> handleException(Exception e) {
         log.error("handleException() in GlobalExceptionHandler throw Exception : {}", e.getMessage());
         e.printStackTrace();
-        return ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
+        return ApiResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 }
