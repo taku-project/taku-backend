@@ -1,7 +1,7 @@
 package com.ani.taku_backend.category.domain.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
-import com.ani.taku_backend.user.model.entity.Image;
+import com.ani.taku_backend.common.model.entity.Image;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

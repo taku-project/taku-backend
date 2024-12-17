@@ -1,5 +1,7 @@
 package com.ani.taku_backend.user.model.entity;
 
+import com.ani.taku_backend.common.model.entity.Image;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

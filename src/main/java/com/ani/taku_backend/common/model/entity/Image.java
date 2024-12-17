@@ -1,10 +1,11 @@
-package com.ani.taku_backend.user.model.entity;
+package com.ani.taku_backend.common.model.entity;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.user.model.entity.UserImage;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
