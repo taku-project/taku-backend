@@ -24,4 +24,12 @@ public class ExceptionController {
         return responseService.getErrorResponse(ExceptionMessage.INVALIDATE_USER.getCode(),ExceptionMessage.INVALIDATE_USER.getMessage());
 
     }
+    @ExceptionHandler(InvalidUserExcepetion.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    private CommonResponse invalidateGoodsException(InvalidGoodsException e){
+        log.info(e.getMessage());
+        return responseService.getErrorResponse(ExceptionMessage.INVALIDATE__GOODS.getCode(),ExceptionMessage.INVALIDATE__GOODS.getMessage());
+
+    }
+
 }
