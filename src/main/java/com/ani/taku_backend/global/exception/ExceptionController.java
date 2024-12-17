@@ -1,4 +1,4 @@
-package com.ani.taku_backend.global.response.exception;
+package com.ani.taku_backend.global.exception;
 
 
 import com.ani.taku_backend.global.response.CommonResponse;
@@ -24,11 +24,11 @@ public class ExceptionController {
         return responseService.getErrorResponse(ExceptionMessage.INVALIDATE_USER.getCode(),ExceptionMessage.INVALIDATE_USER.getMessage());
 
     }
-    @ExceptionHandler(InvalidUserExcepetion.class)
+    @ExceptionHandler(InvalidGoodsException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     private CommonResponse invalidateGoodsException(InvalidGoodsException e){
         log.info(e.getMessage());
-        return responseService.getErrorResponse(ExceptionMessage.INVALIDATE__GOODS.getCode(),ExceptionMessage.INVALIDATE__GOODS.getMessage());
+        return responseService.getErrorResponse(ExceptionMessage.INVALIDATE_GOODS.getCode(),ExceptionMessage.INVALIDATE_GOODS.getMessage());
 
     }
 

@@ -21,10 +21,10 @@ public class ResponseService {
     }
 
     public CommonResponse getErrorResponse(int code, String message){
-        CommonResponse response= new CommonResponse();
-        response.success= false;
-        response.code=code;
-        response.message=message;
+        CommonResponse response = new CommonResponse();
+        response.setSuccess(false);
+        response.setCode(code);
+        response.setMessage(message);
         return response;
     }
 

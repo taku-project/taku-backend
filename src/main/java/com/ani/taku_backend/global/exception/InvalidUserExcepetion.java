@@ -1,4 +1,4 @@
-package com.ani.taku_backend.global.response.exception;
+package com.ani.taku_backend.global.exception;
 
 public class InvalidUserExcepetion extends RuntimeException{
     public InvalidUserExcepetion(){super();}
