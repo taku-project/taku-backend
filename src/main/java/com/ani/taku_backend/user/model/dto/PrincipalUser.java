@@ -9,11 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.ani.taku_backend.user.model.entity.User;
 
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 /**
  * 스프링 시큐리티에 저장할 유저 정보
  */
 @ToString
+@RequiredArgsConstructor
 public class PrincipalUser implements UserDetails {
 
     private User user;
@@ -22,9 +24,8 @@ public class PrincipalUser implements UserDetails {
         this.user = user;
     }
 
-    // 유저 정보 반환
-    public User getUser() {
-        return user;
+    public Long getUserId() {
+        return user.getUserId();
     }
 
     // 권한 반환
