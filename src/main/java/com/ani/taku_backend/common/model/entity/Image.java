@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserImage;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -33,8 +36,9 @@ public class Image extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "uploader_id")
-    private Long uploaderId;
+    @ManyToOne
+    @JoinColumn(name = "uploader_id", nullable = false)
+    private User user;
 
     @Column(name = "file_name" , length = 255)
     private String fileName;
@@ -53,13 +57,6 @@ public class Image extends BaseTimeEntity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
-    // 유저 이미지
-    @OneToMany(mappedBy = "image")
-    private List<UserImage> userImages;
-    // 키테고리 이미지
-    @OneToMany(mappedBy = "image")
-    private List<CategoryImage> categoryImages;
 
     // TODO : 커뮤니티 이미지
 
