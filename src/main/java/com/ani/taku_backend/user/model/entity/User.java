@@ -80,9 +80,4 @@ public class User {
 
     // TODO : posts 추가
 
-    @OneToMany(mappedBy = "user")
-    private List<Category> categories;
-
-    @OneToMany(mappedBy = "user")
-    private List<UserImage> userImages;
 }
