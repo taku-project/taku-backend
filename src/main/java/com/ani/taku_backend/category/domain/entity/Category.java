@@ -1,8 +1,10 @@
 package com.ani.taku_backend.category.domain.entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.CascadeType;
@@ -19,12 +21,14 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
+/** 
  * 카테고리 테이블 엔티티
  */
+@Builder
 @Table(name = "categories")
 @Entity
 @Getter
@@ -52,11 +56,22 @@ public class Category extends BaseTimeEntity {
     private User user;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<CategoryImage> categoryImages = new ArrayList<>();
+    private List<CategoryImage> categoryImages;
 
     // TODO : 카테고리 애니장르
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category" , cascade = CascadeType.ALL)
     private List<CategoryGenre> categoryGenres;
+
+    public static Category from(RequestCategoryCreateDTO requestCategoryCreateDTO, User user){
+        return Category.builder()
+            .name(requestCategoryCreateDTO.getName())
+            .createdType(user.getRole())
+            .status("ACTIVE")
+            .user(user)
+            .categoryImages(new ArrayList<>()) 
+            .categoryGenres(new ArrayList<>())
+            .build();
+    }
 
 
 
