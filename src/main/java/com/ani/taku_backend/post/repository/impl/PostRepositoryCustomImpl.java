@@ -18,11 +18,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Post> findPostsWithNoOffset(String filter, Object lastValue, boolean isAsc, int limit) {
+    public List<Post> findAllPostWithNoOffset(String filter, Object lastValue, boolean isAsc, int limit, String keyword) {
         QPost post = QPost.post;
 
-        BooleanExpression condition = getCondition(filter, lastValue, isAsc, post);        // Where 절 조건
-        OrderSpecifier<?> orderSpecifier = getSpecifier(filter, isAsc, post);              // 정렬의 기준
+        BooleanExpression  = getCondition(filter, lastValue, isAsc, post);        // Where 절 조건
+        OrderSpecifier<?> sort = getSpecifier(filter, isAsc, post);              // 정렬의 기준
 
         return jpaQueryFactory
                 .selectFrom(post)
@@ -47,9 +47,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return null;
     }
 
-    private OrderSpecifier<?> getSpecifier(String filter, Object lastValue, QPost post) {
+    private OrderSpecifier<?> getSpecifier(String filter, boolean isAsc, QPost post) {
         if ("likes".equalsIgnoreCase(filter)) {
-            return post.likes.desc();
+            return post.likes.desc().then(post.id.desc());
         } else if ("views".equalsIgnoreCase(filter)) {
             return post.views.desc();
         }

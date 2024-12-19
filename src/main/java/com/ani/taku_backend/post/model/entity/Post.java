@@ -3,11 +3,7 @@ package com.ani.taku_backend.post.model.entity;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.joda.time.DateTime;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@ToString
 public class Post {
 
     @Id
@@ -24,9 +21,11 @@ public class Post {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id") // 외래 키 컬럼 이름 명시
     private Category category;
 
     // Image Entity 푸쉬 되면 일대다 다대일 연관관계 매핑 적용

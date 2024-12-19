@@ -38,7 +38,7 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<Post>>> findPosts(
+    public ResponseEntity<MainResponse<List<Post>>> findAllPost(
             @Parameter(description = "정렬 기준", schema = @Schema(defaultValue = "latest"))
             @RequestParam(required = false, defaultValue = "latest") String filter,
 
@@ -50,9 +50,11 @@ public class PostController {
             @RequestParam(defaultValue = "false") boolean isAsc,
 
             @Parameter(description = "페이지당 항목 수", schema = @Schema(defaultValue = "20"))
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "20") int limit,
 
-        List<Post> posts = postService.findPosts(filter, lastValue, isAsc, limit);
+            @RequestParam(defaultValue = "20")String keyword) {
+
+        List<Post> posts = postService.findAllPost(filter, lastValue, isAsc, limit, keyword);
         return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
 }

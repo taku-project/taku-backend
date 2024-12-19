@@ -15,7 +15,7 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public List<Post> findPosts(String filter, Object lastValue, boolean isAsc, int limit) {
-        return postRepository.findPostsWithNoOffset(filter, lastValue, isAsc, limit);
+    public List<Post> findAllPost(String filter, Object lastValue, boolean isAsc, int limit, String keyword) {
+        return postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword);
     }
 }
