@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.common.model.dto.CreateImageDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserImage;
 
@@ -19,12 +20,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
  * 이미지 엔티티
  */
+@Builder
 @Entity
 @Table(name = "images")
 @Getter
@@ -59,5 +62,16 @@ public class Image extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     // TODO : 커뮤니티 이미지
+
+    public static Image of(CreateImageDTO createImageDTO, User user){
+        return Image.builder()
+            .fileName(createImageDTO.getFileName())
+            .imageUrl(createImageDTO.getImageUrl())
+            .originalName(createImageDTO.getOriginalFileName())
+            .fileType(createImageDTO.getFileType())
+            .fileSize(createImageDTO.getFileSize())
+            .user(user)
+            .build();
+    }
 
 }
