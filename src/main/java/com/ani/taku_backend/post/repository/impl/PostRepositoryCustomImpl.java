@@ -1,5 +1,6 @@
 package com.ani.taku_backend.post.repository.impl;
 
+import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.model.entity.QPost;
 import com.querydsl.core.types.OrderSpecifier;
@@ -18,41 +19,61 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Post> findAllPostWithNoOffset(String filter, Object lastValue, boolean isAsc, int limit, String keyword) {
+    public List<Post> findAllPostWithNoOffset(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
         QPost post = QPost.post;
 
-        BooleanExpression  = getCondition(filter, lastValue, isAsc, post);        // Where 절 조건
-        OrderSpecifier<?> sort = getSpecifier(filter, isAsc, post);              // 정렬의 기준
+        BooleanExpression bySortFilter = getSortFilter(filter, lastValue, isAsc, post); // 정렬 필터
+        BooleanExpression byKeyword = getKeyword(keyword, post);                        // 키워드 검색
+        OrderSpecifier<?> mainSort = getMainSort(filter, isAsc, post);                  // 첫번째 정렬 기준
+        OrderSpecifier<?> subSort = getSubSort(isAsc, post);                            // 두번째 정렬 기준
 
         return jpaQueryFactory
                 .selectFrom(post)
-                .where(condition)
-                .orderBy(orderSpecifier)
+                .where(bySortFilter, byKeyword)
+                .orderBy(mainSort, subSort)
                 .limit(limit)
                 .fetch();
     }
 
-    private BooleanExpression getCondition(String filter, Object lastValue, boolean isAsc, QPost post) {
+    private BooleanExpression getKeyword(String keyword, QPost post) {
+        if (keyword != null) {
+            return post.title.contains(keyword).or(post.content.contains(keyword));
+        } else {
+            return null;
+        }
+    }
 
-        if ("likes".equalsIgnoreCase(filter) && lastValue != null) {
-            return isAsc ? post.likes.gt((Integer) lastValue) : post.likes.lt((Integer) lastValue);
+    /**
+     * 정렬 필터 선택
+     * - isAsc -> true, 오름 차순
+     */
+    private BooleanExpression getSortFilter(String filter, Long lastValue, boolean isAsc, QPost post) {
 
-        } else if ("views".equalsIgnoreCase(filter) && lastValue != null) {
-            return isAsc ? post.views.gt((Integer) lastValue) : post.views.lt((Integer) lastValue);
+        if (SortFilterType.LIKES.getValue().equalsIgnoreCase(filter) && lastValue != null) {
+            return isAsc ? post.likes.gt(lastValue) : post.likes.lt(lastValue);
+
+        } else if (SortFilterType.VIEWS.getValue().equalsIgnoreCase(filter) && lastValue != null) {
+            return isAsc ? post.views.gt(lastValue) : post.views.lt(lastValue);
 
         } else if (lastValue != null) {
-            return isAsc ? post.createdAt.gt((LocalDateTime) lastValue) : post.createdAt.lt((LocalDateTime) lastValue);
+            return isAsc ? post.id.gt(lastValue) : post.id.lt(lastValue);
 
         }
         return null;
     }
 
-    private OrderSpecifier<?> getSpecifier(String filter, boolean isAsc, QPost post) {
-        if ("likes".equalsIgnoreCase(filter)) {
-            return post.likes.desc().then(post.id.desc());
-        } else if ("views".equalsIgnoreCase(filter)) {
-            return post.views.desc();
+    private OrderSpecifier<?> getMainSort(String filter, boolean isAsc, QPost post) {
+        if (SortFilterType.LIKES.getValue().equalsIgnoreCase(filter)) {
+            return isAsc ? post.likes.asc() : post.likes.desc();
+
+        } else if (SortFilterType.VIEWS.getValue().equalsIgnoreCase(filter)) {
+            return isAsc ? post.views.asc() : post.views.desc();
+
         }
-        return post.createdAt.desc();
+        return isAsc ? post.id.asc() : post.id.desc();
+    }
+
+    private OrderSpecifier<?> getSubSort(boolean isAsc, QPost post) {
+        return isAsc ? post.id.asc() : post.id.desc();
     }
 }

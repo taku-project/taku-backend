@@ -27,12 +27,12 @@ public class PostController {
     @Operation(summary = "커뮤니티 게시글 조회(정렬, 검색(개발중))", description = """
             필터 조건, 검색어(개발 중), 정렬 순서에 따라 게시글 목록을 조회
             1. filter: 정렬 기준 선택
-                - latest: 최신순  (기준 값: 날짜)
+                - latest: 최신순  (기준 값: 게시글 Id)
                 - likes : 좋아요순 (기준 값: 좋아요 수)
                 - views : 조회수순 (기준 값: 조회수)
             
-            2. lastValue: 선택 된 정렬 기준의 마지막 값
-                - 정렬 기준이 최신 순이면 현재 데이터의 마지막 날짜 값
+            2. lastValue: 선택 된 정렬 기준의 마지막 정수 값, 타입 Long
+                - 정렬 기준이 최신 순이면 현재 데이터의 마지막 Id 값
                 - 정렬 기준이 좋아요 순이면 현재 데이터의 마지막 좋아요 값
                 - 정렬 기준이 조회수 순이면 현재 데이터의 마지막 조회수 값
             """
@@ -43,7 +43,7 @@ public class PostController {
             @RequestParam(required = false, defaultValue = "latest") String filter,
 
             @Parameter(description = "정렬 기준의 마지막 값")
-            @RequestParam(required = false) Object lastValue,
+            @RequestParam(required = false) Long lastValue,
 
             @Parameter(description = "정렬 방향(true = 오름차순, false = 내림차순)",
                     schema = @Schema(defaultValue = "false"))
@@ -52,9 +52,11 @@ public class PostController {
             @Parameter(description = "페이지당 항목 수", schema = @Schema(defaultValue = "20"))
             @RequestParam(defaultValue = "20") int limit,
 
-            @RequestParam(defaultValue = "20")String keyword) {
+            @Parameter(description = "검색어")
+            @RequestParam(required = false)String keyword) {
 
         List<Post> posts = postService.findAllPost(filter, lastValue, isAsc, limit, keyword);
+
         return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
 }

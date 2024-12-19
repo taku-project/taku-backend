@@ -15,7 +15,19 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public List<Post> findAllPost(String filter, Object lastValue, boolean isAsc, int limit, String keyword) {
+    public List<Post> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
+
+        /**
+         * 검증 로직
+         * - 공백만 있는 keyword null 처리
+         * - 공백 제거(양옆, 중간)
+         */
+        if (keyword != null && keyword.trim().isEmpty()) {
+            keyword = null;
+        } else if (keyword != null){
+            keyword = keyword.replaceAll("\\s+", "");
+        }
+
         return postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword);
     }
 }
