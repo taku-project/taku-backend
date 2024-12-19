@@ -1,5 +1,6 @@
 package com.ani.taku_backend.post.service;
 
+import com.ani.taku_backend.post.model.dto.PostDTO;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -15,7 +17,7 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public List<Post> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
+    public List<PostDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
 
         /**
          * 검증 로직
@@ -27,7 +29,17 @@ public class PostService {
         } else if (keyword != null){
             keyword = keyword.replaceAll("\\s+", "");
         }
-
-        return postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword);
+        List<Post> allPost = postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword);
+         return allPost.stream().map(post -> new PostDTO(
+                post.getId(),
+                post.getUser().getUserId(),
+                post.getCategory().getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                post.getViews(),
+                post.getLikes()
+        )).toList();
     }
 }

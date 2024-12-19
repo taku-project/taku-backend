@@ -1,6 +1,7 @@
 package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.model.MainResponse;
+import com.ani.taku_backend.post.model.dto.PostDTO;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +39,7 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<Post>>> findAllPost(
+    public ResponseEntity<MainResponse<List<PostDTO>>> findAllPost(
             @Parameter(description = "정렬 기준", schema = @Schema(defaultValue = "latest"))
             @RequestParam(required = false, defaultValue = "latest") String filter,
 
@@ -55,7 +56,7 @@ public class PostController {
             @Parameter(description = "검색어")
             @RequestParam(required = false)String keyword) {
 
-        List<Post> posts = postService.findAllPost(filter, lastValue, isAsc, limit, keyword);
+        List<PostDTO> posts = postService.findAllPost(filter, lastValue, isAsc, limit, keyword);
 
         return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
