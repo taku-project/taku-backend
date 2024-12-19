@@ -66,7 +66,7 @@ class PostRepositoryTest {
 
     private void likesFilterPagingTest(Post findPost) {
         long startTime = System.nanoTime();
-        List<Post> result = postRepository.findPostsWithNoOffset("likes", findPost.getLikes(), false, 20, null);
+        List<Post> result = postRepository.findAllPostWithNoOffset("likes", findPost.getLikes(), false, 20, null);
         long resultTime = (System.nanoTime() - startTime) / 1000000;
 
         System.out.println("resultTime(likes) = " + resultTime + "ms");
@@ -77,7 +77,7 @@ class PostRepositoryTest {
 
     private void viewsFilterPagingTest(Post findPost) {
         long startTime = System.nanoTime();
-        List<Post> result = postRepository.findPostsWithNoOffset("views", findPost.getViews(), false, 20, null);
+        List<Post> result = postRepository.findAllPostWithNoOffset("views", findPost.getViews(), false, 20, null);
         long resultTime = (System.nanoTime() - startTime) / 1000000;
 
         System.out.println("resultTime(views) = " + resultTime + "ms");
@@ -88,7 +88,7 @@ class PostRepositoryTest {
 
     private void latestFilterPagingTest(Post findPost) {
         long startTime = System.nanoTime();
-        List<Post> result = postRepository.findPostsWithNoOffset("latest", findPost.getCreatedAt(), false, 20, null);
+        List<Post> result = postRepository.findAllPostWithNoOffset("latest", findPost.getCreatedAt(), false, 20, null);
         long resultTime = (System.nanoTime() - startTime) / 1000000;
 
         System.out.println("resultTime(latest) = " + resultTime + "ms");
