@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
@@ -159,14 +160,14 @@ public class UserController {
 	) {
 
 		// 유저 조회 
-		Optional<User> user = this.userService.findByUserIdAndStatus(userId, "ACTIVE");
+		Optional<User> user = this.userService.findByUserIdAndStatus(userId, StatusType.ACTIVE);
 		user.orElseThrow(() -> {
 			log.info("여기니?");
 			return new UserException.UserNotFoundException("존재 하지 않거나,이미 삭제된 유저입니다.");
 		});
 
 		// 유저 삭제
-		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), "INACTIVE");
+		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), StatusType.INACTIVE);
 		if(updateUserStatus == 0) {
 			throw new UserException.UserAlreadyDeletedException("이미 삭제된 유저입니다.");
 		}

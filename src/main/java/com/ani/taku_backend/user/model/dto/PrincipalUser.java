@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.user.model.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,6 @@ public class PrincipalUser implements UserDetails {
     // 계정 활성 여부 반환
     @Override
     public boolean isEnabled() {
-        return "ACTIVE".equals(user.getStatus());
+        return StatusType.ACTIVE.name().equals(user.getStatus());
     }
 }
