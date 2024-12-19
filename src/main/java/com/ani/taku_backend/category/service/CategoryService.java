@@ -15,6 +15,8 @@ import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.common.util.FileUtil;
+import com.ani.taku_backend.common.util.KoreanUtil;
+import com.ani.taku_backend.common.util.StringSimilarity;
 import com.ani.taku_backend.global.exception.CustomException;
 import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -62,6 +64,9 @@ public class CategoryService {
             throw new CustomException(ErrorCode.INVALIDATE_IMAGE);
         }
 
+        // 카테고리 이름 검증
+        validateCategoryName(requestCategoryCreateDTO.getName());
+
         // 블랙리스트 검증을 먼저 수행
         validateBlackUser(principalUser.getUserId());
         
@@ -75,13 +80,45 @@ public class CategoryService {
         return modelMapper.map(savedCategory, ResponseCategoryDTO.class);
     }
 
+    /**
+     * 카테고리 이름 검증
+     * @param newCategoryName
+     */
+    private void validateCategoryName(String newCategoryName) {
+        // 원본 이름에서 공백 제거 및 소문자 변환
+        String searchName = newCategoryName.replaceAll("\\s+", "").toLowerCase();
+        
+        // 초성 추출 (예: "나루토" -> "ㄴㄹㅌ")
+        String chosung = KoreanUtil.getChosung(searchName);
+        
+        // 유사 이름 검색
+        List<Category> similarCategories = categoryRepository.findSimilarNames(
+            chosung,            // 초성
+            searchName,         // 공백 제거된 검색어
+            newCategoryName     // 원본 이름
+        );
+        
+        // 추출된 후보군에 대해서만 레벤슈타인 거리 계산
+        for (Category category : similarCategories) {
+            // 원본 이름 비교
+            double similarity = StringSimilarity.calculateSimilarity(
+                searchName,
+                category.getName().replaceAll("\\s+", "").toLowerCase()
+            );
+            
+            if (similarity >= StringSimilarity.SIMILARITY_THRESHOLD) {
+                throw new CustomException(ErrorCode.DUPLICATE_CATEGORY_NAME);
+            }
+        }
+    }
+
     /** TODO : AOP로 변경필요
      * 블랙리스트 검증
      * @param userId
      */
     private void validateBlackUser(Long userId) {
         List<BlackUser> blackUser = blackUserService.findByUserId(userId);
-        if(blackUser.isEmpty()) {
+        if(!blackUser.isEmpty()) {
             throw new CustomException(ErrorCode.BLACK_USER);
         }
     }
