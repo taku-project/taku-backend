@@ -1,11 +1,14 @@
 package com.ani.taku_backend.user.model.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.common.enums.ProviderType;
 
 import jakarta.persistence.Column;
@@ -14,6 +17,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,6 +26,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * 유저 엔티티
+ */
 @Builder
 @Entity
 @Table(name = "Users")
@@ -71,5 +78,7 @@ public class User {
 
     @Column(name = "email", length = 20)
     private String email;                 // email
+
+    // TODO : posts 추가
 
 }
