@@ -44,6 +44,9 @@ public class Category extends BaseTimeEntity {
     @Column(name = "status" , length = 100)
     private String status;
 
+    @Column(name = "view_count")
+    private Long viewCount;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -54,6 +57,7 @@ public class Category extends BaseTimeEntity {
     // TODO : 카테고리 애니장르
     @OneToMany(mappedBy = "category")
     private List<CategoryGenre> categoryGenres;
+
 
 
 }
