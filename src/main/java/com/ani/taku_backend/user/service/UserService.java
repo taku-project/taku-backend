@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.entity.User;
@@ -25,7 +26,7 @@ public class UserService {
     User user = User.builder()
       .email(userInfo.getEmail())
       .domesticId(userInfo.getDomesticId())
-      .status("ACTIVE")
+      .status(StatusType.ACTIVE.name())
       .nickname(userInfo.getNickname())
       .profileImg(userInfo.getImageUrl())
       .providerType(userInfo.getProviderType().toString())
@@ -42,7 +43,7 @@ public class UserService {
 
   // 유저 조회
   public Optional<User>  getUser(String email) {
-    Optional<User> byDomesticId = this.userRepository.findByEmailAndStatus(email, "ACTIVE");
+    Optional<User> byDomesticId = this.userRepository.findByEmailAndStatus(email, StatusType.ACTIVE.name());
     return byDomesticId;
   }
 
@@ -52,14 +53,14 @@ public class UserService {
   }
 
   // 유저 삭제
-  public Optional<User> findByUserIdAndStatus(Long userId, String status) {
-    return this.userRepository.findByUserIdAndStatus(userId, status);
+  public Optional<User> findByUserIdAndStatus(Long userId, StatusType status) {
+    return this.userRepository.findByUserIdAndStatus(userId, status.name());
   }
 
   // 유저 상태 업데이트
   @Transactional
-  public int updateUserStatus(Long userId, String status) {
-    return this.userRepository.updateUserStatus(userId, status);
+  public int updateUserStatus(Long userId, StatusType status) {
+    return this.userRepository.updateUserStatus(userId, status.name());
   }
 }
 
