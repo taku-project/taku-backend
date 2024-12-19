@@ -16,7 +16,7 @@ public class BlackUserService {
     private final BlackUserRepository blackUserRepository;
 
     public List<BlackUser> findByUserId(Long userId) {
-        return blackUserRepository.findByUser_Id(userId);
+        return blackUserRepository.findByUser_UserId(userId);
     }
     
 }
