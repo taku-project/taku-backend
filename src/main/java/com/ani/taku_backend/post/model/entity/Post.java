@@ -38,8 +38,8 @@ public class Post {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private int views;
-    private int likes;
+    private Long views;
+    private Long likes;
 
     // 조회수 증가
     public void addViews() {
