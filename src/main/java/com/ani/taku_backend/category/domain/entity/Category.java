@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -62,11 +63,13 @@ public class Category extends BaseTimeEntity {
     @OneToMany(mappedBy = "category" , cascade = CascadeType.ALL)
     private List<CategoryGenre> categoryGenres;
 
+    // 카테고리 첫 생성
     public static Category from(RequestCategoryCreateDTO requestCategoryCreateDTO, User user){
         return Category.builder()
             .name(requestCategoryCreateDTO.getName())
             .createdType(user.getRole())
-            .status("ACTIVE")
+            .viewCount(0L)
+            .status(StatusType.INACTIVE.name())
             .user(user)
             .categoryImages(new ArrayList<>()) 
             .categoryGenres(new ArrayList<>())
