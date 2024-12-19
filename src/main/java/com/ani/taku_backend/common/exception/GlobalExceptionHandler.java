@@ -72,17 +72,17 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // // 공통 Exception
-    // @ExceptionHandler(Exception.class)
-    // @ResponseBody
-    // public ResponseEntity<MainResponse<Void>> handleException(Exception ex) {
-    //     return ResponseEntity.badRequest().body(
-    //             new MainResponse<>(
-    //                     ApiConstants.Status.ERROR,
-    //                     ex.getMessage() != null ? ex.getMessage() : ApiConstants.Message.BAD_REQUEST
-    //             )
-    //     );
-    // }
+    // 공통 Exception
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ResponseEntity<MainResponse<Void>> handleException(Exception ex) {
+        return ResponseEntity.badRequest().body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        ex.getMessage() != null ? ex.getMessage() : ApiConstants.Message.BAD_REQUEST
+                )
+        );
+    }
 
     public String parseColumnNameAndMessage(String errorMessage) {
         String columnName = "undefined";
