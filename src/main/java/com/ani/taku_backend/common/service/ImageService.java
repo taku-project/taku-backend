@@ -14,8 +14,8 @@ public class ImageService {
     private final ImageRepository imageRepository;
 
 
-    public void insertImage(Image image){
-        this.imageRepository.save(image);
+    public Image insertImage(Image image){
+        return this.imageRepository.save(image);
     }
     
 }
