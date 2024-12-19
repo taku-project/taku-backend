@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.net.BindException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -109,4 +112,23 @@ public class GlobalExceptionHandler {
 
         return errorMessage;
     }
+
+    /**
+     * 파라미터 타입 불일치 예외
+     * ex - ?id = abc 이면 해당 예외가 반환됨
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<MainResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String parameterName = ex.getName();
+        String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "올바른 타입";
+        String errorMessage = String.format("'%s' 파라미터의 값이 잘못되었습니다. (%s 타입이 필요합니다.)", parameterName, requiredType);
+
+        return ResponseEntity.badRequest().body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        errorMessage
+                )
+        );
+    }
+
 }
