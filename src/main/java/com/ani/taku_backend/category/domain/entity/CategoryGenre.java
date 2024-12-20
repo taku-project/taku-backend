@@ -9,12 +9,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
  * 카테고리 장르 엔티티
  */
+@Builder
 @Entity
 @Table(name = "category_genres")
 @Getter
