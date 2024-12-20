@@ -1,16 +1,12 @@
 package com.ani.taku_backend.post.model.dto;
 
 import com.ani.taku_backend.post.model.entity.Post;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
-public class FindAllPostDTO {
+public class ResponsePostDTO {
 
     private Long id;
     private Long userId; // User 객체 대신 ID만 포함
@@ -25,7 +21,7 @@ public class FindAllPostDTO {
     private Long views;
     private Long likes;
 
-    public FindAllPostDTO(Post post) {
+    public ResponsePostDTO(Post post) {
         this.id = post.getId();
         this.userId = post.getUser().getUserId();
         this.categoryId = post.getCategory().getId();

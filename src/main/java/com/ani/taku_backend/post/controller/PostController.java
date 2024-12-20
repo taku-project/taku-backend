@@ -1,18 +1,15 @@
 package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.model.MainResponse;
-import com.ani.taku_backend.post.model.dto.FindAllPostDTO;
-import com.ani.taku_backend.post.model.dto.FindAllPostParamDTO;
+import com.ani.taku_backend.post.model.dto.ResponsePostDTO;
+import com.ani.taku_backend.post.model.dto.RequestPostDTO;
 import com.ani.taku_backend.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,8 +36,8 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<FindAllPostDTO>>> findAllPost(FindAllPostParamDTO findAllPostParamDTO) {
-        List<FindAllPostDTO> posts = postService.findAllPost(
+    public ResponseEntity<MainResponse<List<ResponsePostDTO>>> findAllPost(RequestPostDTO findAllPostParamDTO) {
+        List<ResponsePostDTO> posts = postService.findAllPost(
                                         findAllPostParamDTO.getFilter().toString(),
                                         findAllPostParamDTO.getLastValue(),
                                         findAllPostParamDTO.isAsc(),
