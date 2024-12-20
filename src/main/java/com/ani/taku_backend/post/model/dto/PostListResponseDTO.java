@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class PostResponseDTO {
+public class PostListResponseDTO {
 
     private Long id;
     private Long userId; // User 객체 대신 ID만 포함
@@ -21,7 +21,7 @@ public class PostResponseDTO {
     private Long views;
     private Long likes;
 
-    public PostResponseDTO(Post post) {
+    public PostListResponseDTO(Post post) {
         this.id = post.getId();
         this.userId = post.getUser().getUserId();
         this.categoryId = post.getCategory().getId();

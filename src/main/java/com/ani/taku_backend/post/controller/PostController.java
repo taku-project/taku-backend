@@ -1,8 +1,8 @@
 package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.model.MainResponse;
-import com.ani.taku_backend.post.model.dto.PostResponseDTO;
-import com.ani.taku_backend.post.model.dto.PostRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
+import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +36,8 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<PostResponseDTO>>> findAllPost(PostRequestDTO findAllPostParamDTO) {
-        List<PostResponseDTO> posts = postService.findAllPost(
+    public ResponseEntity<MainResponse<List<PostListResponseDTO>>> findAllPost(PostListRequestDTO findAllPostParamDTO) {
+        List<PostListResponseDTO> posts = postService.findAllPost(
                                         findAllPostParamDTO.getFilter().toString(),
                                         findAllPostParamDTO.getLastValue(),
                                         findAllPostParamDTO.isAsc(),

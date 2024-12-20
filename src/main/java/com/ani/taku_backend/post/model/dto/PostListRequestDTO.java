@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class PostRequestDTO {
+public class PostListRequestDTO {
 
     @Schema(description = "정렬 기준", defaultValue = "latest")
     private SortFilterType filter;
