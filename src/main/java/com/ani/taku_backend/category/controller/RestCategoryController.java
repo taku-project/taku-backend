@@ -1,5 +1,12 @@
 package com.ani.taku_backend.category.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -7,14 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
+import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
+import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.service.CategoryService;
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.model.dto.CreateImageDTO;
-import com.ani.taku_backend.common.service.FileService;
-import com.ani.taku_backend.common.util.FileUtil;
-import com.ani.taku_backend.global.exception.CustomException;
-import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 public class RestCategoryController {
 
     private final CategoryService categoryService;
-    private final FileService fileService;
     
 
     @PostMapping("")
@@ -38,6 +41,16 @@ public class RestCategoryController {
         PrincipalUser principalUser
     ){
         return categoryService.createCategory(principalUser, requestCategoryCreateDTO, image);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<Page<ResponseCategorySeachDTO>> searchCategories(
+        @ModelAttribute RequestCategorySearch requestCategorySearch,
+        @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+
+        Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
+        return ResponseEntity.ok(result);
     }
     
 }

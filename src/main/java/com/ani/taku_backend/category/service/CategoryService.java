@@ -1,7 +1,12 @@
 package com.ani.taku_backend.category.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
+import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
+import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
@@ -80,6 +85,16 @@ public class CategoryService {
         return modelMapper.map(savedCategory, ResponseCategoryDTO.class);
     }
 
+
+    /**
+     * 카테고리 검색
+     * @param condition
+     * @param pageable
+     * @return
+     */
+    public Page<ResponseCategorySeachDTO> searchCategories(RequestCategorySearch requestCategorySearch, Pageable pageable) {
+        return categoryRepository.searchCategories(requestCategorySearch, pageable);
+    }
     /**
      * 카테고리 이름 검증
      * @param newCategoryName
