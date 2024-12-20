@@ -1,5 +1,6 @@
 package com.ani.taku_backend.post.model.dto;
 
+import com.ani.taku_backend.post.model.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -24,4 +25,15 @@ public class FindAllPostDTO {
     private Long views;
     private Long likes;
 
+    public FindAllPostDTO(Post post) {
+        this.id = post.getId();
+        this.userId = post.getUser().getUserId();
+        this.categoryId = post.getCategory().getId();
+        this.title = post.getTitle();
+        this.content = post.getContent();
+        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
+        this.views = post.getViews();
+        this.likes = post.getLikes();
+    }
 }

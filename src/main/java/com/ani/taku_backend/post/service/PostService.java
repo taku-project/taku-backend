@@ -1,6 +1,6 @@
 package com.ani.taku_backend.post.service;
 
-import com.ani.taku_backend.post.model.dto.PostDTO;
+import com.ani.taku_backend.post.model.dto.FindAllPostDTO;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,29 +17,17 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public List<PostDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
+    public List<FindAllPostDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
 
         /**
          * 검증 로직
          * - 공백만 있는 keyword null 처리
          * - 공백 제거(양옆, 중간)
          */
-        if (keyword != null && keyword.trim().isEmpty()) {
-            keyword = null;
-        } else if (keyword != null){
-            keyword = keyword.replaceAll("\\s+", "");
+        if (keyword != null) {
+            keyword = keyword.trim().isEmpty() ? null : keyword.replaceAll("\\s+", "");
         }
         List<Post> allPost = postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword);
-         return allPost.stream().map(post -> new PostDTO(
-                post.getId(),
-                post.getUser().getUserId(),
-                post.getCategory().getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getCreatedAt(),
-                post.getUpdatedAt(),
-                post.getViews(),
-                post.getLikes()
-        )).toList();
+        return allPost.stream().map(FindAllPostDTO::new).toList();
     }
 }
