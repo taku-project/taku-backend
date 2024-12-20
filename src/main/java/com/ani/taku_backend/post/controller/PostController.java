@@ -1,8 +1,8 @@
 package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.model.MainResponse;
-import com.ani.taku_backend.post.model.dto.PostDTO;
-import com.ani.taku_backend.post.model.entity.Post;
+import com.ani.taku_backend.post.model.dto.FindAllPostDTO;
+import com.ani.taku_backend.post.model.dto.FindAllPostParamDTO;
 import com.ani.taku_backend.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,24 +39,13 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<PostDTO>>> findAllPost(
-            @Parameter(description = "정렬 기준", schema = @Schema(defaultValue = "latest"))
-            @RequestParam(required = false, defaultValue = "latest") String filter,
-
-            @Parameter(description = "정렬 기준의 마지막 값")
-            @RequestParam(required = false) Long lastValue,
-
-            @Parameter(description = "정렬 방향(true = 오름차순, false = 내림차순)",
-                    schema = @Schema(defaultValue = "false"))
-            @RequestParam(defaultValue = "false") boolean isAsc,
-
-            @Parameter(description = "페이지당 항목 수", schema = @Schema(defaultValue = "20"))
-            @RequestParam(defaultValue = "20") int limit,
-
-            @Parameter(description = "검색어")
-            @RequestParam(required = false)String keyword) {
-
-        List<PostDTO> posts = postService.findAllPost(filter, lastValue, isAsc, limit, keyword);
+    public ResponseEntity<MainResponse<List<FindAllPostDTO>>> findAllPost(FindAllPostParamDTO findAllPostParamDTO) {
+        List<FindAllPostDTO> posts = postService.findAllPost(
+                                        findAllPostParamDTO.getFilter().toString(),
+                                        findAllPostParamDTO.getLastValue(),
+                                        findAllPostParamDTO.isAsc(),
+                                        findAllPostParamDTO.getLimit(),
+                                        findAllPostParamDTO.getKeyword());
 
         return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
