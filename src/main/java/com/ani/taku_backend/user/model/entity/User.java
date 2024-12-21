@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ani.taku_backend.post.model.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -79,6 +80,7 @@ public class User {
     @Column(name = "email", length = 20)
     private String email;                 // email
 
-    // TODO : posts 추가
-
+    // Post 연관관계 매핑
+    @OneToMany
+    private List<Post> post;
 }
