@@ -1,5 +1,5 @@
 # 1. Java 17 베이스 이미지 선택 (플랫폼 명시)
-FROM --platform=linux/amd64 eclipse-temurin:17-jdk-jammy AS builder
+FROM --platform=linux/arm64 eclipse-temurin:17-jdk-jammy AS builder
 
 # 2. 작업 디렉터리 설정
 WORKDIR /app
