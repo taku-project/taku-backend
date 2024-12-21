@@ -12,6 +12,9 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.ani.taku_backend.common.model.entity.QImage.image;
+import static com.ani.taku_backend.post.model.entity.QCommunityImage.communityImage;
+
 @Repository
 @RequiredArgsConstructor
 public class PostRepositoryCustomImpl implements PostRepositoryCustom {
@@ -29,6 +32,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
         return jpaQueryFactory
                 .selectFrom(post)
+                .join(post.communityImages, communityImage).fetchJoin()  // CommunityImage와 조인
+                .join(communityImage.image, image).fetchJoin()
                 .where(bySortFilter, byKeyword)
                 .orderBy(mainSort, subSort)
                 .limit(limit)
