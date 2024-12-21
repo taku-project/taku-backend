@@ -29,7 +29,15 @@ public class PostListResponseDTO {
         this.categoryId = post.getCategory().getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.imageUrl = post.getCommunityImages().get(0).getImage().getImageUrl();
+
+        // 이미지가 여러 장일 경우 첫 번째 이미지 URL 가져오기
+        this.imageUrl = post.getCommunityImages()
+                .stream()
+                .findFirst()
+                .map(communityImage -> communityImage.getImage().getImageUrl())
+                .orElse(null);
+
+
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
         this.views = post.getViews();
