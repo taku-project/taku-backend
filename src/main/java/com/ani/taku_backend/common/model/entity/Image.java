@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserImage;
 
@@ -17,10 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * 이미지 엔티티
@@ -30,6 +28,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 public class Image extends BaseTimeEntity {
 
     @Id
@@ -58,6 +57,6 @@ public class Image extends BaseTimeEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    // TODO : 커뮤니티 이미지
-
+    @OneToMany(mappedBy = "image")
+    private List<CommunityImage> communityImage;
 }

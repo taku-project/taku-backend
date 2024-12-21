@@ -1,22 +1,23 @@
 package com.ani.taku_backend.post.model.entity;
 
 import com.ani.taku_backend.category.domain.entity.Category;
-import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * 커뮤니티 게시글 Entity
+ */
 @Table(name = "posts")
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
+@Builder
 public class Post {
 
     @Id
@@ -31,8 +32,8 @@ public class Post {
     @JoinColumn(name = "category_id") // 외래 키 컬럼 이름 명시
     private Category category;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images = new ArrayList<>();
+    @OneToMany(mappedBy = "post")
+    private List<CommunityImage> communityImages;
 
     private String title;
     private String content;
@@ -42,6 +43,8 @@ public class Post {
 
     private Long views;
     private Long likes;
+
+    private LocalDateTime deletedAt ;
 
     // 조회수 증가
     public void addViews() {

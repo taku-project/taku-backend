@@ -29,7 +29,7 @@ public class PostListResponseDTO {
         this.categoryId = post.getCategory().getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.imageUrl = post.getImages().get(0).getImageUrl();
+        this.imageUrl = post.getCommunityImages().get(0).getImage().getImageUrl();
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
         this.views = post.getViews();
