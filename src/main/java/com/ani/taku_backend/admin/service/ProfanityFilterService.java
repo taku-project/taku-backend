@@ -7,12 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 
 import com.ani.taku_backend.admin.domain.dto.RequestCreateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestSearchProfanityDTO;
+import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseProfannityDTO;
 import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
@@ -93,6 +95,10 @@ public class ProfanityFilterService {
                 .map(ResponseProfannityDTO::of);
     }
 
+    /**
+     * 금칙어 필터 삭제
+     * @param id
+     */
     @RequireUser(isAdmin = true)
     public void deleteProfanityFilter(Long id) {
         // 금칙어 필터 조회
@@ -103,6 +109,19 @@ public class ProfanityFilterService {
         // 금칙어 필터 삭제
         this.profanityFilterRepository.delete(profanityFilter.get());
     }
-    
+
+    /**
+     * 금칙어 필터 수정
+     * @param id
+     * @param requestUpdateProfanityDTO
+     */
+    @RequireUser(isAdmin = true)
+    @Transactional
+    public void updateProfanityFilter(Long id, RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
+
+        ProfanityFilter profanityEntity = this.profanityFilterRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFANITY_FILTER));
+
+        profanityEntity.update(requestUpdateProfanityDTO);
+    }
 }
 

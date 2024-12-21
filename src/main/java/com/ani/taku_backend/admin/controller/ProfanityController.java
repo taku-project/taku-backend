@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ani.taku_backend.admin.domain.dto.RequestCreateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestSearchProfanityDTO;
+import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseProfannityDTO;
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PutMapping;
+
 @RestController
 @RequestMapping("/admin/api/profanity")
 @RequiredArgsConstructor
@@ -67,6 +70,18 @@ public class ProfanityController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteProfanityFilter(@PathVariable("id") Long id) {
         this.profanityFilterService.deleteProfanityFilter(id);
+        return ApiResponse.ok(null);
+    }
+
+    /**
+     * 금칙어 필터 수정
+     * @param id
+     * @param requestUpdateProfanityDTO
+     * @return
+     */
+    @PutMapping("/{id}")
+    public ApiResponse<Void> updateProfanityFilter(@PathVariable("id") Long id, @RequestBody @Valid RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
+        this.profanityFilterService.updateProfanityFilter(id, requestUpdateProfanityDTO);
         return ApiResponse.ok(null);
     }
 
