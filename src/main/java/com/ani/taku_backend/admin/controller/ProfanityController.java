@@ -16,8 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
@@ -56,4 +58,16 @@ public class ProfanityController {
         Page<ResponseProfannityDTO> profanityFilters = this.profanityFilterService.findProfanityFilterList(requestSearchProfanityDTO, pageable);
         return ApiResponse.ok(profanityFilters);
     }
+
+    /**
+     * 금칙어 필터 삭제
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteProfanityFilter(@PathVariable("id") Long id) {
+        this.profanityFilterService.deleteProfanityFilter(id);
+        return ApiResponse.ok(null);
+    }
+
 }

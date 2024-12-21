@@ -92,6 +92,17 @@ public class ProfanityFilterService {
         return profanityFilterRepository.findAll(specification, pageable)
                 .map(ResponseProfannityDTO::of);
     }
+
+    @RequireUser(isAdmin = true)
+    public void deleteProfanityFilter(Long id) {
+        // 금칙어 필터 조회
+        Optional<ProfanityFilter> profanityFilter = this.profanityFilterRepository.findById(id);
+        if (profanityFilter.isEmpty()) {
+            throw new CustomException(ErrorCode.NOT_FOUND_PROFANITY_FILTER);
+        }
+        // 금칙어 필터 삭제
+        this.profanityFilterRepository.delete(profanityFilter.get());
+    }
     
 }
 

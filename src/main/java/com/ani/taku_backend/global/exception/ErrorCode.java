@@ -11,7 +11,7 @@ public enum ErrorCode {
     TEST_ERROR(10000, HttpStatus.BAD_REQUEST, "테스트 에러입니다."),
     // 404 Not Found
     NOT_FOUND_END_POINT(40400, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
-
+    NOT_FOUND_PROFANITY_FILTER(40401, HttpStatus.NOT_FOUND, "존재하지 않는 금칙어 필터입니다."),
     FORBIDDEN_ACCESS_ADMIN(40300, HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
 
 
