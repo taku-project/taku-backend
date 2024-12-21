@@ -20,7 +20,8 @@ public enum ErrorCode {
 
     BLACK_USER(4001,HttpStatus.UNAUTHORIZED,"블랙 유저는 카테고리 생성을 할 수 없습니다."),
     INVALIDATE_IMAGE(4002,HttpStatus.BAD_REQUEST,"이미지 파일이 아닙니다."),
-    DUPLICATE_CATEGORY_NAME(4003,HttpStatus.BAD_REQUEST, "이미 유사한 이름의 카테고리가 존재합니다.");
+    DUPLICATE_CATEGORY_NAME(4003,HttpStatus.BAD_REQUEST, "이미 유사한 이름의 카테고리가 존재합니다."),
+    NOT_FOUND_CATEGORY(4004,HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다.");
 
     private final Integer code ;
     private final HttpStatus httpStatus;

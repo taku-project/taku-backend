@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -95,6 +96,21 @@ public class CategoryService {
     public Page<ResponseCategorySeachDTO> searchCategories(RequestCategorySearch requestCategorySearch, Pageable pageable) {
         return categoryRepository.searchCategories(requestCategorySearch, pageable);
     }
+
+    /**
+     * 카테고리 상세 조회
+     * @param id
+     * @return
+     */
+    public ResponseCategoryDTO findCategoryById(Long id) {
+        Optional<Category> categoryOptional = categoryRepository.findById(id);
+
+        if(!categoryOptional.isPresent()) {
+            throw new CustomException(ErrorCode.NOT_FOUND_CATEGORY);
+        }
+        return modelMapper.map(categoryOptional.get(), ResponseCategoryDTO.class);
+    }
+
     /**
      * 카테고리 이름 검증
      * @param newCategoryName

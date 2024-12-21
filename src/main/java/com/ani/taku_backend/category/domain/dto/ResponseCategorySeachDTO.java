@@ -31,5 +31,9 @@ public class ResponseCategorySeachDTO {
 
     private Long[] genreId;    // 장르 아이디
     private String[] genreName;    // 장르 이름
+
+    // TODO: 카테고리 북마크 개수
+    // TODO: 카테고리 북마크 여부 (User 가 있을떄?)
+
     
 }
