@@ -21,6 +21,4 @@ COPY /build/libs/*.jar app.jar
 
 # 컨테이너가 시작될 때 실행할 명령을 지정합니다.
 # 여기서는 Java 애플리케이션(JAR 파일)을 실행합니다.
-ENTRYPOINT ["java", "-jar", "app.jar"]
-CMD java -jar app.jar --spring.config.additional-location=file:/src/main/resources/application.yml
-CMD java -jar app.jar -Dspring.data.redis.port=6379
+CMD ["java", "-jar", "-Dspring.profiles.active=dev","app.jar" ]
