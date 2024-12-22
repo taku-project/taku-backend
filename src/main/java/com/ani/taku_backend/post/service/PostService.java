@@ -16,7 +16,7 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public List<PostListResponseDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
+    public List<PostListResponseDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
 
         /**
          * 검증 로직
@@ -26,7 +26,7 @@ public class PostService {
         if (keyword != null) {
             keyword = keyword.trim().isEmpty() ? null : keyword.replaceAll("\\s+", "");
         }
-        List<Post> allPost = postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword);
+        List<Post> allPost = postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword, categoryId);
         return allPost.stream().map(PostListResponseDTO::new).toList();
     }
 }

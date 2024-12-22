@@ -22,24 +22,46 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Post> findAllPostWithNoOffset(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
+    public List<Post> findAllPostWithNoOffset(String filter, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
         QPost post = QPost.post;
 
+        BooleanExpression byCategory = getCategory(categoryId, post);                   // 카테고리 구분
         BooleanExpression bySortFilter = getSortFilter(filter, lastValue, isAsc, post); // 정렬 필터
         BooleanExpression byKeyword = getKeyword(keyword, post);                        // 키워드 검색
+        BooleanExpression notDeleted = getNotDeleted(post);                             // Soft Delete 조건
         OrderSpecifier<?> mainSort = getMainSort(filter, isAsc, post);                  // 첫번째 정렬 기준
         OrderSpecifier<?> subSort = getSubSort(isAsc, post);                            // 두번째 정렬 기준
 
         return jpaQueryFactory
                 .selectFrom(post)
-                .join(post.communityImages, communityImage).fetchJoin()  // CommunityImage와 조인
-                .join(communityImage.image, image).fetchJoin()
-                .where(bySortFilter, byKeyword)
+                .join(post.communityImages, communityImage)
+                .join(communityImage.image, image)
+                .where(notDeleted, byCategory, bySortFilter, byKeyword)
                 .orderBy(mainSort, subSort)
                 .limit(limit)
                 .fetch();
     }
 
+    /**
+     * 삭제된 데이터는 제외
+     */
+    private BooleanExpression getNotDeleted(QPost post) {
+        return post.deletedAt.isNull();
+    }
+
+    /**
+     * 카테고리 구분
+     */
+    private BooleanExpression getCategory(Long categoryId, QPost post) {
+        if (categoryId != null) {
+            return post.category.id.eq(categoryId);
+        }
+        return null;
+    }
+
+    /**
+     * 제목 + 내용으로 키워드 검색
+     */
     private BooleanExpression getKeyword(String keyword, QPost post) {
         if (keyword != null) {
             return post.title.contains(keyword).or(post.content.contains(keyword));
@@ -67,6 +89,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return null;
     }
 
+    /**
+     * 첫번째 정렬 기준
+     */
     private OrderSpecifier<?> getMainSort(String filter, boolean isAsc, QPost post) {
         if (SortFilterType.LIKES.getValue().equalsIgnoreCase(filter)) {
             return isAsc ? post.likes.asc() : post.likes.desc();
@@ -78,6 +103,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return isAsc ? post.id.asc() : post.id.desc();
     }
 
+    /**
+     * 두번째 정렬 기준
+     */
     private OrderSpecifier<?> getSubSort(boolean isAsc, QPost post) {
         return isAsc ? post.id.asc() : post.id.desc();
     }

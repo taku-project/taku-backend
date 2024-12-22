@@ -37,7 +37,6 @@ public class PostListResponseDTO {
                 .map(communityImage -> communityImage.getImage().getImageUrl())
                 .orElse(null);
 
-
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
         this.views = post.getViews();
