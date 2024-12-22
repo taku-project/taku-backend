@@ -10,10 +10,11 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostCreateRequestDTO {
+public class PostUpdateRequestDTO {
 
-    private Long categoryId;
     private String title;
     private String content;
-    private List<ImageCreateRequestDTO> imagelist;
+    private Long categoryId;
+    private List<ImageCreateRequestDTO> images;
+    private List<Long> deleteImageIds;
 }
