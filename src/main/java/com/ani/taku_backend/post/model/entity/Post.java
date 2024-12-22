@@ -4,6 +4,7 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +33,7 @@ public class Post {
     @JoinColumn(name = "category_id") // 외래 키 컬럼 이름 명시
     private Category category;
 
+    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "post")
     private List<CommunityImage> communityImages;
 
@@ -45,6 +47,24 @@ public class Post {
     private Long likes;
 
     private LocalDateTime deletedAt ;
+
+    /**
+     * 연관관계 편의 메서드
+     */
+    public void addCommunityImage(CommunityImage communityImage) {
+        this.communityImages.add(communityImage);
+        communityImage.assignPost(this);
+    }
+
+    public void removeCommunityImage(CommunityImage communityImage) {
+        this.communityImages.remove(communityImage);
+        communityImage.unassignPost();
+    }
+
+    // === Soft Delete ===
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
     // 조회수 증가
     public void addViews() {
@@ -62,4 +82,6 @@ public class Post {
             this.likes--;
         }
     }
+
+
 }

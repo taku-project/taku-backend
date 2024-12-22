@@ -29,4 +29,15 @@ public class CommunityImage {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    /**
+     * 연관관계 편의 메서드
+     */
+    void assignPost(Post post) {
+        this.post = post;
+    }
+
+    void unassignPost() {
+        this.post = null;
+    }
+
 }
