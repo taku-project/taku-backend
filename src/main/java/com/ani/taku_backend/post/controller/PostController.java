@@ -6,6 +6,7 @@ import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.service.PostService;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -49,14 +50,14 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<PostListResponseDTO>>> findAllPost(PostListRequestDTO findAllPostParamDTO) {
+    public ResponseEntity<MainResponse<List<PostListResponseDTO>>> findAllPost(PostListRequestDTO requestDTO) {
         List<PostListResponseDTO> posts = postService.findAllPost(
-                findAllPostParamDTO.getFilter().toString(),
-                findAllPostParamDTO.getLastValue(),
-                findAllPostParamDTO.isAsc(),
-                findAllPostParamDTO.getLimit(),
-                findAllPostParamDTO.getKeyword(),
-                findAllPostParamDTO.getCategoryId());
+                requestDTO.getFilter().toString(),
+                requestDTO.getLastValue(),
+                requestDTO.isAsc(),
+                requestDTO.getLimit(),
+                requestDTO.getKeyword(),
+                requestDTO.getCategoryId());
 
         return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
@@ -74,8 +75,8 @@ public class PostController {
             """)
     @RequireUser
     @PostMapping
-    public ResponseEntity<Long> createPost(User user, PostCreateRequestDTO requestDTO) {
-        Long postId = postService.createPost(requestDTO, user);
+    public ResponseEntity<Long> createPost(PrincipalUser principalUser, PostCreateRequestDTO requestDTO) {
+        Long postId = postService.createPost(requestDTO, principalUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(postId);
     }
 

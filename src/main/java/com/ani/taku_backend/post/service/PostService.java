@@ -8,17 +8,19 @@ import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
+import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -29,6 +31,9 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
 
+    /**
+     * 게시글 전체 조회
+     */
     public List<PostListResponseDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
 
         /**
@@ -43,8 +48,12 @@ public class PostService {
         return allPost.stream().map(PostListResponseDTO::new).toList();
     }
 
+    /**
+     * 게시글 작성
+     */
     @RequireUser
-    public Long createPost(PostCreateRequestDTO requestDTO, User user) {
+    public Long createPost(PostCreateRequestDTO requestDTO, PrincipalUser principalUser) {
+        User user = principalUser.getUser();
 
         Category category = categoryRepository.findById(requestDTO.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다. ID: " + requestDTO.getCategoryId()));
@@ -56,6 +65,16 @@ public class PostService {
         }
         postRepository.save(post);
         return post.getId();
+    }
+
+    /**
+     * 게시글 업데이트
+     */
+    @RequireUser
+    @Transactional
+    public void updatePost(Long postId, PostUpdateRequestDTO requestDTO, User user) {
+
+
     }
 
     private void saveImage(PostCreateRequestDTO requestDTO, User user, Post post) {
@@ -80,7 +99,7 @@ public class PostService {
     }
 
     private Post savePost(PostCreateRequestDTO requestDTO, User user, Category category) {
-        Post post = Post.builder()
+        return Post.builder()
                 .user(user)
                 .category(category)
                 .title(requestDTO.getTitle())
@@ -91,6 +110,5 @@ public class PostService {
                 .likes(0L)
                 .deletedAt(null)
                 .build();
-        return post;
     }
 }
