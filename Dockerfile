@@ -23,3 +23,4 @@ COPY /build/libs/*.jar app.jar
 # 여기서는 Java 애플리케이션(JAR 파일)을 실행합니다.
 ENTRYPOINT ["java", "-jar", "app.jar"]
 CMD java -jar app.jar --spring.config.additional-location=file:/src/main/resources/application.yml
+CMD java -jar your-app.jar -Dspring.data.redis.port=6379
