@@ -21,4 +21,4 @@ COPY /build/libs/*.jar app.jar
 COPY /src/main/resources/*.yml .
 # 컨테이너가 시작될 때 실행할 명령을 지정합니다.
 # 여기서는 Java 애플리케이션(JAR 파일)을 실행합니다.
-CMD ["java", "-jar", "-Dspring.profiles.active=dev","app.jar" ]
+CMD ["java", "-jar", "app.jar" ]
