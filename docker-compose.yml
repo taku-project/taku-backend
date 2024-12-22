@@ -1,4 +1,3 @@
-version: '3'
 services:
   redis:
     image: redis
@@ -10,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: app:latest
+    image: 354918395041.dkr.ecr.ap-northeast-2.amazonaws.com/duckwho:latest
     ports:
       - "8080:8080"
     depends_on:
