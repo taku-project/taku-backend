@@ -49,7 +49,7 @@ public class Post {
     private LocalDateTime deletedAt ;
 
     /**
-     * 연관관계 편의 메서드
+     * 이미지 연관관계 편의 메서드
      */
     public void addCommunityImage(CommunityImage communityImage) {
         this.communityImages.add(communityImage);
@@ -61,7 +61,27 @@ public class Post {
         communityImage.unassignPost();
     }
 
-    // === Soft Delete ===
+    /**
+     * update 메서드
+     */
+    public void updatePost(String title, String content, Category category) {
+        if (title != null) {
+            this.title = title;
+        }
+
+        if (content != null) {
+            this.content = content;
+        }
+         if (category != null) {
+             this.category = category;
+         }
+
+         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Soft Delete 메서드
+     */
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
