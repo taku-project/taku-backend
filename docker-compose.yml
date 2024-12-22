@@ -7,7 +7,9 @@ services:
     networks:
       - redis_app_net
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: app:latest
     ports:
       - "8080:8080"
