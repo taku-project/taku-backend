@@ -1,12 +1,16 @@
 package com.ani.taku_backend.post.controller;
 
+import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.model.MainResponse;
+import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.service.PostService;
+import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,23 +51,36 @@ public class PostController {
     @GetMapping
     public ResponseEntity<MainResponse<List<PostListResponseDTO>>> findAllPost(PostListRequestDTO findAllPostParamDTO) {
         List<PostListResponseDTO> posts = postService.findAllPost(
-                                        findAllPostParamDTO.getFilter().toString(),
-                                        findAllPostParamDTO.getLastValue(),
-                                        findAllPostParamDTO.isAsc(),
-                                        findAllPostParamDTO.getLimit(),
-                                        findAllPostParamDTO.getKeyword(),
-                                        findAllPostParamDTO.getCategoryId());
+                findAllPostParamDTO.getFilter().toString(),
+                findAllPostParamDTO.getLastValue(),
+                findAllPostParamDTO.isAsc(),
+                findAllPostParamDTO.getLimit(),
+                findAllPostParamDTO.getKeyword(),
+                findAllPostParamDTO.getCategoryId());
 
         return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
 
-    @PostMapping("/{id}")
-    public ResponseEntity<MainResponse<PostListResponseDTO>> createPost() {
-        return null;
+    @Operation(summary = "커뮤니티 게시글 생성", description = """
+            1. categoryId: User가 접속한 카테고리 ID
+            2. title: 작성한 제목
+            3. content: 작성한 내용
+            4. imageList: 업로드한 이미지 정보
+                - 이미지 파일이름
+                - 이미지 저장 경로
+                - 원본 파일명
+                - 타입
+                - 크기
+            """)
+    @RequireUser
+    @PostMapping
+    public ResponseEntity<Long> createPost(User user, PostCreateRequestDTO requestDTO) {
+        Long postId = postService.createPost(requestDTO, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(postId);
     }
 
     // TODO: 게시글 상세 조회 필요
-    // findPostByUserId
+    // findPostById
 
     @PutMapping("/{id}")
     public ResponseEntity<MainResponse<PostListResponseDTO>> updatePost() {

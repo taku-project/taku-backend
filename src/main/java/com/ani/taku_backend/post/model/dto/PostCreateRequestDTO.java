@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostCreateRequestDTO {
+
     private Long CategoryId;
     private String title;
     private String content;
