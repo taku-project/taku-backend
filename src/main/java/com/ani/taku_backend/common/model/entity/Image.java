@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 /**
  * 이미지 엔티티
@@ -57,6 +58,8 @@ public class Image extends BaseTimeEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+
+    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "image")
     private List<CommunityImage> communityImage;
 }
