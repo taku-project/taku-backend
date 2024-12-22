@@ -58,7 +58,6 @@ public class Image extends BaseTimeEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-
     @BatchSize(size = 1000)
     @OneToMany(mappedBy = "image")
     private List<CommunityImage> communityImage;
