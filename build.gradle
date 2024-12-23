@@ -30,23 +30,36 @@ repositories {
 }
 
 dependencies {
+    // ========== Spring Boot & 기타 ==========
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-devtools'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
-    implementation "com.querydsl:querydsl-jpa:$queryDslVersion:jakarta"
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.691'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.h2database:h2'
-    annotationProcessor 'org.projectlombok:lombok'
+    // ========== QueryDSL ==========
+    implementation "com.querydsl:querydsl-jpa:$queryDslVersion:jakarta"
     annotationProcessor "com.querydsl:querydsl-apt:$queryDslVersion:jakarta"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+    // ========== Lombok ==========
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // ========== DB 설정 ==========
+    // (1) MySQL: 운영/개발 환경에서 사용
+    //    - 버전을 생략하면 Spring Boot가 호환되는 버전으로 관리해 줌
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    // (2) H2: 테스트 환경에서만 사용
+    testImplementation 'com.h2database:h2'
+
+    // ========== Test ==========
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // 필요하다면 testRuntimeOnly로 junit-platform-launcher 추가
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
