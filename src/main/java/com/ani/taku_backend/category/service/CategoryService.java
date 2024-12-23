@@ -166,10 +166,10 @@ public class CategoryService {
         category.getCategoryImages().add(categoryImage);
 
         // 카테고리 장르 관계 설정
-        Arrays.asList(dto.getAniGenreId()).forEach(genreId -> {
+        dto.getAniGenreId().forEach(genreId -> {
             CategoryGenre categoryGenre = CategoryGenre.builder()
                 .category(category)
-                .genre(animationGenreRepository.findById(genreId).get())
+                .genre(animationGenreRepository.findById(genreId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_GENRE)))
                 .build();
             category.getCategoryGenres().add(categoryGenre);
         });
