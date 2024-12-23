@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
                     .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
-                            .permitAll()
+                    .permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
