@@ -9,6 +9,8 @@ public class SecurityPathConfig {
 
     // 인증이 필요없는 정적 리소스 경로
     public static final String[] PUBLIC_STATIC_PATHS = {
+        // TODO 개발 완료시 /admin/** 제거 
+        "/admin/**",
         "/",
         "/login",
         "/oauth2/authorization/**",
