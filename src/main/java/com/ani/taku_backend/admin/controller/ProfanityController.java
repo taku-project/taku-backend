@@ -27,7 +27,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
-@RequestMapping("/admin/api/profanity")
+@RequestMapping("/api/admin/profanity")
 @RequiredArgsConstructor
 public class ProfanityController {
 
