@@ -1,6 +1,5 @@
 package com.ani.taku_backend.config;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.util.AntPathMatcher;
 import java.util.Arrays;
 
@@ -18,7 +17,9 @@ public class SecurityPathConfig {
         "/v3/api-docs/**",
         "/swagger-ui.html",
         "/swagger-resources/**",
-        "/webjars/**"
+        "/webjars/**",
+        "/hello/**",
+        "/hello.html"
     };
 
     // 사용자 API 관련 설정
