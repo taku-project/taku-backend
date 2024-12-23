@@ -95,6 +95,12 @@ public class UserController {
 		log.info("registrationToken : {}", registrationToken);
 		log.info("requestRegisterUser : {}", requestRegisterUser);
 
+		if(registrationToken.startsWith("Bearer ")) {
+			registrationToken = registrationToken.substring(7);
+		}else{
+			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+		}
+
 		if (!this.jwtUtil.validateToken(registrationToken)) {
 			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
 		}
