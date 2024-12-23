@@ -44,6 +44,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import java.io.File;
 
 @RestController
 @RequestMapping("/api/user")
@@ -61,6 +62,32 @@ public class UserController {
 		summary = "유저 등록",
 		description = "유저를 등록합니다."
 	)
+	@Parameters({
+		@Parameter(
+			name = "X-Registration-Token",
+			in = ParameterIn.HEADER,
+			required = true,
+			description = "OAuth 인증 후 발급받은 임시 토큰",
+			example = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhZ2VfcmFuZ2..."
+		)
+	})
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+		content = {
+			@Content(
+				mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+				encoding = {
+					@Encoding(
+						name = "user", 
+						contentType = "application/json"
+					),
+					@Encoding(
+						name = "profileImage",
+						contentType = "image/png"
+					)
+				}
+			)
+		}
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "유저 등록 성공"),
 		@ApiResponse(responseCode = "409", description = "유저 이미 존재"),
@@ -69,27 +96,11 @@ public class UserController {
 	})
 	public ResponseEntity<MainResponse<String>> registerUser(
 		@RequestPart("user") @Parameter(
-			description = "유저 정보 <code>RequestRegisterUser</code>스키마 참고 <code>Content-Type: application/json</code>",
-			content = @Content(
-				mediaType = "application/json",
-				schema = @Schema(implementation = RequestRegisterUser.class)
-			)
+			description = "유저 정보 (<code>RequestRegisterUser</code> 스키마 참고) <code>Content-Type : application/json</code>",
+			schema = @Schema(implementation = RequestRegisterUser.class)
 		) RequestRegisterUser requestRegisterUser,
-	
-		@RequestPart(value = "profileImage", required = false) @Parameter(
-			description = "프로필 이미지 파일 <code>png, jpg, jpeg만 가능</code>",
-			content = @Content(
-				mediaType = "image/*"
-			)
-		) MultipartFile profileImage,
-	
-		@RequestHeader("X-Registration-Token") @Parameter(
-			name = "X-Registration-Token",
-			in = ParameterIn.HEADER,
-			required = true,
-			description = "OAuth 인증 후 발급받은 임시 토큰",
-			example = "Bearer eyJhbGciOiJIUzI1NiIs..."
-		) String registrationToken
+		@RequestPart(value = "profileImage", required = false) @Parameter(description = "프로필 이미지 파일 (png, jpg, jpeg만 가능)") MultipartFile profileImage,
+		@RequestHeader("X-Registration-Token") String registrationToken
 	) throws IllegalArgumentException {
 		
 		log.info("registrationToken : {}", registrationToken);
