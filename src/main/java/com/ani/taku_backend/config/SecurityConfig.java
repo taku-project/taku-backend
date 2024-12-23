@@ -47,6 +47,8 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
             // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
+                .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
+                .permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
