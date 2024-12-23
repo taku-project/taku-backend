@@ -108,16 +108,56 @@ public class RestCategoryController {
         return ApiResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO, image));
     }
 
+    @Operation(
+        summary = "카테고리 검색",
+        description = "카테고리를 검색합니다. 페이징과 정렬을 지원합니다."
+    )
+    @Parameters({
+        @Parameter(
+            name = "page",
+            description = "페이지 번호 (0부터 시작)",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "integer", defaultValue = "0")
+        ),
+        @Parameter(
+            name = "size",
+            description = "페이지 크기",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "integer", defaultValue = "20")
+        ),
+        @Parameter(
+            name = "sort",
+            description = "정렬 기준 (예: name,asc 또는 name,desc)",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "string", defaultValue = "name,asc")
+        ),
+        @Parameter(
+            name = "name",
+            description = "카테고리 이름으로 검색",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "string")
+        )
+    })
     @GetMapping("")
     public ApiResponse<Page<ResponseCategorySeachDTO>> searchCategories(
         @ModelAttribute RequestCategorySearch requestCategorySearch,
         @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-
         Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
         return ApiResponse.ok(result);
     }
 
+    @Operation(
+        summary = "카테고리 상세 조회",
+        description = "카테고리 ID로 상세 정보를 조회합니다."
+    )
+    @Parameter(
+        name = "id",
+        description = "카테고리 ID",
+        required = true,
+        in = ParameterIn.PATH,
+        schema = @Schema(type = "integer", format = "int64")
+    )
     @GetMapping("/{id}")
     public ApiResponse<ResponseCategoryDTO> findCategoryById(
         @PathVariable("id") Long id
