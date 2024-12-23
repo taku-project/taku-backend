@@ -115,7 +115,7 @@ public class GlobalExceptionHandler {
 
     /**
      * 파라미터 타입 불일치 예외
-     * ex - ?id = abc 이면 해당 예외가 반환됨
+     * ex) ?id = abc 이면 해당 예외가 반환됨
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<MainResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
@@ -131,4 +131,30 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * 게시글 없음
+     */
+    @ExceptionHandler(PostException.PostNotFoundException.class)
+    public ResponseEntity<MainResponse<Void>> handlePostNotFountException(PostException.PostNotFoundException ex) {
+        String errorMessage = String.format("게시글을 찾을 수 없습니다. (상세 메시지: %s)", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        errorMessage
+                )
+        );
+    }
+    /**
+     * 게시글 접근 불가
+     */
+    @ExceptionHandler(PostException.PostAccessDeniedException.class)
+    public ResponseEntity<MainResponse<Void>> handlePostAccessDeniedException(PostException.PostAccessDeniedException ex) {
+        String errorMessage = String.format("게시글 접근 권한이 없습니다. (상세 메시지: %s)", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new MainResponse<>(
+                        ApiConstants.Status.ERROR,
+                        errorMessage
+                )
+        );
+    }
 }
