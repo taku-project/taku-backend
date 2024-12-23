@@ -35,11 +35,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-devtools'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
     implementation "com.querydsl:querydsl-jpa:$queryDslVersion:jakarta"
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.691'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    runtimeOnly 'com.mysql:mysql-connector-j'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
@@ -48,17 +48,6 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    // Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'io.lettuce:lettuce-core'
-
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-
-    // JWT 관련 의존성
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 }
 
 bootRun {

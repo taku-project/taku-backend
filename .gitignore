@@ -44,6 +44,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-### yml ###
-src/main/resources/*.yml
