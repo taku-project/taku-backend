@@ -1,6 +1,5 @@
 package com.ani.taku_backend.config;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.util.AntPathMatcher;
 import java.util.Arrays;
 
