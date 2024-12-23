@@ -2,6 +2,7 @@ package com.ani.taku_backend.admin.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
+
+import java.time.Duration;
 import java.util.ArrayList;
 
 import com.ani.taku_backend.admin.domain.dto.RequestCreateProfanityDTO;
@@ -20,7 +23,9 @@ import com.ani.taku_backend.admin.domain.dto.ResponseProfannityDTO;
 import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
 import com.ani.taku_backend.admin.domain.repository.ProfanityFilterRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.service.RedisService;
 import com.ani.taku_backend.global.exception.CustomException;
 import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -34,8 +39,33 @@ import lombok.extern.slf4j.Slf4j;
 public class ProfanityFilterService {
 
     private final ProfanityFilterRepository profanityFilterRepository;
+    private final RedisService redisService;
 
+    // 레디스 키
+    private final String PROFANITY_FILTER_KEY = "profanity_filter_keywords";
+    // 레디스 키 유효 시간
+    private final Duration PROFANITY_FILTER_KEY_VALIDITY_TIME = Duration.ofDays(1);
 
+    /**
+     * 레디스에 저장된 금칙어 필터 키 목록 조회
+     * @return
+     */
+    public List<String> getAllProfanityFilterKeywords() {
+
+        // 레디스에 저장된 금칙어 필터 키 목록
+        List<String> keyValues = null;
+        try{
+            keyValues = this.redisService.getKeyValues(PROFANITY_FILTER_KEY);
+        } catch (Exception e) {
+            log.error("금칙어 필터 키 조회 실패", e);
+        }
+
+        // 레디스에 저장된 금칙어 필터 키 목록이 없는 경우
+        if (keyValues == null) {
+            keyValues = this.refreshProfanityFilterKeywords();
+        }
+        return keyValues;
+    }
     /**
      * 금칙어 필터 생성
      * @param principalUser
@@ -43,6 +73,7 @@ public class ProfanityFilterService {
      * @return
      */
     @RequireUser(isAdmin = true)
+    // @ValidateProfanity(fields = {"keyword"})
     public ResponseCreateProfanityDTO createProfanityFilter(PrincipalUser principalUser, RequestCreateProfanityDTO requestCreateProfanityDTO) {
 
         // 이미 존재하는 금칙어 필터인지 확인 
@@ -59,6 +90,10 @@ public class ProfanityFilterService {
                 .status(StatusType.ACTIVE)
                 .build()
         );
+
+        // 레디스에 저장된 금칙어 필터 키 목록 갱신
+        this.refreshProfanityFilterKeywords();
+
         return ResponseCreateProfanityDTO.of(save);
     }
 
@@ -117,11 +152,34 @@ public class ProfanityFilterService {
      */
     @RequireUser(isAdmin = true)
     @Transactional
+    @ValidateProfanity(fields = {"keyword"})
     public void updateProfanityFilter(Long id, RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
 
         ProfanityFilter profanityEntity = this.profanityFilterRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFANITY_FILTER));
 
         profanityEntity.update(requestUpdateProfanityDTO);
+
+        // 레디스에 저장된 금칙어 필터 키 목록 갱신
+        this.refreshProfanityFilterKeywords();
+    }
+
+    /**
+     * 금칙어 필터 키 목록 갱신
+     * @return
+     */
+    private List<String> refreshProfanityFilterKeywords() {
+        // 레디스에 저장된 금칙어 필터 키 목록 조회
+
+        // DB에서 금칙어 필터 목록 조회
+        List<ProfanityFilter> profanityFilters = this.profanityFilterRepository.findAll();
+        List<String> keyValues = profanityFilters.stream()
+            .filter(profanityFilter -> profanityFilter.getStatus().equals(StatusType.ACTIVE))
+            .map(profanityFilter -> profanityFilter.getKeyword().toLowerCase().replace(" ", ""))
+            .collect(Collectors.toList());
+
+        // 레디스에 저장
+        this.redisService.setKeyValues(PROFANITY_FILTER_KEY, keyValues, PROFANITY_FILTER_KEY_VALIDITY_TIME);
+        return keyValues;
     }
 }
 

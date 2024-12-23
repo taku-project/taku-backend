@@ -2,7 +2,11 @@ package com.ani.taku_backend.global.exception;
 
 import com.ani.taku_backend.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -15,6 +19,13 @@ public class ExceptionController {
     public ApiResponse<?> handleNoPageFoundException(Exception e) {
         log.error("GlobalExceptionHandler catch NoHandlerFoundException : {}", e.getMessage());
         return ApiResponse.fail(ErrorCode.NOT_FOUND_END_POINT);
+    }
+
+    // 유효성 검사 예외
+    @ExceptionHandler(value = {MethodArgumentNotValidException.class , BindException.class})
+    public ApiResponse<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error("GlobalExceptionHandler catch MethodArgumentNotValidException : {}", e.getMessage());
+        return ApiResponse.fail(ErrorCode.INVALID_INPUT_VALUE);
     }
 
 
