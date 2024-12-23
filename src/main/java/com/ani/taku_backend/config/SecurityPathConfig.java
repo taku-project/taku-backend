@@ -18,7 +18,12 @@ public class SecurityPathConfig {
         "/v3/api-docs/**",
         "/swagger-ui.html",
         "/swagger-resources/**",
-        "/webjars/**"
+        "/webjars/**",
+        // 정적 리소스
+        "/static/**",
+        "/public/**",
+        "/resources/**",
+        "/META-INF/resources/**"
     };
 
     // 사용자 API 관련 설정
