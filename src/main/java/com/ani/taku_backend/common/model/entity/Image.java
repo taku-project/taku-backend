@@ -30,7 +30,7 @@ import org.hibernate.annotations.BatchSize;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Image extends BaseTimeEntity {
+public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,4 +61,5 @@ public class Image extends BaseTimeEntity {
     @BatchSize(size = 1000)
     @OneToMany(mappedBy = "image")
     private List<CommunityImage> communityImage;
+
 }

@@ -1,6 +1,7 @@
 package com.ani.taku_backend.post.model.entity;
 
 import com.ani.taku_backend.category.domain.entity.Category;
+import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @Builder
-public class Post {
+public class Post extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,9 +40,6 @@ public class Post {
 
     private String title;
     private String content;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     private Long views;
     private Long likes;
@@ -75,8 +73,6 @@ public class Post {
          if (category != null) {
              this.category = category;
          }
-
-         this.updatedAt = LocalDateTime.now();
     }
 
     /**
