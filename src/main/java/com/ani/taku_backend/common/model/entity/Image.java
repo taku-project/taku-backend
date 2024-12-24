@@ -62,4 +62,10 @@ public class Image {
     @OneToMany(mappedBy = "image")
     private List<CommunityImage> communityImage;
 
+    /**
+     * Soft Delete 메서드
+     */
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

@@ -23,11 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostService {
 
     private final PostRepository postRepository;
@@ -101,7 +103,19 @@ public class PostService {
      * 게시글 삭제
      */
     @Transactional
-    public void deletePost(Long id, PrincipalUser principalUser) {
+    public void deletePost(Long postId, PrincipalUser principalUser) {
+        User user = principalUser.getUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
+
+        if (!user.getUserId().equals(post.getUser().getUserId())) {
+            throw new PostException.PostAccessDeniedException("게시글을 삭제할 권한이 없습니다.");
+        }
+        post.softDelete();
+        post.getCommunityImages().forEach(communityImage -> {
+            communityImage.getImage().softDelete();
+            post.removeCommunityImage(communityImage);
+        });
     }
 
     private void saveImage(PostCreateRequestDTO postCreateRequestDTO, User user, Post post) {
@@ -118,7 +132,8 @@ public class PostService {
                     .build();
             imageRepository.save(image);
 
-            post.addCommunityImage(CommunityImage.builder()
+            post.addCommunityImage(CommunityImage
+                    .builder()
                     .image(image)
                     .build());
         }
@@ -184,6 +199,7 @@ public class PostService {
                 .build();
 
     }
+
     private void validateImageCount(List<ImageCreateRequestDTO> imageList) {
         if (imageList != null && imageList.size() > 5) {
             throw new FileException.FileUploadException("5개 이상 이미지를 등록할 수 없습니다.");

@@ -61,7 +61,7 @@ public class PostController {
                 requestDTO.getKeyword(),
                 requestDTO.getCategoryId());
 
-        return ResponseEntity.ㅊ(MainResponse.getSuccessResponse(posts));
+        return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
     }
 
     @Operation(summary = "커뮤니티 게시글 생성", description = """
@@ -81,7 +81,7 @@ public class PostController {
                                            PrincipalUser principalUser,
                                            @Valid @RequestBody PostCreateRequestDTO requestDTO) {
         Long postId = postService.createPost(requestDTO, principalUser);
-        return ResponseEntity.created(MainResponse.getSuccessResponse(postId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(postId));
     }
 
     // TODO: 게시글 상세 조회 필요
