@@ -38,7 +38,7 @@ public class ViewCountCheckerResolver implements HandlerMethodArgumentResolver {
         HttpServletRequest request  = (HttpServletRequest) webRequest.getNativeRequest();
         HttpServletResponse response = (HttpServletResponse) webRequest.getNativeResponse();
 
-        // URL에서 마지막 슬래시 뒤 숫자를 postId로 간주 (간단 예시)
+        // URL에서 마지막 슬래시 뒤 숫자를 postId로 간주
         String requestURI = request.getRequestURI();
         String postIdString = parsePostIdFromURI(requestURI);
 
