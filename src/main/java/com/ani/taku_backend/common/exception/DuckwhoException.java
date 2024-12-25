@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class CustomException extends RuntimeException{
+public class DuckwhoException extends RuntimeException{
     private final ErrorCode errorCode;
 
     public String getMessage() {
