@@ -29,4 +29,5 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return ApiResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR);
     }
+
 }
