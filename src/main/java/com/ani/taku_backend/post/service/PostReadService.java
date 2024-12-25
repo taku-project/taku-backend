@@ -13,13 +13,16 @@ public class PostReadService {
 
     private final PostRepository postRepository;
 
+    private static final String ERR_MSG_POST_NOT_FOUND = "존재하지 않는 게시글 ID=";
+    private static final String ERR_MSG_POST_DELETED = "이미 삭제된 게시글입니다.";
+
     @Transactional
     public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 ID=" + postId));
+                .orElseThrow(() -> new IllegalArgumentException(ERR_MSG_POST_NOT_FOUND + postId));
 
         if (post.getDeletedAt() != null) {
-            throw new IllegalStateException("이미 삭제된 게시글입니다.");
+            throw new IllegalStateException(ERR_MSG_POST_DELETED);
         }
 
         if (canAddView) {
