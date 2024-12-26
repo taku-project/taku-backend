@@ -20,9 +20,9 @@ import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
 import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.service.CategoryService;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.exception.ExceptionDto;
+import com.ani.taku_backend.common.response.ApiResponse;
 import com.ani.taku_backend.common.service.FileService;
-import com.ani.taku_backend.global.exception.ExceptionDto;
-import com.ani.taku_backend.global.response.ApiResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 
 import io.swagger.v3.oas.annotations.Operation;

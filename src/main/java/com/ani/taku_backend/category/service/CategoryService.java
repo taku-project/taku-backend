@@ -11,10 +11,10 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.repository.AnimationGenreRepository;
-import com.ani.taku_backend.category.domain.repository.CategoryGenreRepository;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.exception.FileException;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.dto.CreateImageDTO;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
@@ -22,8 +22,6 @@ import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.common.util.FileUtil;
 import com.ani.taku_backend.common.util.KoreanUtil;
 import com.ani.taku_backend.common.util.StringSimilarity;
-import com.ani.taku_backend.global.exception.CustomException;
-import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -67,7 +65,7 @@ public class CategoryService {
 
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
-            throw new CustomException(ErrorCode.INVALIDATE_IMAGE);
+            throw new DuckwhoException(ErrorCode.INVALID_FILE_FORMAT);
         }
 
         // 카테고리 이름 검증
@@ -106,7 +104,7 @@ public class CategoryService {
         Optional<Category> categoryOptional = categoryRepository.findById(id);
 
         if(!categoryOptional.isPresent()) {
-            throw new CustomException(ErrorCode.NOT_FOUND_CATEGORY);
+            throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
         }
         return modelMapper.map(categoryOptional.get(), ResponseCategoryDTO.class);
     }
@@ -138,7 +136,7 @@ public class CategoryService {
             );
             
             if (similarity >= StringSimilarity.SIMILARITY_THRESHOLD) {
-                throw new CustomException(ErrorCode.DUPLICATE_CATEGORY_NAME);
+                throw new DuckwhoException(ErrorCode.DUPLICATE_CATEGORY_NAME);
             }
         }
     }
@@ -150,7 +148,7 @@ public class CategoryService {
     private void validateBlackUser(Long userId) {
         List<BlackUser> blackUser = blackUserService.findByUserId(userId);
         if(!blackUser.isEmpty()) {
-            throw new CustomException(ErrorCode.BLACK_USER);
+            throw new DuckwhoException(ErrorCode.BLACK_USER);
         }
     }
 
@@ -175,7 +173,7 @@ public class CategoryService {
             return savedImage;
         } catch (IOException e) {
             log.error("이미지 업로드 실패 : {}", e.getMessage());
-            throw new CustomException(ErrorCode.INVALIDATE_IMAGE);
+            throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
         }
     }
 
@@ -200,7 +198,7 @@ public class CategoryService {
         dto.getAniGenreId().forEach(genreId -> {
             CategoryGenre categoryGenre = CategoryGenre.builder()
                 .category(category)
-                .genre(animationGenreRepository.findById(genreId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_GENRE)))
+                .genre(animationGenreRepository.findById(genreId).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_GENRE)))
                 .build();
             category.getCategoryGenres().add(categoryGenre);
         });
