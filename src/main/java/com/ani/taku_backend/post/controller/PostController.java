@@ -58,7 +58,7 @@ public class PostController {
     )
     @GetMapping
     public ResponseEntity<MainResponse<List<PostListResponseDTO>>> findAllPost(PostListRequestDTO requestDTO) {
-        List<PostListResponseDTO> posts = postService.findAllPost(
+        List<PostListResponseDTO> postList = postService.findAllPost(
                 requestDTO.getFilter().toString(),
                 requestDTO.getLastValue(),
                 requestDTO.isAsc(),
@@ -66,7 +66,7 @@ public class PostController {
                 requestDTO.getKeyword(),
                 requestDTO.getCategoryId());
 
-        return ResponseEntity.ok(MainResponse.getSuccessResponse(posts));
+        return ResponseEntity.ok(MainResponse.getSuccessResponse(postList));
     }
 
     @Operation(summary = "커뮤니티 게시글 생성", description = """
@@ -81,16 +81,17 @@ public class PostController {
                 - 크기
             """)
     @RequireUser
-    @PostMapping("/{id}")
-    public ResponseEntity<MainResponse<Long>> createPost(@PathVariable Long id,
+    @PostMapping
+    public ResponseEntity<MainResponse<Long>> createPost(
                                            PrincipalUser principalUser,
                                            @Valid @RequestBody PostCreateRequestDTO requestDTO) {
-        Long postId = postService.createPost(requestDTO, principalUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(postId));
+        Long createPostId = postService.createPost(requestDTO, principalUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(createPostId));
     }
 
+
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDetailResponseDTO> getPostDetail(
+    public ResponseEntity<PostDetailResponseDTO> findPostDetail(
             @PathVariable Long postId,
             @ViewCountChecker Boolean canAddView,
             PrincipalUser principalUser
@@ -106,19 +107,19 @@ public class PostController {
 
 
     @RequireUser
-    @PutMapping("/{id}")
-    public ResponseEntity<MainResponse<Long>> updatePost(@PathVariable Long id,
+    @PutMapping("/{postId}")
+    public ResponseEntity<MainResponse<Long>> updatePost(@PathVariable Long postId,
                                            PrincipalUser principalUser,
                                            @Valid @RequestBody PostUpdateRequestDTO requestDTO) {
-        Long updatePostId = postService.updatePost(requestDTO, principalUser, id);
+        Long updatePostId = postService.updatePost(requestDTO, principalUser, postId);
         return ResponseEntity.ok(MainResponse.getSuccessResponse(updatePostId));
     }
 
     @RequireUser
-    @DeleteMapping("/{id}")
-    public ResponseEntity<MainResponse<Void>> deletePost(@PathVariable Long id,
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<MainResponse<Void>> deletePost(@PathVariable Long postId,
                                                                         PrincipalUser principalUser) {
-        postService.deletePost(id, principalUser);
+        postService.deletePost(postId, principalUser);
         return ResponseEntity.noContent().build();
     }
 }
