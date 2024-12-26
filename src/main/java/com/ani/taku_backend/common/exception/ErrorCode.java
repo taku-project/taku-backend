@@ -30,12 +30,21 @@ public enum ErrorCode {
     WRONG_TOKEN(40103, HttpStatus.UNAUTHORIZED, "잘못된 토큰입니다."),
     EMPTY_TOKEN(40104, HttpStatus.UNAUTHORIZED, "토큰이 비어있습니다."),
     UNAUTHORIZED_ACCESS(40105, HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다."),
+    FORBIDDEN_ACCESS_ADMIN(40300, HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
+
 
     // File
     FILE_UPLOAD_ERROR(50300, HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드에 실패했습니다."),
     FILE_DOWNLOAD_ERROR(50301, HttpStatus.SERVICE_UNAVAILABLE, "파일 다운로드에 실패했습니다."),
-    INVALID_FILE_FORMAT(40005, HttpStatus.BAD_REQUEST, "잘못된 파일 형식입니다.");
+    INVALID_FILE_FORMAT(40005, HttpStatus.BAD_REQUEST, "잘못된 파일 형식입니다."),
 
+    // Profanity Filter
+    NOT_FOUND_PROFANITY_FILTER(40403, HttpStatus.NOT_FOUND, "존재하지 않는 금칙어 필터입니다."),
+    INVALID_CONTENT_PROFANITY(40301, HttpStatus.FORBIDDEN, "금칙어가 포함된 내용이 있습니다."),
+    DUPLICATE_PROFANITY_FILTER(40902, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다.");
+
+
+    // 403 Forbidden
     private final Integer code;
     private final HttpStatus httpStatus;
     private final String message;

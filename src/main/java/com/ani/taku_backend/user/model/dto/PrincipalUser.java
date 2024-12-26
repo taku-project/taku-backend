@@ -33,6 +33,10 @@ public class PrincipalUser implements UserDetails {
         return user.getUserId();
     }
 
+    public User getUser() {
+        return user;
+    }
+
     // 권한 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
