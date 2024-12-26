@@ -4,11 +4,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
-import com.ani.taku_backend.admin.domain.dto.RequestCreateProfanityDTO;
+import com.ani.taku_backend.admin.domain.dto.CreateProfanityRequestDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestSearchProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.ResponseProfannityDTO;
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
 import com.ani.taku_backend.common.response.ApiResponse;
 
@@ -39,9 +38,9 @@ public class ProfanityController {
      * @return
      */
     @PostMapping("")
-    public ApiResponse<ResponseCreateProfanityDTO> createProfanityFilter(@RequestBody @Valid RequestCreateProfanityDTO requestCreateProfanityDTO) {
+    public ApiResponse<CreateProfanityRequestDTO> createProfanityFilter(@RequestBody @Valid CreateProfanityRequestDTO requestCreateProfanityDTO) {
         
-        ResponseCreateProfanityDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, requestCreateProfanityDTO);
+        CreateProfanityRequestDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, requestCreateProfanityDTO);
         return ApiResponse.created(profanityFilter);
     }
 
@@ -52,12 +51,12 @@ public class ProfanityController {
      * @return
      */
     @GetMapping("")
-    public ApiResponse<Page<ResponseProfannityDTO>> getProfanityFilters(
+    public ApiResponse<Page<ProfannityResponseDTO>> getProfanityFilters(
         @ModelAttribute RequestSearchProfanityDTO requestSearchProfanityDTO,
         @PageableDefault(size = 20, sort = "keyword", direction = Sort.Direction.ASC) Pageable pageable
 
     ) {
-        Page<ResponseProfannityDTO> profanityFilters = this.profanityFilterService.findProfanityFilterList(requestSearchProfanityDTO, pageable);
+        Page<ProfannityResponseDTO> profanityFilters = this.profanityFilterService.findProfanityFilterList(requestSearchProfanityDTO, pageable);
         return ApiResponse.ok(profanityFilters);
     }
 
