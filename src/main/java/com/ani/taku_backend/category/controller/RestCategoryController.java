@@ -1,6 +1,13 @@
 package com.ani.taku_backend.category.controller;
 
 import org.springframework.http.MediaType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -8,14 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
+import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
+import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.service.CategoryService;
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.model.dto.CreateImageDTO;
 import com.ani.taku_backend.common.service.FileService;
-import com.ani.taku_backend.common.util.FileUtil;
-import com.ani.taku_backend.global.exception.CustomException;
-import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.global.exception.ExceptionDto;
 import com.ani.taku_backend.global.response.ApiResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -28,7 +33,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -102,6 +106,64 @@ public class RestCategoryController {
         @Parameter(hidden = true) PrincipalUser principalUser
     ){
         return ApiResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO, image));
+    }
+
+    @Operation(
+        summary = "카테고리 검색",
+        description = "카테고리를 검색합니다. 페이징과 정렬을 지원합니다."
+    )
+    @Parameters({
+        @Parameter(
+            name = "page",
+            description = "페이지 번호 (0부터 시작)",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "integer", defaultValue = "0")
+        ),
+        @Parameter(
+            name = "size",
+            description = "페이지 크기",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "integer", defaultValue = "20")
+        ),
+        @Parameter(
+            name = "sort",
+            description = "정렬 기준 (예: name,asc 또는 name,desc)",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "string", defaultValue = "name,asc")
+        ),
+        @Parameter(
+            name = "name",
+            description = "카테고리 이름으로 검색",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "string")
+        )
+    })
+    @GetMapping("")
+    public ApiResponse<Page<ResponseCategorySeachDTO>> searchCategories(
+        @ModelAttribute RequestCategorySearch requestCategorySearch,
+        @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
+        return ApiResponse.ok(result);
+    }
+
+    @Operation(
+        summary = "카테고리 상세 조회",
+        description = "카테고리 ID로 상세 정보를 조회합니다."
+    )
+    @Parameter(
+        name = "id",
+        description = "카테고리 ID",
+        required = true,
+        in = ParameterIn.PATH,
+        schema = @Schema(type = "integer", format = "int64")
+    )
+    @GetMapping("/{id}")
+    public ApiResponse<ResponseCategoryDTO> findCategoryById(
+        @PathVariable("id") Long id
+    ) {
+        ResponseCategoryDTO result = categoryService.findCategoryById(id);
+        return ApiResponse.ok(result);
     }
     
 }

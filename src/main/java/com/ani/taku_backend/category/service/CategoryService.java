@@ -1,7 +1,12 @@
 package com.ani.taku_backend.category.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
+import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
+import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
@@ -30,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -78,6 +84,31 @@ public class CategoryService {
         Category savedCategory = categoryRepository.save(category);
         
         return modelMapper.map(savedCategory, ResponseCategoryDTO.class);
+    }
+
+
+    /**
+     * 카테고리 검색
+     * @param condition
+     * @param pageable
+     * @return
+     */
+    public Page<ResponseCategorySeachDTO> searchCategories(RequestCategorySearch requestCategorySearch, Pageable pageable) {
+        return categoryRepository.searchCategories(requestCategorySearch, pageable);
+    }
+
+    /**
+     * 카테고리 상세 조회
+     * @param id
+     * @return
+     */
+    public ResponseCategoryDTO findCategoryById(Long id) {
+        Optional<Category> categoryOptional = categoryRepository.findById(id);
+
+        if(!categoryOptional.isPresent()) {
+            throw new CustomException(ErrorCode.NOT_FOUND_CATEGORY);
+        }
+        return modelMapper.map(categoryOptional.get(), ResponseCategoryDTO.class);
     }
 
     /**
