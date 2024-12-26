@@ -89,7 +89,9 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(createPostId));
     }
 
-
+    @Operation(summary = "커뮤니티 게시글 상세 조회", description = """
+            1. 게시글 상세 조회(댓글은 나중에 작업)
+            """)
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailResponseDTO> findPostDetail(
             @PathVariable Long postId,
