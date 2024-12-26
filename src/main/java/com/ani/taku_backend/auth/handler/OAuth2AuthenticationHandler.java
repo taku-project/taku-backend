@@ -70,12 +70,16 @@ public class OAuth2AuthenticationHandler {
             // 쿠키에 refresh token 저장
             setRefreshTokenCookie(response, refreshToken);
 
+            // 응답 헤더에 access token 추가
+            response.setHeader("Authorization", "Bearer " + accessToken);
+
             // URL 만들기 + 토큰 넣어서
             String redirectUrl = UriComponentsBuilder
                 .fromUriString(loginSuccessUrl)
-                .queryParam("accessToken", accessToken)
                 .build()
                 .toUriString();
+
+            log.info("redirectUrl : {}", redirectUrl);
 
             // 리다이렉트 하기
             response.sendRedirect(redirectUrl);
@@ -119,6 +123,7 @@ public class OAuth2AuthenticationHandler {
                 }
 
                 if (error.getErrorCode().equals("NOT_FOUND_USER") && error.getUri() != null) {
+                    response.setHeader("Authorization", "Bearer " + error.getDescription());
                     response.sendRedirect(error.getUri());
                     return;
                 }
