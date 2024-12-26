@@ -1,13 +1,10 @@
 package com.ani.taku_backend.admin.controller;
 
+import com.ani.taku_backend.admin.domain.dto.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
-import com.ani.taku_backend.admin.domain.dto.CreateProfanityRequestDTO;
-import com.ani.taku_backend.admin.domain.dto.RequestSearchProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
 import com.ani.taku_backend.common.response.ApiResponse;
 
@@ -38,9 +35,9 @@ public class ProfanityController {
      * @return
      */
     @PostMapping("")
-    public ApiResponse<CreateProfanityRequestDTO> createProfanityFilter(@RequestBody @Valid CreateProfanityRequestDTO requestCreateProfanityDTO) {
-        
-        CreateProfanityRequestDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, requestCreateProfanityDTO);
+    public ApiResponse<ResponseCreateProfanityDTO> createProfanityFilter(@RequestBody @Valid RequestCreateProfanityDTO requestCreateProfanityDTO) {
+
+        ResponseCreateProfanityDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, requestCreateProfanityDTO);
         return ApiResponse.created(profanityFilter);
     }
 
