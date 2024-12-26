@@ -14,11 +14,11 @@ import jakarta.persistence.criteria.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;
 
+import com.ani.taku_backend.admin.domain.dto.ProfannityResponseDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestCreateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestSearchProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.ResponseProfannityDTO;
 import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
 import com.ani.taku_backend.admin.domain.repository.ProfanityFilterRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
@@ -103,7 +103,7 @@ public class ProfanityFilterService {
      * @return
      */
     @RequireUser(isAdmin = true)
-    public Page<ResponseProfannityDTO> findProfanityFilterList(RequestSearchProfanityDTO requestSearchProfanityDTO,
+    public Page<ProfannityResponseDTO> findProfanityFilterList(RequestSearchProfanityDTO requestSearchProfanityDTO,
             Pageable pageable) {
 
         Specification<ProfanityFilter> specification = (root, query, criteriaBuilder) -> {
@@ -126,7 +126,7 @@ public class ProfanityFilterService {
         };
 
         return profanityFilterRepository.findAll(specification, pageable)
-                .map(ResponseProfannityDTO::of);
+                .map(ProfannityResponseDTO::of);
     }
 
     /**

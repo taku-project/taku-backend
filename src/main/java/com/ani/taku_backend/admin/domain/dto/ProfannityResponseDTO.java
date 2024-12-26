@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseProfannityDTO {
+public class ProfannityResponseDTO {
 
     private Long id;
     private Long userId;
@@ -29,8 +29,8 @@ public class ResponseProfannityDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ResponseProfannityDTO of(ProfanityFilter profanityFilter) {
-        return ResponseProfannityDTO.builder()
+    public static ProfannityResponseDTO of(ProfanityFilter profanityFilter) {
+        return ProfannityResponseDTO.builder()
                 .id(profanityFilter.getId())
                 .userId(profanityFilter.getAdmin().getUserId())
                 .nickname(profanityFilter.getAdmin().getNickname())
