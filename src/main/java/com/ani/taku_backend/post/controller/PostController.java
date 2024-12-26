@@ -1,11 +1,14 @@
 package com.ani.taku_backend.post.controller;
 
+import com.ani.taku_backend.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.model.MainResponse;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
+import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +30,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostReadService postReadService;
 
     @Operation(summary = "커뮤니티 게시글 조회(정렬, 검색)", description = """
             필터 조건, 검색어, 정렬 순서에 따라 카테고리 별 게시글 목록을 조회
@@ -84,8 +89,21 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(postId));
     }
 
-    // TODO: 게시글 상세 조회 필요
-    // findPostById
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostDetailResponseDTO> getPostDetail(
+            @PathVariable Long postId,
+            @ViewCountChecker Boolean canAddView,
+            PrincipalUser principalUser
+    ) {
+        Long currentUserId = null;
+        if (principalUser != null) {
+            currentUserId = principalUser.getUserId();
+        }
+
+        PostDetailResponseDTO detail = postReadService.getPostDetail(postId, canAddView, currentUserId);
+        return ResponseEntity.ok(detail);
+    }
+
 
     @RequireUser
     @PutMapping("/{id}")
