@@ -18,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 
 /**
@@ -72,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json;charset=UTF-8");
 
         ApiResponse<Void> errorResponse = ApiResponse.fail(ErrorCode.INVALID_TOKEN);
-
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 
@@ -83,7 +81,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json;charset=UTF-8");
 
         ApiResponse<Void> errorResponse = ApiResponse.fail(ErrorCode.EMPTY_TOKEN);
-
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 

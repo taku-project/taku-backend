@@ -2,7 +2,10 @@ package com.ani.taku_backend.common.exception;
 
 import com.ani.taku_backend.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -29,5 +32,13 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return ApiResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR);
     }
+
+        // 유효성 검사 예외
+    @ExceptionHandler(value = {MethodArgumentNotValidException.class , BindException.class})
+    public ApiResponse<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error("GlobalExceptionHandler catch MethodArgumentNotValidException : {}", e.getMessage());
+        return ApiResponse.fail(ErrorCode.INVALID_INPUT_VALUE);
+    }
+
 
 }

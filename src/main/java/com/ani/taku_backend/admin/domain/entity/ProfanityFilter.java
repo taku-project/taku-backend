@@ -1,5 +1,6 @@
 package com.ani.taku_backend.admin.domain.entity;
 
+import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.user.model.entity.User;
@@ -45,4 +46,15 @@ public class ProfanityFilter extends BaseTimeEntity{
     @Enumerated(EnumType.STRING)
     @Column(name = "is_active")
     private StatusType status;
+
+    public void update(RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
+        if (requestUpdateProfanityDTO.getKeyword() != null) {
+            this.keyword = requestUpdateProfanityDTO.getKeyword();
+        }
+        if (requestUpdateProfanityDTO.getExplaination() != null) {
+            this.explaination = requestUpdateProfanityDTO.getExplaination();
+        }
+
+        this.status = requestUpdateProfanityDTO.getStatus();
+    }
 }
