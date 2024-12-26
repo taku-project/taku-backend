@@ -1,8 +1,5 @@
 package com.ani.taku_backend.category.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
@@ -26,19 +23,19 @@ import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
 
 
 @Service
@@ -61,11 +58,12 @@ public class CategoryService {
      */
     @Transactional(rollbackFor = Exception.class)
     @RequireUser
-    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO, MultipartFile uploadFile) {
+    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO, MultipartFile uploadFile) throws DuckwhoException {
 
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
             throw new DuckwhoException(ErrorCode.INVALID_FILE_FORMAT);
+
         }
 
         // 카테고리 이름 검증
@@ -87,7 +85,6 @@ public class CategoryService {
 
     /**
      * 카테고리 검색
-     * @param condition
      * @param pageable
      * @return
      */

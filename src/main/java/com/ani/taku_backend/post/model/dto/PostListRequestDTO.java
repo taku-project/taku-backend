@@ -21,4 +21,7 @@ public class PostListRequestDTO {
 
     @Schema(description = "검색어")
     private String keyword;
+
+    @Schema(description = "카테고리 ID")
+    private Long categoryId;
 }

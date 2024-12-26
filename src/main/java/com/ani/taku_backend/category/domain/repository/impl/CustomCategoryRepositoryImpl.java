@@ -40,7 +40,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * 카테고리 검색 조건과 페이징 정보를 기반으로 카테고리 목록을 조회합니다.
      * 카테고리와 연관된 장르, 이미지 정보를 함께 조회하여 DTO로 변환합니다.
      *
-     * @param condition 카테고리 검색 조건 (이름, 장르ID 등)
+     * @param requestCategorySearch 카테고리 검색 조건 (이름, 장르ID 등)
      * @param pageable 페이징 정보
      * @return 카테고리 검색 결과 DTO 페이지
      */
@@ -68,7 +68,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * 검색 조건에 맞는 카테고리 기본 정보를 조회합니다.
      * 카테고리와 연관된 사용자 정보를 함께 조회합니다 (fetch join 사용).
      *
-     * @param condition 카테고리 검색 조건
+     * @param requestCategorySearch 카테고리 검색 조건
      * @param pageable 페이징 정보
      * @return 조회된 카테고리 목록
      */

@@ -1,20 +1,26 @@
 package com.ani.taku_backend.post.model.entity;
 
 import com.ani.taku_backend.category.domain.entity.Category;
+import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-
+/**
+ * 커뮤니티 게시글 Entity
+ */
 @Table(name = "posts")
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
-public class Post {
+@Builder
+public class Post extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,19 +33,65 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id") // 외래 키 컬럼 이름 명시
     private Category category;
-//
-    // Image Entity 푸쉬 되면 일대다 다대일 연관관계 매핑 적용
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Image> images = new ArrayList<>();
+
+    @BatchSize(size = 1000)
+    @OneToMany(mappedBy = "post")
+    private List<CommunityImage> communityImages;
 
     private String title;
     private String content;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     private Long views;
     private Long likes;
+
+    private LocalDateTime deletedAt ;
+
+    /**
+     * 이미지 연관관계 편의 메서드
+     */
+    public void addCommunityImage(CommunityImage communityImage) {
+        this.communityImages.add(communityImage);
+        communityImage.assignPost(this);
+    }
+
+    public void removeCommunityImage(CommunityImage communityImage) {
+        this.communityImages.remove(communityImage);
+        communityImage.unassignPost();
+    }
+
+
+    /**
+     * User 연관관계 편의 메서드
+     */
+    public void setUserInternal(User user) {
+        this.user = user;
+    }
+    public void removeUserInternal() {
+        this.user = null;
+    }
+
+    /**
+     * update 메서드
+     */
+    public void updatePost(String title, String content, Category category) {
+        if (title != null) {
+            this.title = title;
+        }
+
+        if (content != null) {
+            this.content = content;
+        }
+         if (category != null) {
+             this.category = category;
+         }
+    }
+
+    /**
+     * Soft Delete 메서드
+     */
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
     // 조회수 증가
     public void addViews() {
