@@ -1,4 +1,4 @@
-package com.ani.taku_backend.global.exception;
+package com.ani.taku_backend.common.exception;
 
 import jakarta.validation.constraints.NotNull;
 

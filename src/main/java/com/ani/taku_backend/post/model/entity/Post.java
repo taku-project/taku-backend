@@ -27,7 +27,7 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id") // 외래 키 컬럼 이름 명시
     private Category category;
-
+//
     // Image Entity 푸쉬 되면 일대다 다대일 연관관계 매핑 적용
 //    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<Image> images = new ArrayList<>();
