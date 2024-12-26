@@ -10,6 +10,7 @@ import org.hibernate.annotations.BatchSize;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 커뮤니티 게시글 Entity
@@ -37,7 +38,7 @@ public class Post extends BaseTimeEntity {
 
     @Builder.Default
     @BatchSize(size = 1000)
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
     private List<CommunityImage> communityImages = new ArrayList<>();
 
     private String title;
@@ -110,4 +111,5 @@ public class Post extends BaseTimeEntity {
             this.likes--;
         }
     }
+
 }

@@ -5,7 +5,7 @@ INSERT INTO users (
 );
 
 INSERT INTO ani_genres (id, genre_name, created_at, updated_at)
-VALUES 
+VALUES
 (1, '액션', NOW(), NOW()),
 (2, '모험', NOW(), NOW()),
 (3, '판타지', NOW(), NOW()),
