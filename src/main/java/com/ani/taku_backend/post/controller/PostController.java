@@ -22,6 +22,8 @@ public class PostController {
 
     private final PostService postService;
 
+    // 조회
+
     @Operation(summary = "커뮤니티 게시글 조회(정렬, 검색(개발중))", description = """
             필터 조건, 검색어(개발 중), 정렬 순서에 따라 게시글 목록을 조회
             1. filter: 정렬 기준 선택

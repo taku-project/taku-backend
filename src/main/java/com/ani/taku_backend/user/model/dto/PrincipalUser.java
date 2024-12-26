@@ -25,8 +25,16 @@ public class PrincipalUser implements UserDetails {
         this.user = user;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     public Long getUserId() {
         return user.getUserId();
+    }
+
+    public User getUser() {
+        return user;
     }
 
     // 권한 반환
