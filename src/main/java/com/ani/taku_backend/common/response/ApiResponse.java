@@ -1,10 +1,8 @@
-package com.ani.taku_backend.global.response;
+package com.ani.taku_backend.common.response;
 
-import com.ani.taku_backend.global.exception.CustomException;
-import com.ani.taku_backend.global.exception.ErrorCode;
-import com.ani.taku_backend.global.exception.ExceptionDto;
+import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.common.exception.ExceptionDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 
