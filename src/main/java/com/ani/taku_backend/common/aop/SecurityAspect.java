@@ -12,14 +12,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-
-import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.UserRole;
-import com.ani.taku_backend.global.exception.CustomException;
-import com.ani.taku_backend.global.exception.ErrorCode;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 
 import lombok.RequiredArgsConstructor;
@@ -95,7 +93,7 @@ public class SecurityAspect {
                 for (String profanity : allProfanityFilterKeywords) {
                     String normalizedProfanity = profanity.replaceAll("\\s+", "").toLowerCase();
                     if (normalizedText.contains(normalizedProfanity)) {
-                        throw new CustomException(ErrorCode.INVALID_CONTENT_PROFANITY);
+                        throw new DuckwhoException(ErrorCode.INVALID_CONTENT_PROFANITY);
                     }
                 }
             }
@@ -137,7 +135,7 @@ public class SecurityAspect {
 
     private void checkAdmin(PrincipalUser principalUser, boolean isAdmin) {
         if (isAdmin && !principalUser.getUser().getRole().equals(UserRole.ADMIN.name())) {
-            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS_ADMIN);
+            throw new DuckwhoException(ErrorCode.FORBIDDEN_ACCESS_ADMIN);
         }
     }
 

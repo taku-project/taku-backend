@@ -10,8 +10,7 @@ import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
 import com.ani.taku_backend.admin.domain.dto.ResponseProfannityDTO;
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
-import com.ani.taku_backend.global.response.ApiResponse;
-
+import com.ani.taku_backend.common.response.ApiResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
 
 import java.time.Duration;
@@ -25,9 +24,9 @@ import com.ani.taku_backend.admin.domain.repository.ProfanityFilterRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.service.RedisService;
-import com.ani.taku_backend.global.exception.CustomException;
-import com.ani.taku_backend.global.exception.ErrorCode;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 
 import lombok.RequiredArgsConstructor;
@@ -79,7 +78,7 @@ public class ProfanityFilterService {
         // 이미 존재하는 금칙어 필터인지 확인 
         Optional<ProfanityFilter> existingProfanityFilter = this.profanityFilterRepository.findByKeyword(requestCreateProfanityDTO.getKeyword());
         if (existingProfanityFilter.isPresent()) {
-            throw new CustomException(ErrorCode.DUPLICATE_PROFANITY_FILTER);
+            throw new DuckwhoException(ErrorCode.DUPLICATE_PROFANITY_FILTER);
         }
 
         ProfanityFilter save = this.profanityFilterRepository.save(
@@ -139,7 +138,7 @@ public class ProfanityFilterService {
         // 금칙어 필터 조회
         Optional<ProfanityFilter> profanityFilter = this.profanityFilterRepository.findById(id);
         if (profanityFilter.isEmpty()) {
-            throw new CustomException(ErrorCode.NOT_FOUND_PROFANITY_FILTER);
+            throw new DuckwhoException(ErrorCode.NOT_FOUND_PROFANITY_FILTER);
         }
         // 금칙어 필터 삭제
         this.profanityFilterRepository.delete(profanityFilter.get());
@@ -155,7 +154,7 @@ public class ProfanityFilterService {
     @ValidateProfanity(fields = {"keyword"})
     public void updateProfanityFilter(Long id, RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
 
-        ProfanityFilter profanityEntity = this.profanityFilterRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFANITY_FILTER));
+        ProfanityFilter profanityEntity = this.profanityFilterRepository.findById(id).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_PROFANITY_FILTER));
 
         profanityEntity.update(requestUpdateProfanityDTO);
 
