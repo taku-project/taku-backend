@@ -75,6 +75,7 @@ public class User {
 
     // Post 연관관계 매핑
     @OneToMany(mappedBy = "user")
+    @Builder.Default    // ArrayList로 초기값 고정
     private List<Post> posts = new ArrayList<>();
 
     /**

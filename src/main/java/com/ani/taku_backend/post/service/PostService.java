@@ -103,7 +103,7 @@ public class PostService {
      * 게시글 삭제
      */
     @Transactional
-    public void deletePost(Long postId, PrincipalUser principalUser) {
+    public Long deletePost(Long postId, PrincipalUser principalUser) {
         User user = principalUser.getUser();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
@@ -116,6 +116,8 @@ public class PostService {
             communityImage.getImage().softDelete();
             post.removeCommunityImage(communityImage);
         });
+
+        return post.getId();
     }
 
     private void saveImage(PostCreateRequestDTO postCreateRequestDTO, User user, Post post) {

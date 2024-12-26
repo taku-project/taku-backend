@@ -2,24 +2,18 @@ package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.model.MainResponse;
-import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
-import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
-import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
-import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
-import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
+import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.post.model.dto.*;
 import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
-import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -57,7 +51,7 @@ public class PostController {
             """
     )
     @GetMapping
-    public ResponseEntity<MainResponse<List<PostListResponseDTO>>> findAllPost(PostListRequestDTO requestDTO) {
+    public ApiResponse<List<PostListResponseDTO>> findAllPost(PostListRequestDTO requestDTO) {
         List<PostListResponseDTO> postList = postService.findAllPost(
                 requestDTO.getFilter().toString(),
                 requestDTO.getLastValue(),
@@ -66,7 +60,7 @@ public class PostController {
                 requestDTO.getKeyword(),
                 requestDTO.getCategoryId());
 
-        return ResponseEntity.ok(MainResponse.getSuccessResponse(postList));
+        return ApiResponse.ok(postList);
     }
 
     @Operation(summary = "커뮤니티 게시글 생성", description = """
@@ -82,11 +76,13 @@ public class PostController {
             """)
     @RequireUser
     @PostMapping
-    public ResponseEntity<MainResponse<Long>> createPost(
-                                           PrincipalUser principalUser,
-                                           @Valid @RequestBody PostCreateRequestDTO requestDTO) {
+    public ApiResponse<Long> createPost(
+            PrincipalUser principalUser,
+            @Valid @RequestPart("post") PostCreateRequestDTO requestDTO,
+            @RequestPart(value = "image", required = false) List<MultipartFile> imageList) {
+
         Long createPostId = postService.createPost(requestDTO, principalUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(MainResponse.getSuccessResponse(createPostId));
+        return ApiResponse.created(createPostId);
     }
 
     @Operation(summary = "커뮤니티 게시글 상세 조회", description = """
@@ -110,18 +106,18 @@ public class PostController {
 
     @RequireUser
     @PutMapping("/{postId}")
-    public ResponseEntity<MainResponse<Long>> updatePost(@PathVariable Long postId,
-                                           PrincipalUser principalUser,
-                                           @Valid @RequestBody PostUpdateRequestDTO requestDTO) {
+    public ApiResponse<Long> updatePost(@PathVariable Long postId,
+                                        PrincipalUser principalUser,
+                                        @Valid @RequestBody PostUpdateRequestDTO requestDTO) {
         Long updatePostId = postService.updatePost(requestDTO, principalUser, postId);
-        return ResponseEntity.ok(MainResponse.getSuccessResponse(updatePostId));
+        return ApiResponse.ok(updatePostId);
     }
 
     @RequireUser
     @DeleteMapping("/{postId}")
-    public ResponseEntity<MainResponse<Void>> deletePost(@PathVariable Long postId,
-                                                                        PrincipalUser principalUser) {
-        postService.deletePost(postId, principalUser);
-        return ResponseEntity.noContent().build();
+    public ApiResponse<Long> deletePost(@PathVariable Long postId,
+                                        PrincipalUser principalUser) {
+        Long deletePostId = postService.deletePost(postId, principalUser);
+        return ApiResponse.ok(deletePostId);
     }
 }
