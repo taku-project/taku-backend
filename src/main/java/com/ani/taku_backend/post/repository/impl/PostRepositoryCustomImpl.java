@@ -2,7 +2,6 @@ package com.ani.taku_backend.post.repository.impl;
 
 import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.post.model.entity.Post;
-import com.ani.taku_backend.post.model.entity.QPost;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,8 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.ani.taku_backend.common.model.entity.QImage.image;
-import static com.ani.taku_backend.post.model.entity.QCommunityImage.communityImage;
 
 @Repository
 @RequiredArgsConstructor
