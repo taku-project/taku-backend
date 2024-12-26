@@ -1,6 +1,7 @@
 package com.ani.taku_backend.common.model.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
@@ -60,7 +61,7 @@ public class Image {
 
     @BatchSize(size = 1000)
     @OneToMany(mappedBy = "image")
-    private List<CommunityImage> communityImage;
+    private List<CommunityImage> communityImage = new ArrayList<>();
 
     /**
      * Soft Delete 메서드

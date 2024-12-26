@@ -59,6 +59,17 @@ public class Post extends BaseTimeEntity {
         communityImage.unassignPost();
     }
 
+
+    /**
+     * User 연관관계 편의 메서드
+     */
+    public void setUserInternal(User user) {
+        this.user = user;
+    }
+    public void removeUserInternal() {
+        this.user = null;
+    }
+
     /**
      * update 메서드
      */

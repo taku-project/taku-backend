@@ -56,7 +56,7 @@ public class Category extends BaseTimeEntity {
 
     // TODO : 카테고리 애니장르
     @OneToMany(mappedBy = "category")
-    private List<CategoryGenre> categoryGenres;
+    private List<CategoryGenre> categoryGenres = new ArrayList<>();
 
 
 

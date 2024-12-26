@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ani.taku_backend.post.model.entity.Post;
+import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,14 +13,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.common.enums.ProviderType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +30,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@ToString
+@ToString(exclude = {"posts"})  // 순환참조 방지
 public class User {
 
     @Id
@@ -81,6 +74,23 @@ public class User {
     private String email;                 // email
 
     // Post 연관관계 매핑
-    @OneToMany
-    private List<Post> post;
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts = new ArrayList<>();
+
+    /**
+     * Post 연관관계 편의 메서드
+     */
+    public void addPost(Post post) {
+        if (!posts.contains(post)) {
+            posts.add(post);
+            post.setUserInternal(this); // Post 엔티티의 내부 사용자 설정 메서드 호출
+        }
+    }
+    public void removePost(Post post) {
+        if (posts.contains(post)) {
+            posts.remove(post);
+            post.removeUserInternal(); // Post 엔티티의 내부 사용자 해제 메서드 호출
+        }
+    }
+
 }
