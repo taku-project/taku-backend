@@ -12,9 +12,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostUpdateRequestDTO {
+public class PostCreateUpdateRequestDTO {
 
-    @Schema(description = "카테고리 Id")
+    @Schema(description = "카테고리Id")
     private Long categoryId;
 
     @Size(max = 50, message = "제목은 최대 50글자까지 입력 가능합니다.")

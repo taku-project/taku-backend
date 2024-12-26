@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,24 +63,26 @@ public class PostController {
     }
 
     @Operation(summary = "커뮤니티 게시글 생성", description = """
-            1. categoryId: User가 접속한 카테고리 ID
+            createPost(type: application/json)
+            1. categoryId: 접속한 카테고리 ID
             2. title: 작성한 제목
             3. content: 작성한 내용
-            4. imageList: 업로드한 이미지 정보
-                - 이미지 파일이름
-                - 이미지 저장 경로
-                - 원본 파일명
-                - 타입
-                - 크기
+            4. imageList: 업로드한 이미지 정보(List)
+                1) originalFileName: 업로드 파일명
+                2) fileType: 파일 타입
+                3) fileSize: 크기
+           
+            postImage(type: multipartFile)
+            - 이미지데이터
             """)
     @RequireUser
     @PostMapping
     public ApiResponse<Long> createPost(
             PrincipalUser principalUser,
-            @Valid @RequestPart("post") PostCreateRequestDTO requestDTO,
-            @RequestPart(value = "image", required = false) List<MultipartFile> imageList) {
+            @Valid @RequestPart("createPost") PostCreateUpdateRequestDTO requestDTO,
+            @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
 
-        Long createPostId = postService.createPost(requestDTO, principalUser);
+        Long createPostId = postService.createPost(requestDTO, principalUser, imageList);
         return ApiResponse.created(createPostId);
     }
 
@@ -89,7 +90,7 @@ public class PostController {
             1. 게시글 상세 조회(댓글은 나중에 작업)
             """)
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDetailResponseDTO> findPostDetail(
+    public ApiResponse<PostDetailResponseDTO> findPostDetail(
             @PathVariable Long postId,
             @ViewCountChecker Boolean canAddView,
             PrincipalUser principalUser
@@ -100,19 +101,33 @@ public class PostController {
         }
 
         PostDetailResponseDTO detail = postReadService.getPostDetail(postId, canAddView, currentUserId);
-        return ResponseEntity.ok(detail);
+        return ApiResponse.ok(detail);
     }
 
-
+    @Operation(summary = "커뮤니티 게시글 수정", description = """
+            updatePost(type: application/json)
+            1. categoryId: 접속한 카테고리 ID
+            2. title: 작성한 제목
+            3. content: 작성한 내용
+            4. imageList: 업로드한 이미지 정보(List)
+                1) originalFileName: 업로드 파일명
+                2) fileType: 파일 타입
+                3) fileSize: 크기
+           
+            postImage(type: multipartFile)
+            - 이미지데이터
+            """)
     @RequireUser
     @PutMapping("/{postId}")
     public ApiResponse<Long> updatePost(@PathVariable Long postId,
                                         PrincipalUser principalUser,
-                                        @Valid @RequestBody PostUpdateRequestDTO requestDTO) {
-        Long updatePostId = postService.updatePost(requestDTO, principalUser, postId);
+                                        @Valid @RequestPart("updatePost") PostCreateUpdateRequestDTO requestDTO,
+                                        @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
+        Long updatePostId = postService.updatePost(requestDTO, principalUser, postId, imageList);
         return ApiResponse.ok(updatePostId);
     }
 
+    @Operation(summary = "커뮤니티 게시글 삭제")
     @RequireUser
     @DeleteMapping("/{postId}")
     public ApiResponse<Long> deletePost(@PathVariable Long postId,

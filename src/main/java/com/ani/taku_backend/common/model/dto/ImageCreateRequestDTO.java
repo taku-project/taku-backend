@@ -11,12 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ImageCreateRequestDTO {
 
-    @Schema(description = "이미지 주소")
-    private String imageUrl;
-
-    @Schema(description = "UUID로 변환된 파일명")
-    private String fileName;
-
     @Schema(description = "업로드된 파일명")
     private String originalFileName;
 
