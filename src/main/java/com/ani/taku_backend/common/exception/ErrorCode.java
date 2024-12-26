@@ -36,11 +36,11 @@ public enum ErrorCode {
     FILE_DOWNLOAD_ERROR(50301, HttpStatus.SERVICE_UNAVAILABLE, "파일 다운로드에 실패했습니다."),
     INVALID_FILE_FORMAT(40005, HttpStatus.BAD_REQUEST, "잘못된 파일 형식입니다."),
 
-    // Category
-    NOT_FOUND_CATEGORY(40403, HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
-    DUPLICATE_CATEGORY_NAME(40902,HttpStatus.CONFLICT, "이미 유사한 이름의 카테고리가 존재합니다."),
-    BLACK_USER(40106,HttpStatus.UNAUTHORIZED,"블랙 유저는 카테고리 생성을 할 수 없습니다."),
-    NOT_FOUND_GENRE(40404,HttpStatus.NOT_FOUND,"해당하는 장르가 존재하지 않습니다.");
+    // Profanity Filter
+    NOT_FOUND_PROFANITY_FILTER(40403, HttpStatus.NOT_FOUND, "존재하지 않는 금칙어 필터입니다."),
+    INVALID_CONTENT_PROFANITY(40301, HttpStatus.FORBIDDEN, "금칙어가 포함된 내용이 있습니다."),
+    DUPLICATE_PROFANITY_FILTER(40902, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다.");
+
 
     private final Integer code;
     private final HttpStatus httpStatus;
