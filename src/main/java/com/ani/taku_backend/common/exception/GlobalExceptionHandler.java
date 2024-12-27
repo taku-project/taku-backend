@@ -1,112 +1,44 @@
 package com.ani.taku_backend.common.exception;
 
-import com.ani.taku_backend.common.ApiConstants;
-import com.ani.taku_backend.common.model.MainResponse;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+import com.ani.taku_backend.common.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 
-@ControllerAdvice
+import org.springframework.validation.BindException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
+@Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // SQL 관련
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<MainResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        Throwable rootCause = ex.getRootCause();
-        String errorMessage = (rootCause != null ? rootCause.getMessage() : ex.getMessage());
-        String parseMessage = parseColumnNameAndMessage(errorMessage);
-
-        return ResponseEntity.badRequest().body(
-                new MainResponse<>(
-                        ApiConstants.Status.ERROR,
-                        parseMessage != null ? parseMessage : ApiConstants.Message.BAD_REQUEST
-                )
-        );
+    @ExceptionHandler({NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
+    public ApiResponse handleNoPageFoundException(Exception e) {
+        log.error("GlobalExceptionHandler catch NoHandlerFoundException : {}", e.getMessage());
+        return ApiResponse.fail(ErrorCode.NOT_FOUND_END_POINT);
     }
 
-    // UserNotFoundException , UserAlreadyDeletedException
-    // 204 : No Content
-    @ExceptionHandler({UserException.UserNotFoundException.class, UserException.UserAlreadyDeletedException.class})
-    public ResponseEntity<MainResponse<Void>> handleUserNotFoundException(UserException.UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new MainResponse<>(
-                        ApiConstants.Status.ERROR,
-                        ex.getMessage()
-                )
-        );
+    @ExceptionHandler(DuckwhoException.class)
+    public ApiResponse handleDuckwhoException(DuckwhoException e) {
+        log.error("handleDuckwhoException() in GlobalExceptionHandler throw DuckwhoException : {}", e.getMessage());
+        return ApiResponse.fail(e.getErrorCode());
     }
 
-    // UserAlreadyExistsException
-    @ExceptionHandler(UserException.UserAlreadyExistsException.class)
-    public ResponseEntity<MainResponse<Void>> handleUserAlreadyExistsException(UserException.UserAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                new MainResponse<>(
-                        ApiConstants.Status.ERROR,
-                        ex.getMessage()
-                )
-        );
-    }
-
-    // InvalidTokenException
-    @ExceptionHandler(JwtException.InvalidTokenException.class)
-    public ResponseEntity<MainResponse<Void>> handleInvalidTokenException(JwtException.InvalidTokenException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new MainResponse<>(
-                        ApiConstants.Status.ERROR,
-                        ex.getMessage()
-                )
-        );
-    }
-
-    // FileUploadException
-    @ExceptionHandler(FileException.FileUploadException.class)
-    public ResponseEntity<MainResponse<Void>> handleFileUploadException(FileException.FileUploadException ex) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
-                new MainResponse<>(
-                        ApiConstants.Status.ERROR,
-                        ex.getMessage()
-                )
-        );
-    }
-
-    // 공통 Exception
     @ExceptionHandler(Exception.class)
-    @ResponseBody
-    public ResponseEntity<MainResponse<Void>> handleException(Exception ex) {
-        return ResponseEntity.badRequest().body(
-                new MainResponse<>(
-                        ApiConstants.Status.ERROR,
-                        ex.getMessage() != null ? ex.getMessage() : ApiConstants.Message.BAD_REQUEST
-                )
-        );
+    public ApiResponse handleException(Exception e) {
+        log.error("handleException() in GlobalExceptionHandler throw Exception : {}", e.getMessage());
+        e.printStackTrace();
+        return ApiResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
-    public String parseColumnNameAndMessage(String errorMessage) {
-        String columnName = "undefined";
-
-        // H2 메시지에서 컬럼명 추출(길이초과)
-        if (errorMessage.contains("Value too long for column")) {
-            int startIndex = errorMessage.indexOf("\"") + 1;
-            int endIndex = errorMessage.indexOf(" ", startIndex);
-            if (startIndex > 0 && endIndex > startIndex) {
-                columnName = errorMessage.substring(startIndex, endIndex).trim();
-            }
-            errorMessage = "입력된 데이터가 허용된 길이를 초과했습니다. (컬럼명: " + columnName.toLowerCase() + ")";
-        }
-
-        // MySQL 메시지에서 컬럼명 추출(길이초과)
-        else if (errorMessage.contains("Data too long for column")) {
-            int startIndex = errorMessage.indexOf("'") + 1;
-            int endIndex = errorMessage.indexOf("'", startIndex);
-            if (startIndex > 0 && endIndex > startIndex) {
-                columnName = errorMessage.substring(startIndex, endIndex).trim();
-            }
-            errorMessage = "입력된 데이터가 허용된 길이를 초과했습니다. (컬럼명: " + columnName.toLowerCase() + ")";
-        }
-
-        return errorMessage;
+        // 유효성 검사 예외
+    @ExceptionHandler(value = {MethodArgumentNotValidException.class , BindException.class})
+    public ApiResponse<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error("GlobalExceptionHandler catch MethodArgumentNotValidException : {}", e.getMessage());
+        return ApiResponse.fail(ErrorCode.INVALID_INPUT_VALUE);
     }
+
+
 }

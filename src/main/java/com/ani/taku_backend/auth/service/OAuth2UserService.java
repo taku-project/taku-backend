@@ -68,8 +68,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
             // 회원가입 URL 생성
             UriComponentsBuilder redirectUrl = UriComponentsBuilder
-                    .fromUriString(registrationUrl)
-                    .queryParam("token", temporaryToken);
+                    .fromUriString(registrationUrl);
 
             log.info("회원가입 URL: {}", redirectUrl.toUriString());
 
@@ -77,7 +76,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationException(
                     new OAuth2Error(
                             "NOT_FOUND_USER", // errorCode에 URL을 넣음
-                            "신규 회원 가입 필요", // description
+                            temporaryToken, // description
                             redirectUrl.toUriString() // uri (React 프로젝트 주소)
                     ));
         }
