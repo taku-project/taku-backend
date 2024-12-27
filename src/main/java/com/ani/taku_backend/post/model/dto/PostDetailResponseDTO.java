@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 //TODO
-// 댓글 기능 구현되면 연결해야 합니다
+// 댓글 기능 구현되면 연결필요
 @Getter
 public class PostDetailResponseDTO {
 
