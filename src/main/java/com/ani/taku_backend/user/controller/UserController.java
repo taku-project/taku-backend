@@ -25,6 +25,7 @@ import com.ani.taku_backend.common.model.MainResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
+import com.ani.taku_backend.user.model.dto.*;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.UserService;
 
@@ -174,6 +175,25 @@ public class UserController {
 
 		return ResponseEntity.ok(MainResponse.getSuccessResponse(null));
 	}
+
+	@GetMapping("/{userId}")
+	@Operation(
+			summary = "유저 정보 조회",
+			description = "유저 프로필, 닉네임 정보 조회",
+			security = { @SecurityRequirement(name = "Bearer Auth") }
+	)
+	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
+	public ApiResponse<UserDetailDto>DfindUserDetail(@PathVariable Long userId){
+
+		UserDetailDto userDetail = userService.getUserDetail(userId);
+
+
+
+		return "";
+
+	}
+
+
 
 }
 
