@@ -3,6 +3,7 @@ package com.ani.taku_backend.user.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.ani.taku_backend.user.converter.UserConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +12,9 @@ import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
+import com.ani.taku_backend.user.model.dto.*;
+
+import static com.ani.taku_backend.user.converter.UserConverter.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -63,6 +67,22 @@ public class UserService {
   @Transactional
   public int updateUserStatus(Long userId, StatusType status) {
     return this.userRepository.updateUserStatus(userId, status.name());
+  }
+
+  public UserDetailDto getUserDetail(Long userId){
+
+    //Optional로 해야하는 이유
+    Optional<User> user = userRepository.findById(userId);
+
+    return toUserDetailDto(user.get().getNickname(), user.get().getGender(), user.get().getAgeRange(), user.get().getProfileImg());
+
+  }
+
+
+  public void updateNickname(Long userId, String nickname){
+
+    userRepository.updateNickname(userId, nickname);
+
   }
 }
 

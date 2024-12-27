@@ -9,6 +9,7 @@ import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
 import com.ani.taku_backend.user.model.dto.*;
+import com.ani.taku_backend.user.model.dto.requestDto.*;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,11 +24,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.IOException;
 import java.util.Optional;
@@ -178,20 +181,56 @@ public class UserController {
 		return com.ani.taku_backend.common.response.ApiResponse.ok(null);
 	}
 
+
+	/*
+	* TO DO
+	* com.ani.taku_... 머시기 수정하기 위에 APiResponse 어노테이션이랑 이름이 같아서 발생하는 문제임
+	 * */
 	@GetMapping("/{userId}")
 	@Operation(
 			summary = "유저 정보 조회",
-			description = "유저 프로필, 닉네임 정보 조회",
+			description = "유저 프로필, 닉네임, 성별, 나이대 조회",
 			security = { @SecurityRequirement(name = "Bearer Auth") }
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
-	public ApiResponse<UserDetailDto>DfindUserDetail(@PathVariable Long userId){
+	public com.ani.taku_backend.common.response.ApiResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
 
 		UserDetailDto userDetail = userService.getUserDetail(userId);
 
+		return com.ani.taku_backend.common.response.ApiResponse.ok(userDetail);
 
+	}
 
-		return "";
+	@PatchMapping("/{userId}")
+	@Operation(
+			summary = "유저 정보 수정",
+			description = "유저 프로필, 닉네임 정보 수정",
+			security = { @SecurityRequirement(name = "Bearer Auth") }
+	)
+	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
+	})
+	public com.ani.taku_backend.common.response.ApiResponse<String>editUserDetail(@PathVariable Long userId,
+		@RequestBody UserEditDto request
+	){
+
+		System.out.println("hello");
+
+		if(!request.getNickname().isEmpty()){
+			String nickname = request.getNickname();
+			if(userService.checkNickname(nickname)){ //이미 존재하는 닉네임일 경우
+				throw new UserException.UserNicknameAlreadyExistsException("이미 존재하는 닉네임입니다.");
+			}else{ // 닉네임 vaildation 통과를 했을 경우
+				userService.updateNickname(userId, nickname);
+			}
+		}
+
+		if(!request.getProfileImg().isEmpty()){
+
+			//1번. martipart 2번.presigned url
+
+		}
+
+		return com.ani.taku_backend.common.response.ApiResponse.ok(null);
 
 	}
 

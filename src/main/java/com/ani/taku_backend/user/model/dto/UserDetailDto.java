@@ -4,8 +4,7 @@ import lombok.*;
 
 
 @Getter
-@Setter
-
+@Builder
 public class UserDetailDto {
 
     private String nickname;
