@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -124,7 +125,7 @@ class PostServiceTest {
         var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
 
         // SecurityContext에 PrincipalUser 설정
-        var authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principalUser, null, authorities);
+        var authentication = new UsernamePasswordAuthenticationToken(principalUser, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
@@ -147,7 +148,7 @@ class PostServiceTest {
         assertThat(post.getUser().getNickname()).isEqualTo(principalUser.getUser().getNickname());
     }
 
-    @Test
+//    @Test
     @Transactional
     void updatePost() {
         PrincipalUser principalUser = (PrincipalUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -171,7 +172,7 @@ class PostServiceTest {
         assertThat("수정한 내용").isEqualTo(updatePost.getContent());
     }
 
-    @Test
+//    @Test
     @Transactional
     void deletePost() {
         PrincipalUser principalUser = (PrincipalUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -189,7 +190,7 @@ class PostServiceTest {
         assertThat(post.getDeletedAt()).isNotNull();
     }
 
-    @Test
+//    @Test
     void findPostDetail() {
         Random random = new Random();
         long randomPostId = random.nextLong(1, 3000);

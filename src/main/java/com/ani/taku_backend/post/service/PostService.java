@@ -169,6 +169,11 @@ public class PostService {
             imageRepository.softDeleteByFileNames(filesToDelete);
         }
 
+        // 새로 추가된 파일 필터링 (기존 파일과 중복되지 않은 파일만 선택)
+        List<MultipartFile> filesToAdd = imageList.stream()
+                .filter(file -> !existingFileNames.contains(file.getOriginalFilename()))
+                .toList();
+
         // 새 파일 업로드 및 저장
         for (MultipartFile image : imageList) {
             try {
