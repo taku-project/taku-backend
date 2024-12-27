@@ -1,27 +1,23 @@
 package com.ani.taku_backend.config.filter;
 
+import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.config.SecurityPathConfig;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.ani.taku_backend.auth.util.JwtUtil;
-import com.ani.taku_backend.common.ApiConstants;
-import com.ani.taku_backend.common.model.MainResponse;
-import com.ani.taku_backend.config.SecurityPathConfig;
-import com.ani.taku_backend.user.model.dto.PrincipalUser;
-import com.ani.taku_backend.user.model.entity.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.jsonwebtoken.ExpiredJwtException;
-
 import java.io.IOException;
 
 /**
@@ -47,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 PrincipalUser principalUser = new PrincipalUser(jwtUtil.getUserFromToken(accessToken));
+                response.setHeader("Authorization", "Bearer " + accessToken);
                 SecurityContextHolder.getContext().setAuthentication(
                     new UsernamePasswordAuthenticationToken(principalUser, null, null)
                 );
@@ -72,11 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.error("유효하지 않은 토큰", e);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
-        
-        MainResponse<Void> errorResponse = new MainResponse<>(
-            ApiConstants.Status.ERROR,
-            "유효하지 않은 토큰입니다."
-        );
+
+        ApiResponse<Void> errorResponse = ApiResponse.fail(ErrorCode.INVALID_TOKEN);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 
@@ -85,12 +79,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.error("토큰이 없습니다.", e);
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType("application/json;charset=UTF-8");
-        
-        MainResponse<Void> errorResponse = new MainResponse<>(
-            ApiConstants.Status.ERROR,
-            // Cannot find Authorization key in Request Header
-            "Cannot find Authorization key in Request Header"
-        );
+
+        ApiResponse<Void> errorResponse = ApiResponse.fail(ErrorCode.EMPTY_TOKEN);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 

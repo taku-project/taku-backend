@@ -1,5 +1,6 @@
 package com.ani.taku_backend.user.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -49,7 +50,8 @@ public class UserService {
 
   // 닉네임 체크
   public boolean checkNickname(String nickname) {
-    return this.userRepository.findByNickname(nickname).isPresent();
+    List<User> users = this.userRepository.findByNickname(nickname);
+    return users.isEmpty() ? false : true;
   }
 
   // 유저 삭제

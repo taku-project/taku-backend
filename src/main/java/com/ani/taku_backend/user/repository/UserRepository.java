@@ -1,5 +1,6 @@
 package com.ani.taku_backend.user.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByEmailAndStatus(String email, String status);
 
   // 닉네임 조회
-  Optional<User> findByNickname(String nickname);
+  List<User> findByNickname(String nickname);
 
   // 유저ID와 상태로 유저 조회
   Optional<User> findByUserIdAndStatus(Long userId, String status);

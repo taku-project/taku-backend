@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.ani.taku_backend.common.model.entity.QImage.image;
+import static com.ani.taku_backend.post.model.entity.QCommunityImage.communityImage;
+
+
 @Repository
 @RequiredArgsConstructor
 public class PostRepositoryCustomImpl implements PostRepositoryCustom {
@@ -19,22 +23,46 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Post> findAllPostWithNoOffset(String filter, Long lastValue, boolean isAsc, int limit, String keyword) {
+    public List<Post> findAllPostWithNoOffset(String filter, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
         QPost post = QPost.post;
 
+        BooleanExpression byCategory = getCategory(categoryId, post);                   // 카테고리 구분
         BooleanExpression bySortFilter = getSortFilter(filter, lastValue, isAsc, post); // 정렬 필터
         BooleanExpression byKeyword = getKeyword(keyword, post);                        // 키워드 검색
+        BooleanExpression notDeleted = getNotDeleted(post);                             // Soft Delete 조건
         OrderSpecifier<?> mainSort = getMainSort(filter, isAsc, post);                  // 첫번째 정렬 기준
         OrderSpecifier<?> subSort = getSubSort(isAsc, post);                            // 두번째 정렬 기준
 
         return jpaQueryFactory
                 .selectFrom(post)
-                .where(bySortFilter, byKeyword)
+                .leftJoin(post.communityImages, communityImage)
+                .leftJoin(communityImage.image, image)
+                .where(notDeleted, byCategory, bySortFilter, byKeyword)
                 .orderBy(mainSort, subSort)
                 .limit(limit)
                 .fetch();
     }
 
+    /**
+     * 삭제된 데이터는 제외
+     */
+    private BooleanExpression getNotDeleted(QPost post) {
+        return post.deletedAt.isNull();
+    }
+
+    /**
+     * 카테고리 구분
+     */
+    private BooleanExpression getCategory(Long categoryId, QPost post) {
+        if (categoryId != null) {
+            return post.category.id.eq(categoryId);
+        }
+        return null;
+    }
+
+    /**
+     * 제목 + 내용으로 키워드 검색
+     */
     private BooleanExpression getKeyword(String keyword, QPost post) {
         if (keyword != null) {
             return post.title.contains(keyword).or(post.content.contains(keyword));
@@ -62,6 +90,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return null;
     }
 
+    /**
+     * 첫번째 정렬 기준
+     */
     private OrderSpecifier<?> getMainSort(String filter, boolean isAsc, QPost post) {
         if (SortFilterType.LIKES.getValue().equalsIgnoreCase(filter)) {
             return isAsc ? post.likes.asc() : post.likes.desc();
@@ -73,6 +104,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return isAsc ? post.id.asc() : post.id.desc();
     }
 
+    /**
+     * 두번째 정렬 기준
+     */
     private OrderSpecifier<?> getSubSort(boolean isAsc, QPost post) {
         return isAsc ? post.id.asc() : post.id.desc();
     }

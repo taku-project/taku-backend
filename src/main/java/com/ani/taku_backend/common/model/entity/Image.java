@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.common.model.dto.CreateImageDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserImage;
 
@@ -19,12 +20,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
  * 이미지 엔티티
  */
+@Builder
 @Entity
 @Table(name = "images")
 @Getter
@@ -40,16 +43,16 @@ public class Image extends BaseTimeEntity {
     @JoinColumn(name = "uploader_id", nullable = false)
     private User user;
 
-    @Column(name = "file_name" , length = 255)
+    @Column(name = "file_name", length = 255)
     private String fileName;
 
-    @Column(name = "image_url" , length = 500)
+    @Column(name = "image_url", length = 500)
     private String imageUrl;
 
-    @Column(name = "original_name" , length = 255)
+    @Column(name = "original_name", length = 255)
     private String originalName;
 
-    @Column(name = "file_type" , length = 50)
+    @Column(name = "file_type", length = 50)
     private String fileType;
 
     @Column(name = "file_size")
@@ -59,5 +62,23 @@ public class Image extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     // TODO : 커뮤니티 이미지
+
+    public static Image of(CreateImageDTO createImageDTO, User user) {
+        return Image.builder()
+                .fileName(createImageDTO.getFileName())
+                .imageUrl(createImageDTO.getImageUrl())
+                .originalName(createImageDTO.getOriginalFileName())
+                .fileType(createImageDTO.getFileType())
+                .fileSize(createImageDTO.getFileSize())
+                .user(user)
+                .build();
+    }
+
+    /**
+     * Soft Delete 메서드
+     */
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
 }
