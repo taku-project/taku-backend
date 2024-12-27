@@ -175,7 +175,7 @@ public class PostService {
                 .toList();
 
         // 새 파일 업로드 및 저장
-        for (MultipartFile image : imageList) {
+        for (MultipartFile image : filesToAdd) {
             try {
                 String imageUrl = fileService.uploadFile(image);
                 processImage(requestDTO, user, post, imageUrl);
