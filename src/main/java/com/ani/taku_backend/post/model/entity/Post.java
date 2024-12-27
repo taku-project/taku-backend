@@ -8,7 +8,9 @@ import lombok.*;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 커뮤니티 게시글 Entity
@@ -34,9 +36,10 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "category_id") // 외래 키 컬럼 이름 명시
     private Category category;
 
+    @Builder.Default
     @BatchSize(size = 1000)
-    @OneToMany(mappedBy = "post")
-    private List<CommunityImage> communityImages;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
+    private List<CommunityImage> communityImages = new ArrayList<>();
 
     private String title;
     private String content;
@@ -58,7 +61,6 @@ public class Post extends BaseTimeEntity {
         this.communityImages.remove(communityImage);
         communityImage.unassignPost();
     }
-
 
     /**
      * User 연관관계 편의 메서드
@@ -109,4 +111,5 @@ public class Post extends BaseTimeEntity {
             this.likes--;
         }
     }
+
 }

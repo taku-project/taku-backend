@@ -73,16 +73,8 @@ public class PostService {
         postRepository.save(post);
 
         // 이미지 생성 및 저장
-        for (MultipartFile image : imageList) {
-            try {
-                String imageUrl = fileService.uploadFile(image);
-                if ((postCreateRequestDTO.getImagelist() != null) && !postCreateRequestDTO.getImagelist().isEmpty()) {
-                    validateImageCount(postCreateRequestDTO.getImagelist());    // 5개 이상이면 예외 발생
-                    saveImage(postCreateRequestDTO, user, post, imageUrl);
-                }
-            } catch (IOException e) {
-                throw new FileException("파일 업로드에 실패 하였습니다");
-            }
+        if (imageList != null && !imageList.isEmpty()) {
+            saveImages(postCreateRequestDTO, imageList, user, post);
         }
 
         return post.getId();
@@ -114,18 +106,9 @@ public class PostService {
         }
 
         // 이미지 수정
-        for (MultipartFile image : imageList) {
-            try {
-                String imageUrl = fileService.uploadFile(image);
-                if ((postUpdateRequestDTO.getImagelist() != null) && !postUpdateRequestDTO.getImagelist().isEmpty()) {
-                    validateImageCount(postUpdateRequestDTO.getImagelist());    // 5개 이상이면 예외 발생
-                    updateImage(postUpdateRequestDTO, user, post, imageUrl);
-                }
-            } catch (IOException e) {
-                throw new FileException("파일 업로드에 실패 하였습니다");
-            }
+        if (imageList != null && !imageList.isEmpty()) {
+            updateImages(postUpdateRequestDTO, imageList, user, post);
         }
-
         // 게시글 수정
         post.updatePost(postUpdateRequestDTO.getTitle(), postUpdateRequestDTO.getContent(), newCategory);
 
@@ -153,77 +136,73 @@ public class PostService {
         return post.getId();
     }
 
-    private void saveImage(PostCreateUpdateRequestDTO postCreateRequestDTO, User user, Post post, String imageUrl) {
+    private void saveImages(PostCreateUpdateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, User user, Post post) {
+        for (MultipartFile image : imageList) {
+            try {
+                String imageUrl = fileService.uploadFile(image);
+                if ((postCreateRequestDTO.getImagelist() != null) && !postCreateRequestDTO.getImagelist().isEmpty()) {
+                    validateImageCount(postCreateRequestDTO.getImagelist());    // 5개 이상이면 예외 발생
+                }
+            } catch (IOException e) {
+                throw new FileException("파일 업로드에 실패 하였습니다");
+            }
+        }
+    }
+
+    private void updateImages(PostCreateUpdateRequestDTO requestDTO, List<MultipartFile> imageList, User user, Post post) {
+        if (requestDTO.getImagelist() != null) {
+            validateImageCount(requestDTO.getImagelist());
+        }
+
+        if (imageList == null || imageList.isEmpty()) return;
+
+        List<String> existingFileNames = imageRepository.findFileNamesByPostId(post.getId());
+        List<String> newFileNames = imageList.stream().map(MultipartFile::getOriginalFilename).toList();
+
+        // 기존 파일 삭제 대상
+        List<String> filesToDelete = existingFileNames.stream()
+                .filter(existing -> !newFileNames.contains(existing))
+                .toList();
+
+        // 기존 파일 소프트 삭제
+        if (!filesToDelete.isEmpty()) {
+            imageRepository.softDeleteByFileNames(filesToDelete);
+        }
+
+        // 새 파일 업로드 및 저장
+        for (MultipartFile image : imageList) {
+            try {
+                String imageUrl = fileService.uploadFile(image);
+                processImage(requestDTO, user, post, imageUrl);
+            } catch (IOException e) {
+                throw new FileException("파일 업로드에 실패하였습니다.");
+            }
+        }
+    }
+
+
+    private void processImage(PostCreateUpdateRequestDTO requestDTO, User user, Post post, String imageUrl) {
         String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-        for (ImageCreateRequestDTO getImage : postCreateRequestDTO.getImagelist()) {
+
+        for (ImageCreateRequestDTO imageDTO : requestDTO.getImagelist()) {
             Image image = Image.builder()
                     .user(user)
                     .fileName(fileName)
                     .imageUrl(imageUrl)
-                    .originalName(getImage.getOriginalFileName())
-                    .fileType(getImage.getFileType())
-                    .fileSize(getImage.getFileSize())
-                    .deletedAt(null)
+                    .originalName(imageDTO.getOriginalFileName())
+                    .fileType(imageDTO.getFileType())
+                    .fileSize(imageDTO.getFileSize())
                     .build();
+
             imageRepository.save(image);
 
-            post.addCommunityImage(CommunityImage
-                    .builder()
-                    .image(image)
-                    .build());
+            post.addCommunityImage(
+                    CommunityImage.builder()
+                            .image(image)
+                            .post(post)
+                            .build()
+            );
         }
-    }
-
-    private void updateImage(PostCreateUpdateRequestDTO postUpdateRequestDTO, User user, Post post, String imageUrl) {
-        String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-
-        List<String> fileNameByPostIdList = imageRepository.findFileNamesByPostId(post.getId());
-
-        // 기존 게시글에 저장된 이미지와 요청으로 들어온 이미지의 파일네임을 비교하여 같은것과 다른것을 분리
-        Map<Boolean, List<ImageCreateRequestDTO>> partitionedImages = postUpdateRequestDTO.getImagelist()
-                .stream()
-                .collect(Collectors.partitioningBy(
-                        imageDTO -> fileNameByPostIdList.contains(fileName)));
-
-        // 이미지 삭제 대상: 기존 게시글에 저장된 이미지와 분리된 파티션의 fasle인 대상중에서 요청으로 넘어온 대상을 제외한 대상
-        List<String> deleteFileNameList = fileNameByPostIdList
-                .stream()
-                .filter(deleteFileName -> partitionedImages.get(false)
-                        .stream()
-                        .noneMatch(imageDTO -> fileName.equals(deleteFileName)))
-                .toList();
-
-        // 새로 추가된 이미지 정보만 담긴 ImageCreateRequestDTO
-        List<ImageCreateRequestDTO> newImageCreateRequestDTO = partitionedImages.get(true);
-
-        // 이미지 소프트 딜리트
-        if (!deleteFileNameList.isEmpty()) {
-            imageRepository.softDeleteByFileNames(deleteFileNameList);
-        }
-
-        // 새로 추가될 이미지 정보가 있으면 저장
-        if (!newImageCreateRequestDTO.isEmpty()) {
-            for (ImageCreateRequestDTO newImageDTO : newImageCreateRequestDTO) {
-                Image image = Image.builder()
-                        .user(user)
-                        .fileName(fileName)
-                        .imageUrl(imageUrl)
-                        .originalName(newImageDTO.getOriginalFileName())
-                        .fileType(newImageDTO.getFileType())
-                        .fileSize(newImageDTO.getFileSize())
-                        .build();
-
-                imageRepository.save(image);
-
-                post.addCommunityImage(
-                        CommunityImage.builder()
-                                .image(image)
-                                .post(post)
-                                .build()
-                );
-            }
-        }
-
     }
 
     private Post getPost(PostCreateUpdateRequestDTO postCreateRequestDTO, User user, Category category) {

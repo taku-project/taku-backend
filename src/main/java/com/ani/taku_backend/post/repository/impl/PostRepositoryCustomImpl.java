@@ -35,8 +35,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
         return jpaQueryFactory
                 .selectFrom(post)
-                .join(post.communityImages, communityImage)
-                .join(communityImage.image, image)
+                .leftJoin(post.communityImages, communityImage)
+                .leftJoin(communityImage.image, image)
                 .where(notDeleted, byCategory, bySortFilter, byKeyword)
                 .orderBy(mainSort, subSort)
                 .limit(limit)
