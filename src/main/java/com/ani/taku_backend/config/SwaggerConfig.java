@@ -19,13 +19,14 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        SecurityScheme securityScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.APIKEY)
-                .in(SecurityScheme.In.HEADER)
-                .name("Authorization");
+        SecurityScheme bearerAuthScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP) // HTTP 인증 방식
+                .scheme("bearer") // Bearer 타입 지정
+                .bearerFormat("JWT"); // Bearer 토큰 포맷 지정
 
         SecurityRequirement securityRequirement = new SecurityRequirement()
-                .addList("Authorization");
+                .addList("bearerAuth");
+
         return new OpenAPI()
                 .info(new Info() // API 문서 정보 설정
                         .title(API_TITLE) // API 제목
@@ -42,7 +43,7 @@ public class SwaggerConfig {
                                         .email("test@gmail.com") // 이메일 주소
                         )
                 )
-                .components(new Components().addSecuritySchemes("Authorization", securityScheme))
+                .components(new Components().addSecuritySchemes("bearerAuth", bearerAuthScheme))
                 .addSecurityItem(securityRequirement);
     }
 
