@@ -4,11 +4,13 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.exception.PostException;
+import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.post.model.dto.PostCreateUpdateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
+import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -26,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLOutput;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -49,6 +52,8 @@ class PostServiceTest {
     TestFixture testFixture;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ImageRepository imageRepository;
 
     //    @Test
     void init() {
@@ -148,7 +153,7 @@ class PostServiceTest {
         assertThat(post.getUser().getNickname()).isEqualTo(principalUser.getUser().getNickname());
     }
 
-//    @Test
+    @Test
     @Transactional
     void updatePost() {
         PrincipalUser principalUser = (PrincipalUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -168,11 +173,17 @@ class PostServiceTest {
         Post updatePost = postRepository.findById(updatePostId).get();
         System.out.println("최초 제목 = " + findTitle + " 수정한 제목 = " + updatePost.getTitle());
         System.out.println("최초 내용 = " + findContent + " 수정한 내용 = " + updatePost.getContent());
+
+        updatePost.getCommunityImages().forEach(communityImage -> {
+            System.out.println("파일 이름 = " + communityImage.getImage().getFileName() +
+                             " deleteAt = " + communityImage.getImage().getDeletedAt());
+        });
+
         assertThat("수정한 제목").isEqualTo(updatePost.getTitle());
         assertThat("수정한 내용").isEqualTo(updatePost.getContent());
     }
 
-//    @Test
+    @Test
     @Transactional
     void deletePost() {
         PrincipalUser principalUser = (PrincipalUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -187,10 +198,11 @@ class PostServiceTest {
 
         Post post = postRepository.findById(deletePostId).get();
         System.out.println("삭제 일시 = " + post.getDeletedAt());
+
         assertThat(post.getDeletedAt()).isNotNull();
     }
 
-//    @Test
+    @Test
     void findPostDetail() {
         Random random = new Random();
         long randomPostId = random.nextLong(1, 3000);
