@@ -1,21 +1,16 @@
 package com.ani.taku_backend.config;
 
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@SecurityScheme(
-        name = "Authorization",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT"
-)
 public class SwaggerConfig {
     //http://localhost:8080/swagger-ui/index.html
     private static final String API_TITLE = "Taku-Backend API";
@@ -24,6 +19,13 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
+        SecurityScheme securityScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("Authorization");
+
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("Authorization");
         return new OpenAPI()
                 .info(new Info() // API 문서 정보 설정
                         .title(API_TITLE) // API 제목
@@ -39,7 +41,9 @@ public class SwaggerConfig {
                                         .url("https://www.example.com/support") // 지원 페이지 링크
                                         .email("test@gmail.com") // 이메일 주소
                         )
-                );
+                )
+                .components(new Components().addSecuritySchemes("Authorization", securityScheme))
+                .addSecurityItem(securityRequirement);
     }
 
 
