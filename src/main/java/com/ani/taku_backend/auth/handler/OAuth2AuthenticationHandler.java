@@ -72,6 +72,7 @@ public class OAuth2AuthenticationHandler {
 
             // 응답 헤더에 access token 추가
             response.setHeader("Authorization", "Bearer " + accessToken);
+            log.info("accessToken : {}", accessToken);
 
             // URL 만들기 + 토큰 넣어서
             String redirectUrl = UriComponentsBuilder

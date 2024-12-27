@@ -33,7 +33,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @ToString(exclude = {"posts"})  // 순환참조 방지
-@JsonIgnoreProperties({"posts"})
 public class User {
 
     @Id
