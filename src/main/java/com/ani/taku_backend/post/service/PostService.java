@@ -106,9 +106,8 @@ public class PostService {
         }
 
         // 이미지 수정
-        if (imageList != null && !imageList.isEmpty()) {
-            updateImages(postUpdateRequestDTO, imageList, user, post);
-        }
+        updateImages(postUpdateRequestDTO, imageList, user, post);
+
         // 게시글 수정
         post.updatePost(postUpdateRequestDTO.getTitle(), postUpdateRequestDTO.getContent(), newCategory);
 
@@ -118,6 +117,7 @@ public class PostService {
     /**
      * 게시글 삭제
      */
+    @RequireUser
     @Transactional
     public Long deletePost(Long postId, PrincipalUser principalUser) {
         User user = principalUser.getUser();
@@ -136,7 +136,8 @@ public class PostService {
         return post.getId();
     }
 
-    private void saveImages(PostCreateUpdateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, User user, Post post) {
+    @Transactional
+    protected void saveImages(PostCreateUpdateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, User user, Post post) {
         for (MultipartFile image : imageList) {
             try {
                 String imageUrl = fileService.uploadFile(image);
@@ -149,12 +150,19 @@ public class PostService {
         }
     }
 
-    private void updateImages(PostCreateUpdateRequestDTO requestDTO, List<MultipartFile> imageList, User user, Post post) {
+    @Transactional
+    protected void updateImages(PostCreateUpdateRequestDTO requestDTO, List<MultipartFile> imageList, User user, Post post) {
         if (requestDTO.getImagelist() != null) {
             validateImageCount(requestDTO.getImagelist());
         }
 
-        if (imageList == null || imageList.isEmpty()) return;
+        if (imageList == null || imageList.isEmpty()) {
+            post.getCommunityImages().forEach(communityImage -> {
+                Image image = communityImage.getImage();
+                image.softDelete(); // Soft delete 호출
+            });
+            return;
+        }
 
         List<String> existingFileNames = imageRepository.findFileNamesByPostId(post.getId());
         List<String> newFileNames = imageList.stream().map(MultipartFile::getOriginalFilename).toList();
@@ -169,8 +177,13 @@ public class PostService {
             imageRepository.softDeleteByFileNames(filesToDelete);
         }
 
+        // 새로 추가된 파일 필터링 (기존 파일과 중복되지 않은 파일만 선택)
+        List<MultipartFile> filesToAdd = imageList.stream()
+                .filter(file -> !existingFileNames.contains(file.getOriginalFilename()))
+                .toList();
+
         // 새 파일 업로드 및 저장
-        for (MultipartFile image : imageList) {
+        for (MultipartFile image : filesToAdd) {
             try {
                 String imageUrl = fileService.uploadFile(image);
                 processImage(requestDTO, user, post, imageUrl);
@@ -180,8 +193,8 @@ public class PostService {
         }
     }
 
-
-    private void processImage(PostCreateUpdateRequestDTO requestDTO, User user, Post post, String imageUrl) {
+    @Transactional
+    void processImage(PostCreateUpdateRequestDTO requestDTO, User user, Post post, String imageUrl) {
         String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
 
         for (ImageCreateRequestDTO imageDTO : requestDTO.getImagelist()) {
