@@ -9,6 +9,7 @@ import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
+import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ShortsServiceImpl implements  ShortsService {
-    // private final VideoConversionService videoConversionService;
+    private final VideoConversionService videoConversionService;
     private final UserRepository userRepository;
     private final MongoTemplate mongoTemplate;
     private final FileService fileService;

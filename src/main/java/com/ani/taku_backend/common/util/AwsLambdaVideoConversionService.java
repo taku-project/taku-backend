@@ -1,4 +1,4 @@
-// package com.ani.taku_backend.common.util;
+package com.ani.taku_backend.common.util;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -17,10 +17,10 @@ import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 
 import java.util.Map;
 
-// // 파일 변환 서비스 Aws Lambda 구현체
-// @Service
-// public class AwsLambdaVideoConversionService implements VideoConversionService {
-//     private final LambdaClient lambdaClient;
+// 파일 변환 서비스 Aws Lambda 구현체
+@Service
+public class AwsLambdaVideoConversionService implements VideoConversionService {
+    private final LambdaClient lambdaClient;
 
     AwsLambdaVideoConversionService(
             @Value("${aws.access_key}") String accessKeyId,
