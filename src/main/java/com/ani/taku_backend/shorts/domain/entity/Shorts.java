@@ -1,8 +1,8 @@
 package com.ani.taku_backend.shorts.domain.entity;
 
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
+import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "shorts")
@@ -26,6 +27,10 @@ public class Shorts {
     @Id
     private String id;
     private String title;
+    private Long userId;
+    private String nickname;
+    private String profileImg;
+    private String role;
     private String description;
     private List<String> tags;
     private VideoMetadata fileInfo;
@@ -38,7 +43,7 @@ public class Shorts {
     @Builder
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
-    private static class VideoMetadata {
+    public static class VideoMetadata {
         private String originFileName;
         private String originFileRemotePath;
         private int duration;
@@ -47,18 +52,18 @@ public class Shorts {
         @Enumerated
         private VideoType fileType;
 
-        public static VideoMetadata create(String originFileName, String originFileRemotePath, int fileSize, VideoType fileType) {
+        public static VideoMetadata create(String originFileName, String originFileRemotePath, int fileSize, VideoType fileType, ShortsFFmPegUrlResDTO fmPegUrlInfoDTO) {
+            List<String> remoteStorageUrl = new ArrayList<>(fmPegUrlInfoDTO.getSegments());
+            remoteStorageUrl.add(fmPegUrlInfoDTO.getM3u8Url());
+
             return VideoMetadata.builder()
                     .originFileName(originFileName)
                     .originFileRemotePath(originFileRemotePath)
+                    .remoteStorageUrl(remoteStorageUrl)
+                    .duration((int) fmPegUrlInfoDTO.getDuration())
                     .fileSize(fileSize)
                     .fileType(fileType)
                     .build();
-        }
-
-        public void setVideoMetadata(List<String> remoteStorageUrl, int duration) {
-            this.remoteStorageUrl = remoteStorageUrl;
-            this.duration = duration;
         }
     }
 
@@ -77,21 +82,23 @@ public class Shorts {
         }
     }
 
-    public static Shorts create(ShortsCreateReqDTO createReqDTO, String filePath) {
+    public static Shorts create(User user, ShortsCreateReqDTO createReqDTO, String filePath, ShortsFFmPegUrlResDTO ffmpegUrlDTO) {
         MultipartFile file = createReqDTO.getFile();
         String contentType = file.getContentType();
         VideoType videoType = VideoType.fromExtension(contentType);
+
         return Shorts.builder()
+                .userId(user.getUserId())
+                .nickname(user.getNickname())
+                .profileImg(user.getProfileImg())
+                .role(user.getRole())
+                .title(createReqDTO.getTitle())
                 .fileInfo(
-                    VideoMetadata.create(file.getOriginalFilename(), filePath, (int) file.getSize(), videoType)
+                    VideoMetadata.create(file.getOriginalFilename(), filePath, (int) file.getSize(), videoType, ffmpegUrlDTO)
                 )
                 .description(createReqDTO.getDescription())
                 .tags(createReqDTO.getTags())
                 .popularityMatics(PopularityMatic.create())
                 .build();
-    }
-
-    public void setVideoMetadata(VideoMetadata videoMetadata) {
-
     }
 }
