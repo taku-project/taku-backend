@@ -8,6 +8,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Slf4j
@@ -24,6 +25,13 @@ public class GlobalExceptionHandler {
     public ApiResponse handleDuckwhoException(DuckwhoException e) {
         log.error("handleDuckwhoException() in GlobalExceptionHandler throw DuckwhoException : {}", e.getMessage());
         return ApiResponse.fail(e.getErrorCode());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ApiResponse handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("handleMaxUploadSizeExceededException() in MaxUploadSizeExceededException : {}", e.getMessage());
+
+        return ApiResponse.fail(ErrorCode.FILE_SIZE_EXCEED);
     }
 
     @ExceptionHandler(Exception.class)
