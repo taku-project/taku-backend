@@ -1,7 +1,10 @@
 package com.ani.taku_backend.shorts.service;
 
+import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.util.VideoConversionService;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 
+import java.util.Objects;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,20 +47,31 @@ public class ShortsServiceImpl implements  ShortsService {
 
     @Transactional
     @Override
-    public void createShort(ShortsCreateReqDTO createReqDTO) {
+    public void createShort(ShortsCreateReqDTO createReqDTO, User user) {
+        Objects.requireNonNull(user);
+        String uniqueFilePath = this.generateUniqueFilePath(createReqDTO.getFile().getOriginalFilename());
+        Shorts shorts = null;
         try {
-            // 정보 등록 TODO user 정보 가져오기
-            String uniqueFilePath = this.generateUniqueFilePath("userId", createReqDTO.getFile().getOriginalFilename());
+            User uploader = userRepository.findById(user.getUserId())
+                    .orElseThrow(UserException.UserNotFoundException::new);
+            if("INACTIVE".equals(uploader.getStatus())) {
+                throw new UserException(ErrorCode.USER_NOT_FOUND.getMessage());
+            }
 
-            fileService.uploadFile(createReqDTO.getFile());
-            // AWS Lambda 호출해 원본 파일 R2 저장 후 저장 url 반환
-//            ShortsFFmPegUrlResDTO ffmpegUrlDTO = videoConversionService.processVideo("fileKey");
+            String fileUrl = fileService.uploadFile(createReqDTO.getFile(), uniqueFilePath);
+            // AWS Lambda 호출해 원본 파일 R2 저장 후 저장된 파일 객체 반환
+            ShortsFFmPegUrlResDTO ffmpegUrlDTO = videoConversionService.ffmpegConversion(fileUrl);
 
-            Shorts shorts = Shorts.create(createReqDTO, uniqueFilePath);
+            shorts = Shorts.create(uploader, createReqDTO, uniqueFilePath, ffmpegUrlDTO);
 
             mongoTemplate.save(shorts);
-
         } catch (Exception e) {
+            String rootDirPath = this.getRootDirectoryPath(uniqueFilePath);
+            fileService.deleteFolder(rootDirPath);
+
+            if(shorts != null) {
+                mongoTemplate.remove(shorts);
+            }
             e.printStackTrace();
             // TODO
         }
