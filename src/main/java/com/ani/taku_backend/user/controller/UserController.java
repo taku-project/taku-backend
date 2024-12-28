@@ -189,8 +189,7 @@ public class UserController {
 	@GetMapping("/{userId}")
 	@Operation(
 			summary = "유저 정보 조회",
-			description = "유저 프로필, 닉네임, 성별, 나이대 조회",
-			security = { @SecurityRequirement(name = "Bearer Auth") }
+			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
 	public com.ani.taku_backend.common.response.ApiResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
@@ -204,8 +203,7 @@ public class UserController {
 	@PatchMapping("/{userId}")
 	@Operation(
 			summary = "유저 정보 수정",
-			description = "유저 프로필, 닉네임 정보 수정",
-			security = { @SecurityRequirement(name = "Bearer Auth") }
+			description = "유저 프로필, 닉네임 정보 수정"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
 	})
