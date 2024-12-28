@@ -38,7 +38,7 @@ public class Shorts {
     @Builder
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
-    private static class VideoMetadata {
+    public static class VideoMetadata {
         private String originFileName;
         private String originFileRemotePath;
         private int duration;

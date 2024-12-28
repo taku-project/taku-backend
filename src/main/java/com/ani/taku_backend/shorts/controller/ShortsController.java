@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
+import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
 import com.ani.taku_backend.shorts.service.ShortsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @Log4j2
@@ -68,6 +70,11 @@ public class ShortsController {
         } catch (Exception e) {
             throw new AmazonS3Exception("Failed to download file: " + e.getMessage(), e);
         }
+    }
+
+    @GetMapping("/recommend")
+    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsRecommendResDTO>> getRecommendShorts() {
+        return com.ani.taku_backend.common.response.ApiResponse.ok(this.shortsService.findRecommendShorts());
     }
 
 }
