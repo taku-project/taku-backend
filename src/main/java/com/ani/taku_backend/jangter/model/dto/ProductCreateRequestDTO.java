@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 @Data
 public class ProductCreateRequestDTO {
 
-
     private Long categoryId;
     private String title;
     private String description;

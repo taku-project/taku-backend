@@ -8,6 +8,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Builder
@@ -47,10 +49,18 @@ public class DuckuJangter extends BaseTimeEntity {
     private Long viewCount;
     private LocalDateTime deletedAt;
 
-    // TODO 북마크
+    @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
+    private List<JangterImages> jangterImages = new ArrayList<>();
+
+    // TODO 북마크 연관관계
 
     public void softDelete() {
         deletedAt = LocalDateTime.now();
     }
 
+    // 이미지 연관관계 메서드
+    public void addJangterImage(JangterImages jangterImage) {
+        this.jangterImages.add(jangterImage);
+        jangterImage.addDuckuJangter(this);
+    }
 }

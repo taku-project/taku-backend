@@ -61,8 +61,6 @@ public class Image extends BaseTimeEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    // TODO : 커뮤니티 이미지
-
     public static Image of(CreateImageDTO createImageDTO, User user) {
         return Image.builder()
                 .fileName(createImageDTO.getFileName())
