@@ -41,4 +41,8 @@ public class CompletedDeal extends BaseTimeEntity {
 
     @Column(name = "similarity_score")
     private Double similarity;
+
+    public void updateSimilarityScore(double score) {
+        this.similarity = score;
+    }
 }
