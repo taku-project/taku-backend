@@ -5,9 +5,10 @@ import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.util.VideoConversionService;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
-import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
+import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.Objects;
@@ -45,6 +47,9 @@ public class ShortsServiceImpl implements  ShortsService {
 
     @Value("${flask.recommend-shorts-url}")
     private String recommendShortsUrl;
+
+    @Value("${flask.find-shorts-comment-url}")
+    private String findShortsCommentUrl;
 
     @Transactional
     @Override
@@ -80,7 +85,7 @@ public class ShortsServiceImpl implements  ShortsService {
 
 
     @Override
-    public List<ShortsRecommendResDTO> findRecommendShorts(PrincipalUser principalUser) {
+    public List<ShortsInfoResDTO> findRecommendShorts(PrincipalUser principalUser) {
         
         // 유저 아이디 조회
         Long userId = 0L;
@@ -104,9 +109,65 @@ public class ShortsServiceImpl implements  ShortsService {
         List<Shorts> shorts = response.getBody();
         log.info("추천된 쇼츠 목록: {}", shorts);
 
-        List<ShortsRecommendResDTO> shortsRecommendResDTOs = shorts.stream().map(ShortsRecommendResDTO::of).collect(Collectors.toList());
+        List<ShortsInfoResDTO> shortsInfoResDTOs = shorts.stream().map(ShortsInfoResDTO::of).collect(Collectors.toList());
 
-        log.info("추천된 쇼츠 목록: {}", shortsRecommendResDTOs);
-        return shortsRecommendResDTOs;
+        log.info("추천된 쇼츠 목록: {}", shortsInfoResDTOs);
+        return shortsInfoResDTOs;
+    }
+
+    @Override
+    public List<ShortsCommentDTO> findShortsComment(String shortsId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.findShortsCommentUrl)
+            .queryParam("shorts_id", shortsId);
+            
+        String url = builder.toUriString();
+        log.info("쇼츠 댓글 조회 요청: {}", url);
+
+        // Header 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ResponseEntity<List<ShortsCommentDTO>> response = this.restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            new HttpEntity<>(null, headers),
+            new ParameterizedTypeReference<List<ShortsCommentDTO>>() {}
+        );
+
+        List<ShortsCommentDTO> shortsCommentDTOs = response.getBody();
+        log.info("쇼츠 댓글 목록: {}", shortsCommentDTOs);
+
+        if(!shortsCommentDTOs.isEmpty()) {
+            this.setCommentUser(shortsCommentDTOs);
+        }
+        return shortsCommentDTOs;
+    }
+
+    /**
+     * 댓글 작성자 정보 설정
+     * @param shortsCommentDTOs
+     */
+    private void setCommentUser(List<ShortsCommentDTO> shortsCommentDTOs) {
+        // 댓글 작성자들 아이디 목록 조회
+        List<Long> userIds = shortsCommentDTOs.stream()
+            .map(comment -> comment.getUserInfo().getId())
+            .distinct()
+            .collect(Collectors.toList());
+        log.info("댓글 작성자들 아이디 목록: {}", userIds);
+
+        // 댓글 작성자들 정보 조회
+        List<User> users = this.userRepository.findByUserIdIn(userIds);
+
+        List<ShortsCommentDTO.CommentUserDTO> commentUserDTOs = users.stream()
+            .map(ShortsCommentDTO.CommentUserDTO::of)
+            .collect(Collectors.toList());
+
+        // 댓글 작성자들 정보 설정
+        shortsCommentDTOs.forEach(comment -> {
+            comment.setUserInfo(commentUserDTOs.stream()
+                .filter(user -> user.getId().equals(comment.getUserInfo().getId()))
+                .findFirst()
+                .orElse(null));
+        });
     }
 }

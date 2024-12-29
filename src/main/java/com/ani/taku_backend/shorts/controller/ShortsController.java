@@ -3,18 +3,22 @@ package com.ani.taku_backend.shorts.controller;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
 import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
-import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
+import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
 import com.ani.taku_backend.shorts.service.ShortsService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -26,17 +30,17 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/shorts")
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "쇼츠 API", description = "파일 API")
+@Slf4j
 public class ShortsController {
 
     private final FileService fileUploadService;
@@ -82,10 +86,25 @@ public class ShortsController {
             @ApiResponse(responseCode = "200", description = "Shorts recommend : SUCCESS")
     })
     @GetMapping("/recommend")
-    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsRecommendResDTO>> getRecommendShorts(
+    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsInfoResDTO>> getRecommendShorts(
         @AuthenticationPrincipal PrincipalUser userDetails
     ) {
         return com.ani.taku_backend.common.response.ApiResponse.ok(this.shortsService.findRecommendShorts(userDetails));
     }
+
+    @Operation(summary = "쇼츠 댓글 조회", description = "쇼츠 댓글을 조회합니다.",
+        security = { @SecurityRequirement(name = "Bearer Auth") }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS")
+    })
+    @GetMapping("/comment")
+    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> findShortsComment(
+        @Parameter(description = "쇼츠 아이디", required = true) @RequestParam(value = "shortsId", required = true) String shortsId) {
+        log.info("쇼츠 댓글 조회 요청: shortsId = {}", shortsId);
+        List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
+        return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
+    }
+    
 
 }

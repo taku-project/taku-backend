@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Slf4j
-public class ShortsRecommendResDTO {
+public class ShortsInfoResDTO {
 
     private String id;
     private String title;
@@ -35,8 +35,8 @@ public class ShortsRecommendResDTO {
     private LocalDateTime createdAt;
 
 
-    public static ShortsRecommendResDTO of(Shorts shorts) {
-        return ShortsRecommendResDTO.builder()
+    public static ShortsInfoResDTO of(Shorts shorts) {
+        return ShortsInfoResDTO.builder()
                 .id(shorts.getId())
                 .title(shorts.getTitle())
                 .description(shorts.getDescription())
