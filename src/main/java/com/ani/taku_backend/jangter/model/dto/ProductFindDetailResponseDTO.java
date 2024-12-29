@@ -7,6 +7,7 @@ import lombok.Data;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ProductFindDetailResponseDTO {
@@ -17,6 +18,7 @@ public class ProductFindDetailResponseDTO {
     private StatusType status;
     private LocalDateTime createdAt;
     private Long viewCount;
+    private List<String> imageUrlList;
 
     public ProductFindDetailResponseDTO(DuckuJangter duckuJangter, StatusType status, Long addViewCount) {
         this.title = duckuJangter.getTitle();
@@ -25,5 +27,11 @@ public class ProductFindDetailResponseDTO {
         this.status = status;
         this.createdAt = duckuJangter.getCreatedAt();
         this.viewCount = duckuJangter.getViewCount() + (addViewCount != null ? addViewCount : 0L);
+
+        // DuckuJangter와 연관된 이미지 URL 추출
+        this.imageUrlList = duckuJangter.getJangterImages()
+                .stream()
+                .map(jangterImages -> jangterImages.getImage().getImageUrl())
+                .toList();
     }
 }

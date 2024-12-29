@@ -72,7 +72,7 @@ public class DuckuJangterService {
         }
     }
 
-    // 판매글 엔티티 생성..
+    // 판매글 엔티티 생성
     private DuckuJangter createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user, ItemCategories findItemCategory) {
         return DuckuJangter.builder()
                 .user(user)
@@ -103,6 +103,5 @@ public class DuckuJangterService {
 
         return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), viewCount);
     }
-
 
 }
