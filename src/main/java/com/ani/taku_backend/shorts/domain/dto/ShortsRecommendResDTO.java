@@ -13,11 +13,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Builder
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Slf4j
 public class ShortsRecommendResDTO {
 
     private String id;
@@ -58,13 +60,7 @@ public class ShortsRecommendResDTO {
         }
 
         // ts 파일을 제외한 m3u8 파일을 찾는다.
-        String playUrl = remoteStorageUrl.stream().filter(url -> {
-            if(url.toLowerCase().contains(VideoType.TS.getExtension())){
-                return false;
-            }
-            return true;
-        }).findFirst().orElse(null);
-
+        String playUrl = remoteStorageUrl.stream().filter(url -> url.toLowerCase().contains(".m3u8")).findFirst().orElse(null);
         return FileInfoDTO.builder()
                 .playUrl(playUrl)
                 .duration(shorts.getFileInfo().getDuration())

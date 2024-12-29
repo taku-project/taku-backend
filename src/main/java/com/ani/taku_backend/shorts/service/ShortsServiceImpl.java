@@ -1,5 +1,6 @@
 package com.ani.taku_backend.shorts.service;
 
+import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.service.FileService;
@@ -7,8 +8,8 @@ import com.ani.taku_backend.common.util.VideoConversionService;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
-import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -43,8 +43,8 @@ public class ShortsServiceImpl implements  ShortsService {
     private final FileService fileService;
     private final RestTemplate restTemplate;
 
-    @Value("${flask.url}")
-    private String flaskUrl;
+    @Value("${flask.recommend-shorts-url}")
+    private String recommendShortsUrl;
 
     @Transactional
     @Override
@@ -80,17 +80,22 @@ public class ShortsServiceImpl implements  ShortsService {
 
 
     @Override
-    public List<ShortsRecommendResDTO> findRecommendShorts() {
-        String restUrl = this.flaskUrl.replace("extract-keywords", "getMongo");
+    public List<ShortsRecommendResDTO> findRecommendShorts(PrincipalUser principalUser) {
+        
+        // 유저 아이디 조회
+        Long userId = 0L;
+        if(principalUser != null) {
+            userId = principalUser.getUser().getUserId();
+        }
+        Map<String, Long> user = new HashMap<>();
+        user.put("user_id", userId);
 
-        Map<String, Integer> user = new HashMap<>();
-        user.put("userId", 905);
-
+        // Header 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ResponseEntity<List<Shorts>> response = this.restTemplate.exchange(
-            restUrl, 
+            this.recommendShortsUrl,
             HttpMethod.POST,
             new HttpEntity<>(user, headers),
             new ParameterizedTypeReference<List<Shorts>>() {}

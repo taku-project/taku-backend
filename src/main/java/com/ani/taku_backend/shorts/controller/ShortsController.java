@@ -11,6 +11,7 @@ import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -73,9 +74,18 @@ public class ShortsController {
         }
     }
 
+    @Operation(
+        summary = "쇼츠 추천", description = "쇼츠를 추천합니다.",
+        security = { @SecurityRequirement(name = "Bearer Auth") }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts recommend : SUCCESS")
+    })
     @GetMapping("/recommend")
-    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsRecommendResDTO>> getRecommendShorts() {
-        return com.ani.taku_backend.common.response.ApiResponse.ok(this.shortsService.findRecommendShorts());
+    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsRecommendResDTO>> getRecommendShorts(
+        @AuthenticationPrincipal PrincipalUser userDetails
+    ) {
+        return com.ani.taku_backend.common.response.ApiResponse.ok(this.shortsService.findRecommendShorts(userDetails));
     }
 
 }
