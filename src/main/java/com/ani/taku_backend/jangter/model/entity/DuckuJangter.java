@@ -1,12 +1,14 @@
 package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 
 @Builder
 @Entity
@@ -38,16 +40,17 @@ public class DuckuJangter extends BaseTimeEntity {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 100, nullable = false)
-    private String status;  // 글 상태? 판매중? 판매완료? 이런거..?
+    private StatusType status;  // 글 상태? 판매중? 판매완료? 이런거..?
 
-    private Long view_count;
-    private LocalDateTime deleted_at;
+    private Long viewCount;
+    private LocalDateTime deletedAt;
 
+    // TODO 북마크
 
     public void softDelete() {
-        deleted_at = LocalDateTime.now();
+        deletedAt = LocalDateTime.now();
     }
-
 
 }
