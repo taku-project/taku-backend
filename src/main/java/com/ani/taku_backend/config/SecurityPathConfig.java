@@ -30,7 +30,8 @@ public class SecurityPathConfig {
 
     // 사용자 API 관련 설정
     public static final String USER_API_PATH = "/api/user/**";
-
+    public static final String RECOMMEND_SHORTS_API_PATH = "/api/shorts/recommend";
+    
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
             .anyMatch(pattern -> pathMatcher.match(pattern, path));
