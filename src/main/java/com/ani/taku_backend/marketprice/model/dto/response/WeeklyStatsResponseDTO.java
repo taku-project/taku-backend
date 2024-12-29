@@ -1,4 +1,4 @@
-package com.ani.taku_backend.marketprice.model.dto;
+package com.ani.taku_backend.marketprice.model.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
