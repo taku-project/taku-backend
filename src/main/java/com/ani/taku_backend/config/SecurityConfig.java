@@ -54,7 +54,6 @@ public class SecurityConfig {
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
-                .requestMatchers(HttpMethod.GET, SecurityPathConfig.RECOMMEND_SHORTS_API_PATH).permitAll()  // 쇼츠 추천 API 허용
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

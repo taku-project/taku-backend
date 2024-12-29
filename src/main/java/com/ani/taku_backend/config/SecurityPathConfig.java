@@ -25,12 +25,15 @@ public class SecurityPathConfig {
         "/public/**",
         "/resources/**",
         "/META-INF/resources/**",
-        "/shorts/**"
+        "/shorts/**",
+
+        // 쇼츠 추천 & 댓글 API
+        "/api/shorts/recommend",
+        "/api/shorts/comment"
     };
 
     // 사용자 API 관련 설정
     public static final String USER_API_PATH = "/api/user/**";
-    public static final String RECOMMEND_SHORTS_API_PATH = "/api/shorts/recommend";
     
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
