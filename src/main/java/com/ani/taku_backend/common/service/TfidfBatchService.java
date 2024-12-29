@@ -23,7 +23,7 @@ public class TfidfBatchService {
     public void calculateAndCacheTfIdf(List<DuckuJangter> products) {
         log.info("Starting TF-IDF calculation for {} products", products.size());
 
-        // 1. 각 상품의 키워드 추출 (Flask 서버와 통)
+        // 1. 각 상품의 키워드 추출 (Flask 서버와 통해)
         Map<Long, List<String>> productKeywords = extractProductKeywords(products);
 
         // 2. 전체 상품 수
