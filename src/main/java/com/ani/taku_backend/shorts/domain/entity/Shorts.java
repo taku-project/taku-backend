@@ -39,6 +39,14 @@ public class Shorts {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    public void addLike() {
+        this.popularityMatics.likes += 1;
+    }
+
+    public void addDisLike() {
+        this.popularityMatics.dislikes += 1;
+    }
+
     @Getter
     @Builder
     @NoArgsConstructor(access = AccessLevel.PROTECTED)

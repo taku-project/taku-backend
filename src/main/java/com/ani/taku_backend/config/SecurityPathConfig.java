@@ -24,7 +24,11 @@ public class SecurityPathConfig {
         "/static/**",
         "/public/**",
         "/resources/**",
-        "/META-INF/resources/**"
+//        "/api/shorts",
+//        "/api/shorts/*",
+//        "/api/shorts/**",
+        "/META-INF/resources/**",
+        "/favicon.ico",
     };
 
     // 사용자 API 관련 설정
