@@ -8,9 +8,11 @@ import com.ani.taku_backend.marketprice.model.entity.QCompletedDeal;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
@@ -25,7 +27,8 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
         List<Tuple> results = queryFactory
                 .select(
                         deal.createdAt.as("date"),
-                        deal.price.avg().as("avgPrice"),
+                        deal.price.avg().as("registeredPrice"),  // 등록가
+                        deal.price.avg().as("soldPrice"),        // 판매가
                         deal.count().as("dealCount")
                 )
                 .from(deal)
@@ -39,11 +42,18 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .orderBy(deal.createdAt.asc())
                 .fetch();
 
+        // PriceDataPoint로 변환
+        List<PriceGraphResponseDTO.PriceDataPoint> dataPoints = results.stream()
+                .map(tuple -> PriceGraphResponseDTO.PriceDataPoint.builder()
+                        .date(tuple.get(deal.createdAt).toLocalDate())
+                        .registeredPrice(tuple.get(1, BigDecimal.class))
+                        .soldPrice(tuple.get(2, BigDecimal.class))
+                        .dealCount(tuple.get(3, Integer.class))
+                        .build())
+                .collect(Collectors.toList());
+
         return PriceGraphResponseDTO.builder()
-                .keyword(keyword)
-                .fromDate(fromDate)
-                .toDate(toDate)
-                .displayOption(option)
+                .dataPoints(dataPoints)
                 .build();
     }
 

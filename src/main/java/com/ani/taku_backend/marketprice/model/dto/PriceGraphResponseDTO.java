@@ -1,24 +1,32 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
-import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "시세 그래프 조회 요청 DTO")
+@Schema(description = "시세 그래프 응답 DTO")
 public class PriceGraphResponseDTO {
-    @Schema(description = "검색 키워드", example = "원피스 루피 피규어")
-    private final String keyword;
+    @Schema(description = "날짜별 데이터")
+    private final List<PriceDataPoint> dataPoints;
 
-    @Schema(description = "조회 시작일", example = "2024-01-01")
-    private final LocalDate fromDate;
+    @Getter
+    @Builder
+    public static class PriceDataPoint {
+        @Schema(description = "날짜")
+        private final LocalDate date;
 
-    @Schema(description = "조회 종료일", example = "2024-03-31")
-    private final LocalDate toDate;
+        @Schema(description = "등록 가격", example = "21000")
+        private final BigDecimal registeredPrice;
 
-    @Schema(description = "그래프 표시 옵션")
-    private final GraphDisplayOption displayOption;
+        @Schema(description = "판매 가격", example = "19500")
+        private final BigDecimal soldPrice;
+
+        @Schema(description = "거래량", example = "5")
+        private final int dealCount;
+    }
 }
