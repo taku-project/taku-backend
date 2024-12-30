@@ -117,7 +117,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 		}
 
