@@ -14,6 +14,10 @@ public class FileException extends DuckwhoException {
     public FileUploadException() {
       super(ErrorCode.FILE_UPLOAD_ERROR);
     }
+
+    public FileUploadException(ErrorCode errorCode) {
+      super(errorCode);
+    }
   }
 
   // 파일 업로드 실패
