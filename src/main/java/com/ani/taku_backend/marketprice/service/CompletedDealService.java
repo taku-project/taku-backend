@@ -22,7 +22,6 @@ public class CompletedDealService {
     private final ExtractKeywordService extractKeywordService;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "marketPrice", key = "#keyword + #fromDate + #toDate + #option")
     public MarketPriceSearchResponseDTO searchMarketPrice(
             String keyword,
             LocalDate fromDate,
@@ -31,32 +30,57 @@ public class CompletedDealService {
             Pageable pageable
     ) {
         try {
-            // 1. 키워드 추출
             List<String> extractedKeywords = extractKeywordService.extractKeywords(keyword);
             String processedKeyword = String.join(" ", extractedKeywords);
 
-            // 2. 시세 그래프 데이터 조회
-            PriceGraphResponseDTO priceGraph = completedDealRepository
-                    .getPriceGraph(processedKeyword, fromDate, toDate, option);
-
-            // 3. 최근 일주일 통계 조회
-            WeeklyStatsResponseDTO weeklyStats = completedDealRepository
-                    .getWeeklyStats(processedKeyword);
-
-            // 4. 유사 상품 조회
-            List<SimilarProductResponseDTO> similarProducts = completedDealRepository
-                    .findSimilarProducts(processedKeyword, pageable);
-
             return MarketPriceSearchResponseDTO.builder()
                     .keyword(keyword)
-                    .priceGraph(priceGraph)
-                    .weeklyStats(weeklyStats)
-                    .similarProducts(similarProducts)
+                    .priceGraph(getPriceGraphWithCache(processedKeyword, fromDate, toDate, option))
+                    .weeklyStats(getWeeklyStatsWithCache(processedKeyword))
+                    .similarProducts(getSimilarProductsWithCache(processedKeyword, pageable))
                     .build();
 
         } catch (Exception e) {
             log.error("시세 조회 중 오류 발생: {}", e.getMessage(), e);
             throw new RuntimeException("시세 조회 중 오류가 발생했습니다.", e);
         }
+    }
+
+    // 시세 그래프 - 긴 TTL로 캐싱 (예: 1시간)
+    @Cacheable(
+            value = "priceGraph",
+            key = "#keyword + #fromDate + #toDate + #option",
+            unless = "#result == null"
+    )
+    public PriceGraphResponseDTO getPriceGraphWithCache(
+            String keyword,
+            LocalDate fromDate,
+            LocalDate toDate,
+            GraphDisplayOption option
+    ) {
+        return completedDealRepository.getPriceGraph(keyword, fromDate, toDate, option);
+    }
+
+    // 주간 통계 - 짧은 TTL로 캐싱 (예: 5분)
+    @Cacheable(
+            value = "weeklyStats",
+            key = "#keyword",
+            unless = "#result == null"
+    )
+    public WeeklyStatsResponseDTO getWeeklyStatsWithCache(String keyword) {
+        return completedDealRepository.getWeeklyStats(keyword);
+    }
+
+    // 유사 상품 - 중간 TTL로 캐싱 (예: 30분)
+    @Cacheable(
+            value = "similarProducts",
+            key = "#keyword + #pageable.pageNumber + #pageable.pageSize",
+            unless = "#result.isEmpty()"
+    )
+    public List<SimilarProductResponseDTO> getSimilarProductsWithCache(
+            String keyword,
+            Pageable pageable
+    ) {
+        return completedDealRepository.findSimilarProducts(keyword, pageable);
     }
 }
