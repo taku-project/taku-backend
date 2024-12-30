@@ -1,6 +1,6 @@
 package com.ani.taku_backend.common.advice;
 
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,16 +14,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 */
 
 @RestControllerAdvice
-public class ApiResponseStatusAdvice implements ResponseBodyAdvice<ApiResponse<?>> {
+public class ApiResponseStatusAdvice implements ResponseBodyAdvice<CommonResponse<?>> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class converterType) {
-        return returnType.getParameterType() == ApiResponse.class;
+        return returnType.getParameterType() == CommonResponse.class;
     }
 
     @Override
-    public ApiResponse<?> beforeBodyWrite(
-            ApiResponse body,
+    public CommonResponse<?> beforeBodyWrite(
+            CommonResponse body,
             MethodParameter returnType,
             MediaType selectedContentType,
             Class selectedConverterType,
