@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "쇼츠 댓글 생성 요청 DTO")
+@Schema(description = "쇼츠 댓글/대댓글 생성 요청 DTO")
 public class ShortsCommentCreateReqDTO {
 
     @Schema(description = "쇼츠 댓글 내용")
     private String comment;
-
 }

@@ -49,6 +49,7 @@ import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.List;
 import java.util.Objects;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -379,5 +380,58 @@ public class ShortsServiceImpl implements  ShortsService {
         if(remove.getDeletedCount() == 0) {
             throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * 대댓글 생성
+     * @param principalUser
+     * @param shortsCommentCreateReqDTO
+     * @param commentId
+     */
+
+    @RequireUser
+    @Override
+    public void createShortsReply(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO,
+            String commentId) {
+
+        User user = principalUser.getUser();
+
+        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
+            ObjectIdUtil.convertToObjectId(commentId), 
+            Interaction.class
+        )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
+
+        CommentDetail commentDetail = commentInteraction.getDetails();
+
+        CommentDetail.Reply reply = CommentDetail.Reply.builder()
+            .id(new ObjectId())
+            .userId(user.getUserId())
+            .replyText(shortsCommentCreateReqDTO.getComment())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        commentDetail.getReplies().add(reply);
+
+        try {
+            this.mongoTemplate.save(commentInteraction);
+        } catch (Exception e) {
+            log.error("대댓글 생성 실패: {}", e.getMessage(), e);
+            throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @Override
+    public void deleteShortsReply(PrincipalUser principalUser, String replyId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteShortsReply'");
+    }
+
+
+    @Override
+    public void updateShortsReply(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO,
+            String replyId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateShortsReply'");
     }
 }
