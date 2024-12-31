@@ -1,6 +1,5 @@
 package com.ani.taku_backend.config;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.util.AntPathMatcher;
 import java.util.Arrays;
 
@@ -9,6 +8,8 @@ public class SecurityPathConfig {
 
     // 인증이 필요없는 정적 리소스 경로
     public static final String[] PUBLIC_STATIC_PATHS = {
+        // TODO 개발 완료시 /admin/** 제거 
+        "/admin/**",
         "/",
         "/login",
         "/oauth2/authorization/**",
@@ -18,7 +19,16 @@ public class SecurityPathConfig {
         "/v3/api-docs/**",
         "/swagger-ui.html",
         "/swagger-resources/**",
-        "/webjars/**"
+        "/webjars/**",
+        // 정적 리소스
+        "/static/**",
+        "/public/**",
+        "/resources/**",
+//        "/api/shorts",
+//        "/api/shorts/*",
+//        "/api/shorts/**",
+        "/META-INF/resources/**",
+        "/favicon.ico",
     };
 
     // 사용자 API 관련 설정

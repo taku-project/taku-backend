@@ -20,6 +20,10 @@ public class UserException extends RuntimeException {
     public UserNotFoundException(String message) {
       super(message);
     }
+
+    public UserNotFoundException() {
+      super(ErrorCode.USER_NOT_FOUND.getMessage());
+    }
   }
 
   // 이미 삭제된 유저에 대한 예외

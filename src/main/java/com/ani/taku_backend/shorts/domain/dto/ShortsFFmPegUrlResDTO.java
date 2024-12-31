@@ -1,18 +1,27 @@
 package com.ani.taku_backend.shorts.domain.dto;
 
-import lombok.AccessLevel;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nimbusds.jose.shaded.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class ShortsFFmPegUrlResDTO {
-    private int status;
+    @SerializedName("message")
+    private String message;
+    @SerializedName("m3u8_url")
     private String m3u8Url;
-    private List<String> segmentUrls;
-    private int duration;
+    @SerializedName("segments")
+    private List<String> segments;
+    @SerializedName("duration")
+    private double duration;
 }
