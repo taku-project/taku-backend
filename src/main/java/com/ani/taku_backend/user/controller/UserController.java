@@ -193,11 +193,11 @@ public class UserController {
 			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
-	public com.ani.taku_backend.common.response.ApiResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
+	public CommonResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
 
 		UserDetailDto userDetail = userService.getUserDetail(userId);
 
-		return com.ani.taku_backend.common.response.ApiResponse.ok(userDetail);
+		return CommonResponse.ok(userDetail);
 
 	}
 
@@ -208,7 +208,7 @@ public class UserController {
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
 	})
-	public com.ani.taku_backend.common.response.ApiResponse<String>editUserDetail(@PathVariable Long userId
+	public CommonResponse<String>editUserDetail(@PathVariable Long userId
 		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request",required = false) @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDto request
 
 	){
@@ -217,7 +217,7 @@ public class UserController {
 			String nickname = request.getNickname();
 			if(userService.checkNickname(nickname)){ //이미 존재하는 닉네임일 경우
 				System.out.println("이미 존재하는 닉네임 입니다. ");
-				return com.ani.taku_backend.common.response.ApiResponse.created("이미 존재하는 닉네임입니다. ");
+				return CommonResponse.created("이미 존재하는 닉네임입니다. ");
 			}else{ // 닉네임 vaildation 통과를 했을 경우
 				System.out.println("이미 존재하는 닉네임이 아님으로, 업데이트를 시작합니다. ");
 				userService.updateNickname(userId, nickname);
@@ -237,12 +237,12 @@ public class UserController {
 				throw new FileException.FileUploadException("파일 업로드 실패");
 			}
 
-			return com.ani.taku_backend.common.response.ApiResponse.ok(fileUrl);
+			return CommonResponse.ok(fileUrl);
 			//2버.
 
 		}
 
-		return com.ani.taku_backend.common.response.ApiResponse.ok(null);
+		return CommonResponse.ok(null);
 
 	}
 
