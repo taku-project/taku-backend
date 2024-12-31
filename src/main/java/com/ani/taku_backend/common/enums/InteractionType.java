@@ -15,4 +15,13 @@ public enum InteractionType {
     public String getValue() {
         return this.value;
     }
+
+    public static InteractionType fromValue(String value) {
+        for (InteractionType type : InteractionType.values()) {
+            if (type.getValue().equals(value)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown InteractionType value: " + value);
+    }
 }
