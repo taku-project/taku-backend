@@ -47,7 +47,11 @@ public enum ErrorCode {
     // Profanity Filter
     NOT_FOUND_PROFANITY_FILTER(40403, HttpStatus.NOT_FOUND, "존재하지 않는 금칙어 필터입니다."),
     INVALID_CONTENT_PROFANITY(40301, HttpStatus.FORBIDDEN, "금칙어가 포함된 내용이 있습니다."),
-    DUPLICATE_PROFANITY_FILTER(40902, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다.");
+    DUPLICATE_PROFANITY_FILTER(40902, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다."),
+
+    // Shorts
+    NOT_FOUND_SHORTS(40405, HttpStatus.NOT_FOUND, "존재하지 않는 쇼츠입니다.");
+    
 
     // 403 Forbidden
     private final Integer code;
