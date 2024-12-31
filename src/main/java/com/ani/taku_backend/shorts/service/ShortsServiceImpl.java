@@ -467,7 +467,7 @@ public class ShortsServiceImpl implements  ShortsService {
 
         UpdateResult result = mongoTemplate.updateFirst(query, update, Interaction.class);
         log.info("대댓글 수정 결과: {}", result);
-        if (result.getMatchedCount() == 0) {
+        if (result.getMatchedCount() == 0) {    // 매칭된 문서가 없는경우 에러처리
             throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
