@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.ani.taku_backend.common.enums.InteractionType;
+import com.ani.taku_backend.shorts.domain.vo.InteractionDetail;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
-public class Interaction<T> {
+public class Interaction<T extends InteractionDetail> {
 
     @Id
     private ObjectId id;
