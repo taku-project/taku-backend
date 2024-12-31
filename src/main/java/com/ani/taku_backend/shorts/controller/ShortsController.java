@@ -180,19 +180,29 @@ public class ShortsController {
         return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
     }
 
-    // TODO: 댓글 대댓글 삭제
+    /**
+     * 대댓글 삭제
+     * @param shortsId
+     * @param commentId
+     * @param replyId
+     */
     @DeleteMapping("/{shortsId}/comment/{commentId}/reply/{replyId}")
     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> deleteShortsReply(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
         @Parameter(description = "댓글 아이디", required = true) @PathVariable(value = "commentId") String commentId,
         @Parameter(description = "대댓글 아이디", required = true) @PathVariable(value = "replyId") String replyId
     ) {
-        this.shortsService.deleteShortsReply(null, replyId);
+        this.shortsService.deleteShortsReply(null, commentId, replyId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
         return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
     }
 
-    // TODO: 댓글 대댓글 수정
+    /**
+     * 대댓글 수정
+     * @param shortsId
+     * @param commentId
+     * @param replyId
+     */
     @PatchMapping("/{shortsId}/comment/{commentId}/reply/{replyId}")
     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> updateShortsReply(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,

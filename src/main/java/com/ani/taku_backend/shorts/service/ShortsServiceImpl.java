@@ -421,10 +421,37 @@ public class ShortsServiceImpl implements  ShortsService {
     }
 
 
+    /**
+     * 대댓글 삭제
+     * @param principalUser
+     * @param commentId
+     * @param replyId
+     */
     @Override
-    public void deleteShortsReply(PrincipalUser principalUser, String replyId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteShortsReply'");
+    @RequireUser
+    @SuppressWarnings("unchecked")
+    public void deleteShortsReply(PrincipalUser principalUser, String commentId, String replyId) {
+        Long userId = principalUser.getUser().getUserId();
+
+        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
+            ObjectIdUtil.convertToObjectId(commentId), 
+            Interaction.class
+        )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
+
+        // 대댓글 찾기
+        CommentDetail.Reply targetReply = commentInteraction.getDetails().getReplies().stream()
+            .filter(reply -> reply.getId().toString().equals(replyId))
+            .findFirst()
+            .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_REPLY));
+
+        // 대댓글 작성자 확인
+        if (!targetReply.getUserId().equals(userId)) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 대댓글 삭제
+        commentInteraction.getDetails().getReplies().remove(targetReply);
+        this.mongoTemplate.save(commentInteraction);
     }
 
     /**
