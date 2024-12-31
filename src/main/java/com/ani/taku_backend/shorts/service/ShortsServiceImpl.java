@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.util.ObjectIdUtil;
@@ -14,6 +15,8 @@ import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
 import com.ani.taku_backend.shorts.domain.entity.Interaction;
+import com.ani.taku_backend.shorts.domain.dto.res.PopularityMaticResDTO;
+import com.ani.taku_backend.shorts.domain.dto.res.ShortsResponseDTO;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
 import com.ani.taku_backend.shorts.domain.vo.CommentDetail;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -37,12 +40,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +64,7 @@ public class ShortsServiceImpl implements  ShortsService {
 
     @Value("${flask.find-shorts-comment-url}")
     private String findShortsCommentUrl;
+
 
     @Transactional
     @Override
@@ -228,5 +234,60 @@ public class ShortsServiceImpl implements  ShortsService {
             }
             throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public ShortsResponseDTO findShortsInfo(String shortsId) {
+        Shorts shorts = Optional.ofNullable(mongoTemplate.findById(shortsId, Shorts.class))
+                            .orElseThrow(FileException.FileNotFoundException::new);
+
+        if(shorts.getFileInfo() != null) {
+            Shorts.VideoMetadata fileInfo = shorts.getFileInfo();
+            String m3u8Url = fileInfo.getRemoteStorageUrl()
+                    .stream()
+                    .filter(fileUrl -> fileUrl.endsWith(".m3u8"))
+                    .findFirst()
+                    .orElseThrow(FileException.FileNotFoundException::new);
+
+            Shorts.PopularityMatic popularityMatics = shorts.getPopularityMatics();
+            // TODO 사용자 상호 작용 테이블에서 유저가 like, dislike 했는지 확인
+            return ShortsResponseDTO.builder()
+                    .userProfileImg(shorts.getProfileImg())
+                    .description(shorts.getDescription())
+                    .popularityMatic(new PopularityMaticResDTO(popularityMatics))
+                    .m3u8Url(m3u8Url)
+                    .build();
+        } else {
+            throw new FileException.FileNotFoundException();
+        }
+
+    }
+
+    @Transactional
+    @Override
+    public void shortsLike(User user, String shortsId) {
+        // TODO 사용자 상호 작용 Document에서 dislike 존재 여부 확인
+        // TODO 사용자 상호 작용 Document에서 like 존재 여부 확인
+        // TODO dislike가 존재하면 like로 바꿈
+        Shorts shorts = Optional.ofNullable(mongoTemplate.findById(shortsId, Shorts.class))
+                .orElseThrow(FileException.FileNotFoundException::new);
+        shorts.addLike();
+
+        // TODO 사용자 상호 작용 Document에 생성
+        mongoTemplate.save(shorts);
+    }
+
+    @Transactional
+    @Override
+    public void shortsDisLike(User user, String shortsId) {
+        // TODO 사용자 상호 작용 Document에서 like 존재 여부 확인
+        // TODO 사용자 상호 작용 Document에서 dislike 존재 여부 확인
+        // TODO like가 존재하면 like 1 차감 후 dislike 1증가
+        Shorts shorts = Optional.ofNullable(mongoTemplate.findById(shortsId, Shorts.class))
+                .orElseThrow(FileException.FileNotFoundException::new);
+        shorts.addLike();
+
+        // TODO 사용자 상호 작용 Document에 생성
+        mongoTemplate.save(shorts);
     }
 }

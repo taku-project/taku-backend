@@ -3,6 +3,7 @@ package com.ani.taku_backend.post.service;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.PostException;
 import com.ani.taku_backend.common.model.dto.ImageCreateRequestDTO;
@@ -145,7 +146,7 @@ public class PostService {
                     validateImageCount(postCreateRequestDTO.getImagelist());    // 5개 이상이면 예외 발생
                 }
             } catch (IOException e) {
-                throw new FileException("파일 업로드에 실패 하였습니다");
+                throw new FileException(ErrorCode.FILE_UPLOAD_ERROR);
             }
         }
     }
@@ -188,7 +189,7 @@ public class PostService {
                 String imageUrl = fileService.uploadFile(image);
                 processImage(requestDTO, user, post, imageUrl);
             } catch (IOException e) {
-                throw new FileException("파일 업로드에 실패하였습니다.");
+                throw new FileException(ErrorCode.FILE_MAX_REGIST_EXCEED);
             }
         }
     }
@@ -232,7 +233,7 @@ public class PostService {
 
     private void validateImageCount(List<ImageCreateRequestDTO> imageList) {
         if (imageList != null && imageList.size() > 5) {
-            throw new FileException.FileUploadException("5개 이상 이미지를 등록할 수 없습니다.");
+            throw new FileException.FileUploadException(ErrorCode.FILE_MAX_REGIST_EXCEED);
         }
     }
 

@@ -5,6 +5,7 @@ import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.shorts.domain.dto.res.ShortsResponseDTO;
 import com.ani.taku_backend.user.model.entity.User;
 
 import java.time.LocalDate;
@@ -19,6 +20,10 @@ public interface ShortsService {
     List<ShortsCommentDTO> findShortsComment(String shortsId);
     void createShortsComment(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO);
 
+    ShortsResponseDTO findShortsInfo(String shortsId);
+
+    void shortsLike(User user, String shortsId);
+    void shortsDisLike(User user, String shortsId);
 
     default String generateUniqueFilePath(String originalFileName) {
         Objects.requireNonNull(originalFileName);
