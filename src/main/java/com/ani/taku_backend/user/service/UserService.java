@@ -64,7 +64,7 @@ public class UserService {
   }
 
   // 유저 상태 업데이트
-  @Transactional
+  @Transactional //transactional 붙여주지 않으면 오류 난다.
   public int updateUserStatus(Long userId, StatusType status) {
     return this.userRepository.updateUserStatus(userId, status.name());
   }
@@ -79,10 +79,17 @@ public class UserService {
   }
 
 
+  @Transactional
   public void updateNickname(Long userId, String nickname){
 
     userRepository.updateNickname(userId, nickname);
 
   }
+
+  @Transactional
+  public void updateProfileImg(Long userId, String profileImg){
+    userRepository.updateProfileImg(userId, profileImg);
+  }
+
 }
 

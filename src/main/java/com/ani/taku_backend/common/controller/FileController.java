@@ -34,7 +34,7 @@ public class FileController {
     })
     @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        String uploadUrl = fileUploadService.uploadFile(file);
+        String uploadUrl = fileUploadService.getVideoFile(file);
         return "파일이 스토리지에 업로드 되었습니다. UploadUrl: " + uploadUrl;
     }
 
@@ -46,7 +46,7 @@ public class FileController {
     @GetMapping("/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) throws AmazonS3Exception {
         try {
-            S3Object s3Object = fileUploadService.getFile(fileName);
+            S3Object s3Object = fileUploadService.getVideoFile(fileName);
             byte[] fileContent = s3Object.getObjectContent().readAllBytes();
             Resource resource = new ByteArrayResource(fileContent);
 

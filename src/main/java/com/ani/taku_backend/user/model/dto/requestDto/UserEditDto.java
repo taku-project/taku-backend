@@ -11,6 +11,4 @@ public class UserEditDto {
 
     private String nickname;
 
-    private String profileImg;
-
 }
