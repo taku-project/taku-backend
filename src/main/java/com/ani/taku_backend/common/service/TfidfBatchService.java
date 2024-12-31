@@ -1,10 +1,8 @@
 package com.ani.taku_backend.common.service;
 
 
-import com.ani.taku_backend.common.service.ExtractKeywordService;
-import com.ani.taku_backend.common.service.TfidfService;
 import com.ani.taku_backend.common.util.TfidfCalculator;
-import com.ani.taku_backend.jangter.DuckuJangter;
+import com.ani.taku_backend.jangtermarket.DuckuJangter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
