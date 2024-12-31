@@ -55,7 +55,8 @@ public enum ErrorCode {
     DUPLICATE_PROFANITY_FILTER(40902, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다."),
 
     // Shorts
-    NOT_FOUND_SHORTS(40405, HttpStatus.NOT_FOUND, "존재하지 않는 쇼츠입니다.");
+    NOT_FOUND_SHORTS(40405, HttpStatus.NOT_FOUND, "존재하지 않는 쇼츠입니다."),
+    NOT_FOUND_SHORTS_COMMENT(40406, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다.");
     
 
     // 403 Forbidden

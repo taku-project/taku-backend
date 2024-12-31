@@ -2,6 +2,7 @@ package com.ani.taku_backend.shorts.service;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.InteractionType;
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
@@ -11,6 +12,7 @@ import com.ani.taku_backend.common.util.ObjectIdUtil;
 import com.ani.taku_backend.common.util.VideoConversionService;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentUpdateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
@@ -22,6 +24,8 @@ import com.ani.taku_backend.shorts.domain.vo.CommentDetail;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -47,6 +54,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+
 import java.util.Optional;
 
 @Service
@@ -99,6 +108,11 @@ public class ShortsServiceImpl implements  ShortsService {
     }
 
 
+    /**
+     * 쇼츠 추천 조회
+     * @param principalUser
+     * @return
+     */
     @Override
     public List<ShortsInfoResDTO> findRecommendShorts(PrincipalUser principalUser) {
         
@@ -130,6 +144,11 @@ public class ShortsServiceImpl implements  ShortsService {
         return shortsInfoResDTOs;
     }
 
+    /**
+     * 쇼츠 댓글 조회
+     * @param shortsId
+     * @return
+     */
     @Override
     public List<ShortsCommentDTO> findShortsComment(String shortsId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.findShortsCommentUrl)
@@ -198,14 +217,15 @@ public class ShortsServiceImpl implements  ShortsService {
     @RequireUser
     @Override
     public void createShortsComment(PrincipalUser principalUser,
-            ShortsCommentCreateReqDTO shortsCommentCreateReqDTO) {
+            ShortsCommentCreateReqDTO shortsCommentCreateReqDTO, 
+            String shortsId) {
 
         User user = principalUser.getUser();
 
         // 변환
-        Shorts shorts = this.mongoTemplate.findById(ObjectIdUtil.convertToObjectId(shortsCommentCreateReqDTO.getShortsId()), Shorts.class);
+        Shorts shorts = this.mongoTemplate.findById(ObjectIdUtil.convertToObjectId(shortsId), Shorts.class);
         if(shorts == null) {
-            log.error("쇼츠 조회 실패: {}", shortsCommentCreateReqDTO.getShortsId());
+            log.error("쇼츠 조회 실패: {}", shortsId);
             throw new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS);
         }
 
@@ -216,7 +236,7 @@ public class ShortsServiceImpl implements  ShortsService {
 
         Interaction<CommentDetail> commentInteraction = Interaction.<CommentDetail>builder()
             .userId(user.getUserId())
-            .shortsId(ObjectIdUtil.convertToObjectId(shortsCommentCreateReqDTO.getShortsId()))
+            .shortsId(ObjectIdUtil.convertToObjectId(shortsId))
             .interactionType(InteractionType.COMMENT)
             .details(commentDetail)
             .shortsTags(shorts.getTags())
@@ -289,5 +309,75 @@ public class ShortsServiceImpl implements  ShortsService {
 
         // TODO 사용자 상호 작용 Document에 생성
         mongoTemplate.save(shorts);
+    }
+
+
+    /**
+     * 댓글 수정
+     * @param principalUser
+     * @param shortsCommentUpdateReqDTO
+     */
+    @SuppressWarnings("unchecked")
+    @Transactional
+    @RequireUser
+    @Override
+    public void updateShortsComment(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO, String commentId) {
+        User user = principalUser.getUser();
+
+        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
+            ObjectIdUtil.convertToObjectId(commentId), 
+            Interaction.class
+        )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
+
+        // 인증되지 않은 접근
+        if(commentInteraction.getUserId() != user.getUserId()) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 댓글 수정
+        Query query = new Query(
+            Criteria
+                .where("_id").is(ObjectIdUtil.convertToObjectId(commentId))
+                .and("user_id").is(user.getUserId())
+        );
+
+        Update update = new Update();
+        update.set("details.commentText", shortsCommentUpdateReqDTO.getComment());
+
+        UpdateResult updateFirst = this.mongoTemplate.updateFirst(query, update, Interaction.class);
+        log.info("댓글 수정 결과: {}", updateFirst);
+
+        if(updateFirst.getModifiedCount() == 0) {
+            throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        
+    }
+
+    /**
+     * 댓글 삭제
+     * @param principalUser
+     * @param shortsCommentDeleteReqDTO
+     */
+    @SuppressWarnings("unchecked")
+    @RequireUser
+    @Override
+    public void deleteShortsComment(PrincipalUser principalUser, String commentId) {
+        User user = principalUser.getUser();
+
+        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
+            ObjectIdUtil.convertToObjectId(commentId), 
+            Interaction.class
+        )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
+
+        if(commentInteraction.getUserId() != user.getUserId()) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        DeleteResult remove = this.mongoTemplate.remove(commentInteraction);
+        log.debug("댓글 삭제 결과: {}", remove);
+
+        if(remove.getDeletedCount() == 0) {
+            throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

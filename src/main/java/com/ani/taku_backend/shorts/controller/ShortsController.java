@@ -5,6 +5,7 @@ import com.ani.taku_backend.common.response.ApiResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentUpdateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
 import com.ani.taku_backend.shorts.domain.dto.res.ShortsResponseDTO;
@@ -26,10 +27,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -105,55 +109,58 @@ public class ShortsController {
     @ApiResponses(value = {
             // @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS")
     })
-    @GetMapping("/comment")
+    @GetMapping("/{shortsId}/comment")
     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> findShortsComment(
-        @Parameter(description = "쇼츠 아이디", required = true) @RequestParam(value = "shortsId", required = true) String shortsId) {
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId) {
         log.info("쇼츠 댓글 조회 요청: shortsId = {}", shortsId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
         return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
     }
 
-    // TODO: 댓글 추가
-    /**
-     * /comment POST
-     * 로그인 유저만 가능
-     * header: Authorization: Bearer {token}
-     * 
-     * JSON
-     * {
-     *  "comment": "string",
-     *  "shorts_id": "string"
-     * }
-     */
-
-     @PostMapping("/comment")
+    // 댓글 생성
+     @PostMapping("/{shortsId}/comment")
      public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> createShortsComment(
-        @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
+        @Valid @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
      ) {
 
         // 댓글 생성
-        this.shortsService.createShortsComment(null, shortsCommentCreateReqDTO);
+        this.shortsService.createShortsComment(null, shortsCommentCreateReqDTO , shortsId);
         
         // 댓글 조회
-        List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsCommentCreateReqDTO.getShortsId());
+        List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
         return com.ani.taku_backend.common.response.ApiResponse.created(shortsComment);
      }
 
-    // TODO: 댓글 수정
-    /**
-     * /comment/{commentId} PUT
-     * 로그인 유저만 가능
-     * header: Authorization: Bearer {token}
-     * 
-     * JSON
-     * {
-     *  "shorts_id": "string",
-     *  "comment": "string",
-     *  "comment_id": "string"
-     * }
-     */
+     /**
+      * 댓글 수정
 
-    // TODO: 댓글 삭제
+      * @param shortsCommentUpdateReqDTO
+      */
+     @PatchMapping("/{shortsId}/comment/{commentId}")
+     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>>  updateShortsComment(
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
+        @Parameter(description = "댓글 아이디", required = true) @PathVariable(value = "commentId") String commentId,
+        @Valid @RequestBody ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO
+     ) {
+        this.shortsService.updateShortsComment(null, shortsCommentUpdateReqDTO, commentId);
+        List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
+        return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
+     }
+
+     /**
+      * 댓글삭제
+      * @param shortsCommentDeleteReqDTO
+      */
+    @DeleteMapping("/{shortsId}/comment/{commentId}")
+    public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> deleteShortsComment(
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
+        @Parameter(description = "댓글 아이디", required = true) @PathVariable(value = "commentId") String commentId
+    ) {
+        this.shortsService.deleteShortsComment(null, commentId);
+        List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
+        return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
+    }
 
 
     // TODO: 댓글 대댓글 추가
