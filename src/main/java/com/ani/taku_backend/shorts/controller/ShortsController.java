@@ -3,6 +3,7 @@ package com.ani.taku_backend.shorts.controller;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
 import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -105,6 +107,53 @@ public class ShortsController {
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
         return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
     }
-    
 
+    // TODO: 댓글 추가
+    /**
+     * /comment POST
+     * 로그인 유저만 가능
+     * header: Authorization: Bearer {token}
+     * 
+     * JSON
+     * {
+     *  "comment": "string",
+     *  "shorts_id": "string"
+     * }
+     */
+
+     @PostMapping("/comment")
+     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> createShortsComment(
+        @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
+     ) {
+
+        // 댓글 생성
+        this.shortsService.createShortsComment(null, shortsCommentCreateReqDTO);
+        
+        // 댓글 조회
+        List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsCommentCreateReqDTO.getShortsId());
+        return com.ani.taku_backend.common.response.ApiResponse.created(shortsComment);
+     }
+
+    // TODO: 댓글 수정
+    /**
+     * /comment/{commentId} PUT
+     * 로그인 유저만 가능
+     * header: Authorization: Bearer {token}
+     * 
+     * JSON
+     * {
+     *  "shorts_id": "string",
+     *  "comment": "string",
+     *  "comment_id": "string"
+     * }
+     */
+
+    // TODO: 댓글 삭제
+
+
+    // TODO: 댓글 대댓글 추가
+
+    // TODO: 댓글 대댓글 삭제
+
+    // TODO: 댓글 대댓글 수정
 }

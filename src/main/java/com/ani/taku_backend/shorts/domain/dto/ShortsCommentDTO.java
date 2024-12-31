@@ -2,6 +2,7 @@ package com.ani.taku_backend.shorts.domain.dto;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -40,6 +41,10 @@ public class ShortsCommentDTO {
     @JsonProperty("user_info")
     private CommentUserDTO userInfo;
 
+    @Schema(description = "쇼츠 댓글 대댓글 목록")
+    @JsonProperty("replies")
+    private List<CommentReplyDTO> replies;
+
     public void setCreatedAt(LocalDateTime createdAt) {
         // ISO 형식의 날짜를 원하는 포맷으로 변환
         this.createdAt = createdAt.truncatedTo(ChronoUnit.MINUTES);
@@ -68,5 +73,22 @@ public class ShortsCommentDTO {
                 .profileImage(user.getProfileImg())
                 .build();
         }
+    }
+
+    public static class CommentReplyDTO{
+        @Schema(description = "쇼츠 댓글 대댓글 아이디")
+        private String id;
+        @JsonProperty("reply_text")
+        @Schema(description = "쇼츠 댓글 대댓글 내용")
+        private String replyText;
+
+        @JsonProperty("user_id")
+        @Schema(description = "쇼츠 댓글 대댓글 작성자 아이디")
+        private Long userId;
+
+        @JsonProperty("created_at")
+        @Schema(description = "쇼츠 댓글 대댓글 생성 시간")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)
+        private LocalDateTime createdAt;
     }
 }

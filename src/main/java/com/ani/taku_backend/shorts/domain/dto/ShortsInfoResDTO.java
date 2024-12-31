@@ -34,6 +34,8 @@ public class ShortsInfoResDTO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
+    // TODO: 해당 쇼츠를 로그인한 유저가 좋아요,싫어요 했는지 여부 추가
+
 
     public static ShortsInfoResDTO of(Shorts shorts) {
         return ShortsInfoResDTO.builder()

@@ -1,21 +1,29 @@
 package com.ani.taku_backend.shorts.service;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.enums.InteractionType;
+import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.common.util.ObjectIdUtil;
 import com.ani.taku_backend.common.util.VideoConversionService;
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
+import com.ani.taku_backend.shorts.domain.entity.Interaction;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
+import com.ani.taku_backend.shorts.domain.vo.CommentDetail;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
@@ -30,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.Objects;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,5 +178,55 @@ public class ShortsServiceImpl implements  ShortsService {
                 .findFirst()
                 .orElse(null));
         });
+    }
+
+
+    /**
+     * 쇼츠 댓글 생성
+     * @param principalUser
+     * @param shortsCommentCreateReqDTO
+     * @return
+     */
+
+    @Transactional
+    @RequireUser
+    @Override
+    public void createShortsComment(PrincipalUser principalUser,
+            ShortsCommentCreateReqDTO shortsCommentCreateReqDTO) {
+
+        User user = principalUser.getUser();
+
+        // 변환
+        Shorts shorts = this.mongoTemplate.findById(ObjectIdUtil.convertToObjectId(shortsCommentCreateReqDTO.getShortsId()), Shorts.class);
+        if(shorts == null) {
+            log.error("쇼츠 조회 실패: {}", shortsCommentCreateReqDTO.getShortsId());
+            throw new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS);
+        }
+
+        CommentDetail commentDetail = CommentDetail.builder()
+            .commentText(shortsCommentCreateReqDTO.getComment())
+            .replies(Collections.emptyList())
+            .build();
+
+        Interaction<CommentDetail> commentInteraction = Interaction.<CommentDetail>builder()
+            .userId(user.getUserId())
+            .shortsId(ObjectIdUtil.convertToObjectId(shortsCommentCreateReqDTO.getShortsId()))
+            .interactionType(InteractionType.COMMENT)
+            .details(commentDetail)
+            .shortsTags(shorts.getTags())
+            .build();
+
+        log.debug("댓글 생성 요청: {}", commentInteraction);
+
+        try {
+            mongoTemplate.save(commentInteraction);
+            log.info("createShortsComment : {}", commentInteraction);
+        } catch (Exception e) {
+            log.error("Failed to create comment interaction: {}", e.getMessage(), e);
+            if (commentInteraction != null) {
+                mongoTemplate.remove(commentInteraction);
+            }
+            throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

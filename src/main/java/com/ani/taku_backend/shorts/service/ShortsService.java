@@ -1,5 +1,6 @@
 package com.ani.taku_backend.shorts.service;
 
+import com.ani.taku_backend.shorts.domain.dto.ShortsCommentCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
@@ -16,6 +17,8 @@ public interface ShortsService {
 
     List<ShortsInfoResDTO> findRecommendShorts(PrincipalUser principalUser);
     List<ShortsCommentDTO> findShortsComment(String shortsId);
+    void createShortsComment(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO);
+
 
     default String generateUniqueFilePath(String originalFileName) {
         Objects.requireNonNull(originalFileName);
@@ -35,4 +38,5 @@ public interface ShortsService {
         String[] fileUrlSplit = fileUrl.split("/");
         return fileUrlSplit[0] + "/" + fileUrlSplit[1];
     }
+
 }
