@@ -45,9 +45,6 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable())
             )
-            .requiresChannel(channel -> channel
-                .anyRequest().requiresSecure()
-            )
             .authorizeHttpRequests(auth -> auth
             // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
                 .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
@@ -75,10 +72,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));  // allowCredentials가 true일 때는 setAllowedOriginPatterns 사용
+        
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:8080",
+            "https://localhost:8080",
+            "http://localhost:3000",
+            "https://localhost:3000",
+            "https://api-duckwho.xyz",
+            "https://duckwho.vercel.app"
+        ));
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
