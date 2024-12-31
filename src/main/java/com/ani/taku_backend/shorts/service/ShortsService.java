@@ -2,6 +2,7 @@ package com.ani.taku_backend.shorts.service;
 
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.shorts.domain.dto.res.ShortsResponseDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.shorts.domain.dto.ShortsRecommendResDTO;
 
@@ -14,6 +15,10 @@ public interface ShortsService {
     void createShort(ShortsCreateReqDTO createReqDTO, User user);
 
     List<ShortsRecommendResDTO> findRecommendShorts(PrincipalUser principalUser);
+    ShortsResponseDTO findShortsInfo(String shortsId);
+
+    void shortsLike(User user, String shortsId);
+    void shortsDisLike(User user, String shortsId);
 
     default String generateUniqueFilePath(String originalFileName) {
         Objects.requireNonNull(originalFileName);

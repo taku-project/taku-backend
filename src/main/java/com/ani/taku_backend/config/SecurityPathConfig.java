@@ -24,7 +24,11 @@ public class SecurityPathConfig {
         "/static/**",
         "/public/**",
         "/resources/**",
+//        "/api/shorts",
+//        "/api/shorts/*",
+//        "/api/shorts/**",
         "/META-INF/resources/**",
+        "/favicon.ico",,
         "/shorts/**"
     };
 
