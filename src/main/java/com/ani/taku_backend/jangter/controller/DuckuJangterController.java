@@ -4,9 +4,8 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.response.ApiResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
-import com.ani.taku_backend.user.model.dto.PrincipalUser;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +21,7 @@ public class DuckuJangterController {
 
     @PostMapping
     public ApiResponse<Long> createProduct(
-            @Valid @RequestPart("createPost") ProductCreateRequestDTO requestDTO,
+            @RequestPart("createPost") ProductCreateRequestDTO requestDTO,
             @RequestPart(value = "productImage", required = false) List<MultipartFile> imageList) {
 
         Long productId = duckuJangterService.createProduct(requestDTO, imageList, null);
@@ -38,8 +37,13 @@ public class DuckuJangterController {
 
     @PutMapping("/{productId}")
     @RequireUser
-    public void updateProduct(@PathVariable long productId) {
+    public ApiResponse<Long> updateProduct(@PathVariable long productId,
+                @RequestPart("createPost") ProductUpdateRequestDTO requestDTO,
+                @RequestPart(value = "productImage", required = false) List<MultipartFile> imageList) {
 
+        Long updateProductId = duckuJangterService.updateProduct(productId, requestDTO, imageList, null);
+
+        return ApiResponse.ok(updateProductId);
     }
 
     @DeleteMapping("/{productId}")

@@ -32,28 +32,14 @@ public class ImageService {
         return this.imageRepository.save(image);
     }
 
-    // 이미지 5개 검증 후 이미지를 업로드
-    @Transactional
-    public List<String> uploadProductImageList(List<MultipartFile> imageList) {
-        List<String> imageUrlList = new ArrayList<>();
-        for (MultipartFile image : imageList) {
-            try {
-                validateImageCount(imageList);    // 5개 이상이면 예외 발생
-                String imageUrl = fileService.uploadFile(image);
-                log.info("r2 이미지 파일 업로드 성공 {}", imageUrl);
-                imageUrlList.add(imageUrl);
-            } catch (IOException e) {
-                throw new DuckwhoException(FILE_UPLOAD_ERROR);
-            }
-        }
-        return imageUrlList;
-    }
-
 
     @Transactional
-    public List<Image> saveImageList(List<MultipartFile> imageList, User user, List<String> imageUrlList) {
+    public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
 
         List<Image> saveImageList = new ArrayList<>();
+
+        // 이미지 업로드
+        List<String> imageUrlList = uploadProductImageList(imageList);
 
         for (String imageUrl : imageUrlList) {
             String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
@@ -82,10 +68,28 @@ public class ImageService {
         return saveImageList;
     }
 
+    // 이미지 5개 검증 후 이미지를 업로드
+    @Transactional
+    protected List<String> uploadProductImageList(List<MultipartFile> imageList) {
+        List<String> imageUrlList = new ArrayList<>();
+        for (MultipartFile image : imageList) {
+            try {
+                validateImageCount(imageList);    // 5개 이상이면 예외 발생
+                String imageUrl = fileService.uploadFile(image);
+                log.info("r2 이미지 파일 업로드 성공 {}", imageUrl);
+                imageUrlList.add(imageUrl);
+            } catch (IOException e) {
+                throw new DuckwhoException(FILE_UPLOAD_ERROR);
+            }
+        }
+        return imageUrlList;
+    }
+
     // 이미지 5개 이상 저장 불가
     private void validateImageCount(List<MultipartFile> imageList) {
         if (imageList != null && imageList.size() > 5) {
             throw new FileException.FileUploadException("5개 이상 이미지를 등록할 수 없습니다.");
         }
     }
+
 }

@@ -63,4 +63,23 @@ public class DuckuJangter extends BaseTimeEntity {
         this.jangterImages.add(jangterImage);
         jangterImage.addDuckuJangter(this);
     }
+
+    /**
+     * 업데이트 메서드
+     */
+    public void updateDuckuJangter(String title, String description, BigDecimal price, ItemCategories itemCategory) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+
+        if (itemCategory != null) {
+            this.itemCategory = itemCategory;
+        }
+    }
 }

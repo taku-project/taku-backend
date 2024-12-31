@@ -156,6 +156,7 @@ public class PostService {
             validateImageCount(requestDTO.getImagelist());
         }
 
+        // 게시글에서 첨부파일을 모두 삭제하고 넘어옴
         if (imageList == null || imageList.isEmpty()) {
             post.getCommunityImages().forEach(communityImage -> {
                 Image image = communityImage.getImage();
@@ -164,10 +165,13 @@ public class PostService {
             return;
         }
 
-        List<String> existingFileNames = imageRepository.findFileNamesByPostId(post.getId());
-        List<String> newFileNames = imageList.stream().map(MultipartFile::getOriginalFilename).toList();
+        /**
+         * 수정 필요함 잘못짰음 -> DB에 저장된 파일은 UUID값, MultipartFile에서 가져오는 파일은 실제 파일이름, 비교가 안됨
+         */
+        List<String> existingFileNames = imageRepository.findFileNamesByPostId(post.getId());   // 파일이름 추출
+        List<String> newFileNames = imageList.stream().map(MultipartFile::getOriginalFilename).toList();    // 새로 저장할 파일이름
 
-        // 기존 파일 삭제 대상
+        // 기존 파일 삭제 대상 -> 마찬가지로 검증이 안됨 다시 짜야함
         List<String> filesToDelete = existingFileNames.stream()
                 .filter(existing -> !newFileNames.contains(existing))
                 .toList();

@@ -29,17 +29,17 @@ public class FileService {
 
     public String uploadFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
-        
+
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());  // Content-Type 설정
-        
+
         // ACL을 public-read로 설정
         PutObjectRequest putObjectRequest = new PutObjectRequest(
-            bucket, 
-            fileName, 
-            file.getInputStream(), 
-            metadata
+                bucket,
+                fileName,
+                file.getInputStream(),
+                metadata
         ).withCannedAcl(CannedAccessControlList.PublicRead);  // public-read ACL 추가
 
         client.putObject(putObjectRequest);
@@ -59,4 +59,12 @@ public class FileService {
         }
     }
 
+    // 삭제 로직
+    public void deleteFile(String fileName) {
+        try {
+            client.deleteObject(bucket, fileName);
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
+        }
+    }
 }
