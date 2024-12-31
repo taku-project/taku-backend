@@ -72,7 +72,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://duckwho.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("*"));  // 모든 출처 허용
+        // configuration.setAllowedOrigins(Arrays.asList("https://duckwho.vercel.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
