@@ -5,6 +5,7 @@ import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
@@ -83,7 +84,7 @@ public class UserController {
 		@ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
 		@ApiResponse(responseCode = "503", description = "파일 업로드 실패")
 	})
-	public com.ani.taku_backend.common.response.ApiResponse<String> registerUser(
+	public CommonResponse<String> registerUser(
 		@RequestPart("user") @Parameter(
 			description = "유저 정보 (<code>RequestRegisterUser</code> 스키마 참고) <code>Content-Type : application/json</code>",
 			schema = @Schema(implementation = RequestRegisterUser.class)
@@ -128,7 +129,7 @@ public class UserController {
 		User savedUser = this.userService.registerUser(userInfo);
 
 		// TODO : 바로 로그인한다면 토큰을 던져주고 , 바로로그인 안한면 아무것도 던지지 않을 예정
-		return com.ani.taku_backend.common.response.ApiResponse.created(null);
+		return CommonResponse.created(null);
 	}
 
 	
@@ -141,11 +142,11 @@ public class UserController {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "닉네임 중복여부 확인 성공 <code>true : 중복, false : 중복X</code>"),
 	})
-	public com.ani.taku_backend.common.response.ApiResponse<Boolean> checkNickname(@PathVariable("nickname") @Parameter(
+	public CommonResponse<Boolean> checkNickname(@PathVariable("nickname") @Parameter(
 		description = "닉네임",
 		example = "looco"
 	) String nickname) {
-		return com.ani.taku_backend.common.response.ApiResponse.ok(this.userService.checkNickname(nickname));
+		return CommonResponse.ok(this.userService.checkNickname(nickname));
 	}
 
 
@@ -158,7 +159,7 @@ public class UserController {
 		@ApiResponse(responseCode = "200", description = "유저 삭제 성공"),
 		@ApiResponse(responseCode = "404", description = "존재 하지 않거나,이미 삭제된 유저입니다."),
 	})
-	public com.ani.taku_backend.common.response.ApiResponse<String>	deleteUser(
+	public CommonResponse<String> deleteUser(
 		@PathVariable("userId") @Parameter(
 			description = "유저 ID",
 			example = "1"
@@ -178,7 +179,7 @@ public class UserController {
 			throw new UserException.UserAlreadyDeletedException("이미 삭제된 유저입니다.");
 		}
 
-		return com.ani.taku_backend.common.response.ApiResponse.ok(null);
+		return CommonResponse.ok(null);
 	}
 
 

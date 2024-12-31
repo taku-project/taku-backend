@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,10 +35,10 @@ public class ProfanityController {
      * @return
      */
     @PostMapping("")
-    public ApiResponse<ResponseCreateProfanityDTO> createProfanityFilter(@RequestBody @Valid RequestCreateProfanityDTO requestCreateProfanityDTO) {
+    public CommonResponse<ResponseCreateProfanityDTO> createProfanityFilter(@RequestBody @Valid RequestCreateProfanityDTO requestCreateProfanityDTO) {
 
         ResponseCreateProfanityDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, requestCreateProfanityDTO);
-        return ApiResponse.created(profanityFilter);
+        return CommonResponse.created(profanityFilter);
     }
 
     /**
@@ -48,13 +48,13 @@ public class ProfanityController {
      * @return
      */
     @GetMapping("")
-    public ApiResponse<Page<ProfannityResponseDTO>> getProfanityFilters(
+    public CommonResponse<Page<ProfannityResponseDTO>> getProfanityFilters(
         @ModelAttribute RequestSearchProfanityDTO requestSearchProfanityDTO,
         @PageableDefault(size = 20, sort = "keyword", direction = Sort.Direction.ASC) Pageable pageable
 
     ) {
         Page<ProfannityResponseDTO> profanityFilters = this.profanityFilterService.findProfanityFilterList(requestSearchProfanityDTO, pageable);
-        return ApiResponse.ok(profanityFilters);
+        return CommonResponse.ok(profanityFilters);
     }
 
     /**
@@ -63,9 +63,9 @@ public class ProfanityController {
      * @return
      */
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteProfanityFilter(@PathVariable("id") Long id) {
+    public CommonResponse<Void> deleteProfanityFilter(@PathVariable("id") Long id) {
         this.profanityFilterService.deleteProfanityFilter(id);
-        return ApiResponse.ok(null);
+        return CommonResponse.ok(null);
     }
 
     /**
@@ -75,9 +75,9 @@ public class ProfanityController {
      * @return
      */
     @PutMapping("/{id}")
-    public ApiResponse<Void> updateProfanityFilter(@PathVariable("id") Long id, @RequestBody @Valid RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
+    public CommonResponse<Void> updateProfanityFilter(@PathVariable("id") Long id, @RequestBody @Valid RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
         this.profanityFilterService.updateProfanityFilter(id, requestUpdateProfanityDTO);
-        return ApiResponse.ok(null);
+        return CommonResponse.ok(null);
     }
 
 }
