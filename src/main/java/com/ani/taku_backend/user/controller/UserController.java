@@ -45,7 +45,8 @@ public class UserController {
 	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 		summary = "유저 등록",
-		description = "유저를 등록합니다."
+		description = "유저를 등록합니다.",
+		security = { @SecurityRequirement(name = "Bearer Auth") }
 	)
 	@Parameters({
 		@Parameter(
@@ -131,7 +132,8 @@ public class UserController {
 	@GetMapping("/nickname/{nickname}")
 	@Operation(
 		summary = "닉네임 중복여부 확인",
-		description = "닉네임 중복여부 확인"
+		description = "닉네임 중복여부 확인",
+		security = { @SecurityRequirement(name = "Bearer Auth") }
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "닉네임 중복여부 확인 성공 <code>true : 중복, false : 중복X</code>"),
@@ -147,8 +149,7 @@ public class UserController {
 	@DeleteMapping("/{userId}")
 	@Operation(
 		summary = "유저 삭제",
-		description = "유저 삭제",
-		security = { @SecurityRequirement(name = "Bearer Auth") }
+		description = "유저 삭제"
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "유저 삭제 성공"),

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ani.taku_backend.post.model.entity.Post;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

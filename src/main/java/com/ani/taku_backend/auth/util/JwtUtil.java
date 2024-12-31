@@ -3,6 +3,7 @@ package com.ani.taku_backend.auth.util;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.ani.taku_backend.user.model.dto.UserDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -60,7 +61,21 @@ public class JwtUtil {
 
     // 액세스 토큰 생성
     public String createAccessToken(User user) {
-        Map<String, Object> claims = this.objectMapper.convertValue(user, Map.class);
+        UserDTO userDTO = UserDTO.of(user);
+
+        User userEntity = User.builder().userId(userDTO.getUserId())
+            .nickname(userDTO.getNickname())
+            .email(userDTO.getEmail())
+            .role(userDTO.getRole())
+            .providerType(userDTO.getProviderType())
+            .profileImg(userDTO.getProfileImg())
+            .status(userDTO.getStatus())
+            .domesticId(userDTO.getDomesticId())
+            .gender(userDTO.getGender())
+            .ageRange(userDTO.getAgeRange())
+            .build();
+
+        Map<String, Object> claims = this.objectMapper.convertValue(userEntity, Map.class);
         claims.put("type", "ACCESS");
         return createToken(claims, accessTokenValidityTime);
     }
@@ -139,7 +154,22 @@ public class JwtUtil {
     // 토큰에서 유저 정보 추출
     public User getUserFromToken(String token) {
         Claims claims = extractAllClaims(token);
-        return this.objectMapper.convertValue(claims, User.class);
+        UserDTO userDTO = this.objectMapper.convertValue(claims, UserDTO.class);
+
+        User user = User.builder()
+            .userId(userDTO.getUserId())
+            .email(userDTO.getEmail())
+            .nickname(userDTO.getNickname())
+            .role(userDTO.getRole())
+            .providerType(userDTO.getProviderType())
+            .profileImg(userDTO.getProfileImg())
+            .status(userDTO.getStatus())
+            .domesticId(userDTO.getDomesticId())
+            .gender(userDTO.getGender())
+            .ageRange(userDTO.getAgeRange())
+            .build();
+        
+        return user;
     }
 
     // Bearer 토큰에서 실제 토큰 추출
