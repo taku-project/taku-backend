@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 쇼츠 댓글 상세 정보 (댓글 내용, 대댓글 목록)
@@ -18,7 +19,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class CommentDetail {
+@ToString
+public class CommentDetail implements InteractionDetail {
 
     private String commentText;
     private List<Reply> replies;
