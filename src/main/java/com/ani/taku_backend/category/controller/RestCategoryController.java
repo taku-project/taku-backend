@@ -7,7 +7,7 @@ import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.service.CategoryService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.ExceptionDto;
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -92,12 +92,12 @@ public class RestCategoryController {
 	)
     @PostMapping(value = "" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
-    public ApiResponse<ResponseCategoryDTO> createCategory(
+    public CommonResponse<ResponseCategoryDTO> createCategory(
         @RequestPart("category")@Parameter(description = "카테고리 정보 <code>RequestCategoryCreateDTO</code> 스키마 참고 <code>Content-Type: application/json</code>") RequestCategoryCreateDTO requestCategoryCreateDTO,
         @RequestPart("image")@Parameter(description = "카테고리 이미지") MultipartFile image,
         @Parameter(hidden = true) PrincipalUser principalUser
     ){
-        return ApiResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO, image));
+        return CommonResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO, image));
     }
 
     @Operation(
@@ -131,12 +131,12 @@ public class RestCategoryController {
         )
     })
     @GetMapping("")
-    public ApiResponse<Page<ResponseCategorySeachDTO>> searchCategories(
+    public CommonResponse<Page<ResponseCategorySeachDTO>> searchCategories(
         @ModelAttribute RequestCategorySearch requestCategorySearch,
         @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
-        return ApiResponse.ok(result);
+        return CommonResponse.ok(result);
     }
 
     @Operation(
@@ -151,11 +151,11 @@ public class RestCategoryController {
         schema = @Schema(type = "integer", format = "int64")
     )
     @GetMapping("/{id}")
-    public ApiResponse<ResponseCategoryDTO> findCategoryById(
+    public CommonResponse<ResponseCategoryDTO> findCategoryById(
         @PathVariable("id") Long id
     ) {
         ResponseCategoryDTO result = categoryService.findCategoryById(id);
-        return ApiResponse.ok(result);
+        return CommonResponse.ok(result);
     }
     
 }
