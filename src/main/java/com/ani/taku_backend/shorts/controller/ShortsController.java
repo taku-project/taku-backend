@@ -90,7 +90,7 @@ public class ShortsController {
         security = { @SecurityRequirement(name = "Bearer Auth") }
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Shorts recommend : SUCCESS")
+            // @ApiResponse(responseCode = "200", description = "Shorts recommend : SUCCESS")
     })
     @GetMapping("/recommend")
     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsInfoResDTO>> getRecommendShorts(
@@ -103,7 +103,7 @@ public class ShortsController {
         security = { @SecurityRequirement(name = "Bearer Auth") }
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS")
+            // @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS")
     })
     @GetMapping("/comment")
     public com.ani.taku_backend.common.response.ApiResponse<List<ShortsCommentDTO>> findShortsComment(
