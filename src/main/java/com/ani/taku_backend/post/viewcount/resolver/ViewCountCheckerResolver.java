@@ -1,7 +1,7 @@
 package com.ani.taku_backend.post.viewcount.resolver;
 
 
-import com.ani.taku_backend.annotation.ViewCountChecker;
+import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.post.viewcount.helper.ProductCookieHelper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
