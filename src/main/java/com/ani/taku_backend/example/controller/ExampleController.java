@@ -1,6 +1,6 @@
 package com.ani.taku_backend.example.controller;
 
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.example.model.dto.ExampleCreateRequest;
 import com.ani.taku_backend.example.model.dto.ExampleDetailResponse;
 import com.ani.taku_backend.example.model.dto.ExampleUpdateRequest;
@@ -31,36 +31,36 @@ public class ExampleController {
 
     @Operation(summary = "예시 생성")
     @PostMapping
-    public ApiResponse<String> createExample(@Valid @RequestBody ExampleCreateRequest request) {
+    public CommonResponse<String> createExample(@Valid @RequestBody ExampleCreateRequest request) {
         String exampleId = exampleService.createExample(request);
-        return ApiResponse.created("예제 생성완료: " + exampleId);
+        return CommonResponse.created("예제 생성완료: " + exampleId);
     }
 
     @Operation(summary = "예시 단건 조회")
     @GetMapping("/{id}")
-    public ApiResponse<ExampleDetailResponse> findExampleById(
+    public CommonResponse<ExampleDetailResponse> findExampleById(
             @Schema(example = "042482cb-f1cd-4935-9579-e12da625961f")
             @PathVariable UUID id) {
-        return ApiResponse.ok(exampleService.findExampleById(id));
+        return CommonResponse.ok(exampleService.findExampleById(id));
     }
 
     @Operation(summary = "예시 다건 조회")
     @GetMapping
-    public ApiResponse<List<ExampleDetailResponse>> findExampleList() {
-        return ApiResponse.ok(exampleService.findExampleList());
+    public CommonResponse<List<ExampleDetailResponse>> findExampleList() {
+        return CommonResponse.ok(exampleService.findExampleList());
     }
 
     @Operation(summary = "QueryDSL 예시 조회")
     @GetMapping("/querydsl/title")
-    public ApiResponse<List<ExampleDetailResponse>> findExampleByTitle(
+    public CommonResponse<List<ExampleDetailResponse>> findExampleByTitle(
             @Parameter(required = true) String exampleTitle) {
-        return ApiResponse.ok(exampleService.findExampleByTitle(exampleTitle));
+        return CommonResponse.ok(exampleService.findExampleByTitle(exampleTitle));
     }
 
     @Operation(summary = "예시 단건 수정")
     @PatchMapping
-    public ApiResponse<String> updateExample(@Valid @RequestBody ExampleUpdateRequest request) {
+    public CommonResponse<String> updateExample(@Valid @RequestBody ExampleUpdateRequest request) {
         String exampleId = exampleService.updateExample(request);
-        return ApiResponse.ok("Example updated : " + exampleId);
+        return CommonResponse.ok("Example updated : " + exampleId);
     }
 }
