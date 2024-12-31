@@ -427,11 +427,48 @@ public class ShortsServiceImpl implements  ShortsService {
         throw new UnsupportedOperationException("Unimplemented method 'deleteShortsReply'");
     }
 
-
+    /**
+     * 대댓글 수정
+     * @param principalUser
+     * @param shortsCommentUpdateReqDTO
+     * @param replyId
+     */
     @Override
+    @RequireUser
+    @SuppressWarnings("unchecked")
     public void updateShortsReply(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO,
-            String replyId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateShortsReply'");
+            String commentId, String replyId) {
+
+        Long userId = principalUser.getUser().getUserId();
+        
+        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
+            ObjectIdUtil.convertToObjectId(commentId), 
+            Interaction.class
+        )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
+
+        // 대댓글 찾기
+        CommentDetail.Reply targetReply = commentInteraction.getDetails().getReplies().stream()
+            .filter(reply -> reply.getId().toString().equals(replyId))
+            .findFirst()
+            .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_REPLY));
+
+        // 대댓글 작성자 확인
+        if (!targetReply.getUserId().equals(userId)) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 대댓글 업데이트
+        Query query = new Query(
+            Criteria.where("_id").is(ObjectIdUtil.convertToObjectId(commentId))
+                .and("details.replies._id").is(new ObjectId(replyId))
+        );
+
+        Update update = new Update().set("details.replies.$.replyText", shortsCommentUpdateReqDTO.getComment());
+
+        UpdateResult result = mongoTemplate.updateFirst(query, update, Interaction.class);
+        log.info("대댓글 수정 결과: {}", result);
+        if (result.getMatchedCount() == 0) {
+            throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

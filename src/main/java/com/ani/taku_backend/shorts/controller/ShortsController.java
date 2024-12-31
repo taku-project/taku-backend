@@ -200,7 +200,7 @@ public class ShortsController {
         @Parameter(description = "대댓글 아이디", required = true) @PathVariable(value = "replyId") String replyId,
         @Valid @RequestBody ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO
     ) {
-        this.shortsService.updateShortsReply(null, shortsCommentUpdateReqDTO, replyId);
+        this.shortsService.updateShortsReply(null, shortsCommentUpdateReqDTO, commentId, replyId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
         return com.ani.taku_backend.common.response.ApiResponse.ok(shortsComment);
     }

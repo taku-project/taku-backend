@@ -26,7 +26,7 @@ public interface ShortsService {
     void deleteShortsComment(PrincipalUser principalUser, String commentId);
     void createShortsReply(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO, String commentId);
     void deleteShortsReply(PrincipalUser principalUser, String replyId);
-    void updateShortsReply(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO, String replyId);
+    void updateShortsReply(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO, String commentId, String replyId);
     ShortsResponseDTO findShortsInfo(String shortsId);
 
     void shortsLike(User user, String shortsId);
