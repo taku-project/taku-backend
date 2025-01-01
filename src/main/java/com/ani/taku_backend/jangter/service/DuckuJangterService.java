@@ -3,6 +3,8 @@ package com.ani.taku_backend.jangter.service;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.FileException;
+import com.ani.taku_backend.common.exception.PostException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
@@ -16,6 +18,7 @@ import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
 import com.ani.taku_backend.jangter.service.viewcount.ViewCountService;
+import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -86,7 +89,7 @@ public class DuckuJangterService {
         }
     }
 
-    // 판매글 엔티티 생성
+    // 장터글 엔티티 생성
     private DuckuJangter createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user, ItemCategories findItemCategory) {
         return DuckuJangter.builder()
                 .user(user)
@@ -99,10 +102,8 @@ public class DuckuJangterService {
                 .build();
     }
 
-    // 아이템 카테고리 카테고리 검증
-
     /**
-     * 게시글 상세 조회
+     * 장터글 상세 조회
      */
     @Transactional
     public ProductFindDetailResponseDTO findProductDetail(Long productId) {
@@ -128,7 +129,7 @@ public class DuckuJangterService {
         DuckuJangter findProduct = duckuJangterRepository.findById(productId).orElseThrow(
                 () -> new DuckwhoException(NOT_FOUND_POST));
 
-        // 유저 조회 검증 -> 블랙유저 검증 필요
+        // 유저 조회 검증 -> 블랙유저 검증 필요 -> 이건 따로 메서드 추출해서 전체로 적용해보자. 리펠토링할 때
         User user = principalUser.getUser();
         List<BlackUser> byUserId = blackUserService.findByUserId(user.getUserId());
 
@@ -141,42 +142,15 @@ public class DuckuJangterService {
         // 카테고리 가져오기
         ItemCategories itemCategories = getItemCategories(productUpdateRequestDTO.getCategoryId());
 
-        // 게시글에서 첨부파일을 모두 삭제하고 넘어옴
-        if (imageList == null || imageList.isEmpty()) {
-            findProduct.getJangterImages().forEach(communityImage -> {
-                Image image = communityImage.getImage();
-                fileService.deleteFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
-                image.softDelete();                             // RDB에서 삭제 일시 입력
-            });
-        }
+        List<MultipartFile> newImageList = imageService.getUpdateImageList(productId, productUpdateRequestDTO, imageList, findProduct);
 
-        // db에서 상품id로 이미지 조회
-        List<Image> findImageList = imageRepository.findImageByproductId(productId);
-        List<String> requestImageUrlList = productUpdateRequestDTO.getImageUrl();   // 기존에 등록된 이미지
-
-        // 삭제 대상인 이미지 리스트 -> db에서 조회한 이미지와 넘어온 이미지가 다르면 db에서 조회한 이미지는 삭제대상
-        List<Image> deleteImageList = findImageList.stream()
-                .filter(image -> !requestImageUrlList.contains(image.getImageUrl())).toList();
-                        deleteImageList.forEach(image -> {
-                            fileService.deleteFile(image.getFileName());    // r2에서 파일 삭제
-                            image.softDelete();                             // RDB soft delete
-                        }
-                );
-
-        // db에서 조회한 이미지리스트와 요청으로 넘어온 imageList의 파일사이즈와 오리지널파일네임이 같지 않으면 imageList들은 새로 저장할 이미지라고 가정
-        List<MultipartFile> newImageList = imageList.stream()
-                .filter(multipartFile -> findImageList.stream()
-                        .noneMatch(image ->
-                                image.getFileSize() == multipartFile.getSize() &&
-                                image.getOriginalName().equals(multipartFile.getOriginalFilename())
-                        )
-                ).toList();
-
+        // 업데이트 이미지 저장
         if (!newImageList.isEmpty()) {
             List<Image> saveImageList = imageService.saveImageList(newImageList, user); // 이미지 저장
             setRelationJangterImages(saveImageList, findProduct);   // 연관관계 설정
         }
 
+        // 게시글 업데이트
         findProduct.updateDuckuJangter(productUpdateRequestDTO.getTitle(),
                                         productUpdateRequestDTO.getDescription(),
                                         productUpdateRequestDTO.getPrice(), itemCategories);
@@ -190,5 +164,25 @@ public class DuckuJangterService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
     }
 
+    /**
+     * 장터글 삭제 -> 일단은 반환값 없이 진행 하구, 클라이언트와 대화를 통해.. 반환값을 어떻게 할지 정해보기
+     */
+    @Transactional
+    @RequireUser
+    public void deleteProduct(long productId, PrincipalUser principalUser) {
+        User user = principalUser.getUser();
+        DuckuJangter duckuJangter = duckuJangterRepository.findById(productId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
+        if (!user.getUserId().equals(duckuJangter.getUser().getUserId())) {
+            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
+        }
+
+        duckuJangter.softDelete();  // 장터 에서 소프트 딜리트
+        // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
+        duckuJangter.getJangterImages().forEach(jangterImages -> {
+            jangterImages.getImage().softDelete();
+            fileService.deleteFile(jangterImages.getImage().getFileName());
+        });
+    }
 }

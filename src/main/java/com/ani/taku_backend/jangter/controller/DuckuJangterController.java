@@ -46,9 +46,10 @@ public class DuckuJangterController {
         return ApiResponse.ok(updateProductId);
     }
 
+    // 반환값 협의 필요
     @DeleteMapping("/{productId}")
     @RequireUser
     public void deleteProduct(@PathVariable long productId) {
-
+        duckuJangterService.deleteProduct(productId, null);
     }
 }
