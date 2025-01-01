@@ -1,7 +1,7 @@
 package com.ani.taku_backend.marketprice.repository;
 
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
+import com.ani.taku_backend.jangter.model.enums.JangterStatus;  // StatusType 대신 JangterStatus import
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
 import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
@@ -19,12 +19,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @RequiredArgsConstructor
 public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public PriceGraphResponseDTO getPriceGraph(String keyword, LocalDate fromDate, LocalDate toDate, GraphDisplayOption option) {
+    public PriceGraphResponseDTO getPriceGraph(String keyword, LocalDate fromDate, LocalDate toDate,
+                                               GraphDisplayOption option) {
         QCompletedDeal deal = QCompletedDeal.completedDeal;
 
         // 판매 완료된 거래 데이터로부터 시세 그래프 조회
@@ -97,10 +99,10 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .from(jangter)
                 .where(
                         jangter.title.like("%" + keyword + "%")
-                                .and(jangter.status.eq(StatusType.ON_SALE))
+                                .and(jangter.status.stringValue().eq(JangterStatus.ON_SALE.name()))
                                 .and(jangter.deletedAt.isNull())
                 )
-                .orderBy(jangter.similarity.desc())
+                .orderBy(jangter.similarity.coalesce(0.0).desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
