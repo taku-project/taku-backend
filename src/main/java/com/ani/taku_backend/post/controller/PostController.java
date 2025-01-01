@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/posts")
+@RequestMapping("/api/community/posts")
 public class PostController {
 
     private final PostService postService;
