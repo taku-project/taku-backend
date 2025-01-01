@@ -28,10 +28,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ApiResponse handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+    public CommonResponse handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.error("handleMaxUploadSizeExceededException() in MaxUploadSizeExceededException : {}", e.getMessage());
 
-        return ApiResponse.fail(ErrorCode.FILE_SIZE_EXCEED);
+        return CommonResponse.fail(ErrorCode.FILE_SIZE_EXCEED);
     }
 
     @ExceptionHandler(Exception.class)
