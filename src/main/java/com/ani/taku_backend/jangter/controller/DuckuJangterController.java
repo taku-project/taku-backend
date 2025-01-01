@@ -1,7 +1,7 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
@@ -23,30 +23,30 @@ public class DuckuJangterController {
     private final DuckuJangterService duckuJangterService;
 
     @PostMapping
-    public ApiResponse<Long> createProduct(
+    public CommonResponse<Long> createProduct(
             @RequestPart("createPost") ProductCreateRequestDTO requestDTO,
             @RequestPart(value = "productImage", required = false) List<MultipartFile> imageList) {
 
         Long productId = duckuJangterService.createProduct(requestDTO, imageList, null);
 
-        return ApiResponse.created(productId);
+        return CommonResponse.created(productId);
     }
 
     @GetMapping("/{productId}")
-    public ApiResponse<ProductFindDetailResponseDTO> findProductDetail(@PathVariable long productId) {
+    public CommonResponse<ProductFindDetailResponseDTO> findProductDetail(@PathVariable long productId) {
         ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId);
-        return ApiResponse.ok(productDetail);
+        return CommonResponse.ok(productDetail);
     }
 
     @PutMapping("/{productId}")
     @RequireUser
-    public ApiResponse<Long> updateProduct(@PathVariable long productId,
+    public CommonResponse<Long> updateProduct(@PathVariable long productId,
                 @RequestPart("createPost") ProductUpdateRequestDTO requestDTO,
                 @RequestPart(value = "productImage", required = false) List<MultipartFile> imageList) {
 
         Long updateProductId = duckuJangterService.updateProduct(productId, requestDTO, imageList, null);
 
-        return ApiResponse.ok(updateProductId);
+        return CommonResponse.ok(updateProductId);
     }
 
     // 반환값 협의 필요
