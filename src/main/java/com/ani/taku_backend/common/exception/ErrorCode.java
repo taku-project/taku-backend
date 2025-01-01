@@ -32,6 +32,7 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS(40105, HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다."),
     FORBIDDEN_ACCESS_ADMIN(40300, HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
 
+
     // File
     FILE_UPLOAD_ERROR(50300, HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드에 실패했습니다."),
     FILE_DOWNLOAD_ERROR(50301, HttpStatus.SERVICE_UNAVAILABLE, "파일 다운로드에 실패했습니다."),
@@ -44,12 +45,9 @@ public enum ErrorCode {
     NOT_FOUND_GENRE(40404,HttpStatus.NOT_FOUND,"해당하는 장르가 존재하지 않습니다."),
 
     // Profanity Filter
-    NOT_FOUND_PROFANITY_FILTER(40403, HttpStatus.NOT_FOUND, "존재하지 않는 금칙어 필터입니다."),
+    NOT_FOUND_PROFANITY_FILTER(40405, HttpStatus.NOT_FOUND, "존재하지 않는 금칙어 필터입니다."),
     INVALID_CONTENT_PROFANITY(40301, HttpStatus.FORBIDDEN, "금칙어가 포함된 내용이 있습니다."),
-    DUPLICATE_PROFANITY_FILTER(40902, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다."),
-
-    // Post / Product
-    NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다.");
+    DUPLICATE_PROFANITY_FILTER(40903, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다.");
 
     // 403 Forbidden
     private final Integer code;

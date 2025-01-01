@@ -2,7 +2,7 @@ package com.ani.taku_backend.config.filter;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.config.SecurityPathConfig;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
 
-        ApiResponse<Void> errorResponse = ApiResponse.fail(ErrorCode.INVALID_TOKEN);
+        CommonResponse<Void> errorResponse = CommonResponse.fail(ErrorCode.INVALID_TOKEN);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 
@@ -80,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType("application/json;charset=UTF-8");
 
-        ApiResponse<Void> errorResponse = ApiResponse.fail(ErrorCode.EMPTY_TOKEN);
+        CommonResponse<Void> errorResponse = CommonResponse.fail(ErrorCode.EMPTY_TOKEN);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 
