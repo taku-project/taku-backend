@@ -2,7 +2,7 @@ package com.ani.taku_backend.common.service;
 
 
 import com.ani.taku_backend.common.util.TfidfCalculator;
-import com.ani.taku_backend.jangtermarket.DuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,12 +46,12 @@ public class TfidfBatchService {
     private Map<Long, List<String>> extractProductKeywords(List<DuckuJangter> products) {
         return products.stream()
                 .collect(Collectors.toMap(
-                        DuckuJangter::getProductId,
+                        DuckuJangter::getId,
                         product -> {
                             String text = product.getTitle() + " " + product.getDescription();
                             List<String> keywords = extractKeywordService.extractKeywords(text);
                             if (keywords == null || keywords.isEmpty()) {
-                                log.warn("No keywords extracted for product {}", product.getProductId());
+                                log.warn("No keywords extracted for product {}", product.getId());
                                 return List.of();
                             }
                             return keywords;

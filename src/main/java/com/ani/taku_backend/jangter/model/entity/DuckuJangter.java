@@ -52,6 +52,9 @@ public class DuckuJangter extends BaseTimeEntity {
     @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
     private List<JangterImages> jangterImages = new ArrayList<>();
 
+    @Column(name = "similarity", precision = 10, scale = 8)
+    private Double similarity;  // TF-IDF 기반 유사도 점수
+
     // TODO 북마크 연관관계
 
     public void softDelete() {
@@ -62,5 +65,9 @@ public class DuckuJangter extends BaseTimeEntity {
     public void addJangterImage(JangterImages jangterImage) {
         this.jangterImages.add(jangterImage);
         jangterImage.addDuckuJangter(this);
+    }
+    // 유사도 점수 업데이트 메서드
+    public void updateSimilarity(Double similarity) {
+        this.similarity = similarity;
     }
 }
