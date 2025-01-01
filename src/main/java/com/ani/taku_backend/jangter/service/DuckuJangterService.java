@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.service;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.FileException;
@@ -53,11 +54,12 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
+    @ValidateProfanity(fields =  {"title", "description"})
     public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO,
                               List<MultipartFile> imageList,
                               PrincipalUser principalUser) {
-        // 유저 조회 -> 검증 로직 필요, 본인인가?, 관리자도 접속가능, 블랙유저인가,
-        User user = principalUser.getUser();
+        // 블랙유저 검증
+        User user = validateBlockUser(principalUser);
 
         // 금칙어 aop 적용해야함 -> 댓글 작업까지 하고진행
 
@@ -76,30 +78,6 @@ public class DuckuJangterService {
         log.info("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
 
         return saveProductId;
-    }
-
-    // 장터이미지 연관관계설정
-    private void setRelationJangterImages(List<Image> saveImageList, DuckuJangter product) {
-        for (Image image : saveImageList) {
-            JangterImages jangterImage = JangterImages.builder()
-                    .duckuJangter(product)
-                    .image(image)
-                    .build();
-            product.addJangterImage(jangterImage);
-        }
-    }
-
-    // 장터글 엔티티 생성
-    private DuckuJangter createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user, ItemCategories findItemCategory) {
-        return DuckuJangter.builder()
-                .user(user)
-                .itemCategory(findItemCategory)
-                .title(productCreateRequestDTO.getTitle())
-                .description(productCreateRequestDTO.getDescription())
-                .price(productCreateRequestDTO.getPrice())
-                .status(StatusType.ACTIVE)
-                .viewCount(0L)
-                .build();
     }
 
     /**
@@ -124,14 +102,15 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
+    @ValidateProfanity(fields =  {"title", "description"})
     public Long updateProduct(Long productId, ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
+
         // 게시글 조회
         DuckuJangter findProduct = duckuJangterRepository.findById(productId).orElseThrow(
                 () -> new DuckwhoException(NOT_FOUND_POST));
 
-        // 유저 조회 검증 -> 블랙유저 검증 필요 -> 이건 따로 메서드 추출해서 전체로 적용해보자. 리펠토링할 때
-        User user = principalUser.getUser();
-        List<BlackUser> byUserId = blackUserService.findByUserId(user.getUserId());
+        // 블랙 유저인지 검증
+        User user = validateBlockUser(principalUser);
 
         if (!user.getNickname().equals(findProduct.getUser().getNickname())) {  // 본인 글인지 확인
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
@@ -158,31 +137,67 @@ public class DuckuJangterService {
         return findProduct.getId();
     }
 
-
-    private ItemCategories getItemCategories(Long categoryId) {
-        return itemCategoriesRepository.findById(categoryId)
-                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
-    }
-
     /**
      * 장터글 삭제 -> 일단은 반환값 없이 진행 하구, 클라이언트와 대화를 통해.. 반환값을 어떻게 할지 정해보기
      */
     @Transactional
     @RequireUser
     public void deleteProduct(long productId, PrincipalUser principalUser) {
-        User user = principalUser.getUser();
-        DuckuJangter duckuJangter = duckuJangterRepository.findById(productId)
+
+        User user = validateBlockUser(principalUser);
+
+        DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        if (!user.getUserId().equals(duckuJangter.getUser().getUserId())) {
+        if (!user.getUserId().equals(findProduct.getUser().getUserId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        duckuJangter.softDelete();  // 장터 에서 소프트 딜리트
+        findProduct.softDelete();  // 장터 에서 소프트 딜리트
         // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
-        duckuJangter.getJangterImages().forEach(jangterImages -> {
+        findProduct.getJangterImages().forEach(jangterImages -> {
             jangterImages.getImage().softDelete();
             fileService.deleteFile(jangterImages.getImage().getFileName());
         });
+    }
+
+    // 장터이미지 연관관계설정
+    private void setRelationJangterImages(List<Image> saveImageList, DuckuJangter product) {
+        for (Image image : saveImageList) {
+            JangterImages jangterImage = JangterImages.builder()
+                    .duckuJangter(product)
+                    .image(image)
+                    .build();
+            product.addJangterImage(jangterImage);
+        }
+    }
+
+    // 장터글 엔티티 생성
+    private DuckuJangter createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user, ItemCategories findItemCategory) {
+        return DuckuJangter.builder()
+                .user(user)
+                .itemCategory(findItemCategory)
+                .title(productCreateRequestDTO.getTitle())
+                .description(productCreateRequestDTO.getDescription())
+                .price(productCreateRequestDTO.getPrice())
+                .status(StatusType.ACTIVE)
+                .viewCount(0L)
+                .build();
+    }
+
+    // 블랙리스트 검증
+    private User validateBlockUser(PrincipalUser principalUser) {
+        User user = principalUser.getUser();
+        List<BlackUser> byUserId = blackUserService.findByUserId(user.getUserId());
+        if (byUserId.get(0).getId().equals(user.getUserId())) {
+            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
+        }
+        return user;
+    }
+
+    // 카테고리 검증
+    private ItemCategories getItemCategories(Long categoryId) {
+        return itemCategoriesRepository.findById(categoryId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
     }
 }
