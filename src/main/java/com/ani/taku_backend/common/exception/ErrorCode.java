@@ -52,7 +52,6 @@ public enum ErrorCode {
     // Post / Product
     NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다.");
 
-
     // 403 Forbidden
     private final Integer code;
     private final HttpStatus httpStatus;
