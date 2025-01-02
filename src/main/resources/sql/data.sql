@@ -11,3 +11,13 @@ VALUES
 (3, '판타지', NOW(), NOW()),
 (4, '드라마', NOW(), NOW()),
 (5, '코미디', NOW(), NOW());
+
+INSERT INTO item_categories (item_category_id, name, created_at, updated_at)
+VALUES
+    (1, '만화책', NOW(), NOW()),
+    (2, '피규어', NOW(), NOW()),
+    (3, '코스프레 의상', NOW(), NOW()),
+    (4, '전자제품', NOW(), NOW()),
+    (5, '굿즈', NOW(), NOW()),
+    (6, '문구', NOW(), NOW()),
+    (7, '기타', NOW(), NOW());

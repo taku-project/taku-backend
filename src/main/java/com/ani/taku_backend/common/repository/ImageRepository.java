@@ -20,4 +20,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     @Query("select i from Image i join JangterImages ji on i.id = ji.image.id where ji.duckuJangter.id = :productId order by i.id asc")
     List<Image> findImageByproductId(@Param("productId") Long productId);
+
+    List<Image> findByFileNameIn(List<String> fileNameList);
 }

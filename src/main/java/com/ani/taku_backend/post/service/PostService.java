@@ -24,8 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -129,7 +127,7 @@ public class PostService {
         }
         post.softDelete();
         post.getCommunityImages().forEach(communityImage -> {
-            communityImage.getImage().softDelete();
+            communityImage.getImage().delete();
             post.removeCommunityImage(communityImage);
         });
 
@@ -160,7 +158,7 @@ public class PostService {
         if (imageList == null || imageList.isEmpty()) {
             post.getCommunityImages().forEach(communityImage -> {
                 Image image = communityImage.getImage();
-                image.softDelete(); // Soft delete 호출
+                image.delete(); // Soft delete 호출
             });
             return;
         }

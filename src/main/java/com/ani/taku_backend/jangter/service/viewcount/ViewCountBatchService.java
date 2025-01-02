@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
-@Service
+//@Service
 @RequiredArgsConstructor
 @Slf4j
 public class ViewCountBatchService {
@@ -20,8 +20,8 @@ public class ViewCountBatchService {
     private final RedisService redisService;
     private final DuckuJangterRepository duckuJangterRepository;
 
-    @Scheduled(fixedRate = 1800000) // 30분 = 30 * 60 * 1000 ms
-    @Transactional
+//    @Scheduled(fixedRate = 1800000) // 30분 = 30 * 60 * 1000 ms
+//    @Transactional(readOnly = true)
     public void updateViewCount() {
         String patternKey = RedisKeyUtil.getViewCountPatternKey();
         Set<String> keysByPattern = redisService.getKeysByPattern(patternKey);
@@ -36,6 +36,7 @@ public class ViewCountBatchService {
                 continue;   // key로 꺼낸 조회수가 없거나음수면 제외
             }
 
+            // 조회수 꺼내오기
             try {
                 duckuJangterRepository.updateViewCount(productId, viewCount);
                 redisService.deleteKeyValue(key);

@@ -4,8 +4,6 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.exception.FileException;
-import com.ani.taku_backend.common.exception.PostException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
@@ -19,7 +17,6 @@ import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
 import com.ani.taku_backend.jangter.service.viewcount.ViewCountService;
-import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -30,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.*;
@@ -54,14 +50,12 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
-    @ValidateProfanity(fields =  {"title", "description"})
+    @ValidateProfanity(fields =  {"title", "description"})  // 금칙어 적용 완료
     public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO,
                               List<MultipartFile> imageList,
                               PrincipalUser principalUser) {
         // 블랙유저 검증
         User user = validateBlockUser(principalUser);
-
-        // 금칙어 aop 적용해야함 -> 댓글 작업까지 하고진행
 
         ItemCategories findItemCategory = getItemCategories(productCreateRequestDTO.getCategoryId());
 
@@ -90,9 +84,8 @@ public class DuckuJangterService {
         DuckuJangter findProductDetail = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        // 조회 수 증가 및 조회수 가져오기
-        viewCountService.incrementViewCount(productId);
-        Long viewCount = viewCountService.getViewCount(productId);
+        // 조회 수 증가 -> 나중에 중복 방지 AOP 적용, (진호님 개발 히스토리 배우기 -> 윤정님 방식(쿠키!)으로 구현 예정이라고 함)
+        long viewCount = findProductDetail.addViewCount();
 
         return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), viewCount);
     }
@@ -121,30 +114,32 @@ public class DuckuJangterService {
         // 카테고리 가져오기
         ItemCategories itemCategories = getItemCategories(productUpdateRequestDTO.getCategoryId());
 
-        List<MultipartFile> newImageList = imageService.getUpdateImageList(productId, productUpdateRequestDTO, imageList, findProduct);
-
         // 업데이트 이미지 저장
+        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO, imageList, findProduct, user);
+
         if (!newImageList.isEmpty()) {
-            List<Image> saveImageList = imageService.saveImageList(newImageList, user); // 이미지 저장
-            setRelationJangterImages(saveImageList, findProduct);   // 연관관계 설정
+            setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
         }
 
         // 게시글 업데이트
         findProduct.updateDuckuJangter(productUpdateRequestDTO.getTitle(),
                                         productUpdateRequestDTO.getDescription(),
-                                        productUpdateRequestDTO.getPrice(), itemCategories);
+                                        productUpdateRequestDTO.getPrice(),
+                                        itemCategories);
 
         return findProduct.getId();
     }
 
     /**
-     * 장터글 삭제 -> 일단은 반환값 없이 진행 하구, 클라이언트와 대화를 통해.. 반환값을 어떻게 할지 정해보기
+     * 장터글 삭제
      */
     @Transactional
     @RequireUser
-    public void deleteProduct(long productId, PrincipalUser principalUser) {
+    public void deleteProduct(long productId, Long categoryId, PrincipalUser principalUser) {
 
         User user = validateBlockUser(principalUser);
+
+        ItemCategories itemCategories = getItemCategories(categoryId);
 
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
@@ -153,10 +148,10 @@ public class DuckuJangterService {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        findProduct.softDelete();  // 장터 에서 소프트 딜리트
+        findProduct.delete();  // 장터 에서 소프트 딜리트
         // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
         findProduct.getJangterImages().forEach(jangterImages -> {
-            jangterImages.getImage().softDelete();
+            jangterImages.getImage().delete();
             fileService.deleteFile(jangterImages.getImage().getFileName());
         });
     }
@@ -189,7 +184,7 @@ public class DuckuJangterService {
     private User validateBlockUser(PrincipalUser principalUser) {
         User user = principalUser.getUser();
         List<BlackUser> byUserId = blackUserService.findByUserId(user.getUserId());
-        if (byUserId.get(0).getId().equals(user.getUserId())) {
+        if (!byUserId.isEmpty() && byUserId.get(0).getId().equals(user.getUserId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
         return user;

@@ -4,8 +4,6 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.post.model.entity.CommunityImage;
-import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.user.model.entity.User;
 import org.springframework.stereotype.Service;
 import com.ani.taku_backend.common.model.entity.Image;
@@ -71,37 +69,34 @@ public class ImageService {
     }
 
     @Transactional
-    public List<MultipartFile> getUpdateImageList(Long productId, ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> imageList, DuckuJangter findProduct) {
+    public List<Image> getUpdateImageList(ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> newImageList, DuckuJangter findProduct, User user) {
+
         // 게시글에서 첨부파일을 모두 삭제하고 넘어옴
-        if (imageList == null || imageList.isEmpty()) {
+        if (newImageList == null || newImageList.isEmpty()) {
             findProduct.getJangterImages().forEach(communityImage -> {
                 Image image = communityImage.getImage();
                 fileService.deleteFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
-                image.softDelete();                             // RDB에서 삭제 일시 입력
+                image.delete();                                 // RDB에서 삭제
             });
         }
 
-        // db에서 상품id로 이미지 조회
-        List<Image> findImageList = imageRepository.findImageByproductId(productId);
-        List<String> requestImageUrlList = productUpdateRequestDTO.getImageUrl();   // 기존에 등록된 이미지
+        // 삭제 대상인 이미지 리스트 -> productUpdateRequestDTO.getDeleteImageUrl();
+        List<String> deleteImageUrl = productUpdateRequestDTO.getDeleteImageUrl();
+        if (deleteImageUrl != null && !deleteImageUrl.isEmpty()) {
+            deleteImageUrl.forEach(imageUrl -> {
+                String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+                fileService.deleteFile(filename);  // s3 에서 삭제(클라우드 플레어)
+            });
+            imageRepository.findByFileNameIn(deleteImageUrl).forEach(Image::delete);    // RDB 삭제
+        }
 
-        // 삭제 대상인 이미지 리스트 -> db에서 조회한 이미지와 넘어온 이미지가 다르면 db에서 조회한 이미지는 삭제대상
-        List<Image> deleteImageList = findImageList.stream()
-                .filter(image -> !requestImageUrlList.contains(image.getImageUrl())).toList();
-        deleteImageList.forEach(image -> {
-            fileService.deleteFile(image.getFileName());    // r2에서 파일 삭제
-            image.softDelete();                             // RDB soft delete
-        });
+        // 저장할 이미지 -> newImageList
+        List<Image> addImageList = null;
+        if (newImageList != null) {
+            addImageList = saveImageList(newImageList, user);
+        }
 
-        // db에서 조회한 이미지리스트와 요청으로 넘어온 imageList의 파일사이즈와 오리지널파일네임이 같지 않으면 imageList들은 새로 저장할 이미지라고 가정
-        List<MultipartFile> newImageList = imageList.stream()
-                .filter(multipartFile -> findImageList.stream()
-                        .noneMatch(image ->
-                                image.getFileSize() == multipartFile.getSize() &&
-                                        image.getOriginalName().equals(multipartFile.getOriginalFilename())
-                        )
-                ).toList();
-        return newImageList;
+        return addImageList;
     }
 
     // 이미지 5개 검증 후 이미지를 업로드

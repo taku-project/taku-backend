@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableMongoRepositories
-@EnableScheduling // 스케줄링 활성화
 public class TakuProjectApplication {
 
     public static void main(String[] args) {
