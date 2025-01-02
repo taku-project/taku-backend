@@ -50,7 +50,7 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
-    @ValidateProfanity(fields =  {"title", "description"})  // 금칙어 적용 완료
+    @ValidateProfanity(fields = {"title", "description"})  // 금칙어 적용 완료
     public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO,
                               List<MultipartFile> imageList,
                               PrincipalUser principalUser) {
@@ -86,6 +86,8 @@ public class DuckuJangterService {
 
         // 조회 수 증가 -> 나중에 중복 방지 AOP 적용, (진호님 개발 히스토리 배우기 -> 윤정님 방식(쿠키!)으로 구현 예정이라고 함)
         long viewCount = findProductDetail.addViewCount();
+        log.info("장터글 조회 완료, 장터글 상세: {}", findProductDetail);
+
 
         return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), viewCount);
     }
@@ -95,7 +97,7 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
-    @ValidateProfanity(fields =  {"title", "description"})
+    @ValidateProfanity(fields = {"title", "description"})
     public Long updateProduct(Long productId, ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
 
         // 게시글 조회
@@ -121,12 +123,13 @@ public class DuckuJangterService {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
         }
 
-        // 게시글 업데이트
-        findProduct.updateDuckuJangter(productUpdateRequestDTO.getTitle(),
-                                        productUpdateRequestDTO.getDescription(),
-                                        productUpdateRequestDTO.getPrice(),
-                                        itemCategories);
+        // 장터글 업데이트
+        findProduct.updateTitle(productUpdateRequestDTO.getTitle());
+        findProduct.updateDescription(productUpdateRequestDTO.getDescription());
+        findProduct.updatePrice(productUpdateRequestDTO.getPrice());
+        findProduct.updateItemCategory(itemCategories);
 
+        log.info("장터글 업데이트 완료, 글 상세 {}", findProduct);
         return findProduct.getId();
     }
 
@@ -154,6 +157,7 @@ public class DuckuJangterService {
             jangterImages.getImage().delete();
             fileService.deleteFile(jangterImages.getImage().getFileName());
         });
+        log.info("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
     }
 
     // 장터이미지 연관관계설정
@@ -185,14 +189,18 @@ public class DuckuJangterService {
         User user = principalUser.getUser();
         List<BlackUser> byUserId = blackUserService.findByUserId(user.getUserId());
         if (!byUserId.isEmpty() && byUserId.get(0).getId().equals(user.getUserId())) {
+            log.info("블랙유저 {}", user);
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
+        log.info("일반 유저 {}", user);
         return user;
     }
 
     // 카테고리 검증
     private ItemCategories getItemCategories(Long categoryId) {
-        return itemCategoriesRepository.findById(categoryId)
+        ItemCategories itemCategories = itemCategoriesRepository.findById(categoryId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
+        log.info("아이템 카테고리 {} ", itemCategories);
+        return itemCategories;
     }
 }

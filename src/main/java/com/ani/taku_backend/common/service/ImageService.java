@@ -77,6 +77,7 @@ public class ImageService {
                 Image image = communityImage.getImage();
                 fileService.deleteFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
                 image.delete();                                 // RDB에서 삭제
+                log.info("저장할 이미지 없음 -> 이미지 삭제 성공");
             });
         }
 
@@ -88,6 +89,7 @@ public class ImageService {
                 fileService.deleteFile(filename);  // s3 에서 삭제(클라우드 플레어)
             });
             imageRepository.findByFileNameIn(deleteImageUrl).forEach(Image::delete);    // RDB 삭제
+            log.info("삭제 대상 이미지 삭제 성공 {}", deleteImageUrl);
         }
 
         // 저장할 이미지 -> newImageList

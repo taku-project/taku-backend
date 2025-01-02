@@ -67,21 +67,31 @@ public class DuckuJangter extends BaseTimeEntity {
     /**
      * 업데이트 메서드
      */
-    public void updateDuckuJangter(String title, String description, BigDecimal price, ItemCategories itemCategory) {
-        if (title != null) {
+    public void updateTitle(String title) {
+        if (title != null && !title.equals(this.title)) {
             this.title = title;
         }
-        if (description != null) {
+    }
+
+    public void updateDescription(String description) {
+        if (description != null && !description.equals(this.description)) {
             this.description = description;
         }
-        if (price != null) {
+    }
+
+    public void updatePrice(BigDecimal price) {
+        if (price != null && !price.equals(this.price)) {
             this.price = price;
         }
+    }
 
-        if (itemCategory != null) {
+    public void updateItemCategory(ItemCategories itemCategory) {
+        if (itemCategory != null && !itemCategory.equals(this.itemCategory)) {
             this.itemCategory = itemCategory;
         }
     }
+
+
 
     public long addViewCount() {
         return viewCount += 1;
