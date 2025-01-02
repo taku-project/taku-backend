@@ -77,10 +77,10 @@ public class ShortsInfoResDTO {
      */
     private static PopularityMaticDTO getPopularityMatic(Shorts shorts) {
         return PopularityMaticDTO.builder()
-                .views(shorts.getPopularityMatics().getViews())
-                .likes(shorts.getPopularityMatics().getLikes())
-                .comments(shorts.getPopularityMatics().getCommentsCount())
-                .dislikes(shorts.getPopularityMatics().getDislikes())
+                .views(shorts.getPopularityMetrics().getViews())
+                .likes(shorts.getPopularityMetrics().getLikes())
+                .comments(shorts.getPopularityMetrics().getCommentsCount())
+                .dislikes(shorts.getPopularityMetrics().getDislikes())
                 .build();
     }
 

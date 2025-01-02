@@ -17,12 +17,12 @@ public class PopularityMaticResDTO {
     private int likes;
     private int dislikes;
 
-    public PopularityMaticResDTO(Shorts.PopularityMatic popularityMatic) {
-        if(popularityMatic != null) {
-            this.views = popularityMatic.getViews();
-            this.commentsCount = popularityMatic.getCommentsCount();
-            this.likes = popularityMatic.getLikes();
-            this.dislikes = popularityMatic.getDislikes();
+    public PopularityMaticResDTO(Shorts.PopularityMetric popularityMetric) {
+        if(popularityMetric != null) {
+            this.views = popularityMetric.getViews();
+            this.commentsCount = popularityMetric.getCommentsCount();
+            this.likes = popularityMetric.getLikes();
+            this.dislikes = popularityMetric.getDislikes();
         }
     }
 }

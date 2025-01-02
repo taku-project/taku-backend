@@ -2,7 +2,6 @@ package com.ani.taku_backend.shorts.service;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.InteractionType;
-import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
@@ -52,7 +51,6 @@ import java.util.Objects;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -270,12 +268,12 @@ public class ShortsServiceImpl implements  ShortsService {
                     .findFirst()
                     .orElseThrow(FileException.FileNotFoundException::new);
 
-            Shorts.PopularityMatic popularityMatics = shorts.getPopularityMatics();
+            Shorts.PopularityMetric popularityMetric = shorts.getPopularityMetrics();
             // TODO 사용자 상호 작용 테이블에서 유저가 like, dislike 했는지 확인
             return ShortsResponseDTO.builder()
                     .userProfileImg(shorts.getProfileImg())
                     .description(shorts.getDescription())
-                    .popularityMatic(new PopularityMaticResDTO(popularityMatics))
+                    .popularityMatic(new PopularityMaticResDTO(popularityMetric))
                     .m3u8Url(m3u8Url)
                     .build();
         } else {
