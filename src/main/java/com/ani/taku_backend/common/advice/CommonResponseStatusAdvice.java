@@ -1,6 +1,6 @@
 package com.ani.taku_backend.common.advice;
 
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,20 +10,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 /*
-해당 클래스의 역할은 ApiResponse를 사용하는 응답의 HttpStatus를 의도한대로 바꾸는 것입니다.
+해당 클래스의 역할은 CommonResponse를 사용하는 응답의 HttpStatus를 의도한대로 바꾸는 것입니다.
 */
 
 @RestControllerAdvice
-public class ApiResponseStatusAdvice implements ResponseBodyAdvice<ApiResponse<?>> {
+public class CommonResponseStatusAdvice implements ResponseBodyAdvice<CommonResponse<?>> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class converterType) {
-        return returnType.getParameterType() == ApiResponse.class;
+        return returnType.getParameterType() == CommonResponse.class;
     }
 
     @Override
-    public ApiResponse<?> beforeBodyWrite(
-            ApiResponse body,
+    public CommonResponse<?> beforeBodyWrite(
+            CommonResponse body,
             MethodParameter returnType,
             MediaType selectedContentType,
             Class selectedConverterType,

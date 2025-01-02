@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -26,25 +27,34 @@ import java.util.List;
 public class Shorts {
     @Id
     private String id;
+    @Field(name = "title")
     private String title;
+    @Field(name = "user_id")
     private Long userId;
+    @Field(name = "nickname")
     private String nickname;
+    @Field(name = "profile_img")
     private String profileImg;
+    @Field(name = "role")
     private String role;
+    @Field(name = "description")
     private String description;
+    @Field(name = "tags")
     private List<String> tags;
+    @Field(name = "file_info")
     private VideoMetadata fileInfo;
-    private PopularityMatic popularityMatics;
+    @Field(name = "popularity_metrics")
+    private PopularityMetric popularityMetrics;
 
     @CreatedDate
     private LocalDateTime createdAt;
 
     public void addLike() {
-        this.popularityMatics.likes += 1;
+        this.popularityMetrics.likes += 1;
     }
 
     public void addDisLike() {
-        this.popularityMatics.dislikes += 1;
+        this.popularityMetrics.dislikes += 1;
     }
 
     @Getter
@@ -79,14 +89,14 @@ public class Shorts {
     @Builder
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
-    public static class PopularityMatic {
+    public static class PopularityMetric {
         private int views;
         private int commentsCount;
         private int likes;
         private int dislikes;
 
-        public static PopularityMatic create() {
-            return new PopularityMatic(0, 0, 0, 0);
+        public static PopularityMetric create() {
+            return new PopularityMetric(0, 0, 0, 0);
         }
     }
 
@@ -106,7 +116,7 @@ public class Shorts {
                 )
                 .description(createReqDTO.getDescription())
                 .tags(createReqDTO.getTags())
-                .popularityMatics(PopularityMatic.create())
+                .popularityMetrics(PopularityMetric.create())
                 .build();
     }
 }
