@@ -77,6 +77,7 @@ public class ShortsCommentDTO {
 
     public static class CommentReplyDTO{
         @Schema(description = "쇼츠 댓글 대댓글 아이디")
+        @JsonProperty("id")
         private String id;
         @JsonProperty("reply_text")
         @Schema(description = "쇼츠 댓글 대댓글 내용")
