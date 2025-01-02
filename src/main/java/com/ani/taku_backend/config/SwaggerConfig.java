@@ -8,6 +8,10 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,6 +33,11 @@ public class SwaggerConfig {
                 .addList("bearerAuth");
 
         return new OpenAPI()
+                .servers(
+                        Arrays.asList(
+                        new Server().url("https://api-duckwho.xyz").description("Duckwho API 서버")
+                        )
+                )
                 .info(new Info() // API 문서 정보 설정
                         .title(API_TITLE) // API 제목
                         .version(API_VERSION) // API 버전
