@@ -14,6 +14,7 @@ import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -90,7 +91,7 @@ public class ShortsController {
         security = { @SecurityRequirement(name = "Bearer Auth") }
     )
     @ApiResponses(value = {
-            // @ApiResponse(responseCode = "200", description = "Shorts recommend : SUCCESS")
+            @ApiResponse(responseCode = "200", description = "Shorts recommend : SUCCESS")
     })
     @GetMapping("/recommend")
     public CommonResponse<List<ShortsInfoResDTO>> getRecommendShorts(
@@ -103,7 +104,7 @@ public class ShortsController {
         security = { @SecurityRequirement(name = "Bearer Auth") }
     )
     @ApiResponses(value = {
-            // @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS")
+            @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS")
     })
     @GetMapping("/{shortsId}/comment")
     public CommonResponse<List<ShortsCommentDTO>> findShortsComment(
@@ -113,11 +114,17 @@ public class ShortsController {
         return CommonResponse.ok(shortsComment);
     }
 
-    // 댓글 생성
-     @PostMapping("/{shortsId}/comment")
+    @Operation(summary = "쇼츠 댓글 생성", description = "쇼츠 댓글을 생성합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Shorts not found."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: Shorts save error.")
+    })
+    @PostMapping("/{shortsId}/comment")
      public CommonResponse<List<ShortsCommentDTO>> createShortsComment(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
-        @Valid @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
+        @Parameter(description = "댓글 내용", required = true) @Valid @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
      ) {
 
         // 댓글 생성
@@ -133,11 +140,19 @@ public class ShortsController {
 
       * @param shortsCommentUpdateReqDTO
       */
-     @PatchMapping("/{shortsId}/comment/{commentId}")
+    @Operation(summary = "쇼츠 댓글 수정", description = "쇼츠 댓글을 수정합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: User not authenticated."),
+            @ApiResponse(responseCode = "404", description = "Not Found: Shorts comment not found."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: Shorts comment update error.")
+    })
+    @PatchMapping("/{shortsId}/comment/{commentId}")
      public CommonResponse<List<ShortsCommentDTO>>  updateShortsComment(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
         @Parameter(description = "댓글 아이디", required = true) @PathVariable(value = "commentId") String commentId,
-        @Valid @RequestBody ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO
+        @Parameter(description = "댓글 내용", required = true) @Valid @RequestBody ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO
      ) {
         this.shortsService.updateShortsComment(null, shortsCommentUpdateReqDTO, commentId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
@@ -148,6 +163,14 @@ public class ShortsController {
       * 댓글삭제
       * @param shortsCommentDeleteReqDTO
       */
+    @Operation(summary = "쇼츠 댓글 삭제", description = "쇼츠 댓글을 삭제합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment : SUCCESS"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Shorts comment not found."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: User not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: Shorts comment delete error.")
+    })
     @DeleteMapping("/{shortsId}/comment/{commentId}")
     public CommonResponse<List<ShortsCommentDTO>> deleteShortsComment(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
@@ -165,11 +188,18 @@ public class ShortsController {
      * @param commentId
      * @param shortsCommentCreateReqDTO
      */
+    @Operation(summary = "쇼츠 댓글 대댓글 생성", description = "쇼츠 댓글 대댓글을 생성합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment reply : SUCCESS"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Shorts comment not found."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: Shorts comment reply save error.")
+    })
     @PostMapping("/{shortsId}/comment/{commentId}/reply")
     public CommonResponse<List<ShortsCommentDTO>> createShortsReply(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
         @Parameter(description = "댓글 아이디", required = true) @PathVariable(value = "commentId") String commentId,
-        @Valid @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
+        @Parameter(description = "대댓글 내용", required = true) @Valid @RequestBody ShortsCommentCreateReqDTO shortsCommentCreateReqDTO
     ) {
         this.shortsService.createShortsReply(null, shortsCommentCreateReqDTO, commentId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
@@ -182,6 +212,14 @@ public class ShortsController {
      * @param commentId
      * @param replyId
      */
+    @Operation(summary = "쇼츠 댓글 대댓글 삭제", description = "쇼츠 댓글 대댓글을 삭제합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment reply : SUCCESS"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Shorts comment reply not found."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: User not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: Shorts comment reply delete error.")
+    })
     @DeleteMapping("/{shortsId}/comment/{commentId}/reply/{replyId}")
     public CommonResponse<List<ShortsCommentDTO>> deleteShortsReply(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
@@ -199,12 +237,20 @@ public class ShortsController {
      * @param commentId
      * @param replyId
      */
+    @Operation(summary = "쇼츠 댓글 대댓글 수정", description = "쇼츠 댓글 대댓글을 수정합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shorts comment reply : SUCCESS"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Shorts comment reply not found."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: User not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: Shorts comment reply update error.")
+    })
     @PatchMapping("/{shortsId}/comment/{commentId}/reply/{replyId}")
     public CommonResponse<List<ShortsCommentDTO>> updateShortsReply(
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable(value = "shortsId") String shortsId,
         @Parameter(description = "댓글 아이디", required = true) @PathVariable(value = "commentId") String commentId,
         @Parameter(description = "대댓글 아이디", required = true) @PathVariable(value = "replyId") String replyId,
-        @Valid @RequestBody ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO
+        @Parameter(description = "대댓글 내용", required = true) @Valid @RequestBody ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO
     ) {
         this.shortsService.updateShortsReply(null, shortsCommentUpdateReqDTO, commentId, replyId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
