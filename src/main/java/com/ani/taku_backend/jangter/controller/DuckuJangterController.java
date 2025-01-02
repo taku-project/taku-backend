@@ -14,11 +14,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/jangter")
 @RequiredArgsConstructor
@@ -69,8 +71,8 @@ public class DuckuJangterController {
     })
     @GetMapping("/{productId}")
     public CommonResponse<ProductFindDetailResponseDTO> findProductDetail(
-            @Parameter(description = "게시글 ID", required = true) @PathVariable long productId) {
-
+            @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId) {
+        log.info("판매글 컨트롤러 호출");
         ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId);
         return CommonResponse.ok(productDetail);
     }
@@ -94,11 +96,11 @@ public class DuckuJangterController {
     @PutMapping("/{productId}")
     @RequireUser
     public CommonResponse<Long> updateProduct(
-                        @Parameter(description = "게시글 ID", required = true) @PathVariable long productId,
+                        @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
                         @Parameter(
                               description = "판매글 생성 요청 JSON 데이터", required = true
                         )
-                        @RequestPart("updatePost") ProductUpdateRequestDTO requestDTO,
+                        @RequestPart("updateDTO") ProductUpdateRequestDTO requestDTO,
                         @Parameter(
                               description = "새로 업로드한 이미지"
                         )
@@ -124,8 +126,8 @@ public class DuckuJangterController {
     @DeleteMapping("/{productId}")
     @RequireUser
     public void deleteProduct(
-            @Parameter(description = "게시글 ID", required = true) @PathVariable long productId,
-            @Parameter(description = "카테고리 ID", required = true) @RequestParam Long categoryId) {
+            @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
+            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") Long categoryId) {
         duckuJangterService.deleteProduct(productId, categoryId, null);
     }
 }

@@ -37,6 +37,9 @@ public enum ErrorCode {
     FILE_UPLOAD_ERROR(50300, HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드에 실패했습니다."),
     FILE_DOWNLOAD_ERROR(50301, HttpStatus.SERVICE_UNAVAILABLE, "파일 다운로드에 실패했습니다."),
     INVALID_FILE_FORMAT(40005, HttpStatus.BAD_REQUEST, "잘못된 파일 형식입니다."),
+    FILE_MAX_REGIST_EXCEED(50302, HttpStatus.BAD_REQUEST, "파일 가능 갯수를 초과했습니다."),
+
+
 
     // Category
     NOT_FOUND_CATEGORY(40403, HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),

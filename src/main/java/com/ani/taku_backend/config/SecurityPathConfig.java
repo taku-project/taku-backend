@@ -7,7 +7,7 @@ public class SecurityPathConfig {
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     // GET 요청만 가능한 친구들
-    private static final String[] PUBLIC_GET_PATHS = {
+    public static final String[] PUBLIC_GET_PATHS = {
             // posts
             "/api/community/posts",
             "/api/community/posts/**",
@@ -59,6 +59,8 @@ public class SecurityPathConfig {
     }
 
     public static boolean shouldSkipFilter(String path, String method) {
-        return isPermitAllPath(path) || isUserApiPath(path, method) || isPublicGetPath(path, method);
+        boolean isSkipped = isPermitAllPath(path) || isUserApiPath(path, method) || isPublicGetPath(path, method);
+        System.out.println("Path: " + path + ", Method: " + method + ", Skipped: " + isSkipped);
+        return isSkipped;
     }
 }

@@ -39,11 +39,9 @@ public class DuckuJangterService {
 
     private final DuckuJangterRepository duckuJangterRepository;
     private final ItemCategoriesRepository itemCategoriesRepository;
-    private final ViewCountService viewCountService;
     private final ImageService imageService;
     private final BlackUserService blackUserService;
     private final FileService fileService;
-    private final ImageRepository imageRepository;
 
     /**
      * 장터글 저장
@@ -77,7 +75,6 @@ public class DuckuJangterService {
     /**
      * 장터글 상세 조회
      */
-    @Transactional
     public ProductFindDetailResponseDTO findProductDetail(Long productId) {
 
         // 판매글 조회
@@ -98,20 +95,21 @@ public class DuckuJangterService {
     @Transactional
     @RequireUser
     @ValidateProfanity(fields = {"title", "description"})
-    public Long updateProduct(Long productId, ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
+    public Long updateProduct(Long productId,
+                              ProductUpdateRequestDTO productUpdateRequestDTO,
+                              List<MultipartFile> imageList,
+                              PrincipalUser principalUser) {
 
         // 게시글 조회
-        DuckuJangter findProduct = duckuJangterRepository.findById(productId).orElseThrow(
-                () -> new DuckwhoException(NOT_FOUND_POST));
+        DuckuJangter findProduct = duckuJangterRepository.findById(productId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         // 블랙 유저인지 검증
         User user = validateBlockUser(principalUser);
 
-        if (!user.getNickname().equals(findProduct.getUser().getNickname())) {  // 본인 글인지 확인
+        if (!user.getUserId().equals(findProduct.getUser().getUserId())) {  // 본인 글인지 확인
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
-
-        // 마찬가지로.. 금칙어 적용
 
         // 카테고리 가져오기
         ItemCategories itemCategories = getItemCategories(productUpdateRequestDTO.getCategoryId());
@@ -142,7 +140,7 @@ public class DuckuJangterService {
 
         User user = validateBlockUser(principalUser);
 
-        ItemCategories itemCategories = getItemCategories(categoryId);
+        getItemCategories(categoryId);
 
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
@@ -200,7 +198,11 @@ public class DuckuJangterService {
     private ItemCategories getItemCategories(Long categoryId) {
         ItemCategories itemCategories = itemCategoriesRepository.findById(categoryId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
-        log.info("아이템 카테고리 {} ", itemCategories);
+        log.info("아이템 카테고리: {} ", itemCategories.getName());
+
+        if (!categoryId.equals(itemCategories.getId())) {
+            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
+        }
         return itemCategories;
     }
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ani.taku_backend.common.exception.ErrorCode.FILE_MAX_REGIST_EXCEED;
 import static com.ani.taku_backend.common.exception.ErrorCode.FILE_UPLOAD_ERROR;
 
 @Service
@@ -36,36 +37,38 @@ public class ImageService {
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
 
-        List<Image> saveImageList = new ArrayList<>();
-
         // 이미지 업로드
         List<String> imageUrlList = uploadProductImageList(imageList);
 
-        for (String imageUrl : imageUrlList) {
+        List<Image> saveImageList = new ArrayList<>();
+
+        for (int i = 0; i < imageUrlList.size(); i++) {
+            MultipartFile imageFile = imageList.get(i);
+            String imageUrl = imageUrlList.get(i);
             String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
 
-            for (MultipartFile getImage : imageList) {
-                String originalFilename = getImage.getOriginalFilename();
-                String fileExtension = null;
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
-                    log.info("확장자 추출 성공 {}", fileExtension);
-                }
-
-                Image image = Image.builder()
-                        .user(user)
-                        .fileName(fileName)
-                        .imageUrl(imageUrl)
-                        .originalName(originalFilename)
-                        .fileType(fileExtension)
-                        .fileSize((int) getImage.getSize())
-                        .build();
-
-                saveImageList.add(imageRepository.save(image));
-                log.info("이미지 저장 성공 {}", image);
+            String originalFilename = imageFile.getOriginalFilename();
+            String fileExtension = null;
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+                log.info("확장자 추출 성공 {}", fileExtension);
             }
+
+            Image image = Image.builder()
+                    .user(user)
+                    .fileName(fileName)
+                    .imageUrl(imageUrl)
+                    .originalName(originalFilename)
+                    .fileType(fileExtension)
+                    .fileSize((int) imageFile.getSize())
+                    .build();
+
+            saveImageList.add(imageRepository.save(image));
+            log.info("이미지 저장 성공 {}", image);
         }
+
         return saveImageList;
+
     }
 
     @Transactional
@@ -97,7 +100,6 @@ public class ImageService {
         if (newImageList != null) {
             addImageList = saveImageList(newImageList, user);
         }
-
         return addImageList;
     }
 
@@ -121,7 +123,7 @@ public class ImageService {
     // 이미지 5개 이상 저장 불가
     private void validateImageCount(List<MultipartFile> imageList) {
         if (imageList != null && imageList.size() > 5) {
-            throw new FileException.FileUploadException("5개 이상 이미지를 등록할 수 없습니다.");
+            throw new DuckwhoException(FILE_MAX_REGIST_EXCEED);
         }
     }
 
