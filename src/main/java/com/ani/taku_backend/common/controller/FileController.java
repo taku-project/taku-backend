@@ -34,7 +34,7 @@ public class FileController {
     })
     @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        String uploadUrl = fileUploadService.getVideoFile(file);
+        String uploadUrl = fileUploadService.uploadVideoFile(file);
         return "파일이 스토리지에 업로드 되었습니다. UploadUrl: " + uploadUrl;
     }
 

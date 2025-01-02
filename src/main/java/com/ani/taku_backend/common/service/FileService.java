@@ -33,7 +33,7 @@ public class FileService {
     @Value("${cloud.flare.image-bucket}")
     private String imageBucket;
 
-    public String getVideoFile(MultipartFile file) throws IOException {
+    public String uploadVideoFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
         
         ObjectMetadata metadata = new ObjectMetadata();

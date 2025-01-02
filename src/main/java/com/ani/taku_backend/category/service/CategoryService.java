@@ -159,7 +159,7 @@ public class CategoryService {
         try {
             CreateImageDTO imageDTO = CreateImageDTO.builder()
                 .uploadId(user.getUserId())
-                .imageUrl(fileService.getVideoFile(uploadFile))
+                .imageUrl(fileService.uploadVideoFile(uploadFile))
                 .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
                 .originalFileName(uploadFile.getOriginalFilename())
                 .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))

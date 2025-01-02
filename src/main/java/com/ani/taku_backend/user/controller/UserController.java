@@ -119,7 +119,7 @@ public class UserController {
 		// 프로필 이미지 업로드
 		if (profileImage != null) {	
 			try {
-				userInfo.setImageUrl(this.fileService.getVideoFile(profileImage));
+				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
 				throw new FileException.FileUploadException("파일 업로드 실패");
 			}
