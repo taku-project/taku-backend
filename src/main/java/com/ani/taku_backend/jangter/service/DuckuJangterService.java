@@ -5,7 +5,6 @@ import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
@@ -16,9 +15,7 @@ import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
-import com.ani.taku_backend.jangter.service.viewcount.ViewCountService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
-import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +50,7 @@ public class DuckuJangterService {
                               List<MultipartFile> imageList,
                               PrincipalUser principalUser) {
         // 블랙유저 검증
-        User user = blackUserService.validateBlockUser(principalUser);
+        User user = blackUserService.validateBlackUser(principalUser);
 
         ItemCategories findItemCategory = getItemCategories(productCreateRequestDTO.getCategoryId());
 
@@ -105,7 +102,7 @@ public class DuckuJangterService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         // 블랙 유저인지 검증
-        User user = blackUserService.validateBlockUser(principalUser);
+        User user = blackUserService.validateBlackUser(principalUser);
 
         if (!user.getUserId().equals(findProduct.getUser().getUserId())) {  // 본인 글인지 확인
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
@@ -138,7 +135,7 @@ public class DuckuJangterService {
     @RequireUser
     public void deleteProduct(long productId, Long categoryId, PrincipalUser principalUser) {
 
-        User user = blackUserService.validateBlockUser(principalUser);
+        User user = blackUserService.validateBlackUser(principalUser);
 
         getItemCategories(categoryId);
 

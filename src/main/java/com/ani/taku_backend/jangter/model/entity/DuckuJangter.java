@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -98,4 +99,5 @@ public class DuckuJangter extends BaseTimeEntity {
     public long addViewCount() {
         return viewCount += 1;
     }
+
 }
