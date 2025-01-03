@@ -26,7 +26,7 @@ public class ProductCreateRequestDTO {
 
     @Schema(description = "판매글 본문")
     @NotNull(message = "{NotNull.description}")
-    @Size(min = 10, max = 3000, message = "본문은 10자 이상, 3000자 이하로 입력해 주세요.")
+    @Size(min = 4, max = 3000, message = "본문은 10자 이상, 3000자 이하로 입력해 주세요.")
     private String description;
 
     @Schema(description = "가격")

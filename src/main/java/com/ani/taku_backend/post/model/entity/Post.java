@@ -44,8 +44,8 @@ public class Post extends BaseTimeEntity {
     private String title;
     private String content;
 
-    private Long views;
-    private Long likes;
+    private long views;
+    private long likes;
 
     private LocalDateTime deletedAt ;
 
