@@ -24,8 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -140,7 +138,7 @@ public class PostService {
     protected void saveImages(PostCreateUpdateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, User user, Post post) {
         for (MultipartFile image : imageList) {
             try {
-                String imageUrl = fileService.uploadFile(image);
+                String imageUrl = fileService.uploadVideoFile(image);
                 if ((postCreateRequestDTO.getImagelist() != null) && !postCreateRequestDTO.getImagelist().isEmpty()) {
                     validateImageCount(postCreateRequestDTO.getImagelist());    // 5개 이상이면 예외 발생
                 }
@@ -185,7 +183,7 @@ public class PostService {
         // 새 파일 업로드 및 저장
         for (MultipartFile image : filesToAdd) {
             try {
-                String imageUrl = fileService.uploadFile(image);
+                String imageUrl = fileService.uploadVideoFile(image);
                 processImage(requestDTO, user, post, imageUrl);
             } catch (IOException e) {
                 throw new FileException("파일 업로드에 실패하였습니다.");
