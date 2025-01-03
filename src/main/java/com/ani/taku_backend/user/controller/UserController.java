@@ -209,11 +209,11 @@ public class UserController {
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
 	})
 	public CommonResponse<String>editUserDetail(@PathVariable Long userId
-		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request",required = false) @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDto request
+		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request") @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDto request
 
 	){
 
-		if(request!=null){
+		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
 			if(userService.checkNickname(nickname)){ //이미 존재하는 닉네임일 경우
 				System.out.println("이미 존재하는 닉네임 입니다. ");
@@ -221,6 +221,7 @@ public class UserController {
 			}else{ // 닉네임 vaildation 통과를 했을 경우
 				System.out.println("이미 존재하는 닉네임이 아님으로, 업데이트를 시작합니다. ");
 				userService.updateNickname(userId, nickname);
+
 			}
 		}
 
@@ -231,7 +232,8 @@ public class UserController {
 			System.out.println("multipart"+ multipartFile);
 			try {
 				fileUrl = fileService.uploadImageFile(multipartFile);
-				userService.updateProfileImg(userId, fileUrl);
+				userService.updateProfileImg(userId, fileUrl, request.getFileSize(), request.getFileType(), request.getOriginalFileName(), fileUrl);
+
 			}catch (Exception e){
 				System.out.println(e);
 				throw new FileException.FileUploadException("파일 업로드 실패");

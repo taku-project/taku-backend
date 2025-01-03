@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
@@ -17,4 +18,11 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     @Modifying
     @Query("update Image i set i.deletedAt = current_timestamp where i.fileName in :fileNames")
     void softDeleteByFileNames(@Param("fileNames") List<String> fileNames);
+
+    @Modifying
+    @Query("update Image i set i.deletedAt = current_timestamp where i.id = :imageId")
+    void softDeleteByImageId(@Param("imageId") Long imageId);
+
+
+    Optional<Image> findByFileName(String filename);
 }

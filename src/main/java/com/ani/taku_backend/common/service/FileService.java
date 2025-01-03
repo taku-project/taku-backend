@@ -1,12 +1,7 @@
 package com.ani.taku_backend.common.service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -91,4 +86,12 @@ public class FileService {
         }
     }
 
+    public void deleteImageFile(String fileName) {
+        try {
+            client.deleteObject(imageBucket, fileName);
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
+        }
+    }
 }
+
