@@ -91,4 +91,13 @@ public class FileService {
         }
     }
 
+
+    // 삭제 로직
+    public void deleteFile(String fileName) {
+        try {
+            client.deleteObject(imageBucket, fileName);
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
+        }
+    }
 }

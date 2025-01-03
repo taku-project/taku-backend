@@ -52,5 +52,6 @@ public class ProductFindDetailResponseDTO {
                 .stream()
                 .map(jangterImages -> jangterImages.getImage().getImageUrl())
                 .toList();
+
     }
 }

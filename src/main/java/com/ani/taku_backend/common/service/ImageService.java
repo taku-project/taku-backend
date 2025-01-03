@@ -1,7 +1,6 @@
 package com.ani.taku_backend.common.service;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.user.model.entity.User;
@@ -110,7 +109,7 @@ public class ImageService {
         for (MultipartFile image : imageList) {
             try {
                 validateImageCount(imageList);    // 5개 이상이면 예외 발생
-                String imageUrl = fileService.uploadFile(image);
+                String imageUrl = fileService.uploadImageFile(image);
                 log.info("r2 이미지 파일 업로드 성공 {}", imageUrl);
                 imageUrlList.add(imageUrl);
             } catch (IOException e) {
