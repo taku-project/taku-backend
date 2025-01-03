@@ -53,7 +53,7 @@ public class DuckuJangterService {
                               List<MultipartFile> imageList,
                               PrincipalUser principalUser) {
         // 블랙유저 검증
-        User user = validateBlockUser(principalUser);
+        User user = blackUserService.validateBlockUser(principalUser);
 
         ItemCategories findItemCategory = getItemCategories(productCreateRequestDTO.getCategoryId());
 
@@ -105,7 +105,7 @@ public class DuckuJangterService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         // 블랙 유저인지 검증
-        User user = validateBlockUser(principalUser);
+        User user = blackUserService.validateBlockUser(principalUser);
 
         if (!user.getUserId().equals(findProduct.getUser().getUserId())) {  // 본인 글인지 확인
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
@@ -138,7 +138,7 @@ public class DuckuJangterService {
     @RequireUser
     public void deleteProduct(long productId, Long categoryId, PrincipalUser principalUser) {
 
-        User user = validateBlockUser(principalUser);
+        User user = blackUserService.validateBlockUser(principalUser);
 
         getItemCategories(categoryId);
 
@@ -180,18 +180,6 @@ public class DuckuJangterService {
                 .status(StatusType.ACTIVE)
                 .viewCount(0L)
                 .build();
-    }
-
-    // 블랙리스트 검증
-    private User validateBlockUser(PrincipalUser principalUser) {
-        User user = principalUser.getUser();
-        List<BlackUser> byUserId = blackUserService.findByUserId(user.getUserId());
-        if (!byUserId.isEmpty() && byUserId.get(0).getId().equals(user.getUserId())) {
-            log.info("블랙유저 {}", user);
-            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
-        }
-        log.info("일반 유저 {}", user);
-        return user;
     }
 
     // 카테고리 검증
