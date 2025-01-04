@@ -1,7 +1,6 @@
 package com.ani.taku_backend.marketprice.repository;
 
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
-import com.ani.taku_backend.jangter.model.enums.JangterStatus;  // StatusType 대신 JangterStatus import
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
 import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
