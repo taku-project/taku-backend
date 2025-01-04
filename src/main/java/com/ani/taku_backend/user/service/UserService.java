@@ -1,21 +1,23 @@
 package com.ani.taku_backend.user.service;
 
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.common.enums.UserRole;
-import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
-import com.ani.taku_backend.user.model.entity.User;
-import com.ani.taku_backend.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 
+import com.ani.taku_backend.user.converter.UserConverter;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.enums.UserRole;
+import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.repository.UserRepository;
+import com.ani.taku_backend.user.model.dto.*;
+
 import static com.ani.taku_backend.user.converter.UserConverter.*;
-import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor

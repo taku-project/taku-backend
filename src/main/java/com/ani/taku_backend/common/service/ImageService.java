@@ -1,14 +1,14 @@
 package com.ani.taku_backend.common.service;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.user.model.entity.User;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.ani.taku_backend.common.model.entity.Image;
+import com.ani.taku_backend.common.repository.ImageRepository;
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,9 +27,11 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final FileService fileService;
 
+
     public Image insertImage(Image image) {
         return this.imageRepository.save(image);
     }
+
 
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {

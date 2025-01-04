@@ -1,5 +1,7 @@
 package com.ani.taku_backend.user.model.dto.requestDto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

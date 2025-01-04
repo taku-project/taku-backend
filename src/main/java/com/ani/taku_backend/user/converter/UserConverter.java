@@ -1,6 +1,7 @@
 package com.ani.taku_backend.user.converter;
 
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.dto.*;
+
 
 
 public class UserConverter {
