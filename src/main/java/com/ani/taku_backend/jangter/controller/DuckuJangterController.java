@@ -73,7 +73,7 @@ public class DuckuJangterController {
     public CommonResponse<ProductFindDetailResponseDTO> findProductDetail(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId) {
         log.info("판매글 컨트롤러 호출");
-        ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId);
+        ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId, false);
         return CommonResponse.ok(productDetail);
     }
 
