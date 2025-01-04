@@ -3,7 +3,6 @@ package com.ani.taku_backend.Shorts;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
-import com.ani.taku_backend.shorts.repository.ShortsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import java.util.concurrent.ThreadLocalRandom;
 @SpringBootTest
 class ShortsTest {
 
-    @Autowired private ShortsRepository postRepository;
 
 
 //    @Test
