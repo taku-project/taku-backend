@@ -32,6 +32,10 @@ public class RedisService {
         redisTemplate.opsForValue().set(key, value, validityTime);
     }
 
+    public void setKeyValue(String key, Object value, Duration validityTime) {
+        redisTemplate.opsForValue().set(key, value, validityTime);
+    }
+
     public String getKeyValue(String key) {
         return (String) redisTemplate.opsForValue().get(key);
     }
