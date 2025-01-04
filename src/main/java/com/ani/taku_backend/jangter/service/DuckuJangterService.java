@@ -5,7 +5,6 @@ import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
@@ -16,7 +15,6 @@ import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
-import com.ani.taku_backend.jangter.service.viewcount.ViewCountService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -132,10 +130,7 @@ public class DuckuJangterService {
         }
 
         // 장터글 업데이트
-        findProduct.updateTitle(productUpdateRequestDTO.getTitle());
-        findProduct.updateDescription(productUpdateRequestDTO.getDescription());
-        findProduct.updatePrice(productUpdateRequestDTO.getPrice());
-        findProduct.updateItemCategory(itemCategories);
+        findProduct.updateProduct(productUpdateRequestDTO, itemCategories);
 
         log.info("장터글 업데이트 완료, 글 상세 {}", findProduct);
         return findProduct.getId();
@@ -164,7 +159,7 @@ public class DuckuJangterService {
         // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
         findProduct.getJangterImages().forEach(jangterImages -> {
             jangterImages.getImage().delete();
-            fileService.deleteFile(jangterImages.getImage().getFileName());
+            fileService.deleteImageFile(jangterImages.getImage().getFileName());
         });
         log.info("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
     }
@@ -184,7 +179,7 @@ public class DuckuJangterService {
     private DuckuJangter createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user, ItemCategories findItemCategory) {
         return DuckuJangter.builder()
                 .user(user)
-                .itemCategory(findItemCategory)
+                .itemCategories(findItemCategory)
                 .title(productCreateRequestDTO.getTitle())
                 .description(productCreateRequestDTO.getDescription())
                 .price(productCreateRequestDTO.getPrice())
@@ -211,7 +206,7 @@ public class DuckuJangterService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
         log.info("아이템 카테고리: {} ", itemCategories.getName());
 
-        if (findProduct != null && !findProduct.getItemCategory().getId().equals(itemCategories.getId())) {
+        if (findProduct != null && !findProduct.getItemCategories().getId().equals(itemCategories.getId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
