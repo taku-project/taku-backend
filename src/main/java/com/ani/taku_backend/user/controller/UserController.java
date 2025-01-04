@@ -9,6 +9,8 @@ import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
+import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.dto.requestDto.*;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +20,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -116,7 +117,7 @@ public class UserController {
 		// 프로필 이미지 업로드
 		if (profileImage != null) {	
 			try {
-				userInfo.setImageUrl(this.fileService.uploadFile(profileImage));
+				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
 				throw new FileException.FileUploadException("파일 업로드 실패");
 			}
@@ -178,6 +179,72 @@ public class UserController {
 
 		return CommonResponse.ok(null);
 	}
+
+
+	/*
+	* TO DO
+	* com.ani.taku_... 머시기 수정하기 위에 APiResponse 어노테이션이랑 이름이 같아서 발생하는 문제임
+	 * */
+	@GetMapping("/{userId}")
+	@Operation(
+			summary = "유저 정보 조회",
+			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
+	)
+	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
+	public CommonResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
+
+		UserDetailDto userDetail = userService.getUserDetail(userId);
+
+		return CommonResponse.ok(userDetail);
+
+	}
+
+	@PatchMapping(value= "/{userId}")
+	@Operation(
+			summary = "유저 정보 수정",
+			description = "유저 프로필, 닉네임 정보 수정"
+	)
+	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
+	})
+	public CommonResponse<String>editUserDetail(@PathVariable Long userId
+		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request",required = false) @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDto request
+
+	){
+
+		if(request!=null){
+			String nickname = request.getNickname();
+			if(userService.checkNickname(nickname)){ //이미 존재하는 닉네임일 경우
+				System.out.println("이미 존재하는 닉네임 입니다. ");
+				return CommonResponse.created("이미 존재하는 닉네임입니다. ");
+			}else{ // 닉네임 vaildation 통과를 했을 경우
+				System.out.println("이미 존재하는 닉네임이 아님으로, 업데이트를 시작합니다. ");
+				userService.updateNickname(userId, nickname);
+			}
+		}
+
+		if(multipartFile!=null){
+			String fileUrl;
+			//1번. martipart
+			System.out.println("hello");
+			System.out.println("multipart"+ multipartFile);
+			try {
+				fileUrl = fileService.uploadImageFile(multipartFile);
+				userService.updateProfileImg(userId, fileUrl);
+			}catch (Exception e){
+				System.out.println(e);
+				throw new FileException.FileUploadException("파일 업로드 실패");
+			}
+
+			return CommonResponse.ok(fileUrl);
+			//2버.
+
+		}
+
+		return CommonResponse.ok(null);
+
+	}
+
+
 
 }
 

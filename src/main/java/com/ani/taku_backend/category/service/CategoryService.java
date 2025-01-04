@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Optional;
 
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -159,7 +158,7 @@ public class CategoryService {
         try {
             CreateImageDTO imageDTO = CreateImageDTO.builder()
                 .uploadId(user.getUserId())
-                .imageUrl(fileService.uploadFile(uploadFile))
+                .imageUrl(fileService.uploadVideoFile(uploadFile))
                 .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
                 .originalFileName(uploadFile.getOriginalFilename())
                 .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))

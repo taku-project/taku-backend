@@ -1,19 +1,21 @@
 package com.ani.taku_backend.user.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
+import com.ani.taku_backend.user.model.dto.UserDetailDto;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+import static com.ani.taku_backend.user.converter.UserConverter.*;
+import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
 
 @Service
 @RequiredArgsConstructor
@@ -60,9 +62,32 @@ public class UserService {
   }
 
   // 유저 상태 업데이트
-  @Transactional
+  @Transactional //transactional 붙여주지 않으면 오류 난다.
   public int updateUserStatus(Long userId, StatusType status) {
     return this.userRepository.updateUserStatus(userId, status.name());
   }
+
+  public UserDetailDto getUserDetail(Long userId){
+
+    //Optional로 해야하는 이유
+    Optional<User> user = userRepository.findById(userId);
+
+    return toUserDetailDto(user.get().getNickname(), user.get().getGender(), user.get().getAgeRange(), user.get().getProfileImg());
+
+  }
+
+
+  @Transactional
+  public void updateNickname(Long userId, String nickname){
+
+    userRepository.updateNickname(userId, nickname);
+
+  }
+
+  @Transactional
+  public void updateProfileImg(Long userId, String profileImg){
+    userRepository.updateProfileImg(userId, profileImg);
+  }
+
 }
 

@@ -38,6 +38,7 @@ public class Comments extends BaseTimeEntity {
     @Column(length = 50, nullable = false)
     private String status;
 
+    // 댓글 생성 스태틱 메서드
     public static Comments createComments(User user, Post post, String content) {
         return Comments.builder()
                 .user(user)
@@ -46,6 +47,7 @@ public class Comments extends BaseTimeEntity {
                 .build();
     }
 
+    // 댓글의 댓글 생성 스태틱 메서드
     public static Comments createCommentsReply(User user, Post post, Comments parentComment, String content) {
         return Comments.builder()
                 .user(user)
@@ -54,5 +56,10 @@ public class Comments extends BaseTimeEntity {
                 .content(content)
                 .build();
 
+    }
+
+    // 본문 업데이트 메서드
+    public void updateComments(String content) {
+        this.content = content;
     }
 }

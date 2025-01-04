@@ -2,7 +2,7 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,7 +32,7 @@ public class DuckuJangter extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_category_id")
-    private ItemCategories itemCategory;
+    private ItemCategories itemCategories;
 
     @Column(length = 150, nullable = false)
     private String title;
@@ -70,34 +70,29 @@ public class DuckuJangter extends BaseTimeEntity {
     }
 
     /**
-     * 업데이트 메서드
+     * 업데이트 메서드, 기존과 변경이 없다면 업데이트 하지 않음
      */
-    public void updateTitle(String title) {
-        if (title != null && !title.equals(this.title)) {
-            this.title = title;
+    public void updateProduct(ProductUpdateRequestDTO productUpdateRequestDTO, ItemCategories itemCategories) {
+        String updateTitle = productUpdateRequestDTO.getTitle();
+        String updateDescription = productUpdateRequestDTO.getDescription();
+        BigDecimal updatePrice = productUpdateRequestDTO.getPrice();
+
+        if (updateTitle != null && !updateTitle.equals(this.title)) {
+            this.title = updateTitle;
+        }
+        if (updateDescription != null && !updateDescription.equals(this.description)) {
+            this.description = updateDescription;
+        }
+        if (updatePrice != null && !updatePrice.equals(this.price)) {
+            this.price = updatePrice;
+        }
+        if (itemCategories != null && !itemCategories.equals(this.itemCategories)) {
+            this.itemCategories = itemCategories;
         }
     }
 
-    public void updateDescription(String description) {
-        if (description != null && !description.equals(this.description)) {
-            this.description = description;
-        }
-    }
-
-    public void updatePrice(BigDecimal price) {
-        if (price != null && !price.equals(this.price)) {
-            this.price = price;
-        }
-    }
-
-    public void updateItemCategory(ItemCategories itemCategory) {
-        if (itemCategory != null && !itemCategory.equals(this.itemCategory)) {
-            this.itemCategory = itemCategory;
-        }
-    }
 
     public long addViewCount() {
         return viewCount += 1;
     }
-
 }
