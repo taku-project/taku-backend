@@ -7,6 +7,7 @@ import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.PostException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
+import com.ani.taku_backend.common.service.ExtractKeywordService;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,7 @@ public class DuckuJangterService {
     private final BlackUserService blackUserService;
     private final FileService fileService;
     private final ImageRepository imageRepository;
+    private final ExtractKeywordService extractKeywordService;
 
     /**
      * 장터글 저장
@@ -184,5 +187,57 @@ public class DuckuJangterService {
             jangterImages.getImage().softDelete();
             fileService.deleteFile(jangterImages.getImage().getFileName());
         });
+    }
+
+    @RequireUser
+    public void recommendProduct(Long productId, PrincipalUser principalUser) {
+
+        // 상품상세
+        final DuckuJangter product = this.duckuJangterRepository.findById(productId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+
+        
+        String title = product.getTitle();
+        BigDecimal price = product.getPrice();
+        BigDecimal priceRangePercentage = new BigDecimal("0.20"); // 20%
+        BigDecimal minPrice = price.subtract(price.multiply(priceRangePercentage));
+        BigDecimal maxPrice = price.add(price.multiply(priceRangePercentage));
+
+
+        // TODO : 병렬처리
+
+        log.info("title : {}, price : {}, minPrice : {}, maxPrice : {}", title, price, minPrice, maxPrice);
+
+        List<String> keywords = this.extractKeywordService.extractKeywords(title);
+
+        log.info("keywords : {}", keywords);
+
+        // 같은 카테고리의 상품 조회
+        Long itemCategoryId = product.getItemCategory().getId();
+        List<DuckuJangter> recommendProducts = this.duckuJangterRepository
+            .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE);
+
+        log.info("1 step >> recommendProducts : {}", recommendProducts);
+
+        Long userId = principalUser.getUserId();
+        List<DuckuJangter> buyUserProducts = this.duckuJangterRepository.findByBuyUserId(userId);
+
+        log.info("user buy product >> buyUserProducts : {}", buyUserProducts);
+
+        // 몽고디비 검색이력 조회
+
+
+        // 사용자 찜목록 조회
+
+
+        // 데이터가지고 점수 계산
+
+        // 점수 순으로 정렬
+
+        // 상위 5개 추천
+
+        //TODO: 5개가 없으면? 같은 카테고리의 상품에서 랜덤? 추천
+
+        // 랜덤추천할 상품도 없으면? 모든 상품에서 랜덤 추천
     }
 }

@@ -52,4 +52,10 @@ public class DuckuJangterController {
     public void deleteProduct(@PathVariable long productId) {
         duckuJangterService.deleteProduct(productId, null);
     }
+
+
+    @GetMapping("/{productId}/recommend")
+    public void recommendProduct(@PathVariable("productId") Long productId) {
+        this.duckuJangterService.recommendProduct(productId, null);
+    }
 }
