@@ -50,9 +50,6 @@ public class DuckuJangter extends BaseTimeEntity {
     private long viewCount;
     private LocalDateTime deletedAt;
 
-    @Column(name = "buy_user_id")
-    private Long buyUserId;
-
     @Builder.Default
     @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
     private List<JangterImages> jangterImages = new ArrayList<>();
