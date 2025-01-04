@@ -51,6 +51,7 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
+                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()   // post, janget get요청 허용등록
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
@@ -72,10 +73,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://duckwho.vercel.app"));
+        
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:8080",
+            "https://localhost:8080",
+            "http://localhost:3000",
+            "https://localhost:3000",
+            "https://api-duckwho.xyz",
+            "https://duckwho.vercel.app"
+        ));
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

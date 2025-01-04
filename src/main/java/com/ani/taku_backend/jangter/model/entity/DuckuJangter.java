@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,7 +32,7 @@ public class DuckuJangter extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_category_id")
-    private ItemCategories itemCategory;
+    private ItemCategories itemCategories;
 
     @Column(length = 150, nullable = false)
     private String title;
@@ -46,9 +47,13 @@ public class DuckuJangter extends BaseTimeEntity {
     @Column(length = 100, nullable = false)
     private StatusType status;  // 글 상태? 판매중? 판매완료? 이런거..?
 
-    private Long viewCount;
+    private long viewCount;
     private LocalDateTime deletedAt;
 
+    @Column(name = "buy_user_id")
+    private Long buyUserId;
+
+    @Builder.Default
     @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
     private List<JangterImages> jangterImages = new ArrayList<>();
 
@@ -57,7 +62,7 @@ public class DuckuJangter extends BaseTimeEntity {
 
     // TODO 북마크 연관관계
 
-    public void softDelete() {
+    public void delete() {
         deletedAt = LocalDateTime.now();
     }
 
@@ -66,8 +71,32 @@ public class DuckuJangter extends BaseTimeEntity {
         this.jangterImages.add(jangterImage);
         jangterImage.addDuckuJangter(this);
     }
-    // 유사도 점수 업데이트 메서드
-    public void updateSimilarity(Double similarity) {
-        this.similarity = similarity;
+
+
+    /**
+     * 업데이트 메서드, 기존과 변경이 없다면 업데이트 하지 않음
+     */
+    public void updateProduct(ProductUpdateRequestDTO productUpdateRequestDTO, ItemCategories itemCategories) {
+        String updateTitle = productUpdateRequestDTO.getTitle();
+        String updateDescription = productUpdateRequestDTO.getDescription();
+        BigDecimal updatePrice = productUpdateRequestDTO.getPrice();
+
+        if (updateTitle != null && !updateTitle.equals(this.title)) {
+            this.title = updateTitle;
+        }
+        if (updateDescription != null && !updateDescription.equals(this.description)) {
+            this.description = updateDescription;
+        }
+        if (updatePrice != null && !updatePrice.equals(this.price)) {
+            this.price = updatePrice;
+        }
+        if (itemCategories != null && !itemCategories.equals(this.itemCategories)) {
+            this.itemCategories = itemCategories;
+        }
+    }
+
+
+    public long addViewCount() {
+        return viewCount += 1;
     }
 }

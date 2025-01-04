@@ -78,7 +78,6 @@ public class RedisService {
 //        return redisTemplate.keys(pattern);
 
         Set<String> keys = new HashSet<>();
-
         ScanOptions scanOptions = ScanOptions.scanOptions().match(pattern).count(1000).build();
 
         try (Cursor<byte[]> cursor = redisTemplate.executeWithStickyConnection(
