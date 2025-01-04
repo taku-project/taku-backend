@@ -1,4 +1,4 @@
-package com.ani.taku_backend.annotation;
+package com.ani.taku_backend.common.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

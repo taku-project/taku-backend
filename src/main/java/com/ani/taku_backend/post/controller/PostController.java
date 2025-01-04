@@ -1,8 +1,8 @@
 package com.ani.taku_backend.post.controller;
 
-import com.ani.taku_backend.annotation.ViewCountChecker;
+import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.response.ApiResponse;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;
 import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/posts")
+@RequestMapping("/api/community/posts")
 public class PostController {
 
     private final PostService postService;
@@ -50,7 +50,7 @@ public class PostController {
             """
     )
     @GetMapping
-    public ApiResponse<List<PostListResponseDTO>> findAllPost(PostListRequestDTO requestDTO) {
+    public CommonResponse<List<PostListResponseDTO>> findAllPost(PostListRequestDTO requestDTO) {
         List<PostListResponseDTO> postList = postService.findAllPost(
                 requestDTO.getFilter().toString(),
                 requestDTO.getLastValue(),
@@ -59,7 +59,7 @@ public class PostController {
                 requestDTO.getKeyword(),
                 requestDTO.getCategoryId());
 
-        return ApiResponse.ok(postList);
+        return CommonResponse.ok(postList);
     }
 
     @Operation(summary = "커뮤니티 게시글 생성", description = """
@@ -77,20 +77,20 @@ public class PostController {
             """)
     @RequireUser
     @PostMapping
-    public ApiResponse<Long> createPost(
+    public CommonResponse<Long> createPost(
             PrincipalUser principalUser,
             @Valid @RequestPart("createPost") PostCreateUpdateRequestDTO requestDTO,
             @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
 
         Long createPostId = postService.createPost(requestDTO, principalUser, imageList);
-        return ApiResponse.created(createPostId);
+        return CommonResponse.created(createPostId);
     }
 
     @Operation(summary = "커뮤니티 게시글 상세 조회", description = """
             1. 게시글 상세 조회(댓글은 나중에 작업)
             """)
     @GetMapping("/{postId}")
-    public ApiResponse<PostDetailResponseDTO> findPostDetail(
+    public CommonResponse<PostDetailResponseDTO> findPostDetail(
             @PathVariable Long postId,
             @ViewCountChecker Boolean canAddView,
             PrincipalUser principalUser
@@ -101,7 +101,7 @@ public class PostController {
         }
 
         PostDetailResponseDTO detail = postReadService.getPostDetail(postId, canAddView, currentUserId);
-        return ApiResponse.ok(detail);
+        return CommonResponse.ok(detail);
     }
 
     @Operation(summary = "커뮤니티 게시글 수정", description = """
@@ -119,20 +119,20 @@ public class PostController {
             """)
     @RequireUser
     @PutMapping("/{postId}")
-    public ApiResponse<Long> updatePost(@PathVariable Long postId,
-                                        PrincipalUser principalUser,
-                                        @Valid @RequestPart("updatePost") PostCreateUpdateRequestDTO requestDTO,
-                                        @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
+    public CommonResponse<Long> updatePost(@PathVariable Long postId,
+                                           PrincipalUser principalUser,
+                                           @Valid @RequestPart("updatePost") PostCreateUpdateRequestDTO requestDTO,
+                                           @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
         Long updatePostId = postService.updatePost(requestDTO, principalUser, postId, imageList);
-        return ApiResponse.ok(updatePostId);
+        return CommonResponse.ok(updatePostId);
     }
 
     @Operation(summary = "커뮤니티 게시글 삭제")
     @RequireUser
     @DeleteMapping("/{postId}")
-    public ApiResponse<Long> deletePost(@PathVariable Long postId,
-                                        PrincipalUser principalUser) {
+    public CommonResponse<Long> deletePost(@PathVariable Long postId,
+                                           PrincipalUser principalUser) {
         Long deletePostId = postService.deletePost(postId, principalUser);
-        return ApiResponse.ok(deletePostId);
+        return CommonResponse.ok(deletePostId);
     }
 }

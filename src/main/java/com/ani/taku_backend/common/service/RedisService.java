@@ -32,6 +32,10 @@ public class RedisService {
         redisTemplate.opsForValue().set(key, value, validityTime);
     }
 
+    public void setKeyValue(String key, Object value, Duration validityTime) {
+        redisTemplate.opsForValue().set(key, value, validityTime);
+    }
+
     public String getKeyValue(String key) {
         return (String) redisTemplate.opsForValue().get(key);
     }
@@ -78,7 +82,6 @@ public class RedisService {
 //        return redisTemplate.keys(pattern);
 
         Set<String> keys = new HashSet<>();
-
         ScanOptions scanOptions = ScanOptions.scanOptions().match(pattern).count(1000).build();
 
         try (Cursor<byte[]> cursor = redisTemplate.executeWithStickyConnection(
