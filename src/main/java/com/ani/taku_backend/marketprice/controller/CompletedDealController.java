@@ -66,6 +66,6 @@ public class CompletedDealController {
                 completedDealService.searchMarketPrice(
                         keyword, startDate, endDate, displayOption, pageable
                 )
-        );
+        );   // 요거 이상함
     }
 }

@@ -42,7 +42,7 @@ public class CompletedDealService {
 
         } catch (Exception e) {
             log.error("시세 조회 중 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("시세 조회 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("시세 조회 중 오류가 발생했습니다.", e);  //덕후로 바꿔~!!!!!!!!!!!!!!!!!! 넵!!
         }
     }
 
