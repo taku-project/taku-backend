@@ -9,8 +9,6 @@ import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.shorts.domain.dto.res.ShortsResponseDTO;
 import com.ani.taku_backend.user.model.entity.User;
 
-import jakarta.validation.Valid;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -21,16 +19,14 @@ public interface ShortsService {
 
     List<ShortsInfoResDTO> findRecommendShorts(PrincipalUser principalUser);
     List<ShortsCommentDTO> findShortsComment(String shortsId);
+    ShortsResponseDTO findShortsInfo(String shortsId, Long userId);
+
     void createShortsComment(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO, String shortsId);
     void updateShortsComment(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO, String commentId);
     void deleteShortsComment(PrincipalUser principalUser, String commentId);
     void createShortsReply(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO, String commentId);
     void deleteShortsReply(PrincipalUser principalUser, String commentId, String replyId);
     void updateShortsReply(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO, String commentId, String replyId);
-    ShortsResponseDTO findShortsInfo(String shortsId);
-
-    void shortsLike(User user, String shortsId);
-    void shortsDisLike(User user, String shortsId);
 
     default String generateUniqueFilePath(String originalFileName) {
         Objects.requireNonNull(originalFileName);
