@@ -16,7 +16,6 @@ public class PostDetailResponseDTO {
     private final String content;
     private final LocalDateTime createdAt;
     private final Long viewCount;
-    private final Long likes;
     private final boolean owner;
     private final List<String> imageUrls;
 
@@ -26,7 +25,6 @@ public class PostDetailResponseDTO {
         this.content = post.getContent();
         this.createdAt = post.getCreatedAt();
         this.viewCount = post.getViews();
-        this.likes = post.getLikes();
         this.owner = owner;
 
         this.imageUrls = post.getCommunityImages().stream()

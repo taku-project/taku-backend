@@ -29,7 +29,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         BooleanExpression byCategory = getCategory(categoryId, post);                   // 카테고리 구분
         BooleanExpression bySortFilter = getSortFilter(filter, lastValue, isAsc, post); // 정렬 필터
         BooleanExpression byKeyword = getKeyword(keyword, post);                        // 키워드 검색
-        BooleanExpression notDeleted = getNotDeleted(post);                             // Soft Delete 조건
+        BooleanExpression notDeleted = getNotDeleted(post);                             // 삭제된글 제외
         OrderSpecifier<?> mainSort = getMainSort(filter, isAsc, post);                  // 첫번째 정렬 기준
         OrderSpecifier<?> subSort = getSubSort(isAsc, post);                            // 두번째 정렬 기준
 

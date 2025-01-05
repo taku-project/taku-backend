@@ -28,15 +28,8 @@ public class PostController {
     @Operation(summary = "커뮤니티 게시글 조회(정렬, 검색)",
             description = "")
     @GetMapping
-    public CommonResponse<List<PostListResponseDTO>> findAllPost(PostListRequestDTO requestDTO) {
-        List<PostListResponseDTO> postList = postService.findAllPost(
-                requestDTO.getFilter().toString(),
-                requestDTO.getLastValue(),
-                requestDTO.isAsc(),
-                requestDTO.getLimit(),
-                requestDTO.getKeyword(),
-                requestDTO.getCategoryId());
-
+    public CommonResponse<List<PostListResponseDTO>> findAllPost(PostListRequestDTO postListRequestDTO) {
+        List<PostListResponseDTO> postList = postService.findAllPost(postListRequestDTO);
         return CommonResponse.ok(postList);
     }
 
@@ -89,7 +82,7 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public CommonResponse<Long> deletePost(
             @PathVariable Long postId, long categoryId) {
-        Long deletePostId = postService.deletePost(postId, categoryId, null);
-        return CommonResponse.ok(deletePostId);
+        postService.deletePost(postId, categoryId, null);
+        return CommonResponse.ok(null);
     }
 }

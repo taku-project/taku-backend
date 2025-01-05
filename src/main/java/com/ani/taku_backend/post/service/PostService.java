@@ -4,12 +4,14 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
+import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.model.entity.CommunityImage;
@@ -43,17 +45,24 @@ public class PostService {
     /**
      * 게시글 전체 조회 -> 삭제된 내역은 검색안되게 수정, 그리고 반환값에 전체 개수 반환
      */
-    public List<PostListResponseDTO> findAllPost(String filter, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
+    public List<PostListResponseDTO> findAllPost(PostListRequestDTO postListRequestDTO) {
 
         /**
          * 검증 로직
          * - 공백만 있는 keyword null 처리
          * - 공백 제거(양옆, 중간)
          */
+        String keyword = postListRequestDTO.getKeyword();
         if (keyword != null) {
             keyword = keyword.trim().isEmpty() ? null : keyword.replaceAll("\\s+", "");
         }
-        List<Post> allPost = postRepository.findAllPostWithNoOffset(filter, lastValue, isAsc, limit, keyword, categoryId);
+
+        List<Post> allPost = postRepository.findAllPostWithNoOffset(postListRequestDTO.getFilter().toString(),
+                                                                    postListRequestDTO.getLastValue(),
+                                                                    postListRequestDTO.isAsc(),
+                                                                    postListRequestDTO.getLimit(),
+                                                                    keyword, postListRequestDTO.getCategoryId());
+
         return allPost.stream().map(PostListResponseDTO::new).toList();
     }
 

@@ -20,8 +20,7 @@ public class PostListResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Long views;
-    private Long likes;
+    private long views;
 
     public PostListResponseDTO(Post post) {
         this.id = post.getId();
@@ -40,6 +39,5 @@ public class PostListResponseDTO {
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
         this.views = post.getViews();
-        this.likes = post.getLikes();
     }
 }
