@@ -119,8 +119,8 @@ public class CommentsService {
         Comments findComments = commentsRepository.findById(commentsId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_COMMENTS));
 
-        validateDelete(findComments);                   // 삭제 여부 검증
-        validateAuthorWithAdmin(user, findComments);    // 작성자, 관리자 검증
+        checkDeleteComments(findComments);                   // 삭제 여부 검증
+        checkAuthorWithAdmin(user, findComments);    // 작성자, 관리자 검증
 
         // 본문 수정
         findComments.updateComments(commentsUpdateRequestDTO.getContent());
@@ -132,20 +132,20 @@ public class CommentsService {
     // 댓글 삭제 로직
     private void deleteComments(long commentId, User user) {
         Comments findComments = commentsRepository.findById(commentId).orElseThrow(() -> new DuckwhoException(NOT_FOUND_COMMENTS));
-        validateAuthorWithAdmin(user, findComments);        // 작성자, 관리자 검증
+        checkAuthorWithAdmin(user, findComments);        // 작성자, 관리자 검증
         findComments.delete();
         log.info("댓글 삭제 완료, commentsDeleteAt: {}", findComments.getDeletedAt());
     }
 
     // 해당 게시글이 삭제 처리 되어있으면 예외
-    private void validateDelete(Comments findComments) {
+    private void checkDeleteComments(Comments findComments) {
         if (findComments.getDeletedAt() != null) {
             throw new DuckwhoException(NOT_FOUND_COMMENTS);
         }
     }
 
     // 어드민이거나, 작성자와 다르면 예외
-    private void validateAuthorWithAdmin(User user, Comments findComments) {
+    private void checkAuthorWithAdmin(User user, Comments findComments) {
         if ((!user.getRole().equals(UserRole.ADMIN.name())) &&
                 !user.getUserId().equals(findComments.getUser().getUserId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
