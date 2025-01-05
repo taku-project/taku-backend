@@ -39,7 +39,7 @@ public class CommentsService {
     public Long createComments(CommentsCreateRequestDTO commentsCreateRequestDTO, PrincipalUser principalUser) {
 
         // Black 유저 검증
-        User user = blackUserService.validateBlackUser(principalUser);
+        User user = blackUserService.checkBlackUser(principalUser);
 
         // 넘어온 postId가 없으면 예외
         if (commentsCreateRequestDTO.getPostId() == null) {
@@ -64,7 +64,7 @@ public class CommentsService {
     public Long updateComments(long commentsId, @Valid CommentsUpdateRequestDTO commentsUpdateRequestDTO, PrincipalUser principalUser) {
 
         // Black 유저 검증
-        User user = blackUserService.validateBlackUser(principalUser);
+        User user = blackUserService.checkBlackUser(principalUser);
 
         // 넘어온 PostId가 없으면 예외
         if (commentsUpdateRequestDTO.getPostId() == null) {
@@ -82,7 +82,7 @@ public class CommentsService {
     @RequireUser
     public void deleteComments(@Valid long commentId, PrincipalUser principalUser) {
         // Black 유저 검증
-        User user = blackUserService.validateBlackUser(principalUser);
+        User user = blackUserService.checkBlackUser(principalUser);
 
         // 댓글 삭제
         deleteComments(commentId, user);
