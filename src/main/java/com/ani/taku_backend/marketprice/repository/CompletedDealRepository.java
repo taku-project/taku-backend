@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CompletedDealRepository extends JpaRepository<DuckuJangter, Long>, CompletedDealQueryRepository {
-    List<DuckuJangter> findByItemCategoryAndCreatedAtAfterOrderByCreatedAtDesc(
-            ItemCategories category,
+    List<DuckuJangter> findByItemCategoriesAndCreatedAtAfterOrderByCreatedAtDesc(
+            ItemCategories itemCategories,
             LocalDateTime startDate
     );
 }

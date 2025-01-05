@@ -1,6 +1,8 @@
 package com.ani.taku_backend.marketprice.service;
 
 import com.ani.taku_backend.common.service.ExtractKeywordService;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.*;
 import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -42,8 +45,16 @@ public class CompletedDealService {
 
         } catch (Exception e) {
             log.error("시세 조회 중 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("시세 조회 중 오류가 발생했습니다.", e);  //덕후로 바꿔~!!!!!!!!!!!!!!!!!! 넵!!
+            throw new RuntimeException("시세 조회 중 오류가 발생했습니다.", e);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<DuckuJangter> findRecentDealsByCategory(ItemCategories category, LocalDateTime startDate) {
+        return completedDealRepository.findByItemCategoriesAndCreatedAtAfterOrderByCreatedAtDesc(
+                category,
+                startDate
+        );
     }
 
     // 시세 그래프 - 긴 TTL로 캐싱 (예: 1시간)
