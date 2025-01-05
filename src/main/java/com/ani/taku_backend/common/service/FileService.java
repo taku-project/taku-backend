@@ -57,6 +57,24 @@ public class FileService {
         return videoPublicUrl + "/" + fileName;
     }
 
+    public String uploadVideoFile(MultipartFile file, String filePath) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());  // Content-Type 설정
+
+        // ACL을 public-read로 설정
+        PutObjectRequest putObjectRequest = new PutObjectRequest(
+                videoBucket,
+                filePath,
+                file.getInputStream(),
+                metadata
+        ).withCannedAcl(CannedAccessControlList.PublicRead);  // public-read ACL 추가
+
+        client.putObject(putObjectRequest);
+
+        return videoPublicUrl + "/" + filePath;
+    }
+
     public String uploadImageFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
         System.out.println(imageBucket+"입니다. "+imagePublicUrl+"입니다.");
@@ -73,23 +91,6 @@ public class FileService {
 
         client.putObject(putObjectRequest);
         return imagePublicUrl + "/" + fileName;
-    }
-
-    public String uploadFile(MultipartFile file, String uploadPath) throws IOException {
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());  // Content-Type 설정
-
-        // ACL을 public-read로 설정
-        PutObjectRequest putObjectRequest = new PutObjectRequest(
-                bucket,
-                uploadPath,
-                file.getInputStream(),
-                metadata
-        ).withCannedAcl(CannedAccessControlList.PublicRead);  // public-read ACL 추가
-
-        client.putObject(putObjectRequest);
-        return publicUrl + "/" + uploadPath;
     }
 
     private String generateFileName(String originalFilename) {
@@ -117,7 +118,7 @@ public class FileService {
         try {
             // folderPath 하위의 객체 리스트 가져오기
             ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
-                    .withBucketName(bucket)
+                    .withBucketName(videoBucket)
                     .withPrefix(folderPath);
 
             ListObjectsV2Result result = client.listObjectsV2(listObjectsRequest);
@@ -129,7 +130,7 @@ public class FileService {
 
             // 삭제 요청
             if (!keysToDelete.isEmpty()) {
-                DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket)
+                DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(videoBucket)
                         .withKeys(keysToDelete);
                 client.deleteObjects(deleteObjectsRequest);
             }
