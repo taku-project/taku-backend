@@ -26,7 +26,7 @@ public class BlackUserService {
     }
 
     // 블랙리스트 검증
-    public User validateBlackUser(PrincipalUser principalUser) {
+    public User checkBlackUser(PrincipalUser principalUser) {
         User user = principalUser.getUser();
         List<BlackUser> byUserId = findByUserId(user.getUserId());
         if (!byUserId.isEmpty() && byUserId.get(0).getId().equals(user.getUserId())) {
