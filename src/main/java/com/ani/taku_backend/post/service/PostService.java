@@ -3,14 +3,12 @@ package com.ani.taku_backend.post.service;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.exception.PostException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
@@ -64,6 +62,7 @@ public class PostService {
      */
     @RequireUser
     @Transactional
+    @ValidateProfanity(fields = {"title", "content"})
     public Long createPost(PostCreateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
@@ -84,8 +83,9 @@ public class PostService {
      */
     @RequireUser
     @Transactional
+    @ValidateProfanity(fields = {"title", "content"})
     public Long updatePost(PostUpdateRequestDTO postUpdateRequestDTO, Long postId, List<MultipartFile> imageList, PrincipalUser principalUser) {
-        // 유저 정보 가져오기
+
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
 
         // 게시글 조회, 없으면 예외
@@ -116,20 +116,21 @@ public class PostService {
      */
     @RequireUser
     @Transactional
-    public Long deletePost(Long postId, long categoryId, PrincipalUser principalUser) {
-        User user = principalUser.getUser();
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
+    public void deletePost(Long postId, long categoryId, PrincipalUser principalUser) {
+        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
 
-        if (!user.getUserId().equals(post.getUser().getUserId())) {
-            throw new PostException.PostAccessDeniedException("게시글을 삭제할 권한이 없습니다.");
-        }
-        post.delete();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+
+        checkAuthorAndAdmin(user, post);             // 수정 권한 확인
+        checkDeleteProduct(post);                    // 삭제 검증
+
+
+        post.delete();                               // 삭제 로직
         post.getCommunityImages().forEach(communityImage -> {
             communityImage.getImage().delete();
         });
 
-        return post.getId();
     }
 
     // 게시글 생성
