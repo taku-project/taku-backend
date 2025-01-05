@@ -26,13 +26,19 @@ public class FileService {
 
     private final AmazonS3 client;
 
-    @Value("${cloud.flare.public.url}")
-    private String publicUrl;
+    @Value("${cloud.flare.video-public.url}")
+    private String videoPublicUrl;
 
-    @Value("${cloud.flare.bucket}")
-    private String bucket;
+    @Value("${cloud.flare.video-bucket}")
+    private String videoBucket;
 
-    public String uploadFile(MultipartFile file) throws IOException {
+    @Value("${cloud.flare.image-public.url}")
+    private String imagePublicUrl;
+
+    @Value("${cloud.flare.image-bucket}")
+    private String imageBucket;
+
+    public String uploadVideoFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
         
         ObjectMetadata metadata = new ObjectMetadata();
@@ -41,14 +47,32 @@ public class FileService {
         
         // ACL을 public-read로 설정
         PutObjectRequest putObjectRequest = new PutObjectRequest(
-            bucket, 
+            videoBucket,
             fileName, 
             file.getInputStream(), 
             metadata
         ).withCannedAcl(CannedAccessControlList.PublicRead);  // public-read ACL 추가
 
         client.putObject(putObjectRequest);
-        return publicUrl + "/" + fileName;
+        return videoPublicUrl + "/" + fileName;
+    }
+
+    public String uploadImageFile(MultipartFile file) throws IOException {
+        String fileName = generateFileName(file.getOriginalFilename());
+        System.out.println(imageBucket+"입니다. "+imagePublicUrl+"입니다.");
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());  // Content-Type 설정
+        // ACL을 public-read로 설정
+        PutObjectRequest putObjectRequest = new PutObjectRequest(
+                imageBucket,
+                fileName,
+                file.getInputStream(),
+                metadata
+        ).withCannedAcl(CannedAccessControlList.PublicRead);  // public-read ACL 추가
+
+        client.putObject(putObjectRequest);
+        return imagePublicUrl + "/" + fileName;
     }
 
     public String uploadFile(MultipartFile file, String uploadPath) throws IOException {
@@ -73,9 +97,17 @@ public class FileService {
         return UUID.randomUUID() + "." + fileExtension;
     }
 
-    public S3Object getFile(String fileName) throws AmazonS3Exception {
+    public S3Object getVideoFile(String fileName) throws AmazonS3Exception {
         try {
-            return client.getObject(new GetObjectRequest(bucket, fileName));
+            return client.getObject(new GetObjectRequest(videoBucket, fileName));
+        } catch (Exception e) {
+            throw new AmazonS3Exception("Failed to retrieve file from S3: " + e.getMessage(), e);
+        }
+    }
+
+    public S3Object getImageFile(String fileName) throws AmazonS3Exception {
+        try {
+            return client.getObject(new GetObjectRequest(imageBucket, fileName));
         } catch (Exception e) {
             throw new AmazonS3Exception("Failed to retrieve file from S3: " + e.getMessage(), e);
         }

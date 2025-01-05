@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.ani.taku_backend.user.model.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -28,6 +29,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   // 이메일로 유저 조회
   Optional<User> findByEmail(String email);
+
+  Optional<User> findById(Long userId);
+
+  @Modifying // 쿼리가 insert, update, 또는 delete임을 나타낸다.
+  @Query("UPDATE User u SET u.nickname = :nickname WHERE u.userId = :userId") // JPQL을 이용한 update문
+  void updateNickname(@Param("userId") Long userId, @Param("nickname") String nickname);
+
+
+  @Modifying
+  @Query("UPDATE User u SET u.profileImg = :profileImg WHERE u.userId = :userId")
+  void updateProfileImg(@Param("userId") Long userId,@Param("profileImg") String profileImg);
+
 
   // 유저ID 리스트로 유저 조회
   List<User> findByUserIdIn(List<Long> userIds);

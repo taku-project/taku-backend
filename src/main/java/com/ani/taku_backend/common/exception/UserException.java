@@ -32,4 +32,10 @@ public class UserException extends RuntimeException {
       super(message);
     }
   }
+
+  //이미 존재하는 닉네임일 경우
+  public static class UserNicknameAlreadyExistsException extends UserException{
+
+    public UserNicknameAlreadyExistsException(String message){ super(message);}
+  }
 }
