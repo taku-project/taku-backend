@@ -49,12 +49,14 @@ public class Shorts {
     @CreatedDate
     private LocalDateTime createdAt;
 
-    public void addLike() {
+    public void addLike(boolean hasDislike) {
+        if(hasDislike) {
+            int dislikes = this.popularityMetrics.dislikes;
+            if(dislikes > 0) {
+                this.popularityMetrics.dislikes -= 1;
+            }
+        }
         this.popularityMetrics.likes += 1;
-    }
-
-    public void addDisLike() {
-        this.popularityMetrics.dislikes += 1;
     }
 
     @Getter

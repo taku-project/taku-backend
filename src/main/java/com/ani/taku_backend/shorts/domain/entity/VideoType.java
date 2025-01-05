@@ -29,11 +29,11 @@ public enum VideoType {
         return null;
     }
 
-    /**
-     * Returns only the FileFormats suitable for 2 minutes or less shorts.
-     * @return Array of FileFormats suitable for short videos.
-     */
-    public static VideoType[] getSuitableForShorts() {
-        return new VideoType[]{MP4, WEBM, TS, FLV};
+    public static boolean isSupportedFileFormat(String fileName) {
+        if (fileName == null || !fileName.contains(".")) {
+            return false; // No extension found
+        }
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        return fromExtension(extension) != null;
     }
 }

@@ -46,5 +46,14 @@ public class Interaction<T extends InteractionDetail> {
     @Field("created_at")
     private LocalDateTime createdAt;
 
+    public static Interaction create(Shorts shorts, Long userId, InteractionType interactionType, InteractionDetail details) {
+        return Interaction.builder()
+                .shortsId(new ObjectId(shorts.getId()))
+                .userId(userId)
+                .interactionType(interactionType)
+                .shortsTags(shorts.getTags())
+                .details(details)
+                .build();
+    }
 }
 
