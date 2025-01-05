@@ -45,7 +45,7 @@ public class ProductFindDetailResponseDTO {
         this.price = duckuJangter.getPrice();
         this.status = status;
         this.createdAt = duckuJangter.getCreatedAt();
-        this.viewCount = duckuJangter.getViewCount() + (addViewCount != null ? addViewCount : 0L);
+        this.viewCount = addViewCount;
 
         // DuckuJangter와 연관된 이미지 URL 추출
         this.imageUrlList = duckuJangter.getJangterImages()

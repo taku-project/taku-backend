@@ -76,10 +76,10 @@ public class DuckuJangterService {
      * 장터글 상세 조회
      */
     @CheckViewCount(viewType = ViewType.SHOP,
-            targetId = "productId",
+            targetId = "#productId",
             expireTime = 60)
-    public ProductFindDetailResponseDTO findProductDetail(Long productId, boolean isFirstView) {
-
+    @Transactional
+    public ProductFindDetailResponseDTO findProductDetail(long productId, boolean isFirstView) {
         // 판매글 조회
         DuckuJangter findProductDetail = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
