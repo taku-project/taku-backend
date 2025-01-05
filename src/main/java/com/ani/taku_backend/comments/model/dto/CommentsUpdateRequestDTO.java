@@ -20,5 +20,4 @@ public class CommentsUpdateRequestDTO {
     @Size(min = 0, max = 255, message = "댓글은 255자 이하로 작성해 주세요.")
     private String content;
 
-
 }

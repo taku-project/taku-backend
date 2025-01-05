@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Entity
 @Table(name = "comments")
@@ -38,6 +40,8 @@ public class Comments extends BaseTimeEntity {
     @Column(length = 50, nullable = false)
     private String status;
 
+    private LocalDateTime deletedAt;
+
     // 댓글 생성 스태틱 메서드
     public static Comments createComments(User user, Post post, String content) {
         return Comments.builder()
@@ -61,5 +65,10 @@ public class Comments extends BaseTimeEntity {
     // 본문 업데이트 메서드
     public void updateComments(String content) {
         this.content = content;
+    }
+
+    // 삭제
+    public void delete() {
+        deletedAt = LocalDateTime.now();
     }
 }
