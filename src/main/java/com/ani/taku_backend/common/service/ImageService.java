@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.ani.taku_backend.common.exception.ErrorCode.FILE_MAX_REGIST_EXCEED;
 import static com.ani.taku_backend.common.exception.ErrorCode.FILE_UPLOAD_ERROR;
 
 @Service
@@ -130,7 +129,7 @@ public class ImageService {
     // 이미지 5개 이상 저장 불가
     private void validateImageCount(List<MultipartFile> imageList) {
         if (imageList != null && imageList.size() > 5) {
-            throw new DuckwhoException(FILE_MAX_REGIST_EXCEED);
+            throw new DuckwhoException(FILE_UPLOAD_ERROR);
         }
     }
 
