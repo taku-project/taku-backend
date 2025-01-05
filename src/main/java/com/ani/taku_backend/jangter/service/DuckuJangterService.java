@@ -1,8 +1,10 @@
 package com.ani.taku_backend.jangter.service;
 
+import com.ani.taku_backend.comments.model.entity.Comments;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
@@ -89,24 +91,24 @@ public class DuckuJangterService {
     @ValidateProfanity(fields = {"title", "description"})
     public Long updateProduct(Long productId,
                               ProductUpdateRequestDTO productUpdateRequestDTO,
-                              List<MultipartFile> imageList,
+                              List<MultipartFile> updateImageList,
                               PrincipalUser principalUser) {
+
+        User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
 
         // 게시글 조회
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkDeleteProduct(findProduct);    //  삭제 검증
-        User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
-
-        if (!user.getUserId().equals(findProduct.getUser().getUserId())) {  // 본인 글인지 확인
-            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
-        }
-
+        checkAuthorAndAdmin(user, findProduct);     // 유저, 관리자 확인
         ItemCategories itemCategories = checkItemCategory(productUpdateRequestDTO.getCategoryId(), null);  // 카테고리 검증
 
-        // 업데이트 이미지 저장
-        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO, imageList, findProduct, user);
+        // 덕후장터의 이미지
+        List<Image> productImageList = findProduct.getJangterImages().stream().map(JangterImages::getImage).toList();
+
+        // 업데이트 이미지
+        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(), updateImageList, productImageList, user);
 
         if (!newImageList.isEmpty()) {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
@@ -130,11 +132,9 @@ public class DuckuJangterService {
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        checkItemCategory(categoryId, findProduct);
-
-        if (!user.getUserId().equals(findProduct.getUser().getUserId())) {
-            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
-        }
+        checkItemCategory(categoryId, findProduct);     // 카테고리 검증
+        checkAuthorAndAdmin(user, findProduct);         // 유저, 관리자 확인
+        checkDeleteProduct(findProduct);                //  삭제 검증
 
         findProduct.delete();  // 장터 에서 소프트 딜리트
 
@@ -144,13 +144,6 @@ public class DuckuJangterService {
             fileService.deleteImageFile(jangterImages.getImage().getFileName());
         });
         log.info("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
-    }
-
-    // 삭제된 글이면 예외
-    private void checkDeleteProduct(DuckuJangter findProductDetail) {
-        if (findProductDetail.getDeletedAt() != null) {
-            throw new DuckwhoException(NOT_FOUND_POST);
-        }
     }
 
     // 장터이미지 연관관계설정
@@ -177,7 +170,7 @@ public class DuckuJangterService {
                 .build();
     }
 
-    // 카테고리 검증
+    // 아이템 카테고리 검증
     private ItemCategories checkItemCategory(long categoryId, DuckuJangter findProduct) {
         ItemCategories itemCategories = itemCategoriesRepository.findById(categoryId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
@@ -188,5 +181,20 @@ public class DuckuJangterService {
 
         log.info("아이템 카테고리 검증완료, 아이템카테고리: {} ", itemCategories.getName());
         return itemCategories;
+    }
+
+    // 어드민이거나, 작성자와 다르면 예외
+    private void checkAuthorAndAdmin(User user, DuckuJangter duckuJangter) {
+        if ((!user.getRole().equals(UserRole.ADMIN.name())) &&
+                !user.getUserId().equals(duckuJangter.getUser().getUserId())) {
+            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
+        }
+    }
+
+    // 삭제된 글이면 예외
+    private void checkDeleteProduct(DuckuJangter duckuJangter) {
+        if (duckuJangter.getDeletedAt() != null) {
+            throw new DuckwhoException(NOT_FOUND_POST);
+        }
     }
 }

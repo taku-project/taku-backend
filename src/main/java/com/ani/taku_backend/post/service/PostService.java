@@ -3,11 +3,14 @@ package com.ani.taku_backend.post.service;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.PostException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
@@ -25,8 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_CATEGORY;
-import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_ACCESS;
+import static com.ani.taku_backend.common.exception.ErrorCode.*;
 
 @Service
 @Slf4j
@@ -65,8 +67,7 @@ public class PostService {
     public Long createPost(PostCreateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
-        Category category = checkCategory(postCreateRequestDTO, null);     // 카테고리 확인
-
+        Category category = checkCategory(postCreateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
         List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
         Post post = getPost(postCreateRequestDTO, user, category);                   // 게시글 생성
@@ -79,35 +80,33 @@ public class PostService {
     }
 
     /**
-     * 게시글 업데이트, 리펙토링 중
+     * 게시글 업데이트
      */
     @RequireUser
     @Transactional
-    public Long updatePost(PostUpdateRequestDTO postUpdateRequestDTO,Long postId, List<MultipartFile> imageList, PrincipalUser principalUser) {
+    public Long updatePost(PostUpdateRequestDTO postUpdateRequestDTO, Long postId, List<MultipartFile> imageList, PrincipalUser principalUser) {
         // 유저 정보 가져오기
-        User user = principalUser.getUser();
+        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
 
         // 게시글 조회, 없으면 예외
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        // 수정 권한 확인
-        if (!user.getUserId().equals(post.getUser().getUserId())) {
-            throw new PostException.PostAccessDeniedException("게시글을 수정할 권한이 없습니다.");
+        checkAuthorAndAdmin(user, post);             // 수정 권한 확인
+        checkDeleteProduct(post);                    // 삭제 검증
+        Category itemCategory = checkCategory(postUpdateRequestDTO.getCategoryId(), null);     // 카테고리 확인
+
+        // 게시글 이미지
+        List<Image> postImageList = post.getCommunityImages().stream().map(CommunityImage::getImage).toList();
+
+        // 업데이트 이미지
+        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), imageList, postImageList, user);
+
+        if (!newImageList.isEmpty()) {
+            setRelationCommunityImages(newImageList, post);         // 연관관계 설정
         }
 
-        // 카테고리 확인
-        Category newCategory = null;
-        if (postUpdateRequestDTO.getCategoryId() != null && !postUpdateRequestDTO.getCategoryId().equals(post.getCategory().getId())) {
-            newCategory = categoryRepository.findById(postUpdateRequestDTO.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다. ID: " + postUpdateRequestDTO.getCategoryId()));
-        }
-
-        // 이미지 수정
-        updateImages(postUpdateRequestDTO, imageList, user, post);
-
-        // 게시글 수정
-        post.updatePost(postUpdateRequestDTO.getTitle(), postUpdateRequestDTO.getContent(), newCategory);
+        post.updatePost(postUpdateRequestDTO, itemCategory);         // 게시글 수정
 
         return post.getId();
     }
@@ -117,7 +116,7 @@ public class PostService {
      */
     @RequireUser
     @Transactional
-    public Long deletePost(Long postId, PrincipalUser principalUser) {
+    public Long deletePost(Long postId, long categoryId, PrincipalUser principalUser) {
         User user = principalUser.getUser();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
@@ -156,9 +155,9 @@ public class PostService {
     }
 
     // 카테고리 검증
-    private Category checkCategory(PostCreateRequestDTO postCreateRequestDTO, Post post) {
+    private Category checkCategory(long categoryId, Post post) {
 
-        Category category = categoryRepository.findById(postCreateRequestDTO.getCategoryId())
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
 
         if (post != null && !post.getCategory().getId().equals(category.getId())) {
@@ -168,4 +167,20 @@ public class PostService {
         log.info("카테고리 검증 완료, 카테고리 이름 {}", category.getName());
         return category;
     }
+
+    // 어드민이거나, 작성자와 다르면 예외
+    private void checkAuthorAndAdmin(User user, Post post) {
+        if ((!user.getRole().equals(UserRole.ADMIN.name())) &&
+                !user.getUserId().equals(post.getUser().getUserId())) {
+            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
+        }
+    }
+
+    // 삭제된 글이면 예외
+    private void checkDeleteProduct(Post post) {
+        if (post.getDeletedAt() != null) {
+            throw new DuckwhoException(NOT_FOUND_POST);
+        }
+    }
+
 }

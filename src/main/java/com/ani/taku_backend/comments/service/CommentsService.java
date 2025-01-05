@@ -38,8 +38,7 @@ public class CommentsService {
     @ValidateProfanity(fields = {"content"})
     public Long createComments(CommentsCreateRequestDTO commentsCreateRequestDTO, PrincipalUser principalUser) {
 
-        // Black 유저 검증
-        User user = blackUserService.checkBlackUser(principalUser);
+        User user = blackUserService.checkBlackUser(principalUser);       // Black 유저 검증
 
         // 넘어온 postId가 없으면 예외
         if (commentsCreateRequestDTO.getPostId() == null) {
@@ -52,7 +51,6 @@ public class CommentsService {
         log.info("Post 조회 성공: {}", post.getId());
 
         // 댓글 저장 메서드
-
         return saveComments(commentsCreateRequestDTO, user, post);
     }
 
@@ -63,16 +61,15 @@ public class CommentsService {
     @RequireUser
     public Long updateComments(long commentsId, @Valid CommentsUpdateRequestDTO commentsUpdateRequestDTO, PrincipalUser principalUser) {
 
-        // Black 유저 검증
-        User user = blackUserService.checkBlackUser(principalUser);
+        User user = blackUserService.checkBlackUser(principalUser);         // Black 유저 검증
 
         // 넘어온 PostId가 없으면 예외
         if (commentsUpdateRequestDTO.getPostId() == null) {
             throw new DuckwhoException(NOT_FOUND_COMMENTS);
         }
 
-        // 댓글 업데이트
-        return updateComments(commentsId, commentsUpdateRequestDTO, user);
+        return updateComments(commentsId, commentsUpdateRequestDTO, user);         // 댓글 업데이트
+
     }
 
     /**
@@ -81,11 +78,8 @@ public class CommentsService {
     @Transactional
     @RequireUser
     public void deleteComments(@Valid long commentId, PrincipalUser principalUser) {
-        // Black 유저 검증
-        User user = blackUserService.checkBlackUser(principalUser);
-
-        // 댓글 삭제
-        deleteComments(commentId, user);
+        User user = blackUserService.checkBlackUser(principalUser);         // Black 유저 검증
+        deleteComments(commentId, user);                                    // 댓글 삭제
     }
 
     // 넘어오는 parentCommentsId가 null이면 댓글, 값이 있으면 해당 댓글의 댓글을 저장
@@ -120,7 +114,7 @@ public class CommentsService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_COMMENTS));
 
         checkDeleteComments(findComments);                   // 삭제 여부 검증
-        checkAuthorWithAdmin(user, findComments);    // 작성자, 관리자 검증
+        checkAuthorAndAdmin(user, findComments);             // 작성자, 관리자 검증
 
         // 본문 수정
         findComments.updateComments(commentsUpdateRequestDTO.getContent());
@@ -132,12 +126,13 @@ public class CommentsService {
     // 댓글 삭제 로직
     private void deleteComments(long commentId, User user) {
         Comments findComments = commentsRepository.findById(commentId).orElseThrow(() -> new DuckwhoException(NOT_FOUND_COMMENTS));
-        checkAuthorWithAdmin(user, findComments);        // 작성자, 관리자 검증
+        checkAuthorAndAdmin(user, findComments);        // 작성자, 관리자 검증
+        checkDeleteComments(findComments);              // 삭제 검증
         findComments.delete();
         log.info("댓글 삭제 완료, commentsDeleteAt: {}", findComments.getDeletedAt());
     }
 
-    // 해당 게시글이 삭제 처리 되어있으면 예외
+    // 해당 댓글이 삭제 처리 되어있으면 예외
     private void checkDeleteComments(Comments findComments) {
         if (findComments.getDeletedAt() != null) {
             throw new DuckwhoException(NOT_FOUND_COMMENTS);
@@ -145,7 +140,7 @@ public class CommentsService {
     }
 
     // 어드민이거나, 작성자와 다르면 예외
-    private void checkAuthorWithAdmin(User user, Comments findComments) {
+    private void checkAuthorAndAdmin(User user, Comments findComments) {
         if ((!user.getRole().equals(UserRole.ADMIN.name())) &&
                 !user.getUserId().equals(findComments.getUser().getUserId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);

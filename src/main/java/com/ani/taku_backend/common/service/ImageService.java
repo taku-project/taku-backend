@@ -69,20 +69,18 @@ public class ImageService {
     }
 
     @Transactional
-    public List<Image> getUpdateImageList(ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> newImageList, DuckuJangter findProduct, User user) {
+    public List<Image> getUpdateImageList(List<String> deleteImageUrl, List<MultipartFile> newImageList, List<Image> contentImage, User user) {
 
         // 게시글에서 첨부파일을 모두 삭제하고 넘어옴
         if (newImageList == null || newImageList.isEmpty()) {
-            findProduct.getJangterImages().forEach(communityImage -> {
-                Image image = communityImage.getImage();
+            for (Image image : contentImage) {
                 fileService.deleteImageFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
                 image.delete();                                 // RDB에서 삭제
                 log.info("저장할 이미지 없음 -> 이미지 삭제 성공");
-            });
+            }
         }
 
-        // 삭제 대상인 이미지 리스트 -> productUpdateRequestDTO.getDeleteImageUrl();
-        List<String> deleteImageUrl = productUpdateRequestDTO.getDeleteImageUrl();
+        // 삭제 대상인 이미지 리스트 삭제
         if (deleteImageUrl != null && !deleteImageUrl.isEmpty()) {
             deleteImageUrl.forEach(imageUrl -> {
                 String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);

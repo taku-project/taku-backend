@@ -75,9 +75,11 @@ public class PostController {
             """)
     @RequireUser
     @PutMapping("/{postId}")
-    public CommonResponse<Long> updatePost(@PathVariable Long postId,
-                                           @Valid @RequestPart("updatePost") PostUpdateRequestDTO requestDTO,
-                                           @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
+    public CommonResponse<Long> updatePost(
+            @PathVariable Long postId,
+            @Valid @RequestPart("updatePost") PostUpdateRequestDTO requestDTO,
+            @RequestPart(value = "updatePostImage", required = false) List<MultipartFile> imageList) {
+
         Long updatePostId = postService.updatePost(requestDTO, postId, imageList, null);
         return CommonResponse.ok(updatePostId);
     }
@@ -85,9 +87,9 @@ public class PostController {
     @Operation(summary = "커뮤니티 게시글 삭제")
     @RequireUser
     @DeleteMapping("/{postId}")
-    public CommonResponse<Long> deletePost(@PathVariable Long postId,
-                                           PrincipalUser principalUser) {
-        Long deletePostId = postService.deletePost(postId, principalUser);
+    public CommonResponse<Long> deletePost(
+            @PathVariable Long postId, long categoryId) {
+        Long deletePostId = postService.deletePost(postId, categoryId, null);
         return CommonResponse.ok(deletePostId);
     }
 }

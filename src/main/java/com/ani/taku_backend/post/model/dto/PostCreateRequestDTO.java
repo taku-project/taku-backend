@@ -22,6 +22,6 @@ public class PostCreateRequestDTO {
     private String title;
 
     @Schema(description = "내용")
-    @Size(max = 150, message = "내용은 최대 3000글자까지 입력 가능합니다.")
+    @Size(max = 3000, message = "내용은 최대 3000글자까지 입력 가능합니다.")
     private String content;
 }
