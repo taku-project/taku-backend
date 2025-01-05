@@ -124,7 +124,7 @@ public class PostService {
 
         checkAuthorAndAdmin(user, post);             // 수정 권한 확인
         checkDeleteProduct(post);                    // 삭제 검증
-
+        checkCategory(categoryId, post);             // 카테고리 검증
 
         post.delete();                               // 삭제 로직
         post.getCommunityImages().forEach(communityImage -> {
