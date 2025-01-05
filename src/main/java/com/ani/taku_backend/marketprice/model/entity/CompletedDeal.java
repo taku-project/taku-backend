@@ -39,10 +39,4 @@ public class CompletedDeal extends BaseTimeEntity {
     @Comment("상품 키워드")
     private String searchKeywords;
 
-    @Column(name = "similarity_score")
-    private Double similarity;
-
-    public void updateSimilarityScore(double score) {
-        this.similarity = score;
-    }
 }

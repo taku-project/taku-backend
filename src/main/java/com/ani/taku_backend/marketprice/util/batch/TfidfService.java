@@ -1,6 +1,6 @@
-package com.ani.taku_backend.common.service;
+package com.ani.taku_backend.marketprice.util.batch;
 
-import com.ani.taku_backend.common.util.TfidfCalculator;
+import com.ani.taku_backend.common.service.ExtractKeywordService;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;

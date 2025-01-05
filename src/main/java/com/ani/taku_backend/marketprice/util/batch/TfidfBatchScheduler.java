@@ -1,7 +1,6 @@
-package com.ani.taku_backend.common.util;
+package com.ani.taku_backend.marketprice.util.batch;
 
 
-import com.ani.taku_backend.common.service.TfidfBatchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -1,4 +1,4 @@
-package com.ani.taku_backend.common.util;
+package com.ani.taku_backend.marketprice.util.batch;
 
 import lombok.experimental.UtilityClass;
 import java.util.List;
