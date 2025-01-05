@@ -5,7 +5,7 @@ import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
 import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
 import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO;
-import com.ani.taku_backend.marketprice.model.entity.QCompletedDeal;
+import com.ani.taku_backend.marketprice.model.entity.QMarketPriceStats;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @RequiredArgsConstructor
 public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepository {
     private final JPAQueryFactory queryFactory;
@@ -26,34 +25,30 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
     @Override
     public PriceGraphResponseDTO getPriceGraph(String keyword, LocalDate fromDate, LocalDate toDate,
                                                GraphDisplayOption option) {
-        QCompletedDeal deal = QCompletedDeal.completedDeal;
+        QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
 
-        // 판매 완료된 거래 데이터로부터 시세 그래프 조회
         List<Tuple> results = queryFactory
                 .select(
-                        deal.createdAt.as("date"),
-                        deal.price.avg().as("registeredPrice"),
-                        deal.price.avg().as("soldPrice"),
-                        deal.count().as("dealCount")
+                        stats.registeredDate,
+                        stats.registeredPrice.avg(),
+                        stats.soldPrice.avg(),
+                        stats.registeredDate.count()
                 )
-                .from(deal)
+                .from(stats)
                 .where(
-                        deal.searchKeywords.like("%" + keyword + "%")
-                                .and(deal.createdAt.between(
-                                        fromDate.atStartOfDay(),
-                                        toDate.atTime(23, 59, 59)))
+                        stats.title.contains(keyword),
+                        stats.registeredDate.between(fromDate, toDate)
                 )
-                .groupBy(deal.createdAt)
-                .orderBy(deal.createdAt.asc())
+                .groupBy(stats.registeredDate)
+                .orderBy(stats.registeredDate.asc())
                 .fetch();
 
-        // Tuple 결과를 PriceDataPoint로 변환
         List<PriceGraphResponseDTO.PriceDataPoint> dataPoints = results.stream()
                 .map(tuple -> PriceGraphResponseDTO.PriceDataPoint.builder()
-                        .date(tuple.get(deal.createdAt).toLocalDate())
-                        .registeredPrice(tuple.get(1, BigDecimal.class))
-                        .soldPrice(tuple.get(2, BigDecimal.class))
-                        .dealCount(tuple.get(3, Integer.class))
+                        .date(tuple.get(stats.registeredDate))
+                        .registeredPrice(BigDecimal.valueOf(tuple.get(stats.registeredPrice.avg())))
+                        .soldPrice(BigDecimal.valueOf(tuple.get(stats.soldPrice.avg())))
+                        .dealCount(tuple.get(stats.registeredDate.count()).intValue())
                         .build())
                 .collect(Collectors.toList());
 
@@ -64,20 +59,20 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
 
     @Override
     public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
-        QCompletedDeal deal = QCompletedDeal.completedDeal;
-        LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
+        QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
+        LocalDate weekAgo = LocalDate.now().minusWeeks(1);
 
         return queryFactory
                 .select(Projections.constructor(WeeklyStatsResponseDTO.class,
-                        deal.price.avg(),
-                        deal.price.max(),
-                        deal.price.min(),
-                        deal.count()
+                        stats.registeredPrice.avg(),
+                        stats.registeredPrice.max(),
+                        stats.registeredPrice.min(),
+                        stats.registeredDate.count()
                 ))
-                .from(deal)
+                .from(stats)
                 .where(
-                        deal.searchKeywords.like("%" + keyword + "%")
-                                .and(deal.createdAt.after(weekAgo))
+                        stats.title.contains(keyword),
+                        stats.registeredDate.goe(weekAgo)
                 )
                 .fetchOne();
     }
@@ -86,22 +81,20 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
     public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
 
-        // 현재 판매중인 상품 조회
         return queryFactory
                 .select(Projections.constructor(SimilarProductResponseDTO.class,
                         jangter.id,
                         jangter.title,
                         jangter.price,
-                        jangter.similarity,
-                        jangter.jangterImages.get(0).image.imageUrl
+                        jangter.tfidfVector,
+                        jangter.jangterImages.any().image.imageUrl
                 ))
                 .from(jangter)
                 .where(
-                        jangter.title.like("%" + keyword + "%")
-                                .and(jangter.status.stringValue().eq(JangterStatus.ON_SALE.name()))
-                                .and(jangter.deletedAt.isNull())
+                        jangter.title.contains(keyword),
+                        jangter.deletedAt.isNull()
                 )
-                .orderBy(jangter.similarity.coalesce(0.0).desc())
+                .orderBy(jangter.id.desc())  // 최신순으로 변경
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
