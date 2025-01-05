@@ -1,8 +1,11 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
-import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.marketprice.util.batch.TfidfService.ProductWithSimilarity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,21 +25,32 @@ public class SimilarProductResponseDTO {
     @Schema(description = "유사도 점수", example = "0.85")
     private final double similarity;
 
-    @Schema(description = "상품 이미지 URL", example = "https://example.com/images/product.jpg")
-    private final String imageUrl;
+    @Schema(description = "상품 이미지 URL 목록")
+    private final List<String> imageUrls;
 
-    // TODO 상품 등록 부분 구현시 연결
-    public static SimilarProductResponseDTO from(CompletedDeal deal) {
+    public static SimilarProductResponseDTO from(ProductWithSimilarity productWithSimilarity) {
+        DuckuJangter product = productWithSimilarity.getProduct();
+
         return SimilarProductResponseDTO.builder()
-                .productId(deal.getId())
-                .title(deal.getTitle())
-                .price(deal.getPrice())
-                .similarity(deal.getSimilarity())
-             /*   .imageUrl(deal.getJangterImages()  // 연관된 이미지들 중 첫 번째 이미지
-                        .stream()
-                        .findFirst()
-                        .map(JangterImage::getImageUrl)
-                        .orElse(null))*/
+                .productId(product.getId())
+                .title(product.getTitle())
+                .price(product.getPrice())
+                .similarity(productWithSimilarity.getSimilarity())
+                .imageUrls(product.getJangterImages().stream()
+                        .map(image -> image.getImage().getImageUrl())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static SimilarProductResponseDTO from(DuckuJangter product, double similarity) {
+        return SimilarProductResponseDTO.builder()
+                .productId(product.getId())
+                .title(product.getTitle())
+                .price(product.getPrice())
+                .similarity(similarity)
+                .imageUrls(product.getJangterImages().stream()
+                        .map(image -> image.getImage().getImageUrl())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

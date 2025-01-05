@@ -69,4 +69,8 @@ public class MarketPriceStats extends BaseTimeEntity {
         this.similarity = similarity;
         this.registeredDate = registeredDate;
     }
+
+    public void updateSoldPrice(BigDecimal soldPrice) {
+        this.soldPrice = soldPrice;
+    }
 }
