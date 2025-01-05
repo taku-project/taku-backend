@@ -21,7 +21,7 @@ public class ExtractKeywordService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${flask.url}")
+    @Value("${flask.extract-keywords-url}")
     private String flaskUrl;
 
     public List<String> extractKeywords(String text) {
