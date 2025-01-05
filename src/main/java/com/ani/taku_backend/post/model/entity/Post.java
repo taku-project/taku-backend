@@ -2,6 +2,7 @@ package com.ani.taku_backend.post.model.entity;
 
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +11,6 @@ import org.hibernate.annotations.BatchSize;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 커뮤니티 게시글 Entity
@@ -41,11 +41,13 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
     private List<CommunityImage> communityImages = new ArrayList<>();
 
+    @Column(length = 150, nullable = false)
     private String title;
+
+    @Column(length = 3000, nullable = false)
     private String content;
 
     private long views;
-    private long likes;
 
     private LocalDateTime deletedAt ;
 
@@ -57,42 +59,30 @@ public class Post extends BaseTimeEntity {
         communityImage.assignPost(this);
     }
 
-    // 이거 삭제해야해 -> Post 리펙토링할 때 지워봅시다.
-    public void removeCommunityImage(CommunityImage communityImage) {
-        this.communityImages.remove(communityImage);
-        communityImage.unassignPost();
-    }
-
-    /**
-     * User 연관관계 편의 메서드
-     */
-    public void setUserInternal(User user) {
-        this.user = user;
-    }
-    public void removeUserInternal() {
-        this.user = null;
-    }
-
     /**
      * update 메서드
      */
-    public void updatePost(String title, String content, Category category) {
-        if (title != null) {
-            this.title = title;
+    public void updatePost(PostUpdateRequestDTO postUpdateRequestDTO, Category category) {
+        String updateTitle = postUpdateRequestDTO.getTitle();
+        String updateContent = postUpdateRequestDTO.getContent();
+
+        if (updateTitle != null && !updateTitle.equals(this.title)) {
+            this.title = updateTitle;
         }
 
-        if (content != null) {
-            this.content = content;
+        if (updateContent != null && !updateContent.equals(this.content)) {
+            this.content = updateContent;
         }
-         if (category != null) {
-             this.category = category;
-         }
+
+        if (category != null && !category.equals(this.category)) {
+            this.category = category;
+        }
     }
 
     /**
      * Soft Delete 메서드
      */
-    public void softDelete() {
+    public void delete() {
         this.deletedAt = LocalDateTime.now();
     }
 
@@ -101,16 +91,5 @@ public class Post extends BaseTimeEntity {
         this.views++;
     }
 
-    // 좋아요 수 증가
-    public void addLikes() {
-        this.likes++;
-    }
-
-    // 좋아요 수 감소
-    public void subLikes() {
-        if (this.likes > 0) {
-            this.likes--;
-        }
-    }
 
 }
