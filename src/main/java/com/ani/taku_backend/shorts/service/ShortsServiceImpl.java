@@ -276,9 +276,9 @@ public class ShortsServiceImpl implements  ShortsService {
             Shorts.PopularityMetric popularityMetric = shorts.getPopularityMetrics();
             // TODO 사용자 상호 작용 테이블에서 유저가 like, dislike 했는지 확인
             return ShortsResponseDTO.builder()
-                    .userProfileImg(shorts.getProfileImg())
+                    .profileImgUrl(shorts.getProfileImg())
                     .description(shorts.getDescription())
-                    .userInteraction(userInterAction)
+                    .userLikeInteraction(userInterAction)
                     .popularityMatic(new PopularityMaticResDTO(shorts.getPopularityMetrics()))
                     .popularityMatic(new PopularityMaticResDTO(popularityMetric))
                     .m3u8Url(m3u8Url)
