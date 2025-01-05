@@ -53,12 +53,13 @@ public class DuckuJangter extends BaseTimeEntity {
     @Column(name = "buy_user_id")
     private Long buyUserId;
 
+    @Column(columnDefinition = "TEXT")
+    private String tfidfVector;  // TF-IDF 벡터값을 저장.
+
     @Builder.Default
     @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
     private List<JangterImages> jangterImages = new ArrayList<>();
 
-    @Column(name = "similarity")
-    private Double similarity; // TF-IDF 기반 유사도 점수
 
     // TODO 북마크 연관관계
 
@@ -99,4 +100,10 @@ public class DuckuJangter extends BaseTimeEntity {
     public long addViewCount() {
         return viewCount += 1;
     }
-}
+
+    public void updateTfidfVector(String tfidfVector) {
+        this.tfidfVector = tfidfVector;
+    }
+
+
+    }

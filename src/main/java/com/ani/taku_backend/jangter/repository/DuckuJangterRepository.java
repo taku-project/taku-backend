@@ -13,4 +13,9 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
     @Query("update DuckuJangter d set d.viewCount = d.viewCount + :viewCount where d.id = :productId")
     void updateViewCount(@Param("productId") Long productId, @Param("viewCount") Long viewCount);
 
+    List<DuckuJangter> findByDeletedAtIsNull();
 }
+
+
+
+

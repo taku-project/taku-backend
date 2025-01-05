@@ -1,131 +1,12 @@
-//package com.ani.taku_backend.common.service;
-//
-//import com.ani.taku_backend.common.enums.StatusType;
-//import com.ani.taku_backend.common.util.TfidfCalculator;
-//import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-//import com.ani.taku_backend.jangter.model.enums.JangterStatus;
-//import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.data.redis.core.RedisTemplate;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.util.List;
-//import java.util.Map;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class TfidfService {
-//    private final RedisTemplate<String, Object> redisTemplate;
-//    private final DuckuJangterRepository duckuJangterRepository;
-//    private static final String TFIDF_CACHE_KEY = "market:tfidf:";
-//
-//    public Map<String, Double> getTfidfVector(Long productId) {
-//        String cacheKey = TFIDF_CACHE_KEY + productId;
-//        return redisTemplate.<String, Double>opsForHash().entries(cacheKey);
-//    }
-//
-//    public void cacheTfidfVector(Long productId, Map<String, Double> tfidfVector) {
-//        String cacheKey = TFIDF_CACHE_KEY + productId;
-//        redisTemplate.opsForHash().putAll(cacheKey, tfidfVector);
-//    }
-//
-//    public double calculateCosineSimilarity(Map<String, Double> vector1, Map<String, Double> vector2) {
-//        double dotProduct = 0.0;
-//        double norm1 = 0.0;
-//        double norm2 = 0.0;
-//
-//        for (String key : vector1.keySet()) {
-//            if (vector2.containsKey(key)) {
-//                dotProduct += vector1.get(key) * vector2.get(key);
-//            }
-//            norm1 += vector1.get(key) * vector1.get(key);
-//        }
-//
-//        for (double value : vector2.values()) {
-//            norm2 += value * value;
-//        }
-//
-//        if (norm1 == 0.0 || norm2 == 0.0) {
-//            return 0.0;
-//        }
-//
-//        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
-//    }
-//
-//    @Transactional
-//    public void updateProductSimilarities(String keyword, List<String> searchKeywords) {
-//        // 1. 검색 키워드의 TF-IDF 벡터 계산
-//        Map<String, Double> queryVector = TfidfCalculator.calculateTfIdfVector(
-//                searchKeywords,
-//                getDocumentFrequencies(),
-//                getTotalDocuments()
-//        );
-//
-//        // 2. 모든 상품과의 유사도 계산 및 업데이트
-//        List<DuckuJangter> products = duckuJangterRepository.findByStatusAndDeletedAtIsNull(
-//                JangterStatus.ON_SALE
-//        );
-//
-//        for (DuckuJangter product : products) {
-//            Map<String, Double> productVector = getTfidfVector(product.getId());
-//            double similarity = calculateCosineSimilarity(queryVector, productVector);
-//            product.updateSimilarity(similarity);
-//        }
-//
-//        // 3. 변경사항 저장
-//        duckuJangterRepository.saveAll(products);
-//    }
-//
-//    private Map<String, Integer> getDocumentFrequencies() {
-//        // TODO: Redis에서 문서 빈도수 조회 로직 구현
-//        return redisTemplate.<String, Integer>opsForHash()
-//                .entries("market:document_frequencies");
-//    }
-//
-//    private int getTotalDocuments() {
-//        // TODO: Redis에서 전체 문서 수 조회 로직 구현
-//        Integer total = (Integer) redisTemplate.opsForValue().get("market:total_documents");
-//        if (total != null) {
-//            return total;
-//        } else {
-//            return 0;
-//        }
-//    }
-//}
-/*입력: "아이폰 14 pro 256gb 팝니다"
-
-처리 과정:
-        1. 복합 키워드 찾기:
-        - "아이폰 14" 발견 → keywords에 추가
-   - "256GB" 발견 → keywords에 추가
-남은 텍스트: "pro 팝니다"
-
-        2. 형태소 분석:
-        - "pro" → keywords에 추가
-   - "팝니다" → 불용어로 제거
-
-최종 키워드: ["아이폰 14", "256GB", "pro"]*/
-
-/*[검색어 입력] → [키워드 추출] → [유사도 계산] → [결과 반환]
-
-예) "원피스 피규어" 검색시:
-        1. 키워드 추출: ["원피스", "피규어"]
-        2. 각 상품의 TF-IDF 벡터 조회
-   - Redis 캐시 확인
-   - 없으면 RDB 확인
-   - 없으면 새로 계산
-3. 유사도 계산 후 정렬*/
-
-// 검색어 벡터와 상품의 벡터를 비교
-//title과 description에서 추출된 키워드가 많이 일치할수록 유사도 높음
-/*
 package com.ani.taku_backend.common.service;
 
 import com.ani.taku_backend.common.util.TfidfCalculator;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.model.enums.JangterStatus;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -133,12 +14,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import jakarta.annotation.PostConstruct;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -147,6 +26,7 @@ public class TfidfService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final DuckuJangterRepository duckuJangterRepository;
     private final ExtractKeywordService extractKeywordService;
+    private final ObjectMapper objectMapper;
 
     private static final String TFIDF_CACHE_KEY = "market:tfidf:";
     private static final String DOC_FREQ_KEY = "market:document_frequencies";
@@ -165,11 +45,36 @@ public class TfidfService {
         if (cached.isEmpty()) {
             DuckuJangter product = duckuJangterRepository.findById(productId)
                     .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-            cached = calculateProductTfidfVector(product);
-            cacheTfidfVector(productId, cached);
+
+            if (product.getTfidfVector() != null) {
+                try {
+                    cached = objectMapper.readValue(product.getTfidfVector(),
+                            new TypeReference<Map<String, Double>>() {});
+                    cacheTfidfVector(productId, cached);
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to parse TF-IDF vector from database", e);
+                    cached = calculateProductTfidfVector(product);
+                    updateProductTfidfVector(product, cached);
+                }
+            } else {
+                cached = calculateProductTfidfVector(product);
+                updateProductTfidfVector(product, cached);
+            }
         }
 
         return cached;
+    }
+
+    @Transactional
+    public void updateProductTfidfVector(DuckuJangter product, Map<String, Double> vector) {
+        try {
+            String vectorJson = objectMapper.writeValueAsString(vector);
+            product.updateTfidfVector(vectorJson);
+            duckuJangterRepository.save(product);
+            cacheTfidfVector(product.getId(), vector);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to update TF-IDF vector", e);
+        }
     }
 
     public void cacheTfidfVector(Long productId, Map<String, Double> tfidfVector) {
@@ -178,16 +83,10 @@ public class TfidfService {
         redisTemplate.expire(cacheKey, CACHE_TTL, TimeUnit.SECONDS);
     }
 
-    @Transactional
-    public void updateProductSimilarities(String keyword, List<String> searchKeywords) {
+    @Transactional(readOnly = true)
+    public List<ProductWithSimilarity> calculateProductSimilarities(String keyword, List<String> searchKeywords) {
         Map<String, Integer> documentFrequencies = getDocumentFrequencies();
         int totalDocuments = getTotalDocuments();
-
-        if (documentFrequencies.isEmpty() || totalDocuments == 0) {
-            updateDocumentStatistics();
-            documentFrequencies = getDocumentFrequencies();
-            totalDocuments = getTotalDocuments();
-        }
 
         Map<String, Double> queryVector = TfidfCalculator.calculateTfIdfVector(
                 searchKeywords,
@@ -195,23 +94,22 @@ public class TfidfService {
                 totalDocuments
         );
 
-        List<DuckuJangter> products = duckuJangterRepository.findByStatusAndDeletedAtIsNull(
-                JangterStatus.ON_SALE
-        );
+        List<DuckuJangter> products = duckuJangterRepository.findByDeletedAtIsNull();
 
-        for (DuckuJangter product : products) {
-            Map<String, Double> productVector = getTfidfVector(product.getId());
-            double similarity = calculateCosineSimilarity(queryVector, productVector);
-            product.updateSimilarity(similarity);
-        }
-
-        duckuJangterRepository.saveAll(products);
+        return products.stream()
+                .map(product -> {
+                    Map<String, Double> productVector = getTfidfVector(product.getId());
+                    double similarity = calculateCosineSimilarity(queryVector, productVector);
+                    return new ProductWithSimilarity(product, similarity);
+                })
+                .sorted(Comparator.comparing(ProductWithSimilarity::getSimilarity).reversed())
+                .collect(Collectors.toList());
     }
 
     @Scheduled(fixedRate = 3600000) // 1시간마다 갱신
     public void updateDocumentStatistics() {
         try {
-            List<DuckuJangter> allProducts = duckuJangterRepository.findAll();
+            List<DuckuJangter> allProducts = duckuJangterRepository.findByDeletedAtIsNull();
             Map<String, Integer> frequencies = new HashMap<>();
 
             for (DuckuJangter product : allProducts) {
@@ -260,29 +158,6 @@ public class TfidfService {
         return total != null ? total : 0;
     }
 
-    public double calculateCosineSimilarity(Map<String, Double> vector1, Map<String, Double> vector2) {
-        double dotProduct = 0.0;
-        double norm1 = 0.0;
-        double norm2 = 0.0;
-
-        for (String key : vector1.keySet()) {
-            if (vector2.containsKey(key)) {
-                dotProduct += vector1.get(key) * vector2.get(key);
-            }
-            norm1 += vector1.get(key) * vector1.get(key);
-        }
-
-        for (double value : vector2.values()) {
-            norm2 += value * value;
-        }
-
-        if (norm1 == 0.0 || norm2 == 0.0) {
-            return 0.0;
-        }
-
-        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
-    }
-
     private Map<String, Double> calculateProductTfidfVector(DuckuJangter product) {
         List<String> titleTerms = extractTerms(product.getTitle());
         List<String> descTerms = extractTerms(product.getDescription());
@@ -306,4 +181,38 @@ public class TfidfService {
         }
         return keywords;
     }
-}*/
+
+    public double calculateCosineSimilarity(Map<String, Double> vector1, Map<String, Double> vector2) {
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+
+        for (String key : vector1.keySet()) {
+            if (vector2.containsKey(key)) {
+                dotProduct += vector1.get(key) * vector2.get(key);
+            }
+            norm1 += vector1.get(key) * vector1.get(key);
+        }
+
+        for (double value : vector2.values()) {
+            norm2 += value * value;
+        }
+
+        if (norm1 == 0.0 || norm2 == 0.0) {
+            return 0.0;
+        }
+
+        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+    }
+
+    @Getter
+    public static class ProductWithSimilarity {
+        private final DuckuJangter product;
+        private final double similarity;
+
+        public ProductWithSimilarity(DuckuJangter product, double similarity) {
+            this.product = product;
+            this.similarity = similarity;
+        }
+    }
+}
