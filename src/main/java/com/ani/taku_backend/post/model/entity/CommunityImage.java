@@ -37,8 +37,4 @@ public class CommunityImage {
         this.post = post;
     }
 
-    void unassignPost() {
-        this.post = null;
-    }
-
 }

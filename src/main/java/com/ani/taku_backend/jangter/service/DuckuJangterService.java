@@ -49,19 +49,13 @@ public class DuckuJangterService {
     public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO,
                               List<MultipartFile> imageList,
                               PrincipalUser principalUser) {
-        // 블랙유저 검증
-        User user = blackUserService.checkBlackUser(principalUser);
 
-        ItemCategories validatedItemCategory = checkItemCategory(productCreateRequestDTO.getCategoryId(), null);
+        User user = blackUserService.checkBlackUser(principalUser);         // 블랙유저 검증
+        ItemCategories itemCategory = checkItemCategory(productCreateRequestDTO.getCategoryId(), null); // 아이템 카테고리 검증
 
-        // 이미지 저장 - r2, rdb 모두 저장
-        List<Image> saveImageList = imageService.saveImageList(imageList, user);
-
-        // 엔티티 생성
-        DuckuJangter product = createProduct(productCreateRequestDTO, user, validatedItemCategory);
-
-        // jangerImages 연관관계 설정
-        setRelationJangterImages(saveImageList, product);
+        List<Image> saveImageList = imageService.saveImageList(imageList, user);                // 이미지 저장 - r2, rdb 모두 저장
+        DuckuJangter product = createProduct(productCreateRequestDTO, user, itemCategory);      // 엔티티 생성
+        setRelationJangterImages(saveImageList, product);                                       // jangerImages 연관관계 설정
 
         Long saveProductId = duckuJangterRepository.save(product).getId();
         log.info("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
@@ -102,17 +96,14 @@ public class DuckuJangterService {
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        checkDeleteProduct(findProduct);
-
-        // 블랙 유저인지 검증
-        User user = blackUserService.checkBlackUser(principalUser);
+        checkDeleteProduct(findProduct);    //  삭제 검증
+        User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
 
         if (!user.getUserId().equals(findProduct.getUser().getUserId())) {  // 본인 글인지 확인
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        // 카테고리 가져오기
-        ItemCategories itemCategories = checkItemCategory(productUpdateRequestDTO.getCategoryId(), null);
+        ItemCategories itemCategories = checkItemCategory(productUpdateRequestDTO.getCategoryId(), null);  // 카테고리 검증
 
         // 업데이트 이미지 저장
         List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO, imageList, findProduct, user);
@@ -121,8 +112,7 @@ public class DuckuJangterService {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
         }
 
-        // 장터글 업데이트
-        findProduct.updateProduct(productUpdateRequestDTO, itemCategories);
+        findProduct.updateProduct(productUpdateRequestDTO, itemCategories);         // 장터글 업데이트
 
         log.info("장터글 업데이트 완료, 글 상세 {}", findProduct);
         return findProduct.getId();
@@ -147,6 +137,7 @@ public class DuckuJangterService {
         }
 
         findProduct.delete();  // 장터 에서 소프트 딜리트
+
         // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
         findProduct.getJangterImages().forEach(jangterImages -> {
             jangterImages.getImage().delete();
@@ -190,12 +181,12 @@ public class DuckuJangterService {
     private ItemCategories checkItemCategory(long categoryId, DuckuJangter findProduct) {
         ItemCategories itemCategories = itemCategoriesRepository.findById(categoryId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_CATEGORY));
-        log.info("아이템 카테고리: {} ", itemCategories.getName());
 
         if (findProduct != null && !findProduct.getItemCategories().getId().equals(itemCategories.getId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
+        log.info("아이템 카테고리 검증완료, 아이템카테고리: {} ", itemCategories.getName());
         return itemCategories;
     }
 }

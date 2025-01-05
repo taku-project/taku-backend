@@ -52,7 +52,7 @@ public class Post extends BaseTimeEntity {
     private LocalDateTime deletedAt ;
 
     /**
-     * 이미지 연관관계 편의 메서드
+     * 커뮤니티이미지 연관관계 편의 메서드
      */
     public void addCommunityImage(CommunityImage communityImage) {
         this.communityImages.add(communityImage);
