@@ -59,6 +59,7 @@ public class CommentsService {
      */
     @Transactional
     @RequireUser
+    @ValidateProfanity(fields = {"content"})
     public Long updateComments(long commentsId, @Valid CommentsUpdateRequestDTO commentsUpdateRequestDTO, PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);         // Black 유저 검증
