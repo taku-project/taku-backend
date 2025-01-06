@@ -27,18 +27,22 @@ public class ImageService {
     private final FileService fileService;
 
 
-    public Image insertImage(Image image){
+    public Image insertImage(Image image) {
         return this.imageRepository.save(image);
     }
 
 
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
+        if (imageList == null || imageList.isEmpty()) {
+            log.info("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
+            return new ArrayList<>();
+        }
+
+        List<Image> saveImageList = new ArrayList<>();
 
         // 이미지 업로드
         List<String> imageUrlList = uploadProductImageList(imageList);
-
-        List<Image> saveImageList = new ArrayList<>();
 
         for (int i = 0; i < imageUrlList.size(); i++) {
             MultipartFile imageFile = imageList.get(i);
@@ -62,9 +66,7 @@ public class ImageService {
             saveImageList.add(imageRepository.save(image));
             log.info("이미지 저장 성공 {}", image);
         }
-
         return saveImageList;
-
     }
 
     @Transactional

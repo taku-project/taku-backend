@@ -38,6 +38,7 @@ import static com.ani.taku_backend.common.exception.ErrorCode.*;
 @Transactional(readOnly = true)
 public class PostService {
 
+
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
@@ -82,7 +83,9 @@ public class PostService {
         User user = blackUserService.checkBlackUser(principalUser);                              // 유저 검증
         Category category = checkCategory(postCreateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
-        List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
+
+       List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
+
         Post post = getPost(postCreateRequestDTO, user, category);                   // 게시글 생성
         setRelationCommunityImages(saveImageList, post);                             // 연관관계 설정
 
@@ -134,7 +137,6 @@ public class PostService {
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkAuthorAndAdmin(user, post);             // 수정 권한 확인

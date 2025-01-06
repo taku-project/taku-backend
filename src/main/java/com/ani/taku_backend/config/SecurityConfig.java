@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
+                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()                   // GET - post,jangter
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용

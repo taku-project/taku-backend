@@ -1,10 +1,12 @@
 package com.ani.taku_backend.jangter.service;
 
 import com.ani.taku_backend.comments.model.entity.Comments;
+import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
+import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.FileService;
@@ -84,7 +86,7 @@ public class DuckuJangterService {
 
         log.info("장터글 조회 완료, 장터글 상세: {}", findProductDetail);
 
-        return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), viewCount);
+        return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), addViewCount);
     }
 
     /**
