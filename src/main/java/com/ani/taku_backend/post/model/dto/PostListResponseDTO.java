@@ -2,6 +2,7 @@ package com.ani.taku_backend.post.model.dto;
 
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.post.model.entity.Post;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -17,12 +18,14 @@ public class PostListResponseDTO {
     private String content;
 
     private String imageUrl;   // Image 링크를 응답
-    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)  // 테스트 해보기
     private LocalDateTime updatedAt;
 
     private long views;
+    private long postCount; // 게시글 수
 
-    public PostListResponseDTO(Post post) {
+    public PostListResponseDTO(Post post, long postCount) {
         this.id = post.getId();
         this.userId = post.getUser().getUserId();
         this.categoryId = post.getCategory().getId();
@@ -36,8 +39,8 @@ public class PostListResponseDTO {
                 .map(communityImage -> communityImage.getImage().getImageUrl())
                 .orElse(null);
 
-        this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
         this.views = post.getViews();
+        this.postCount = postCount;
     }
 }

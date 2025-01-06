@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.*;
@@ -57,13 +59,16 @@ public class PostService {
             keyword = keyword.trim().isEmpty() ? null : keyword.replaceAll("\\s+", "");
         }
 
-        List<Post> allPost = postRepository.findAllPostWithNoOffset(postListRequestDTO.getFilter().toString(),
+        List<Post> allPost = postRepository.findAllPostWithNoOffset(postListRequestDTO.getSortFilterType(),
                                                                     postListRequestDTO.getLastValue(),
                                                                     postListRequestDTO.isAsc(),
                                                                     postListRequestDTO.getLimit(),
                                                                     keyword, postListRequestDTO.getCategoryId());
 
-        return allPost.stream().map(PostListResponseDTO::new).toList();
+        long postCount = postRepository.countPostByDeletedAtIsNullAndCategoryId(postListRequestDTO.getCategoryId());
+        log.info("post 전체개수 조회, postCount: {}", postCount);
+
+        return allPost.stream().map((Post post) -> new PostListResponseDTO(post, postCount)).toList();
     }
 
     /**
@@ -74,7 +79,7 @@ public class PostService {
     @ValidateProfanity(fields = {"title", "content"})
     public Long createPost(PostCreateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
 
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+        User user = blackUserService.checkBlackUser(principalUser);                              // 유저 검증
         Category category = checkCategory(postCreateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
         List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장

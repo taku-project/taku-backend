@@ -23,14 +23,14 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Post> findAllPostWithNoOffset(String filter, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
+    public List<Post> findAllPostWithNoOffset(String sortFilterType, Long lastValue, boolean isAsc, int limit, String keyword, Long categoryId) {
         QPost post = QPost.post;
 
         BooleanExpression byCategory = getCategory(categoryId, post);                   // 카테고리 구분
-        BooleanExpression bySortFilter = getSortFilter(filter, lastValue, isAsc, post); // 정렬 필터
+        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, isAsc, post); // 정렬 필터
         BooleanExpression byKeyword = getKeyword(keyword, post);                        // 키워드 검색
         BooleanExpression notDeleted = getNotDeleted(post);                             // 삭제된글 제외
-        OrderSpecifier<?> mainSort = getMainSort(filter, isAsc, post);                  // 첫번째 정렬 기준
+        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, isAsc, post);                  // 첫번째 정렬 기준
         OrderSpecifier<?> subSort = getSubSort(isAsc, post);                            // 두번째 정렬 기준
 
         return jpaQueryFactory
@@ -64,7 +64,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
      * 제목 + 내용으로 키워드 검색
      */
     private BooleanExpression getKeyword(String keyword, QPost post) {
-        if (keyword != null) {
+        if (keyword != null && !keyword.isEmpty()) {
             return post.title.contains(keyword).or(post.content.contains(keyword));
         } else {
             return null;
@@ -75,15 +75,16 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
      * 정렬 필터 선택
      * - isAsc -> true, 오름 차순
      */
-    private BooleanExpression getSortFilter(String filter, Long lastValue, boolean isAsc, QPost post) {
+    private BooleanExpression getSortFilter(String sortFilterType, Long lastValue, boolean isAsc, QPost post) {
 
-        if (SortFilterType.LIKES.getValue().equalsIgnoreCase(filter) && lastValue != null) {
-            return isAsc ? post.likes.gt(lastValue) : post.likes.lt(lastValue);
+        if (sortFilterType.equals(SortFilterType.LIKES.getValue()) && lastValue != null && lastValue > 0) {
+//            return isAsc ? post.likes.gt(lastValue) : post.likes.lt(lastValue);
+            return null;        // 좋아요 기능 -> 몽고DB사용, 좋아요 개발 되면 붙이기
 
-        } else if (SortFilterType.VIEWS.getValue().equalsIgnoreCase(filter) && lastValue != null) {
+        } else if (sortFilterType.equals(SortFilterType.VIEWS.getValue()) && lastValue != null && lastValue > 0) {
             return isAsc ? post.views.gt(lastValue) : post.views.lt(lastValue);
 
-        } else if (lastValue != null) {
+        } else if (lastValue != null && lastValue > 0) {
             return isAsc ? post.id.gt(lastValue) : post.id.lt(lastValue);
 
         }
@@ -93,11 +94,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     /**
      * 첫번째 정렬 기준
      */
-    private OrderSpecifier<?> getMainSort(String filter, boolean isAsc, QPost post) {
-        if (SortFilterType.LIKES.getValue().equalsIgnoreCase(filter)) {
-            return isAsc ? post.likes.asc() : post.likes.desc();
+    private OrderSpecifier<?> getMainSort(String sortFilterType, boolean isAsc, QPost post) {
+        if (sortFilterType.equals(SortFilterType.LIKES.getValue())) {
+//            return isAsc ? post.likes.asc() : post.likes.desc();
+            return null;        // 좋아요 기능 -> 몽고DB사용, 좋아요 개발 되면 붙이기
 
-        } else if (SortFilterType.VIEWS.getValue().equalsIgnoreCase(filter)) {
+        } else if (sortFilterType.equals(SortFilterType.VIEWS.getValue())) {
             return isAsc ? post.views.asc() : post.views.desc();
 
         }
@@ -105,7 +107,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     }
 
     /**
-     * 두번째 정렬 기준
+     * 두번째 정렬 기준 - 무조건 id 순서
      */
     private OrderSpecifier<?> getSubSort(boolean isAsc, QPost post) {
         return isAsc ? post.id.asc() : post.id.desc();
