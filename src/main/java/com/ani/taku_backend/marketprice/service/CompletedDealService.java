@@ -22,20 +22,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CompletedDealService {
     private final CompletedDealRepository completedDealRepository;
     private final ExtractKeywordService extractKeywordService;
     private final DateConfig dateConfig;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm");
 
     @Transactional(readOnly = true)
     @Cacheable(value = "marketPrice", key = "#requestDTO.keyword + #requestDTO.fromDate + #requestDTO.toDate + #requestDTO.displayOption")
     public MarketPriceSearchResponseDTO searchMarketPrice(PriceGraphRequestDTO requestDTO, Pageable pageable) {
         try {
-            // 날짜 처리 - null이 될 수 없도록 보장 수정
             LocalDate startDate = Optional.ofNullable(requestDTO.getFromDate())
                     .orElseGet(dateConfig::getDefaultStartDate);
             LocalDate endDate = Optional.ofNullable(requestDTO.getToDate())
@@ -73,6 +71,7 @@ public class CompletedDealService {
         }
         return data;
     }
+
     private WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
         WeeklyStatsResponseDTO stats = completedDealRepository.getWeeklyStats(keyword);
         if (stats == null) {
