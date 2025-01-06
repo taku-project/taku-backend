@@ -28,10 +28,15 @@ public class TfidfService {
     private final ExtractKeywordService extractKeywordService;
     private final ObjectMapper objectMapper;
 
+    // 이미 상수화되어 있는 예시들
     private static final String TFIDF_CACHE_KEY = "market:tfidf:";
     private static final String DOC_FREQ_KEY = "market:document_frequencies";
     private static final String TOTAL_DOCS_KEY = "market:total_documents";
-    private static final long CACHE_TTL = 3600L; // 1시간
+
+    private static final long CACHE_TTL_SECONDS = 3600L; // 1시간,3600초
+
+    // 1시간마다 갱신(밀리초로 3600000)
+    private static final long DOCUMENT_STATS_UPDATE_RATE = 3600000L;
 
     @PostConstruct
     public void init() {
@@ -48,8 +53,10 @@ public class TfidfService {
 
             if (product.getTfidfVector() != null) {
                 try {
-                    cached = objectMapper.readValue(product.getTfidfVector(),
-                            new TypeReference<Map<String, Double>>() {});
+                    cached = objectMapper.readValue(
+                            product.getTfidfVector(),
+                            new TypeReference<Map<String, Double>>() {}
+                    );
                     cacheTfidfVector(productId, cached);
                 } catch (JsonProcessingException e) {
                     log.error("Failed to parse TF-IDF vector from database", e);
@@ -80,7 +87,7 @@ public class TfidfService {
     public void cacheTfidfVector(Long productId, Map<String, Double> tfidfVector) {
         String cacheKey = TFIDF_CACHE_KEY + productId;
         redisTemplate.opsForHash().putAll(cacheKey, tfidfVector);
-        redisTemplate.expire(cacheKey, CACHE_TTL, TimeUnit.SECONDS);
+        redisTemplate.expire(cacheKey, CACHE_TTL_SECONDS, TimeUnit.SECONDS);
     }
 
     @Transactional(readOnly = true)
@@ -106,7 +113,7 @@ public class TfidfService {
                 .collect(Collectors.toList());
     }
 
-    @Scheduled(fixedRate = 3600000) // 1시간마다 갱신
+    @Scheduled(fixedRate = DOCUMENT_STATS_UPDATE_RATE) // 1시간마다 갱신
     public void updateDocumentStatistics() {
         try {
             List<DuckuJangter> allProducts = duckuJangterRepository.findByDeletedAtIsNull();
@@ -127,8 +134,8 @@ public class TfidfService {
 
             redisTemplate.opsForHash().putAll(DOC_FREQ_KEY, frequencies);
             redisTemplate.opsForValue().set(TOTAL_DOCS_KEY, allProducts.size());
-            redisTemplate.expire(DOC_FREQ_KEY, CACHE_TTL, TimeUnit.SECONDS);
-            redisTemplate.expire(TOTAL_DOCS_KEY, CACHE_TTL, TimeUnit.SECONDS);
+            redisTemplate.expire(DOC_FREQ_KEY, CACHE_TTL_SECONDS, TimeUnit.SECONDS);
+            redisTemplate.expire(TOTAL_DOCS_KEY, CACHE_TTL_SECONDS, TimeUnit.SECONDS);
 
             log.info("Document statistics updated. Total documents: {}", allProducts.size());
         } catch (Exception e) {
