@@ -3,14 +3,12 @@ package com.ani.taku_backend.marketprice.service;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.service.ExtractKeywordService;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.marketprice.config.DateConfig;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.*;
+import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
 import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -92,5 +91,12 @@ public class CompletedDealService {
         if (startDate.isAfter(endDate)) {
             throw new DuckwhoException(ErrorCode.INVALID_DATE_RANGE);
         }
+    }
+
+    public List<CompletedDeal> findRecentDealsInCategory(ItemCategories category, LocalDateTime after) {
+        return completedDealRepository.findByCategoryNameAndCreatedAtAfterOrderByCreatedAtDesc(
+                category.getName(),
+                after
+        );
     }
 }
