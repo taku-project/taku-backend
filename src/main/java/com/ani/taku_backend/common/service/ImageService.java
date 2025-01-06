@@ -1,5 +1,9 @@
 package com.ani.taku_backend.common.service;
 
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.user.model.entity.User;
 import org.springframework.stereotype.Service;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
@@ -20,6 +24,7 @@ import static com.ani.taku_backend.common.exception.ErrorCode.FILE_UPLOAD_ERROR;
 public class ImageService {
 
     private final ImageRepository imageRepository;
+    private final FileService fileService;
 
 
     public Image insertImage(Image image){

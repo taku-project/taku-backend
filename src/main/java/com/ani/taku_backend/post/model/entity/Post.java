@@ -91,8 +91,8 @@ public class Post extends BaseTimeEntity {
     /**
      * Soft Delete 메서드
      */
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
+    public void delete() {
+        deletedAt = LocalDateTime.now();
     }
 
     // 조회수 증가

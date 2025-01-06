@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FileService {
 
     private final AmazonS3 client;
@@ -137,6 +139,16 @@ public class FileService {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("폴더 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    // 이미지 삭제
+    public void deleteImageFile(String fileName) {
+        try {
+            client.deleteObject(imageBucket, fileName);
+            log.info("이미지 삭제 완료 imageBucket: {}, fileName: {}",imageBucket, fileName);
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
         }
     }
 
