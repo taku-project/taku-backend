@@ -3,6 +3,7 @@ package com.ani.taku_backend.shorts_interaction.service;
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.shorts.domain.dto.res.ShortsLikeInteractionResponse;
+import com.ani.taku_backend.shorts.domain.dto.res.ShortsLikeInteractionResponseDTO;
 import com.ani.taku_backend.shorts.domain.entity.Interaction;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
 import com.ani.taku_backend.shorts.repository.ShortsRepository;
@@ -24,7 +25,7 @@ public class InteractionServiceImpl implements InteractionService {
         Shorts shorts = shortsRepository.findById(shortsId)
                 .orElseThrow(FileException.FileNotFoundException::new);
 
-        ShortsLikeInteractionResponse likeInteractionResponse = interactionRepository.findUserLikeInterAction(user.getUserId(), shortsId);
+        ShortsLikeInteractionResponseDTO likeInteractionResponse = interactionRepository.findUserLikeInterAction(user.getUserId(), shortsId);
 
         // 좋아요가 없을 때
         if(!likeInteractionResponse.isUserLike()) {
