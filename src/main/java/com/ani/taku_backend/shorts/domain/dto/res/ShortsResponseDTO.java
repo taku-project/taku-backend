@@ -32,7 +32,7 @@ public class ShortsResponseDTO {
 
     @JsonProperty("user_like_interaction")
     @Schema(description = "사용자의 상호작용 정보 - 좋아요, 싫어요 눌렀는지 여부")
-    private ShortsLikeInteractionResponse userLikeInteraction;
+    private ShortsLikeInteractionResponseDTO userLikeInteraction;
 
     @JsonProperty("popularity_matic")
     @Schema(description = "Shorts의 인기 지표 정보")
