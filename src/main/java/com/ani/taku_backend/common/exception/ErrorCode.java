@@ -35,6 +35,10 @@ public enum ErrorCode {
     // File
     FILE_UPLOAD_ERROR(50300, HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드에 실패했습니다."),
     FILE_DOWNLOAD_ERROR(50301, HttpStatus.SERVICE_UNAVAILABLE, "파일 다운로드에 실패했습니다."),
+    FILE_MAX_REGIST_EXCEED(50302, HttpStatus.BAD_REQUEST, "파일 가능 갯수를 초과했습니다."),
+    FILE_SIZE_EXCEED(50302, HttpStatus.BAD_REQUEST, "파일 업로드는 최대 50MB까지 가능합니다."),
+    FILE_ERROR(50303, HttpStatus.INTERNAL_SERVER_ERROR, "파일 예외가 발생했습니다."),
+    FILE_NOT_FOUND(50304, HttpStatus.INTERNAL_SERVER_ERROR, "파일을 찾을 수 없습니다."),
     INVALID_FILE_FORMAT(40005, HttpStatus.BAD_REQUEST, "잘못된 파일 형식입니다."),
 
     // Category
