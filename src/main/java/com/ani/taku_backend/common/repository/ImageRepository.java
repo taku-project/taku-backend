@@ -17,9 +17,4 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     @Modifying
     @Query("update Image i set i.deletedAt = current_timestamp where i.fileName in :fileNames")
     void softDeleteByFileNames(@Param("fileNames") List<String> fileNames);
-
-    @Query("select i from Image i join JangterImages ji on i.id = ji.image.id where ji.duckuJangter.id = :productId order by i.id asc")
-    List<Image> findImageByproductId(@Param("productId") Long productId);
-
-    List<Image> findByFileNameIn(List<String> fileNameList);
 }
