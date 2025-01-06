@@ -134,6 +134,7 @@ public class PostService {
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
 
         Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException.PostNotFoundException("ID: " + postId));
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkAuthorAndAdmin(user, post);             // 수정 권한 확인
