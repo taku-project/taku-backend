@@ -126,9 +126,9 @@ public class PostService {
         if (!user.getUserId().equals(post.getUser().getUserId())) {
             throw new PostException.PostAccessDeniedException("게시글을 삭제할 권한이 없습니다.");
         }
-        post.softDelete();
+        post.delete();
         post.getCommunityImages().forEach(communityImage -> {
-            communityImage.getImage().softDelete();
+            communityImage.getImage().delete();
             post.removeCommunityImage(communityImage);
         });
 
@@ -158,7 +158,7 @@ public class PostService {
         if (imageList == null || imageList.isEmpty()) {
             post.getCommunityImages().forEach(communityImage -> {
                 Image image = communityImage.getImage();
-                image.softDelete(); // Soft delete 호출
+                image.delete(); // Soft delete 호출
             });
             return;
         }

@@ -47,4 +47,5 @@ public class RedisService {
     public void setKeyValues(String key, List<String> values, Duration validityTime) {
         redisTemplate.opsForValue().set(key, values, validityTime);
     }
+
 }
