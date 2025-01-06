@@ -77,8 +77,7 @@ public class Image extends BaseTimeEntity {
     /**
      * Soft Delete 메서드
      */
-    public void softDelete() {
+    public void delete() {
         this.deletedAt = LocalDateTime.now();
     }
-
 }
