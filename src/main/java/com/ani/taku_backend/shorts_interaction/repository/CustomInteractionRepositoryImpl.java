@@ -1,7 +1,7 @@
 package com.ani.taku_backend.shorts_interaction.repository;
 
 import com.ani.taku_backend.common.enums.InteractionType;
-import com.ani.taku_backend.shorts.domain.dto.res.ShortsLikeInteractionResponse;
+import com.ani.taku_backend.shorts.domain.dto.res.ShortsLikeInteractionResponseDTO;
 import com.ani.taku_backend.shorts.domain.entity.Interaction;
 import com.ani.taku_backend.shorts.domain.entity.InteractionField;
 import com.ani.taku_backend.shorts.domain.entity.ShortsField;
@@ -21,9 +21,9 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public ShortsLikeInteractionResponse findUserLikeInterAction(Long userId, String shortsId) {
+    public ShortsLikeInteractionResponseDTO findUserLikeInterAction(Long userId, String shortsId) {
         if(userId == null) {
-            return ShortsLikeInteractionResponse.builder()
+            return ShortsLikeInteractionResponseDTO.builder()
                     .userLike(false)
                     .userDislike(false)
                     .build();
@@ -54,6 +54,6 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
                 ;
 
         Aggregation userInteractionAggregation = Aggregation.newAggregation(match, group);
-        return mongoTemplate.aggregate(userInteractionAggregation, Interaction.class, ShortsLikeInteractionResponse.class).getUniqueMappedResult();
+        return mongoTemplate.aggregate(userInteractionAggregation, Interaction.class, ShortsLikeInteractionResponseDTO.class).getUniqueMappedResult();
     }
 }
