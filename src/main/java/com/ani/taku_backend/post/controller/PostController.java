@@ -113,8 +113,8 @@ public class PostController {
     }
 
     @Operation(
-            summary = "판매글 삭제",
-            description = "덕후 장터 판매글 삭제")
+            summary = "커뮤니티 게시글 삭제",
+            description = "커뮤니티 게시글 삭제")
     @ApiResponses({
             @ApiResponse(responseCode = "200",description = "게시글 삭제 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
