@@ -65,7 +65,7 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
     }
 
     @Override
-    public InteractionResponse findUserLikeInterAction(Long userId, String shortsId) {
+    public InteractionResponse findUserLikeDislikeInteractions(Long userId, String shortsId) {
         if(userId == null) {
             return null;
         }

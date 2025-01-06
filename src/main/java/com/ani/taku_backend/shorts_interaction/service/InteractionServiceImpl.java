@@ -27,7 +27,7 @@ public class InteractionServiceImpl implements InteractionService {
         Shorts shorts = shortsRepository.findById(shortsId)
                 .orElseThrow(FileException.FileNotFoundException::new);
 
-        InteractionResponse userLikeInterAction = interactionRepository.findUserLikeInterAction(user.getUserId(), shortsId);
+        InteractionResponse userLikeInterAction = interactionRepository.findUserLikeDislikeInteractions(user.getUserId(), shortsId);
 
         // 좋아요가 없을 때
         if(userLikeInterAction.getLike() == null) {
