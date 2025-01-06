@@ -47,7 +47,7 @@ public class MarketPriceStats extends BaseTimeEntity {
     @Column(precision = 10, scale = 2)
     private BigDecimal soldPrice;        // 판매가
 
-    private Double similarity;
+    //private Double similarity;
 
     @NotNull
     @Column(nullable = false)
@@ -66,7 +66,7 @@ public class MarketPriceStats extends BaseTimeEntity {
         this.title = title;
         this.registeredPrice = registeredPrice;
         this.soldPrice = soldPrice;
-        this.similarity = similarity;
+        //this.similarity = similarity;
         this.registeredDate = registeredDate;
     }
 
