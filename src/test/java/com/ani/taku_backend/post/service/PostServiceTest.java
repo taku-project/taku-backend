@@ -118,7 +118,7 @@ class PostServiceTest {
     @BeforeEach
     void mockAuthentication() {
         // Mock User 생성
-        String email = "user2@example.com";
+        String email = "user1@example.com";
 
         // UserRepository에서 User 엔티티를 조회
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));

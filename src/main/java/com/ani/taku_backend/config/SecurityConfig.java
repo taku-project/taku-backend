@@ -51,6 +51,7 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
+                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()   // post, janget get요청 허용등록
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()

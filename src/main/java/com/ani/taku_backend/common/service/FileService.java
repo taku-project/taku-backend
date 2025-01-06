@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FileService {
 
     private final AmazonS3 client;
@@ -35,17 +37,17 @@ public class FileService {
 
     public String uploadVideoFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
-        
+
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());  // Content-Type 설정
-        
+
         // ACL을 public-read로 설정
         PutObjectRequest putObjectRequest = new PutObjectRequest(
-            videoBucket,
-            fileName, 
-            file.getInputStream(), 
-            metadata
+                videoBucket,
+                fileName,
+                file.getInputStream(),
+                metadata
         ).withCannedAcl(CannedAccessControlList.PublicRead);  // public-read ACL 추가
 
         client.putObject(putObjectRequest);
@@ -54,7 +56,7 @@ public class FileService {
 
     public String uploadImageFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
-        System.out.println(imageBucket+"입니다. "+imagePublicUrl+"입니다.");
+        log.info("{} 입니다. {} 입니다.", imageBucket, imagePublicUrl);
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());  // Content-Type 설정
@@ -91,4 +93,24 @@ public class FileService {
         }
     }
 
+
+    // 이미지 삭제
+    public void deleteImageFile(String fileName) {
+        try {
+            client.deleteObject(imageBucket, fileName);
+            log.info("이미지 삭제 완료 imageBucket: {}, fileName: {}",imageBucket, fileName);
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
+        }
+    }
+
+    // 비디오 삭제
+    public void deleteVideoFile(String fileName) {
+        try {
+            client.deleteObject(videoBucket, fileName);
+            log.info("비디오 삭제 완료 videoBucket: {}, fileName: {}",videoBucket, fileName);
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
+        }
+    }
 }

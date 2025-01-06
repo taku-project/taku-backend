@@ -33,7 +33,6 @@ public class TestFixture {
 
     private final Random random = new Random();
 
-    @Transactional
     List<User> createUser() {
         // 유저 1 생성
         User user1 = User.builder()
@@ -65,7 +64,6 @@ public class TestFixture {
         return userRepository.saveAll(List.of(user1, user2));
     }
 
-    @Transactional
     List<Category> createCategory(List<User> users) {
 
         User user1 = users.get(0);
@@ -80,7 +78,6 @@ public class TestFixture {
         return categoryRepository.saveAll(categories);
     }
 
-    @Transactional
     public List<Post> createPost(List<User> users, List<Category> categories, int count) {
         String[] titles = {"Post", "Title", "Song"};
         String[] contents = {"Content", "Story", "Lyrics"};

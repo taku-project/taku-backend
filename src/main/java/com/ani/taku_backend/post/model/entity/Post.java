@@ -57,6 +57,7 @@ public class Post extends BaseTimeEntity {
         communityImage.assignPost(this);
     }
 
+    // 이거 삭제해야해 -> Post 리펙토링할 때 지워봅시다.
     public void removeCommunityImage(CommunityImage communityImage) {
         this.communityImages.remove(communityImage);
         communityImage.unassignPost();
