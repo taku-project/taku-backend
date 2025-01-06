@@ -8,12 +8,15 @@ import com.ani.taku_backend.shorts.domain.entity.Interaction;
 import com.ani.taku_backend.shorts.domain.entity.Shorts;
 import com.ani.taku_backend.shorts.repository.ShortsRepository;
 import com.ani.taku_backend.shorts_interaction.domain.dto.InteractionResponse;
+import com.ani.taku_backend.shorts_interaction.domain.dto.UserInteractionResponse;
 import com.ani.taku_backend.shorts_interaction.repository.InteractionRepository;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +46,22 @@ public class InteractionServiceImpl implements InteractionService {
                 interactionRepository.delete(disLikeInteraction);
             }
             interactionRepository.save(interaction);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void cancelLike(User user, String shortsId) {
+        Shorts shorts = shortsRepository.findById(shortsId)
+                .orElseThrow(FileException.FileNotFoundException::new);
+
+        Optional<UserInteractionResponse> userLikeInterActionOptional = interactionRepository.findUserLikeInteractions(user.getUserId(), shortsId);
+
+        if(userLikeInterActionOptional.isPresent()) {
+            UserInteractionResponse interactionResponse = userLikeInterActionOptional.get();
+            shorts.decreaseLike();
+            shortsRepository.save(shorts);
+            interactionRepository.deleteById(new ObjectId(interactionResponse.getId()));
         }
     }
 

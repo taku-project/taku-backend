@@ -25,13 +25,24 @@ public class ShortsInteractionController {
     private final InteractionService interactionService;
     private final BlackUserService blackUserService;
 
-    @PostMapping("/{shortsId}/interaction/likes")
-    public CommonResponse addLike(@AuthenticationPrincipal PrincipalUser userPrincipal,
+    @PostMapping("/{shortsId}/likes")
+    public CommonResponse<Void> addLike(@AuthenticationPrincipal PrincipalUser userPrincipal,
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
         User user = userPrincipal.getUser();
         validateBlackUser(user.getUserId());
 
         interactionService.addLike(user, shortsId);
+
+        return CommonResponse.ok(null);
+    }
+
+    @PostMapping("/{shortsId}/likes/cancel")
+    public CommonResponse<Void> cancelLike(@AuthenticationPrincipal PrincipalUser userPrincipal,
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
+        User user = userPrincipal.getUser();
+        validateBlackUser(user.getUserId());
+
+        interactionService.cancelLike(user, shortsId);
 
         return CommonResponse.ok(null);
     }

@@ -6,6 +6,7 @@ import com.ani.taku_backend.shorts.domain.entity.Interaction;
 import com.ani.taku_backend.shorts.domain.entity.InteractionField;
 import com.ani.taku_backend.shorts.domain.entity.ShortsField;
 import com.ani.taku_backend.shorts_interaction.domain.dto.InteractionResponse;
+import com.ani.taku_backend.shorts_interaction.domain.dto.UserInteractionResponse;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -21,6 +22,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -102,5 +104,31 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
         Aggregation likeInteractionAggregation = Aggregation.newAggregation(match, group, projection);
         AggregationResults<Map> resultMaps = mongoTemplate.aggregate(likeInteractionAggregation, Interaction.class, Map.class);
         return InteractionResponse.fromMap(resultMaps.getUniqueMappedResult());
+    }
+
+    @Override
+    public Optional<UserInteractionResponse> findUserLikeInteractions(Long userId, String shortsId) {
+        if(userId == null) {
+            return Optional.empty();
+        }
+        MatchOperation match = Aggregation.match(
+                Criteria
+                    .where(InteractionField.SHORTS_ID.getFieldName()).is(new ObjectId(shortsId))
+                    .and(InteractionField.USER_ID.getFieldName()).is(userId)
+                    .and(InteractionField.INTERACTION_TYPE.getFieldName()).is(InteractionType.LIKE.getValue())
+        );
+
+        ProjectionOperation projection = Aggregation.project()
+                .and(InteractionField.ID.getFieldName()).as(InteractionField.ID.getVariableName())
+                .and(InteractionField.SHORTS_ID.getFieldName()).as(InteractionField.SHORTS_ID.getVariableName())
+                .and(InteractionField.USER_ID.getFieldName()).as(InteractionField.USER_ID.getVariableName());
+
+        Aggregation aggregation = Aggregation.newAggregation(match, projection);
+
+        AggregationResults<UserInteractionResponse> results = mongoTemplate.aggregate(
+                aggregation, Interaction.class, UserInteractionResponse.class
+        );
+
+        return Optional.ofNullable(results.getUniqueMappedResult());
     }
 }

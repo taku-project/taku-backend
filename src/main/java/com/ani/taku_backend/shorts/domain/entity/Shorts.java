@@ -59,6 +59,10 @@ public class Shorts {
         this.popularityMetrics.likes += 1;
     }
 
+    public void decreaseLike() {
+        this.popularityMetrics.likes -= 1;
+    }
+
     @Getter
     @Builder
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
