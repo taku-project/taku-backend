@@ -94,7 +94,7 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                         jangter.title.contains(keyword),
                         jangter.deletedAt.isNull()
                 )
-                .orderBy(jangter.id.desc())  // 최신순으로 변경
+                .orderBy(jangter.id.desc())  // 최신순
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
