@@ -53,8 +53,13 @@ public enum ErrorCode {
 
     DUPLICATE_PROFANITY_FILTER(40903, HttpStatus.CONFLICT, "이미 존재하는 금칙어 필터입니다."),
 
+    //marketprice
+    INVALID_DATE_RANGE(40006, HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다."),
+    MARKET_PRICE_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "시세 정보를 찾을 수 없습니다."),
+
     // Post / Product
     NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다.");
+
 
 
     // 403 Forbidden
