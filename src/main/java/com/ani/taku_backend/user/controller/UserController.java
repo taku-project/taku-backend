@@ -121,7 +121,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 		}
 
@@ -234,7 +234,7 @@ public class UserController {
 				userService.updateProfileImg(userId, fileUrl);
 			}catch (Exception e){
 				System.out.println(e);
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 
 			return CommonResponse.ok(fileUrl);
