@@ -55,5 +55,14 @@ public class Interaction<T extends InteractionDetail> {
                 .details(details)
                 .build();
     }
+
+    public static Interaction create(Shorts shorts, Long userId, InteractionType interactionType) {
+        return Interaction.builder()
+                .shortsId(new ObjectId(shorts.getId()))
+                .userId(userId)
+                .interactionType(interactionType)
+                .shortsTags(shorts.getTags())
+                .build();
+    }
 }
 
