@@ -38,7 +38,10 @@ public class MarketPriceStatsService {
     @Transactional(readOnly = true)
     @Cacheable(value = "weeklyStats", key = "#keyword")
     public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
-        return marketPriceStatsRepository.getWeeklyStats(keyword);
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(7);
+
+        return marketPriceStatsRepository.getWeeklyStats(keyword, startDate, endDate);
     }
 
     @Transactional(readOnly = true)

@@ -53,7 +53,7 @@ public class DuckuJangter extends BaseTimeEntity {
     @Column(name = "buy_user_id")
     private Long buyUserId;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "tfidf_vector",columnDefinition = "TEXT")
     private String tfidfVector;  // TF-IDF 벡터값을 저장.
 
     @Builder.Default
