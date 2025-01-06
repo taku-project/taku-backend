@@ -91,8 +91,10 @@ public class DuckuJangter extends BaseTimeEntity {
         }
     }
 
-
-    public long addViewCount() {
-        return viewCount += 1;
+    public long addViewCount(boolean isFirstView) {
+        if (isFirstView) {
+            return viewCount += 1;
+        }
+        return viewCount;
     }
 }

@@ -68,16 +68,20 @@ public class DuckuJangterService {
     /**
      * 장터글 상세 조회
      */
-    public ProductFindDetailResponseDTO findProductDetail(Long productId) {
-
+    @CheckViewCount(viewType = ViewType.SHOP,
+            targetId = "#productId",
+            expireTime = 60)
+    @Transactional
+    public ProductFindDetailResponseDTO findProductDetail(long productId, boolean isFirstView) {
         // 판매글 조회
         DuckuJangter findProductDetail = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkDeleteProduct(findProductDetail);
 
-        // 조회 수 증가 -> 나중에 중복 방지 AOP 적용, (진호님 개발된 AOP 적용 해야함)
-        long viewCount = findProductDetail.addViewCount();
+        // 조회수 증가 로직
+        long addViewCount = findProductDetail.addViewCount(isFirstView);
+
         log.info("장터글 조회 완료, 장터글 상세: {}", findProductDetail);
 
         return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), viewCount);
@@ -144,6 +148,13 @@ public class DuckuJangterService {
             fileService.deleteImageFile(jangterImages.getImage().getFileName());
         });
         log.info("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
+    }
+
+    private void validateDelete(DuckuJangter findProductDetail) {
+        // 삭제된 글이면 예외
+        if (findProductDetail.getDeletedAt() != null) {
+            throw new DuckwhoException(NOT_FOUND_POST);
+        }
     }
 
     // 장터이미지 연관관계설정

@@ -1,34 +1,35 @@
 package com.ani.taku_backend.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Date;
+import com.ani.taku_backend.config.converter.InteractionTypeConverter;
+import com.ani.taku_backend.config.converter.StringToInteractionTypeConverter;
 
-//@Configuration
-//public class MongoConfig {
-//
-//    @Bean
-//    public MongoMappingContext mongoMappingContext() {
-//        MongoMappingContext mappingContext = new MongoMappingContext();
-//        mappingContext.setFieldNamingStrategy(field -> {
-//            String fieldName = field.getName();
-//            // Java에서는 Camel Case, Mongo에서는 snake case
-//            return fieldName.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
-//        });
-//        return mappingContext;
-//    }
-//
-//    @Bean
-//    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDbFactory, MappingMongoConverter converter) {
-//        return new MongoTemplate(mongoDbFactory, converter);
-//    }
-//}
+@Configuration
+@EnableMongoAuditing
+public class MongoConfig {
+
+    @Bean
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDbFactory, MappingMongoConverter converter) {
+        return new MongoTemplate(mongoDbFactory, converter);
+    }
+
+    /**
+     * InteractionType 엔티티를 String으로 변환하는 컨버터
+     */
+    @Bean
+    public MongoCustomConversions customConversions() {
+        return new MongoCustomConversions(Arrays.asList(
+            new InteractionTypeConverter(),
+            new StringToInteractionTypeConverter()
+        ));
+    }
+}
