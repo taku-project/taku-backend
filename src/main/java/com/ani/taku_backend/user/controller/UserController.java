@@ -225,6 +225,9 @@ public class UserController {
 			}
 		}
 
+
+
+
 		if(multipartFile!=null){
 			String fileUrl;
 			//1번. martipart
