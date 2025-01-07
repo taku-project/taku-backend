@@ -15,7 +15,7 @@ import com.ani.taku_backend.shorts.domain.dto.ShortsCommentUpdateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsInfoResDTO;
-import com.ani.taku_backend.shorts.domain.dto.res.ShortsLikeInteractionResponse;
+import com.ani.taku_backend.shorts.domain.dto.res.ShortsLikeInteractionResponseDTO;
 import com.ani.taku_backend.shorts.domain.entity.Interaction;
 import com.ani.taku_backend.shorts.domain.dto.res.PopularityMaticResDTO;
 import com.ani.taku_backend.shorts.domain.dto.res.ShortsResponseDTO;
@@ -271,11 +271,12 @@ public class ShortsServiceImpl implements  ShortsService {
                     .filter(fileUrl -> fileUrl.endsWith(".m3u8"))
                     .findFirst()
                     .orElseThrow(FileException.FileNotFoundException::new);
-            ShortsLikeInteractionResponse userInterAction = interactionRepository.findUserLikeInterAction(userId, shortsId);
+            ShortsLikeInteractionResponseDTO userInterAction = interactionRepository.isUserLikeInterAction(userId, shortsId);
 
             Shorts.PopularityMetric popularityMetric = shorts.getPopularityMetrics();
             // TODO 사용자 상호 작용 테이블에서 유저가 like, dislike 했는지 확인
             return ShortsResponseDTO.builder()
+                    .shortsId(shortsId)
                     .profileImgUrl(shorts.getProfileImg())
                     .description(shorts.getDescription())
                     .userLikeInteraction(userInterAction)
