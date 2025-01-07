@@ -3,6 +3,7 @@ package com.ani.taku_backend.post.model.entity;
 import com.ani.taku_backend.common.model.entity.Image;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.List;
 import java.util.Objects;

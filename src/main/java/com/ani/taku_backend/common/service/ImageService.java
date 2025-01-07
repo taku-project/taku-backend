@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.user.model.entity.User;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Service;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.FILE_UPLOAD_ERROR;
@@ -25,6 +27,7 @@ public class ImageService {
 
     private final ImageRepository imageRepository;
     private final FileService fileService;
+    private final ListableBeanFactory listableBeanFactory;
 
 
     public Image insertImage(Image image) {
@@ -35,14 +38,13 @@ public class ImageService {
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
 
-        if (imageList != null) {
-            log.info("imageList.size: {}", imageList.size());
-            log.info("imageList.isEmpty: {}", imageList.isEmpty());
-            imageList.forEach(image -> {
-                log.info("getName: {}, getContentType: {}, getSize: {}", image.getName(), image.getContentType(), image.getSize());
-            });
-        }
-
+//        if (imageList != null) {
+//            log.info("imageList.size: {}", imageList.size());
+//            log.info("imageList.isEmpty: {}", imageList.isEmpty());
+//            imageList.forEach(image -> {
+//                log.info("getName: {}, getContentType: {}, getSize: {}", image.getName(), image.getContentType(), image.getSize());
+//            });
+//        }
 
         if (imageList == null || imageList.isEmpty()) {
             log.info("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
@@ -102,8 +104,15 @@ public class ImageService {
                 String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
                 fileService.deleteImageFile(filename);  // s3 에서 삭제(클라우드 플레어)
             });
-            imageRepository.findByFileNameIn(deleteImageUrl).forEach(Image::delete);    // RDB 삭제
-            log.info("삭제 대상 이미지 삭제 성공 {}", deleteImageUrl);
+            List<Image> deleteImageList = imageRepository.findByImageUrlIn(deleteImageUrl);
+            log.info("삭제할 이미지 조회 성공: {}", Arrays.toString(deleteImageList.toArray()));
+
+            // RDB 삭제
+            for (Image image : deleteImageList) {
+                log.info("삭제할 이미지 정보, image.getId: {}, image.getImageUrl: {}", image.getId(), image.getImageUrl());
+                image.delete();
+                log.info("삭제 대상 이미지 삭제 성공, image.getDeletedAt(): {}", image.getDeletedAt());
+            }
         }
 
         // 저장할 이미지 -> newImageList

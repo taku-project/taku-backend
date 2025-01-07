@@ -2,7 +2,6 @@ package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;
 import com.ani.taku_backend.post.service.PostReadService;
@@ -30,22 +29,27 @@ public class PostController {
     private final PostReadService postReadService;
 
     @Operation(
-            summary = "커뮤니티글 전체 조회")
+            summary = "커뮤니티글 전체 조회",
+            description = """
+                     - postCount: 카테고리 내부 게시글 조회된 개수(삭제된 게시글 반영),
+                     - responsePostList: 게시글 조회정보 리스트, 게시글 조회 성공 필드 확인
+                     """
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 조회 성공"),
     })
     @GetMapping
-    public CommonResponse<List<PostListResponseDTO>> findAllPost(
+    public CommonResponse<PostListResponseDTO> findAllPostList(
             @Parameter(description = "커뮤니티 글 전체 조회 DTO", required = true) PostListRequestDTO postListRequestDTO) {
         log.info("postListRequestDTO: {}", postListRequestDTO.getSortFilterType());
-        List<PostListResponseDTO> postList = postService.findAllPost(postListRequestDTO);
-        return CommonResponse.ok(postList);
+        PostListResponseDTO findResultList = postService.findAllPostList(postListRequestDTO);
+        return CommonResponse.ok(findResultList);
     }
 
     @Operation(
             summary = "커뮤니티 게시글 생성",
             description = """
-                    - createPost: 판매글 정보를 포함한 JSON 데이터
+                    - createPost: 판매글 정보를 포함한 JSON 데이터,
                     - postImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
                     """)
     @ApiResponses({

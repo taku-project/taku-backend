@@ -4,7 +4,6 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
-import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
@@ -17,6 +16,7 @@ import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
+import com.ani.taku_backend.post.repository.impl.dto.FindAllPostQuerydslDTO;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -26,8 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.*;
@@ -38,7 +36,6 @@ import static com.ani.taku_backend.common.exception.ErrorCode.*;
 @Transactional(readOnly = true)
 public class PostService {
 
-
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
@@ -48,28 +45,21 @@ public class PostService {
     /**
      * 게시글 전체 조회 -> 삭제된 내역은 검색안되게 수정, 그리고 반환값에 전체 개수 반환
      */
-    public List<PostListResponseDTO> findAllPost(PostListRequestDTO postListRequestDTO) {
+    public PostListResponseDTO findAllPostList(PostListRequestDTO postListRequestDTO) {
 
-        /**
-         * 검증 로직
-         * - 공백만 있는 keyword null 처리
-         * - 공백 제거(양옆, 중간)
-         */
+        // 검색 키워드 검증 - 공백제거(양옆, 중간), 공백만 넘어온 키워드 null처리
         String keyword = postListRequestDTO.getKeyword();
         if (keyword != null) {
             keyword = keyword.trim().isEmpty() ? null : keyword.replaceAll("\\s+", "");
         }
 
-        List<Post> allPost = postRepository.findAllPostWithNoOffset(postListRequestDTO.getSortFilterType(),
-                                                                    postListRequestDTO.getLastValue(),
-                                                                    postListRequestDTO.isAsc(),
-                                                                    postListRequestDTO.getLimit(),
-                                                                    keyword, postListRequestDTO.getCategoryId());
-
         long postCount = postRepository.countPostByDeletedAtIsNullAndCategoryId(postListRequestDTO.getCategoryId());
         log.info("post 전체개수 조회, postCount: {}", postCount);
 
-        return allPost.stream().map((Post post) -> new PostListResponseDTO(post, postCount)).toList();
+        List<FindAllPostQuerydslDTO> fineResultList = postRepository.findAllPostWithNoOffset(postListRequestDTO);
+        log.info("페이징 쿼리 성공");
+
+        return new PostListResponseDTO(postCount, fineResultList);
     }
 
     /**
@@ -120,8 +110,10 @@ public class PostService {
         List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), imageList, postImageList, user);
 
         if (!newImageList.isEmpty()) {
-            setRelationCommunityImages(newImageList, post);         // 연관관계 설정
+            setRelationCommunityImages(newImageList, post);         // 연관관계 설정 -> 이미지 저장
         }
+
+
 
         post.updatePost(postUpdateRequestDTO, itemCategory);         // 게시글 수정
         log.info("게시글 수정 성공, postId: {}", postId);

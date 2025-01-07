@@ -39,8 +39,8 @@ public class Post extends BaseTimeEntity {
     private Category category;
 
     @Builder.Default
-    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
+    @BatchSize(size = 500)
     private List<CommunityImage> communityImages = new ArrayList<>();
 
     @Column(length = 150, nullable = false)
