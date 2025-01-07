@@ -280,7 +280,7 @@ public class ShortsServiceImpl implements  ShortsService {
                     .shortsId(shortsId)
                     .profileImgUrl(shorts.getProfileImg())
                     .description(shorts.getDescription())
-                    .userLikeInteraction(likeInteractionResponse)
+                    .userLikeInteraction(userInterAction)
                     .popularityMatic(new PopularityMaticResDTO(shorts.getPopularityMetrics()))
                     .popularityMatic(new PopularityMaticResDTO(popularityMetric))
                     .m3u8Url(m3u8Url)
