@@ -2,44 +2,27 @@ package com.ani.taku_backend.post.model.dto;
 
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.post.model.entity.Post;
+import com.ani.taku_backend.post.repository.impl.dto.FindAllPostQuerydslDTO;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.querydsl.core.annotations.QueryProjection;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PostListResponseDTO {
 
-    private Long id;
-    private Long userId;     // User 객체 대신 ID만 포함
-    private Long categoryId; // Category 객체 대신 ID만 포함
+    @Schema(description = "해당 카테고리에 접속된 게시글 수(삭제된 글 제외)")
+    private long postCount; // 게시글 수
 
-    private String title;
-    private String content;
+    @Schema(description = "게시글 정보")
+    private List<FindAllPostQuerydslDTO> responsePostList;
 
-    private String imageUrl;   // Image 링크를 응답
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    private Long views;
-    private Long likes;
-
-    public PostListResponseDTO(Post post) {
-        this.id = post.getId();
-        this.userId = post.getUser().getUserId();
-        this.categoryId = post.getCategory().getId();
-        this.title = post.getTitle();
-        this.content = post.getContent();
-
-        // 이미지가 여러 장일 경우 첫 번째 이미지 URL 가져오기
-        this.imageUrl = post.getCommunityImages()
-                .stream()
-                .findFirst()
-                .map(communityImage -> communityImage.getImage().getImageUrl())
-                .orElse(null);
-
-        this.createdAt = post.getCreatedAt();
-        this.updatedAt = post.getUpdatedAt();
-        this.views = post.getViews();
-        this.likes = post.getLikes();
+    public PostListResponseDTO(long postCount, List<FindAllPostQuerydslDTO> findAllPostQuerydslDTOList) {
+        this.postCount = postCount;
+        this.responsePostList = findAllPostQuerydslDTOList;
     }
 }

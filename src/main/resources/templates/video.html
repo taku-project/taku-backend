@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Player</title>
+</head>
+<body>
+<h1>Video Player</h1>
+<p>Video ID: <span th:text="${videoId}"></span></p>
+
+<!-- HLS.js를 이용한 비디오 플레이어 -->
+<video id="videoPlayer" width="640" height="360" controls></video>
+
+<!-- HLS.js 스크립트 -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', () => {
+        const video = document.getElementById('videoPlayer');
+        const m3u8Url = /*[[${m3u8Url}]]*/ '';  // Thymeleaf로 m3u8Url 값 삽입
+        console.log("m3u8Url의 값은 :: " + m3u8Url);
+
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(m3u8Url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play();
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = m3u8Url;
+            video.addEventListener('loadedmetadata', () => {
+                video.play();
+            });
+        } else {
+            alert('HLS not supported in this browser.');
+        }
+    });
+</script>
+</body>
+</html>

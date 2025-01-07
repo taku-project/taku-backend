@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -121,7 +120,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 		}
 
@@ -239,7 +238,7 @@ public class UserController {
 
 			}catch (Exception e){
 				System.out.println(e);
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 
 			return CommonResponse.ok(fileUrl);

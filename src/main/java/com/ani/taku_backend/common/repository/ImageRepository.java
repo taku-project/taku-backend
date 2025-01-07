@@ -1,8 +1,7 @@
 package com.ani.taku_backend.common.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.ani.taku_backend.common.model.entity.Image;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +24,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
 
     Optional<Image> findByFileName(String filename);
+
+    List<Image> findByImageUrlIn(List<String> imageUrlList);
+
 }
