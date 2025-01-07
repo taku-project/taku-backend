@@ -21,6 +21,7 @@ public class OAuth2LogoutService {
     private final RedisService redisService;
     private final JwtUtil jwtUtil;
 
+    // 구글 반영해야함
     public String logout(String accessTokenHeader) {
         String extractedToken = extractBearerToken(accessTokenHeader);
         log.info("Extracted Token: {}", extractedToken);
