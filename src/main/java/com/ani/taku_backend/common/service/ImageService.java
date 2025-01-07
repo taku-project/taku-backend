@@ -34,8 +34,23 @@ public class ImageService {
 
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
+
+        if (imageList != null) {
+            log.info("imageList.size: {}", imageList.size());
+            log.info("imageList.isEmpty: {}", imageList.isEmpty());
+            imageList.forEach(image -> {
+                log.info("getName: {}, getContentType: {}, getSize: {}", image.getName(), image.getContentType(), image.getSize());
+            });
+        }
+
+
         if (imageList == null || imageList.isEmpty()) {
             log.info("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
+            return new ArrayList<>();
+        }
+
+        if (imageList.size() == 1 && imageList.get(0).getSize() == 0) {
+            log.info("이미지가 ");
             return new ArrayList<>();
         }
 

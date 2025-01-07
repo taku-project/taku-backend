@@ -6,6 +6,7 @@ import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * 커뮤니티 게시글 Entity
  */
+@Slf4j
 @Table(name = "posts")
 @Entity
 @Getter
@@ -67,15 +69,21 @@ public class Post extends BaseTimeEntity {
         String updateContent = postUpdateRequestDTO.getContent();
 
         if (updateTitle != null && !updateTitle.equals(this.title)) {
+            log.info("게시글 제목 수정 전, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
             this.title = updateTitle;
+            log.info("게시글 제목 수정 후, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
         }
 
         if (updateContent != null && !updateContent.equals(this.content)) {
+            log.info("게시글 본문 수정 전, 기존 본문: {}, 수정 본문: {}", this.content, updateContent);
             this.content = updateContent;
+            log.info("게시글 본문 수정 후, 기존 본문: {}, 수정 본문: {}", this.content, updateContent);
         }
 
         if (category != null && !category.equals(this.category)) {
+            log.info("카테고리 수정 전, 기존 카테고리: {}, 수정 카테고리: {}", this.category.getId(), category.getId());
             this.category = category;
+            log.info("카테고리 수정 후, 기존 카테고리: {}, 수정 카테고리: {}", this.category.getId(), category.getId());
         }
     }
 

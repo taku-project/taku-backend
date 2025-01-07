@@ -64,7 +64,9 @@ public class Comments extends BaseTimeEntity {
 
     // 본문 업데이트 메서드
     public void updateComments(String content) {
+        log.info("댓글 수정 전, 기존 댓글: {}, 수정 댓글: {}", this.content, content);
         this.content = content;
+        log.info("댓글 수정 전, 기존 댓글: {}, 수정 댓글: {}", this.content, content);
     }
 
     // 삭제
