@@ -1,5 +1,8 @@
 package com.ani.taku_backend.common.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * 정렬 기준을 관리
  */

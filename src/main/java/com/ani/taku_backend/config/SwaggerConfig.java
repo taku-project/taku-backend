@@ -9,11 +9,10 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-
-import java.util.Arrays;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.util.Arrays;
 
 @Configuration
 public class SwaggerConfig {
@@ -21,6 +20,9 @@ public class SwaggerConfig {
     private static final String API_TITLE = "Taku-Backend API";
     private static final String API_VERSION = "0.0.1";
     private static final String API_DESCRIPTION = "Taku-Backend API 명세서";
+
+    @Value("${server.port}") // 실행 중인 포트를 가져옵니다. 기본값은 8080.
+    private String serverPort;
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -35,7 +37,8 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .servers(
                         Arrays.asList(
-                        new Server().url("https://api-duckwho.xyz").description("Duckwho API 서버")
+                            new Server().url("http://localhost:" + serverPort).description("Local 서버"),
+                            new Server().url("https://api-duckwho.xyz").description("Duckwho API 서버")
                         )
                 )
                 .info(new Info() // API 문서 정보 설정

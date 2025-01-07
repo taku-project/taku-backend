@@ -1,11 +1,8 @@
 package com.ani.taku_backend.user.model.dto;
 
 
-import org.hibernate.validator.constraints.pl.NIP;
-
 import com.ani.taku_backend.common.enums.ProviderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

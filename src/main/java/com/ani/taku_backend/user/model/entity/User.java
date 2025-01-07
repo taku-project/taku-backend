@@ -80,20 +80,4 @@ public class User {
     @Builder.Default    // ArrayList로 초기값 고정
     private List<Post> posts = new ArrayList<>();
 
-    /**
-     * Post 연관관계 편의 메서드
-     */
-    public void addPost(Post post) {
-        if (!posts.contains(post)) {
-            posts.add(post);
-            post.setUserInternal(this); // Post 엔티티의 내부 사용자 설정 메서드 호출
-        }
-    }
-    public void removePost(Post post) {
-        if (posts.contains(post)) {
-            posts.remove(post);
-            post.removeUserInternal(); // Post 엔티티의 내부 사용자 해제 메서드 호출
-        }
-    }
-
 }

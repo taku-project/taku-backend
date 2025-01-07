@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.user.model.entity.User;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Service;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
@@ -14,9 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static com.ani.taku_backend.common.exception.ErrorCode.FILE_MAX_REGIST_EXCEED;
 import static com.ani.taku_backend.common.exception.ErrorCode.FILE_UPLOAD_ERROR;
 
 @Service
@@ -26,6 +27,7 @@ public class ImageService {
 
     private final ImageRepository imageRepository;
     private final FileService fileService;
+    private final ListableBeanFactory listableBeanFactory;
 
 
     public Image insertImage(Image image) {
@@ -36,10 +38,28 @@ public class ImageService {
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
 
-        // 이미지 업로드
-        List<String> imageUrlList = uploadProductImageList(imageList);
+//        if (imageList != null) {
+//            log.info("imageList.size: {}", imageList.size());
+//            log.info("imageList.isEmpty: {}", imageList.isEmpty());
+//            imageList.forEach(image -> {
+//                log.info("getName: {}, getContentType: {}, getSize: {}", image.getName(), image.getContentType(), image.getSize());
+//            });
+//        }
+
+        if (imageList == null || imageList.isEmpty()) {
+            log.info("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
+            return new ArrayList<>();
+        }
+
+        if (imageList.size() == 1 && imageList.get(0).getSize() == 0) {
+            log.info("이미지가 ");
+            return new ArrayList<>();
+        }
 
         List<Image> saveImageList = new ArrayList<>();
+
+        // 이미지 업로드
+        List<String> imageUrlList = uploadProductImageList(imageList);
 
         for (int i = 0; i < imageUrlList.size(); i++) {
             MultipartFile imageFile = imageList.get(i);
@@ -63,33 +83,36 @@ public class ImageService {
             saveImageList.add(imageRepository.save(image));
             log.info("이미지 저장 성공 {}", image);
         }
-
         return saveImageList;
-
     }
 
     @Transactional
-    public List<Image> getUpdateImageList(ProductUpdateRequestDTO productUpdateRequestDTO, List<MultipartFile> newImageList, DuckuJangter findProduct, User user) {
+    public List<Image> getUpdateImageList(List<String> deleteImageUrl, List<MultipartFile> newImageList, List<Image> contentImage, User user) {
 
         // 게시글에서 첨부파일을 모두 삭제하고 넘어옴
         if (newImageList == null || newImageList.isEmpty()) {
-            findProduct.getJangterImages().forEach(communityImage -> {
-                Image image = communityImage.getImage();
+            for (Image image : contentImage) {
                 fileService.deleteImageFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
                 image.delete();                                 // RDB에서 삭제
                 log.info("저장할 이미지 없음 -> 이미지 삭제 성공");
-            });
+            }
         }
 
-        // 삭제 대상인 이미지 리스트 -> productUpdateRequestDTO.getDeleteImageUrl();
-        List<String> deleteImageUrl = productUpdateRequestDTO.getDeleteImageUrl();
+        // 삭제 대상인 이미지 리스트 삭제
         if (deleteImageUrl != null && !deleteImageUrl.isEmpty()) {
             deleteImageUrl.forEach(imageUrl -> {
                 String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
                 fileService.deleteImageFile(filename);  // s3 에서 삭제(클라우드 플레어)
             });
-            imageRepository.findByFileNameIn(deleteImageUrl).forEach(Image::delete);    // RDB 삭제
-            log.info("삭제 대상 이미지 삭제 성공 {}", deleteImageUrl);
+            List<Image> deleteImageList = imageRepository.findByImageUrlIn(deleteImageUrl);
+            log.info("삭제할 이미지 조회 성공: {}", Arrays.toString(deleteImageList.toArray()));
+
+            // RDB 삭제
+            for (Image image : deleteImageList) {
+                log.info("삭제할 이미지 정보, image.getId: {}, image.getImageUrl: {}", image.getId(), image.getImageUrl());
+                image.delete();
+                log.info("삭제 대상 이미지 삭제 성공, image.getDeletedAt(): {}", image.getDeletedAt());
+            }
         }
 
         // 저장할 이미지 -> newImageList
@@ -130,7 +153,7 @@ public class ImageService {
     // 이미지 5개 이상 저장 불가
     private void validateImageCount(List<MultipartFile> imageList) {
         if (imageList != null && imageList.size() > 5) {
-            throw new DuckwhoException(FILE_MAX_REGIST_EXCEED);
+            throw new DuckwhoException(FILE_UPLOAD_ERROR);
         }
     }
 

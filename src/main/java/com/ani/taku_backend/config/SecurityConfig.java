@@ -49,12 +49,15 @@ public class SecurityConfig {
             // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
                 .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
                     .permitAll()
+//                .requestMatchers("/api/shorts/**", "/api/shorts")
+//                    .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
-                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()   // post, janget get요청 허용등록
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
+                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()                   // GET - post,jangter
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
+                .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -73,7 +76,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
+
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:8080",
             "https://localhost:8080",
@@ -82,12 +85,12 @@ public class SecurityConfig {
             "https://api-duckwho.xyz",
             "https://duckwho.vercel.app"
         ));
-        
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

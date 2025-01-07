@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class PostListRequestDTO {
 
-    @Schema(description = "정렬 기준", defaultValue = "latest")
-    private SortFilterType filter;
+    @Schema(description = "정렬 기준, id = latest, 조회수 = views, 좋아요 = likes" , defaultValue = "latest")
+    private String sortFilterType = SortFilterType.LATEST.getValue();  // 기본값
 
-    @Schema(description = "정렬 기준의 마지막 값")
-    private Long lastValue;
+    @Schema(description = "정렬 기준의 마지막 값(id, 조회수, 좋아요)")
+    private long lastValue;
 
     @Schema(description = "정렬 방향(true = 오름차순, false = 내림차순)", defaultValue = "false")
     private boolean isAsc = false;
@@ -23,5 +23,5 @@ public class PostListRequestDTO {
     private String keyword;
 
     @Schema(description = "카테고리 ID")
-    private Long categoryId;
+    private long categoryId;
 }

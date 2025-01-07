@@ -6,6 +6,7 @@ import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Slf4j
 public class DuckuJangter extends BaseTimeEntity {
 
     @Id
@@ -50,6 +52,9 @@ public class DuckuJangter extends BaseTimeEntity {
     private long viewCount;
     private LocalDateTime deletedAt;
 
+//    @Column(name = "buy_user_id")
+//    private Long buyUserId;
+
     @Builder.Default
     @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
     private List<JangterImages> jangterImages = new ArrayList<>();
@@ -79,16 +84,24 @@ public class DuckuJangter extends BaseTimeEntity {
         BigDecimal updatePrice = productUpdateRequestDTO.getPrice();
 
         if (updateTitle != null && !updateTitle.equals(this.title)) {
+            log.info("게시글 제목 수정 전, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
             this.title = updateTitle;
+            log.info("게시글 제목 수정 후, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
         }
         if (updateDescription != null && !updateDescription.equals(this.description)) {
+            log.info("게시글 본문 수정 전, 기존 본문: {}, 수정 본문: {}", this.description, updateDescription);
             this.description = updateDescription;
+            log.info("게시글 본문 수정 후, 기존 본문: {}, 수정 본문: {}", this.description, updateDescription);
         }
         if (updatePrice != null && !updatePrice.equals(this.price)) {
+            log.info("게시글 가격 수정 전, 기존 가격: {}, 수정 가격: {}", this.description, updateDescription);
             this.price = updatePrice;
+            log.info("게시글 가격 수정 후, 기존 가격: {}, 수정 가격: {}", this.description, updateDescription);
         }
         if (itemCategories != null && !itemCategories.equals(this.itemCategories)) {
+            log.info("카테고리 수정 전, 기존 카테고리: {}, 수정 카테고리: {}", this.itemCategories.getId(), itemCategories.getId());
             this.itemCategories = itemCategories;
+            log.info("카테고리 수정 후, 기존 카테고리: {}, 수정 카테고리: {}", this.itemCategories.getId(), itemCategories.getId());
         }
     }
 

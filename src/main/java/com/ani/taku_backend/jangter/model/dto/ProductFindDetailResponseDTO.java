@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,7 +44,7 @@ public class ProductFindDetailResponseDTO {
         this.price = duckuJangter.getPrice();
         this.status = status;
         this.createdAt = duckuJangter.getCreatedAt();
-        this.viewCount = duckuJangter.getViewCount() + (addViewCount != null ? addViewCount : 0L);
+        this.viewCount = addViewCount;
 
         // DuckuJangter와 연관된 이미지 URL 추출
         this.imageUrlList = duckuJangter.getJangterImages()

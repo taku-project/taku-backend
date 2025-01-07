@@ -2,7 +2,6 @@ package com.ani.taku_backend.user.model.dto;
 
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
