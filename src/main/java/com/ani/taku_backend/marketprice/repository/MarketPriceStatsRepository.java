@@ -14,6 +14,7 @@ import java.util.List;
 public interface MarketPriceStatsRepository extends JpaRepository<MarketPriceStats, Long>, MarketPriceStatsQueryRepository {
     List<MarketPriceStats> findByRegisteredDateBetween(LocalDate startDate, LocalDate endDate);
     Optional<MarketPriceStats> findFirstByProductOrderByRegisteredDateDesc(DuckuJangter product);
+    List<MarketPriceStats> findByTitleContaining(String keyword);
 
     @Query("""
             SELECT new com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO(

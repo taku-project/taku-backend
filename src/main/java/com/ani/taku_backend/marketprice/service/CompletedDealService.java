@@ -11,10 +11,8 @@ import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
 import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,10 +27,12 @@ public class CompletedDealService {
     private final ExtractKeywordService extractKeywordService;
     private final DateConfig dateConfig;
 
-    @Transactional(readOnly = true)
-    @Cacheable(value = "marketPrice", key = "#requestDTO.keyword + #requestDTO.fromDate + #requestDTO.toDate + #requestDTO.displayOption")
     public MarketPriceSearchResponseDTO searchMarketPrice(PriceGraphRequestDTO requestDTO, Pageable pageable) {
         try {
+            if (requestDTO == null || requestDTO.getKeyword() == null) {
+                throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
+            }
+
             LocalDate startDate = Optional.ofNullable(requestDTO.getFromDate())
                     .orElseGet(dateConfig::getDefaultStartDate);
             LocalDate endDate = Optional.ofNullable(requestDTO.getToDate())

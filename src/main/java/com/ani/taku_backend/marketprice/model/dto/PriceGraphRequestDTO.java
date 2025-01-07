@@ -4,12 +4,14 @@ import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
 @Schema(description = "시세 그래프 조회 요청 DTO")
+@AllArgsConstructor
 public class PriceGraphRequestDTO {
     @NotBlank(message = "검색 키워드는 필수입니다.")
     @Schema(description = "검색 키워드", example = "원피스 루피 피규어")
