@@ -79,7 +79,7 @@ public class FileService {
 
     public String uploadImageFile(MultipartFile file) throws IOException {
         String fileName = generateFileName(file.getOriginalFilename());
-        System.out.println(imageBucket+"입니다. "+imagePublicUrl+"입니다.");
+        log.info("imageBucket: {}, imagePublicUrl: {}", imageBucket, imagePublicUrl);
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());  // Content-Type 설정

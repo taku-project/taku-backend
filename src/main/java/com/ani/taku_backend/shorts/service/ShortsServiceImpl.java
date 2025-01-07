@@ -118,7 +118,7 @@ public class ShortsServiceImpl implements  ShortsService {
      */
     @Override
     public List<ShortsInfoResDTO> findRecommendShorts(PrincipalUser principalUser) {
-        
+
         // 유저 아이디 조회
         Long userId = 0L;
         if(principalUser != null) {
@@ -132,10 +132,10 @@ public class ShortsServiceImpl implements  ShortsService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ResponseEntity<List<Shorts>> response = this.restTemplate.exchange(
-            this.recommendShortsUrl,
-            HttpMethod.POST,
-            new HttpEntity<>(user, headers),
-            new ParameterizedTypeReference<List<Shorts>>() {}
+                this.recommendShortsUrl,
+                HttpMethod.POST,
+                new HttpEntity<>(user, headers),
+                new ParameterizedTypeReference<List<Shorts>>() {}
         );
 
         List<Shorts> shorts = response.getBody();
@@ -155,8 +155,8 @@ public class ShortsServiceImpl implements  ShortsService {
     @Override
     public List<ShortsCommentDTO> findShortsComment(String shortsId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.findShortsCommentUrl)
-            .queryParam("shorts_id", shortsId);
-            
+                .queryParam("shorts_id", shortsId);
+
         String url = builder.toUriString();
         log.info("쇼츠 댓글 조회 요청: {}", url);
 
@@ -165,10 +165,10 @@ public class ShortsServiceImpl implements  ShortsService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ResponseEntity<List<ShortsCommentDTO>> response = this.restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            new HttpEntity<>(null, headers),
-            new ParameterizedTypeReference<List<ShortsCommentDTO>>() {}
+                url,
+                HttpMethod.GET,
+                new HttpEntity<>(null, headers),
+                new ParameterizedTypeReference<List<ShortsCommentDTO>>() {}
         );
 
         List<ShortsCommentDTO> shortsCommentDTOs = response.getBody();
@@ -187,24 +187,24 @@ public class ShortsServiceImpl implements  ShortsService {
     private void setCommentUser(List<ShortsCommentDTO> shortsCommentDTOs) {
         // 댓글 작성자들 아이디 목록 조회
         List<Long> userIds = shortsCommentDTOs.stream()
-            .map(comment -> comment.getUserInfo().getId())
-            .distinct()
-            .collect(Collectors.toList());
+                .map(comment -> comment.getUserInfo().getId())
+                .distinct()
+                .collect(Collectors.toList());
         log.info("댓글 작성자들 아이디 목록: {}", userIds);
 
         // 댓글 작성자들 정보 조회
         List<User> users = this.userRepository.findByUserIdIn(userIds);
 
         List<ShortsCommentDTO.CommentUserDTO> commentUserDTOs = users.stream()
-            .map(ShortsCommentDTO.CommentUserDTO::of)
-            .collect(Collectors.toList());
+                .map(ShortsCommentDTO.CommentUserDTO::of)
+                .collect(Collectors.toList());
 
         // 댓글 작성자들 정보 설정
         shortsCommentDTOs.forEach(comment -> {
             comment.setUserInfo(commentUserDTOs.stream()
-                .filter(user -> user.getId().equals(comment.getUserInfo().getId()))
-                .findFirst()
-                .orElse(null));
+                    .filter(user -> user.getId().equals(comment.getUserInfo().getId()))
+                    .findFirst()
+                    .orElse(null));
         });
     }
 
@@ -220,8 +220,8 @@ public class ShortsServiceImpl implements  ShortsService {
     @RequireUser
     @Override
     public void createShortsComment(PrincipalUser principalUser,
-            ShortsCommentCreateReqDTO shortsCommentCreateReqDTO,
-            String shortsId) {
+                                    ShortsCommentCreateReqDTO shortsCommentCreateReqDTO,
+                                    String shortsId) {
 
         User user = principalUser.getUser();
 
@@ -233,17 +233,17 @@ public class ShortsServiceImpl implements  ShortsService {
         }
 
         CommentDetail commentDetail = CommentDetail.builder()
-            .commentText(shortsCommentCreateReqDTO.getComment())
-            .replies(Collections.emptyList())
-            .build();
+                .commentText(shortsCommentCreateReqDTO.getComment())
+                .replies(Collections.emptyList())
+                .build();
 
         Interaction<CommentDetail> commentInteraction = Interaction.<CommentDetail>builder()
-            .userId(user.getUserId())
-            .shortsId(ObjectIdUtil.convertToObjectId(shortsId))
-            .interactionType(InteractionType.COMMENT)
-            .details(commentDetail)
-            .shortsTags(shorts.getTags())
-            .build();
+                .userId(user.getUserId())
+                .shortsId(ObjectIdUtil.convertToObjectId(shortsId))
+                .interactionType(InteractionType.COMMENT)
+                .details(commentDetail)
+                .shortsTags(shorts.getTags())
+                .build();
 
         log.debug("댓글 생성 요청: {}", commentInteraction);
 
@@ -262,7 +262,7 @@ public class ShortsServiceImpl implements  ShortsService {
     @Override
     public ShortsResponseDTO findShortsInfo(String shortsId, Long userId) {
         Shorts shorts = shortsRepository.findById(shortsId)
-                            .orElseThrow(FileException.FileNotFoundException::new);
+                .orElseThrow(FileException.FileNotFoundException::new);
 
         if(shorts.getFileInfo() != null) {
             Shorts.VideoMetadata fileInfo = shorts.getFileInfo();
@@ -273,13 +273,14 @@ public class ShortsServiceImpl implements  ShortsService {
                     .orElseThrow(FileException.FileNotFoundException::new);
             ShortsLikeInteractionResponseDTO userInterAction = interactionRepository.isUserLikeInterAction(userId, shortsId);
 
+
             Shorts.PopularityMetric popularityMetric = shorts.getPopularityMetrics();
             // TODO 사용자 상호 작용 테이블에서 유저가 like, dislike 했는지 확인
             return ShortsResponseDTO.builder()
                     .shortsId(shortsId)
                     .profileImgUrl(shorts.getProfileImg())
                     .description(shorts.getDescription())
-                    .userLikeInteraction(userInterAction)
+                    .userLikeInteraction(likeInteractionResponse)
                     .popularityMatic(new PopularityMaticResDTO(shorts.getPopularityMetrics()))
                     .popularityMatic(new PopularityMaticResDTO(popularityMetric))
                     .m3u8Url(m3u8Url)
@@ -303,8 +304,8 @@ public class ShortsServiceImpl implements  ShortsService {
         User user = principalUser.getUser();
 
         Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
-            ObjectIdUtil.convertToObjectId(commentId),
-            Interaction.class
+                ObjectIdUtil.convertToObjectId(commentId),
+                Interaction.class
         )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
 
         // 인증되지 않은 접근
@@ -314,9 +315,9 @@ public class ShortsServiceImpl implements  ShortsService {
 
         // 댓글 수정
         Query query = new Query(
-            Criteria
-                .where("_id").is(ObjectIdUtil.convertToObjectId(commentId))
-                .and("user_id").is(user.getUserId())
+                Criteria
+                        .where("_id").is(ObjectIdUtil.convertToObjectId(commentId))
+                        .and("user_id").is(user.getUserId())
         );
 
         Update update = new Update();
@@ -343,8 +344,8 @@ public class ShortsServiceImpl implements  ShortsService {
         User user = principalUser.getUser();
 
         Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
-            ObjectIdUtil.convertToObjectId(commentId),
-            Interaction.class
+                ObjectIdUtil.convertToObjectId(commentId),
+                Interaction.class
         )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
 
         if(commentInteraction.getUserId() != user.getUserId()) {
@@ -369,23 +370,23 @@ public class ShortsServiceImpl implements  ShortsService {
     @RequireUser
     @Override
     public void createShortsReply(PrincipalUser principalUser, ShortsCommentCreateReqDTO shortsCommentCreateReqDTO,
-            String commentId) {
+                                  String commentId) {
 
         User user = principalUser.getUser();
 
         Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
-            ObjectIdUtil.convertToObjectId(commentId),
-            Interaction.class
+                ObjectIdUtil.convertToObjectId(commentId),
+                Interaction.class
         )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
 
         CommentDetail commentDetail = commentInteraction.getDetails();
 
         CommentDetail.Reply reply = CommentDetail.Reply.builder()
-            .id(new ObjectId())
-            .userId(user.getUserId())
-            .replyText(shortsCommentCreateReqDTO.getComment())
-            .createdAt(LocalDateTime.now())
-            .build();
+                .id(new ObjectId())
+                .userId(user.getUserId())
+                .replyText(shortsCommentCreateReqDTO.getComment())
+                .createdAt(LocalDateTime.now())
+                .build();
 
         commentDetail.getReplies().add(reply);
 
@@ -411,15 +412,15 @@ public class ShortsServiceImpl implements  ShortsService {
         Long userId = principalUser.getUser().getUserId();
 
         Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
-            ObjectIdUtil.convertToObjectId(commentId),
-            Interaction.class
+                ObjectIdUtil.convertToObjectId(commentId),
+                Interaction.class
         )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
 
         // 대댓글 찾기
         CommentDetail.Reply targetReply = commentInteraction.getDetails().getReplies().stream()
-            .filter(reply -> reply.getId().toString().equals(replyId))
-            .findFirst()
-            .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_REPLY));
+                .filter(reply -> reply.getId().toString().equals(replyId))
+                .findFirst()
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_REPLY));
 
         // 대댓글 작성자 확인
         if (!targetReply.getUserId().equals(userId)) {
@@ -441,20 +442,20 @@ public class ShortsServiceImpl implements  ShortsService {
     @RequireUser
     @SuppressWarnings("unchecked")
     public void updateShortsReply(PrincipalUser principalUser, ShortsCommentUpdateReqDTO shortsCommentUpdateReqDTO,
-            String commentId, String replyId) {
+                                  String commentId, String replyId) {
 
         Long userId = principalUser.getUser().getUserId();
 
         Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
-            ObjectIdUtil.convertToObjectId(commentId),
-            Interaction.class
+                ObjectIdUtil.convertToObjectId(commentId),
+                Interaction.class
         )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
 
         // 대댓글 찾기
         CommentDetail.Reply targetReply = commentInteraction.getDetails().getReplies().stream()
-            .filter(reply -> reply.getId().toString().equals(replyId))
-            .findFirst()
-            .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_REPLY));
+                .filter(reply -> reply.getId().toString().equals(replyId))
+                .findFirst()
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_REPLY));
 
         // 대댓글 작성자 확인
         if (!targetReply.getUserId().equals(userId)) {
@@ -463,8 +464,8 @@ public class ShortsServiceImpl implements  ShortsService {
 
         // 대댓글 업데이트
         Query query = new Query(
-            Criteria.where("_id").is(ObjectIdUtil.convertToObjectId(commentId))
-                .and("details.replies._id").is(new ObjectId(replyId))
+                Criteria.where("_id").is(ObjectIdUtil.convertToObjectId(commentId))
+                        .and("details.replies._id").is(new ObjectId(replyId))
         );
 
         Update update = new Update().set("details.replies.$.replyText", shortsCommentUpdateReqDTO.getComment());

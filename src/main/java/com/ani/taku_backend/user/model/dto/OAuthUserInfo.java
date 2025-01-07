@@ -1,7 +1,6 @@
 package com.ani.taku_backend.user.model.dto;
 
 import com.ani.taku_backend.common.enums.ProviderType;
-
 import io.jsonwebtoken.Claims;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;

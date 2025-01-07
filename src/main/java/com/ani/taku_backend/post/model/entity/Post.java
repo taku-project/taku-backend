@@ -2,19 +2,21 @@ package com.ani.taku_backend.post.model.entity;
 
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 커뮤니티 게시글 Entity
  */
+@Slf4j
 @Table(name = "posts")
 @Entity
 @Getter
@@ -37,62 +39,59 @@ public class Post extends BaseTimeEntity {
     private Category category;
 
     @Builder.Default
-    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
+    @BatchSize(size = 500)
     private List<CommunityImage> communityImages = new ArrayList<>();
 
+    @Column(length = 150, nullable = false)
     private String title;
+
+    @Column(length = 3000, nullable = false)
     private String content;
 
-    private Long views;
-    private Long likes;
+    private long views;
 
     private LocalDateTime deletedAt ;
 
     /**
-     * 이미지 연관관계 편의 메서드
+     * 커뮤니티이미지 연관관계 편의 메서드
      */
     public void addCommunityImage(CommunityImage communityImage) {
         this.communityImages.add(communityImage);
         communityImage.assignPost(this);
     }
 
-    public void removeCommunityImage(CommunityImage communityImage) {
-        this.communityImages.remove(communityImage);
-        communityImage.unassignPost();
-    }
-
-    /**
-     * User 연관관계 편의 메서드
-     */
-    public void setUserInternal(User user) {
-        this.user = user;
-    }
-    public void removeUserInternal() {
-        this.user = null;
-    }
-
     /**
      * update 메서드
      */
-    public void updatePost(String title, String content, Category category) {
-        if (title != null) {
-            this.title = title;
+    public void updatePost(PostUpdateRequestDTO postUpdateRequestDTO, Category category) {
+        String updateTitle = postUpdateRequestDTO.getTitle();
+        String updateContent = postUpdateRequestDTO.getContent();
+
+        if (updateTitle != null && !updateTitle.equals(this.title)) {
+            log.info("게시글 제목 수정 전, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
+            this.title = updateTitle;
+            log.info("게시글 제목 수정 후, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
         }
 
-        if (content != null) {
-            this.content = content;
+        if (updateContent != null && !updateContent.equals(this.content)) {
+            log.info("게시글 본문 수정 전, 기존 본문: {}, 수정 본문: {}", this.content, updateContent);
+            this.content = updateContent;
+            log.info("게시글 본문 수정 후, 기존 본문: {}, 수정 본문: {}", this.content, updateContent);
         }
-         if (category != null) {
-             this.category = category;
-         }
+
+        if (category != null && !category.equals(this.category)) {
+            log.info("카테고리 수정 전, 기존 카테고리: {}, 수정 카테고리: {}", this.category.getId(), category.getId());
+            this.category = category;
+            log.info("카테고리 수정 후, 기존 카테고리: {}, 수정 카테고리: {}", this.category.getId(), category.getId());
+        }
     }
 
     /**
      * Soft Delete 메서드
      */
     public void delete() {
-        deletedAt = LocalDateTime.now();
+        this.deletedAt = LocalDateTime.now();
     }
 
     // 조회수 증가
@@ -100,16 +99,5 @@ public class Post extends BaseTimeEntity {
         this.views++;
     }
 
-    // 좋아요 수 증가
-    public void addLikes() {
-        this.likes++;
-    }
-
-    // 좋아요 수 감소
-    public void subLikes() {
-        if (this.likes > 0) {
-            this.likes--;
-        }
-    }
 
 }

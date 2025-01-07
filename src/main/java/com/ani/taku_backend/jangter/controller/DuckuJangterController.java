@@ -8,6 +8,8 @@ import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -86,7 +88,7 @@ public class DuckuJangterController {
                     - updateImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
                     """)
     @ApiResponses({
-            @ApiResponse(responseCode = "200",description = "게시글 수정 성공"),
+            @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
@@ -96,11 +98,11 @@ public class DuckuJangterController {
     public CommonResponse<Long> updateProduct(
                         @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
                         @Parameter(
-                              description = "판매글 생성 요청 JSON 데이터", required = true
+                              description = "판매글 업데이트 요청 JSON 데이터", required = true
                         )
                         @RequestPart("updateDTO") ProductUpdateRequestDTO requestDTO,
                         @Parameter(
-                              description = "새로 업로드한 이미지"
+                              description = "새로 업로드한 이미지 파일"
                         )
                         @RequestPart(value = "updateImage", required = false) List<MultipartFile> imageList) {
 
@@ -123,9 +125,11 @@ public class DuckuJangterController {
     })
     @DeleteMapping("/{productId}")
     @RequireUser
-    public void deleteProduct(
+    public CommonResponse<Void> deleteProduct(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
             @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") Long categoryId) {
         duckuJangterService.deleteProduct(productId, categoryId, null);
+
+        return CommonResponse.ok(null);
     }
 }

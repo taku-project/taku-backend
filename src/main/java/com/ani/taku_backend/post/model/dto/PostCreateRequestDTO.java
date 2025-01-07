@@ -12,18 +12,16 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostCreateUpdateRequestDTO {
+public class PostCreateRequestDTO {
 
     @Schema(description = "카테고리Id")
     private Long categoryId;
 
-    @Size(max = 50, message = "제목은 최대 50글자까지 입력 가능합니다.")
     @Schema(description = "제목")
+    @Size(max = 150, message = "제목은 최대 150글자까지 입력 가능합니다.")
     private String title;
 
     @Schema(description = "내용")
+    @Size(max = 3000, message = "내용은 최대 3000글자까지 입력 가능합니다.")
     private String content;
-
-    @Schema(description = "첨부파일 이미지")
-    private List<ImageCreateRequestDTO> imagelist;
 }
