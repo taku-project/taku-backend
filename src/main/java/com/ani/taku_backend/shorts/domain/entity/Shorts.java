@@ -49,18 +49,38 @@ public class Shorts {
     @CreatedDate
     private LocalDateTime createdAt;
 
-    public void addLike(boolean hasDislike) {
+    public void addLikeCount(boolean hasDislike) {
         if(hasDislike) {
-            int dislikes = this.popularityMetrics.dislikes;
-            if(dislikes > 0) {
-                this.popularityMetrics.dislikes -= 1;
-            }
+            decreaseDislikeCount();
         }
+        increaseLikeCount();
+    }
+
+    public void addDislikeCount(boolean haslike) {
+        if(haslike) {
+            decreaseLikeCount();
+        }
+        increaseDislikeCount();
+    }
+
+    private void increaseLikeCount() {
         this.popularityMetrics.likes += 1;
     }
 
-    public void decreaseLike() {
-        this.popularityMetrics.likes -= 1;
+    public void decreaseLikeCount() {
+        if(this.popularityMetrics.likes > 0) {
+            this.popularityMetrics.likes -= 1;
+        }
+    }
+
+    private void increaseDislikeCount() {
+        this.popularityMetrics.dislikes += 1;
+    }
+
+    public void decreaseDislikeCount() {
+        if(this.popularityMetrics.dislikes > 0) {
+            this.popularityMetrics.dislikes -= 1;
+        }
     }
 
     @Getter

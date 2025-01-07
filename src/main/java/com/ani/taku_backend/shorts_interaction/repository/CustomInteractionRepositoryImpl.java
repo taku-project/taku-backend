@@ -131,4 +131,30 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
 
         return Optional.ofNullable(results.getUniqueMappedResult());
     }
+
+    @Override
+    public Optional<UserInteractionResponse> findUserDislikeInteractions(Long userId, String shortsId) {
+        if(userId == null) {
+            return Optional.empty();
+        }
+        MatchOperation match = Aggregation.match(
+                Criteria
+                        .where(InteractionField.SHORTS_ID.getFieldName()).is(new ObjectId(shortsId))
+                        .and(InteractionField.USER_ID.getFieldName()).is(userId)
+                        .and(InteractionField.INTERACTION_TYPE.getFieldName()).is(InteractionType.DISLIKE.getValue())
+        );
+
+        ProjectionOperation projection = Aggregation.project()
+                .and(InteractionField.ID.getFieldName()).as(InteractionField.ID.getVariableName())
+                .and(InteractionField.SHORTS_ID.getFieldName()).as(InteractionField.SHORTS_ID.getVariableName())
+                .and(InteractionField.USER_ID.getFieldName()).as(InteractionField.USER_ID.getVariableName());
+
+        Aggregation aggregation = Aggregation.newAggregation(match, projection);
+
+        AggregationResults<UserInteractionResponse> results = mongoTemplate.aggregate(
+                aggregation, Interaction.class, UserInteractionResponse.class
+        );
+
+        return Optional.ofNullable(results.getUniqueMappedResult());
+    }
 }
