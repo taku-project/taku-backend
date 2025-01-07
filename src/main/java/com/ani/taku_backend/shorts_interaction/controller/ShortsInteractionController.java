@@ -15,8 +15,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Tag(name = "Shorts 상호작용 API", description = "Shorts 관련 좋아요, 싫어요 등 상호작용 API")
+@Validated
 @RequestMapping("/api/shorts")
 @RestController
 @RequiredArgsConstructor
@@ -76,7 +79,7 @@ public class ShortsInteractionController {
     @PostMapping("/{shortsId}/view")
     public CommonResponse<Void> createView(@AuthenticationPrincipal PrincipalUser userPrincipal,
         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId,
-        @RequestBody CreateShortsViewReqDTO createShortsViewReqDTO) {
+        @Valid @RequestBody CreateShortsViewReqDTO createShortsViewReqDTO) {
         User user = userPrincipal.getUser();
         validateBlackUser(user.getUserId());
 
