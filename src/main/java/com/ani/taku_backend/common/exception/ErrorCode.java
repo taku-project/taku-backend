@@ -63,9 +63,11 @@ public enum ErrorCode {
     NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다."),
 
     // Comments
-    NOT_FOUND_COMMENTS(40403, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다.");
+    NOT_FOUND_COMMENTS(40403, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
 
-
+    // Interactive
+    NOT_FOUND_INTERACTION(40408, HttpStatus.NOT_FOUND, "존재하지 않는 상호작용입니다."),
+    ;
     // 403 Forbidden
     private final Integer code;
     private final HttpStatus httpStatus;
