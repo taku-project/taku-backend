@@ -37,7 +37,7 @@ public class CommentsController {
             @Parameter(
                     description = "판매글 생성 요청 JSON 데이터", required = true
             )
-            @Valid CommentsCreateRequestDTO commentsCreateRequestDTO) {
+            @Valid @RequestBody CommentsCreateRequestDTO commentsCreateRequestDTO) {
 
         Long saveCommentsId = commentsService.createComments(commentsCreateRequestDTO, null);
         return CommonResponse.created(saveCommentsId);
@@ -60,7 +60,7 @@ public class CommentsController {
             @Parameter(
                     description = "댓글 수정 요청 JSON 데이터", required = true
             )
-            @Valid CommentsUpdateRequestDTO commentsUpdateRequestDTO) {
+            @Valid @RequestBody CommentsUpdateRequestDTO commentsUpdateRequestDTO) {
 
         Long updateCommentsId = commentsService.updateComments(commentsId, commentsUpdateRequestDTO, null);
         return CommonResponse.ok(updateCommentsId);

@@ -38,7 +38,8 @@ public class Comments extends BaseTimeEntity {
     private String content;
 
     @Column(length = 50, nullable = false)
-    private String status;
+    @Builder.Default
+    private String status = "ACTIVE";     // 기본값 설정 ACTIVE, -> 관리자가 수정?
 
     private LocalDateTime deletedAt;
 

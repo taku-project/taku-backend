@@ -24,9 +24,4 @@ public class CommentsCreateRequestDTO {
     @Schema(description = "부모 댓글 ID (null일 경우 댓글, 값이 있는 경우 해당 댓글의 대댓글)")
     private Long parentCommentId;
 
-    public CommentsCreateRequestDTO(long postId, String content, Long parentCommentId) {
-        this.postId = postId;
-        this.content = content;
-        this.parentCommentId = parentCommentId;
-    }
 }
