@@ -52,17 +52,27 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.category.id,
                         post.title,
                         post.content,
-                        communityImage.image.imageUrl, // 이미지 url 반환
+                        communityImage.image.imageUrl,
                         post.updatedAt,
                         post.views
                 ))
                 .from(post)
-                .leftJoin(communityImage)
-                .on(communityImage.post.eq(post))       // 커뮤니티이미지와 post 조인 조건
+                .leftJoin(post.communityImages, communityImage)
+                .leftJoin(communityImage.image, image)
                 .where(notDeleted, byCategory, bySortFilter, byKeyword)
+                .groupBy(
+                        post.id,
+                        post.user.userId,
+                        post.category.id,
+                        post.title,
+                        post.content,
+                        post.updatedAt,
+                        post.views
+                )
                 .orderBy(mainSort, subSort)
-                .groupBy(post.id) // 게시글별로 그룹핑 -> 이미지 url 1개만 반환됨(첫번째)
+                .limit(limit)
                 .fetch();
+
     }
 
     /**
