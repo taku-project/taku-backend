@@ -9,6 +9,7 @@ import com.ani.taku_backend.common.enums.ProviderType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
+import com.ani.taku_backend.user.service.BlackUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -49,6 +50,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final RedisService redisService;
+    private final BlackUserService blackUserService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -99,9 +101,13 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                             temporaryToken, // description
                             redirectUrl.toUriString() // uri (React 프로젝트 주소)
                     ));
+
         }
+        boolean isBlack = this.blackUserService.findByUserId(findOptUser.get().getUserId()).isEmpty() ? false : true;
+
         try {
             attributes.put("user", findOptUser.get());
+            attributes.put("is_black", isBlack);
         } catch (Exception e) {
             log.error("유저 정보 추출 실패", e);
             throw new OAuth2AuthenticationException("유저 정보 추출 실패");
