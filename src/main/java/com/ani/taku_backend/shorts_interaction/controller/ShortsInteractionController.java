@@ -49,7 +49,7 @@ public class ShortsInteractionController {
 
     @Operation(summary = "Shorts 좋아요 취소", description = "쇼츠 동영상에 좋아요한 유저가 취소를 누름")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "쇼츠 좋아요 취소간 다 완료."),
+            @ApiResponse(responseCode = "200", description = "쇼츠 좋아요 취소 완료."),
             @ApiResponse(responseCode = "403", description = "회원 인증이 되지 않았습니다."),
             @ApiResponse(responseCode = "404", description = "쇼츠 정보를 찾을 수 없습니다.")
     })
@@ -63,6 +63,41 @@ public class ShortsInteractionController {
 
         return CommonResponse.ok(null);
     }
+
+    @Operation(summary = "Shorts 싫어요", description = "쇼츠 동영상에 로그인 한 유저가 싫어요를 누름")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "쇼츠 좋아요 생성 완료."),
+            @ApiResponse(responseCode = "403", description = "회원 인증이 되지 않았습니다."),
+            @ApiResponse(responseCode = "404", description = "쇼츠 정보를 찾을 수 없습니다.")
+    })
+    @PostMapping("/{shortsId}/dislikes")
+    public CommonResponse<Void> addDislike(@AuthenticationPrincipal PrincipalUser userPrincipal,
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
+        User user = userPrincipal.getUser();
+        validateBlackUser(user.getUserId());
+
+        interactionService.addDislike(user, shortsId);
+
+        return CommonResponse.ok(null);
+    }
+
+    @Operation(summary = "Shorts 싫어요 취소", description = "쇼츠 동영상에 싫어요한 유저가 취소를 누름")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "쇼츠 싫어요 취소 완료."),
+            @ApiResponse(responseCode = "403", description = "회원 인증이 되지 않았습니다."),
+            @ApiResponse(responseCode = "404", description = "쇼츠 정보를 찾을 수 없습니다.")
+    })
+    @PostMapping("/{shortsId}/dislikes/cancel")
+    public CommonResponse<Void> cancelDislike(@AuthenticationPrincipal PrincipalUser userPrincipal,
+        @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
+        User user = userPrincipal.getUser();
+        validateBlackUser(user.getUserId());
+
+        interactionService.cancelDislike(user, shortsId);
+
+        return CommonResponse.ok(null);
+    }
+
 
     private void validateBlackUser(Long userId) {
         List<BlackUser> blackUser = blackUserService.findByUserId(userId);

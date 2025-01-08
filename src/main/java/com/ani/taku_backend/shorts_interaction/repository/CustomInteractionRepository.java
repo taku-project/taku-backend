@@ -16,4 +16,6 @@ public interface CustomInteractionRepository {
 
     Optional<UserInteractionResponse> findUserLikeInteractions(Long userId, String shortsId);
 
+    Optional<UserInteractionResponse> findUserDislikeInteractions(Long userId, String shortsId);
+
 }
