@@ -1,6 +1,7 @@
 package com.ani.taku_backend.auth.service;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.service.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import static com.ani.taku_backend.common.exception.ErrorCode.EMPTY_TOKEN;
+import static com.ani.taku_backend.common.exception.ErrorCode.INVALID_TOKEN;
 
 @Slf4j
 @Service
@@ -27,7 +31,7 @@ public class OAuth2LogoutService {
         log.info("Extracted Token: {}", extractedToken);
 
         if (extractedToken == null || extractedToken.isEmpty()) {
-            throw new JwtException.InvalidTokenException("토큰이 없거나 조작되었습니다.");
+            throw new DuckwhoException(EMPTY_TOKEN);
         }
 
         try {
@@ -37,7 +41,7 @@ public class OAuth2LogoutService {
             return "로그아웃 성공";
         } catch (Exception e) {
             log.error("로그아웃 중 오류 발생", e);
-            throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+            throw new DuckwhoException(INVALID_TOKEN);
         }
     }
 
