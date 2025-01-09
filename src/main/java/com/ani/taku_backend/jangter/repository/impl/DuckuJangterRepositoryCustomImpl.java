@@ -32,7 +32,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
      */
     @Override
     public List<DuckuJangter> findRecommendFilteredProducts(List<String> keywords, BigDecimal minPrice,
-            BigDecimal maxPrice, Long itemCategoryId, StatusType status) {
+            BigDecimal maxPrice, Long itemCategoryId, StatusType status, Long productId) {
 
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
@@ -45,8 +45,9 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
             .where(
                 titleConditions,
                 duckuJangter.price.between(minPrice, maxPrice),
-                duckuJangter.itemCategory.id.eq(itemCategoryId),
-                duckuJangter.status.eq(status)
+                duckuJangter.itemCategories.id.eq(itemCategoryId),
+                duckuJangter.status.eq(status),
+                duckuJangter.id.ne(productId)
             )
             .distinct()
             .fetch();

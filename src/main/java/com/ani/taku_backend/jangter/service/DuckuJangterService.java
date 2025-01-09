@@ -4,16 +4,20 @@ import com.ani.taku_backend.comments.model.entity.Comments;
 import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
+import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.model.entity.Bookmark;
 import com.ani.taku_backend.common.model.entity.Image;
+import com.ani.taku_backend.common.service.BookmarkService;
 import com.ani.taku_backend.common.service.ExtractKeywordService;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
@@ -29,10 +33,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ani.taku_backend.jangter.model.entity.UserInteraction;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
+import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
+import com.ani.taku_backend.jangter.vo.UserPurchaseHistory;
+import com.ani.taku_backend.jangter.vo.UserSearchHistory;
+
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.*;
+
+import com.ani.taku_backend.jangter.score.calculator.*;
 
 @Slf4j
 @Service
@@ -46,6 +66,12 @@ public class DuckuJangterService {
     private final BlackUserService blackUserService;
     private final FileService fileService;
     private final ExtractKeywordService extractKeywordService;
+    private final UserInteractionService userInteractionService;
+    private final BookmarkService bookmarkService;
+    private final ViewHistoryScoreCalculator viewHistoryScoreCalculator;
+    private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
+    private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
+    private final BookmarkScoreCalculator bookmarkScoreCalculator;
     /**
      * 장터글 저장
      */
@@ -199,12 +225,27 @@ public class DuckuJangterService {
     }
 
 
-    @RequireUser
-    public void recommendProduct(Long productId, PrincipalUser principalUser) {
+    /**
+     * 장터글 추천
+     * @param productId
+     * @param principalUser
+     * @return
+     */
+    @RequireUser(allowAnonymous = true)
+    @Transactional(readOnly = true)
+    public ProductRecommendResponseDTO recommendProduct(Long productId, PrincipalUser principalUser) {
 
         // 상품상세
         final DuckuJangter product = this.duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+
+        final Long itemCategoryId = product.getItemCategories().getId();
+        
+
+        if(principalUser.isAnonymous()){
+            log.info("익명 사용자 추천 상품 조회");
+            return getRandomProducts(itemCategoryId, productId);
+        }
 
         
         String title = product.getTitle();
@@ -212,43 +253,124 @@ public class DuckuJangterService {
         BigDecimal priceRangePercentage = new BigDecimal("0.20"); // 20%
         BigDecimal minPrice = price.subtract(price.multiply(priceRangePercentage));
         BigDecimal maxPrice = price.add(price.multiply(priceRangePercentage));
-
-
-        // TODO : 병렬처리
-
         log.info("title : {}, price : {}, minPrice : {}, maxPrice : {}", title, price, minPrice, maxPrice);
 
         List<String> keywords = this.extractKeywordService.extractKeywords(title);
-
         log.info("keywords : {}", keywords);
 
-        // 같은 카테고리의 상품 조회
-        Long itemCategoryId = product.getItemCategories().getId();
+        // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
-            .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE);
+            .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE , productId);
 
-        log.info("1 step >> recommendProducts : {}", recommendProducts);
+        if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
+            log.info("추천 상품 부족으로 랜덤 조회");
+            return getRandomProducts(itemCategoryId, productId);
+        }
+        
+        recommendProducts.forEach(item -> {
+            log.info("추천 상품: {}", item.getTitle());
+        });
 
         Long userId = principalUser.getUserId();
-        List<DuckuJangter> buyUserProducts = this.duckuJangterRepository.findByBuyUserId(userId);
-
-        log.info("user buy product >> buyUserProducts : {}", buyUserProducts);
-
+        // 구매이력 조회
+        CompletableFuture<UserPurchaseHistory> purchaseHistoryFuture = CompletableFuture.supplyAsync(() -> getUserPurchaseHistory(userId));
+        // 몽고디비 상세조회이력 조회
+        CompletableFuture<UserSearchHistory> viewHistoryFuture = CompletableFuture.supplyAsync(() -> getUserViewHistory(userId, productId));
         // 몽고디비 검색이력 조회
+        CompletableFuture<UserSearchHistory> searchHistoryFuture = CompletableFuture.supplyAsync(() -> getUserSearchHistory(userId));
+        // 찜목록 조회
+        CompletableFuture<UserBookmarkHistory> bookmarkHistoryFuture = CompletableFuture.supplyAsync(() -> getUserBookmarkHistory(2l, keywords));
 
+        CompletableFuture.allOf(purchaseHistoryFuture, viewHistoryFuture, searchHistoryFuture, bookmarkHistoryFuture).join();
 
-        // 사용자 찜목록 조회
+        // 병렬 처리 후 동기 처리를 위해 대기
+        UserPurchaseHistory userPurchaseHistory = purchaseHistoryFuture.join();
+        UserSearchHistory userViewHistory = viewHistoryFuture.join();
+        log.info("userViewHistory : {}", userViewHistory);
+        UserSearchHistory userSearchHistory = searchHistoryFuture.join();
+        log.info("userSearchHistory : {}", userSearchHistory);
+        UserBookmarkHistory userBookmarkHistory = bookmarkHistoryFuture.join();
 
+        // Thread Safe Map
+        Map<Long, Double> productScores = new ConcurrentHashMap<>();
 
-        // 데이터가지고 점수 계산
+        recommendProducts.parallelStream().forEach(recommendProduct -> {
+            // 검색이력 스코어 20%
+            double viewHistoryScore = 0.0;
+            // 검색이력 스코어 10%
+            double searchHistoryScore = 0.0;
+            // 구매이력 스코어 50%
+            double purchaseHistoryScore = 0.0;
+            // 찜목록 스코어 20%
+            double bookmarkScore = 0.0;
 
-        // 점수 순으로 정렬
+            // 추천 상품 키워드 추출
+            List<String> recommendProductKeywords = this.extractKeywordService.extractKeywords(recommendProduct.getTitle());
 
-        // 상위 5개 추천
+            // 각 스코어 계산을 비동기로 실행
+            CompletableFuture<Double> viewScoreFuture = CompletableFuture.supplyAsync(() -> 
+                this.viewHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userViewHistory)
+            );
 
-        //TODO: 5개가 없으면? 같은 카테고리의 상품에서 랜덤? 추천
+            CompletableFuture<Double> searchScoreFuture = CompletableFuture.supplyAsync(() -> 
+                this.searchHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userSearchHistory)
+            );
 
-        // 랜덤추천할 상품도 없으면? 모든 상품에서 랜덤 추천
+            CompletableFuture<Double> purchaseScoreFuture = CompletableFuture.supplyAsync(() -> 
+                this.purchaseHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userPurchaseHistory)
+            );
+
+            CompletableFuture<Double> bookmarkScoreFuture = CompletableFuture.supplyAsync(() -> 
+                this.bookmarkScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userBookmarkHistory)
+            );
+
+            CompletableFuture.allOf(viewScoreFuture, searchScoreFuture, purchaseScoreFuture, bookmarkScoreFuture).join();
+
+            // 모든 스코어 계산이 완료될 때까지 대기하고 결과 취합
+            viewHistoryScore = viewScoreFuture.join();
+            searchHistoryScore = searchScoreFuture.join();
+            purchaseHistoryScore = purchaseScoreFuture.join();
+            bookmarkScore = bookmarkScoreFuture.join();
+
+            // 검색/조회 이력 점수 (30%)
+            double searchAndViewHistoryScore = (searchHistoryScore * 0.2 + viewHistoryScore * 0.1) * 0.3;
+
+            // 구매 이력 점수 (50%)
+            double purchaseScore = purchaseHistoryScore * 0.5;
+            
+            // 찜 목록 점수 (20%)
+            double bookmarkFinalScore = bookmarkScore * 0.2;
+
+            // 최종 점수 합산 (100%)
+            double finalScore = searchAndViewHistoryScore + purchaseScore + bookmarkFinalScore;
+            
+            // 상품 ID와 최종 점수 저장
+            productScores.put(recommendProduct.getId(), finalScore);
+
+            log.info("상품: {}, 최종점수: {}, (조회/검색: {}, 구매: {}, 찜: {})", 
+                recommendProduct.getTitle(), 
+                finalScore,
+                searchAndViewHistoryScore,
+                purchaseScore,
+                bookmarkFinalScore);
+        });
+
+        if(!productScores.isEmpty()) {
+            List<DuckuJangter> sortedProducts = recommendProducts.stream()
+                // 스코어가 0.0 이상인 상품만 조회
+                .filter(item -> productScores.containsKey(item.getId()) && productScores.get(item.getId()) > 0.0)
+                .sorted((p1, p2) -> Double.compare(productScores.get(p2.getId()), productScores.get(p1.getId())))
+                .limit(5)
+                .collect(Collectors.toList());
+
+            // 필터링 후 데이터가 5건 이하일 경우 랜덤 조회
+            return sortedProducts.size() >= 5 ? 
+                    ProductRecommendResponseDTO.of(sortedProducts) : 
+                    getRandomProducts(itemCategoryId, productId);
+        }else{
+            return ProductRecommendResponseDTO.empty();
+        }
+    }
     // 어드민이거나, 작성자와 다르면 예외
     private void checkAuthorAndAdmin(User user, DuckuJangter duckuJangter) {
         if ((!user.getRole().equals(UserRole.ADMIN.name())) &&
@@ -263,4 +385,88 @@ public class DuckuJangterService {
             throw new DuckwhoException(NOT_FOUND_POST);
         }
     }
+
+    private UserPurchaseHistory getUserPurchaseHistory(Long userId) {
+        List<DuckuJangter> buyUserProducts = this.duckuJangterRepository.findByBuyUserId(userId);
+
+        if(buyUserProducts.isEmpty()){
+            return null;
+        }
+
+        List<String> buyUserProductTitleKeywords = buyUserProducts.stream()
+            .map(item -> extractKeywordService.extractKeywords(item.getTitle()))
+            .flatMap(List::stream)
+            .distinct()
+            .collect(Collectors.toList());
+
+        return UserPurchaseHistory.create(buyUserProducts, buyUserProductTitleKeywords);
+    }
+
+
+    private UserSearchHistory getUserViewHistory(Long userId , Long productId) {
+        List<UserInteraction> viewHistory = this.userInteractionService.findLatestByUserId(userId, LogType.VIEW);
+        viewHistory.forEach(item -> {
+            log.info("viewHistory : {}", ((ViewLogDetail)item.getLogDetail()).getProductId());
+        });
+        List<Long> searchedProductIds = viewHistory.stream().map(item -> ((ViewLogDetail)item.getLogDetail()).getProductId()).toList();
+        List<DuckuJangter> searchedProducts = this.duckuJangterRepository.findByIdIn(searchedProductIds);
+
+        return UserSearchHistory.create(
+            searchedProducts.parallelStream()
+                .map(item -> this.extractKeywordService.extractKeywords(item.getTitle()))
+                .flatMap(List::stream)
+                .distinct()
+                .toList(),
+            searchedProducts.stream().map(item -> item.getItemCategories().getId()).distinct().toList()
+        );
+    }
+
+    private UserSearchHistory getUserSearchHistory(Long userId) {
+        List<UserInteraction> searchHistory = this.userInteractionService.findLatestByUserId(userId, LogType.SEARCH);
+        // 검색이력 키워드 , 카테고리 추출
+        UserSearchHistory userSearchHistory = UserSearchHistory.create(
+            searchHistory.stream()
+                .map(item -> this.extractKeywordService.extractKeywords(((SearchLogDetail)item.getLogDetail()).getSearchKeyword()))
+                .flatMap(List::stream)
+                .distinct()
+                .toList(),
+            searchHistory.stream()
+                .map(item -> ((SearchLogDetail)item.getLogDetail()).getSearchCategory())
+                .distinct()
+                .findFirst()
+                .orElse(Arrays.asList())
+        );
+
+        return userSearchHistory;
+    }
+
+    private UserBookmarkHistory getUserBookmarkHistory(Long userId , List<String> keywords) {
+        // 사용자 찜목록 조회
+        List<Bookmark> bookmarkList = this.bookmarkService.findByUserIdWithJangterAndCategories(userId);
+        UserBookmarkHistory userBookmarkHistory = null;
+        if(!bookmarkList.isEmpty()){
+            List<DuckuJangter> bookmarkedProducts = bookmarkList.stream()
+                .flatMap(bookmark -> bookmark.getDuckuJangterBookmarks().stream())
+                .map(jangterBookmark -> jangterBookmark.getJangter())
+                .toList();
+
+            userBookmarkHistory = UserBookmarkHistory.create(bookmarkedProducts, keywords);
+            log.info("################## >>>>>>>>>>> userBookmarkHistory : {}", userBookmarkHistory);
+        }
+
+        return userBookmarkHistory;
+    }
+
+          private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
+        log.info("랜덤 상품 조회");
+        List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(StatusType.ACTIVE.name(), categoryId, productId);
+        randomProducts.clear();
+        if(randomProducts.size() < 5){
+            log.info("전체 카테고리에서 랜덤조회");
+            randomProducts.addAll(this.duckuJangterRepository.findRandom(StatusType.ACTIVE.name(), productId));
+        }
+
+        return ProductRecommendResponseDTO.of(randomProducts);
+    }
+
 }

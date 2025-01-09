@@ -13,7 +13,8 @@ public interface DuckuJangterRepositoryCustom {
         BigDecimal minPrice, 
         BigDecimal maxPrice, 
         Long itemCategoryId,
-        StatusType status
+        StatusType status,
+        Long productId
     );
 
     
