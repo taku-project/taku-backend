@@ -52,7 +52,7 @@ public class ImageService {
         }
 
         if (imageList.size() == 1 && imageList.get(0).getSize() == 0) {
-            log.info("이미지가 ");
+            log.info("이미지가 빈문자열로 넘어옴");
             return new ArrayList<>();
         }
 

@@ -35,15 +35,15 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         long lastValue = postListRequestDTO.getLastValue();
         int limit = postListRequestDTO.getLimit();
         String keyword = postListRequestDTO.getKeyword();
-        boolean isAsc = postListRequestDTO.isAsc();
+        boolean asc = postListRequestDTO.isAsc();
         long categoryId = postListRequestDTO.getCategoryId();
 
         BooleanExpression byCategory = getCategory(categoryId, post);                           // 카테고리 구분
-        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, isAsc, post); // 정렬 필터
+        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, asc, post);   // 정렬 필터
         BooleanExpression byKeyword = getKeyword(keyword, post);                                // 키워드 검색
         BooleanExpression notDeleted = getNotDeleted(post);                                     // 삭제된글 제외
-        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, isAsc, post);                  // 첫번째 정렬 기준
-        OrderSpecifier<?> subSort = getSubSort(isAsc, post);                                    // 두번째 정렬 기준
+        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, asc, post);                    // 첫번째 정렬 기준
+        OrderSpecifier<?> subSort = getSubSort(asc, post);                                      // 두번째 정렬 기준
 
         return jpaQueryFactory
                 .select(new QFindAllPostQuerydslDTO(
@@ -60,15 +60,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .leftJoin(post.communityImages, communityImage)
                 .leftJoin(communityImage.image, image)
                 .where(notDeleted, byCategory, bySortFilter, byKeyword)
-                .groupBy(
-                        post.id,
-                        post.user.userId,
-                        post.category.id,
-                        post.title,
-                        post.content,
-                        post.updatedAt,
-                        post.views
-                )
+                .groupBy(post.id)
                 .orderBy(mainSort, subSort)
                 .limit(limit)
                 .fetch();

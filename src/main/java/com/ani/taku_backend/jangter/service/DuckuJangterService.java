@@ -116,10 +116,9 @@ public class DuckuJangterService {
         // 업데이트 이미지
         List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(), updateImageList, productImageList, user);
 
-        if (!newImageList.isEmpty()) {
+        if (newImageList != null && !newImageList.isEmpty()) {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
         }
-
         findProduct.updateProduct(productUpdateRequestDTO, itemCategories);         // 장터글 업데이트
 
         log.info("장터글 업데이트 완료, 글 상세 {}", findProduct);
