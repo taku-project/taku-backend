@@ -35,8 +35,6 @@ public class MarketPriceStats extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private DuckuJangter product;
 
-    @OneToOne(mappedBy = "marketPriceStats")
-    private CompletedDeal completedDeal;
 
     @NotNull
     @Column(length = 255, nullable = false)
