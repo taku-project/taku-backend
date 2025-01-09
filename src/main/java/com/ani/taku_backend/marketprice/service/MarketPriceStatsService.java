@@ -43,7 +43,7 @@ public class MarketPriceStatsService {
         return marketPriceStatsRepository.getPriceGraph(keyword, fromDate, toDate, option);
     }
 
-    @Cacheable(value = "weeklyStats", key = "#keyword")
+    @Cacheable(value = "weeklyStats", key = "#root.args[0]")
     public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(7);

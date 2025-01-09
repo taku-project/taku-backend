@@ -1,7 +1,7 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.marketprice.util.batch.TfidfService;  // import 수정
+import com.ani.taku_backend.marketprice.util.batch.TfidfService;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,7 +28,7 @@ public class SimilarProductResponseDTO {
     @Schema(description = "상품 이미지 URL 목록")
     private final List<String> imageUrls;
 
-    public static SimilarProductResponseDTO from(TfidfService.ProductWithSimilarity productWithSimilarity) {  // 파라미터 타입 수정
+    public static SimilarProductResponseDTO from(TfidfService.ProductWithSimilarity productWithSimilarity) {
         DuckuJangter product = productWithSimilarity.getProduct();
 
         return SimilarProductResponseDTO.builder()
