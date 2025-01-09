@@ -14,7 +14,10 @@ public class SecurityPathConfig {
 
             // 장터
             "/api/jangter/**",
-            "/api/jangter"
+            "/api/jangter",
+
+            // 시세 조회
+            "/api/market-price/**"
     };
 
     // 인증이 필요없는 정적 리소스 경로

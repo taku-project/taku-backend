@@ -15,7 +15,6 @@ import com.ani.taku_backend.marketprice.repository.MarketPriceStatsRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.marketprice.util.batch.TfidfService;
-import com.ani.taku_backend.marketprice.util.batch.TfidfService.ProductWithSimilarity;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
