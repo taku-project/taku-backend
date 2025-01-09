@@ -3,9 +3,11 @@ package com.ani.taku_backend.auth.handler;
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.service.RedisService;
 import com.ani.taku_backend.user.model.entity.User;
+import com.nimbusds.jose.shaded.gson.JsonObject;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,6 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
@@ -72,6 +75,11 @@ public class OAuth2AuthenticationHandler {
 
             // 응답 헤더에 access token 추가
             response.setHeader("Authorization", "Bearer " + accessToken);
+
+            // 응답 헤더에 사용자 정보 추가
+            boolean isBlack = (boolean) principal.getAttributes().get("is_black");
+            response.setHeader("X-User-Info", Base64.getEncoder().encodeToString(userToClientInfoJson(user, isBlack).getBytes()));
+
             log.info("accessToken : {}", accessToken);
 
             // URL 만들기 + 토큰 넣어서
@@ -136,4 +144,15 @@ public class OAuth2AuthenticationHandler {
             );
         }
     }
+
+    private String userToClientInfoJson(User user , boolean isBlack) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("user_id", user.getUserId());
+        jsonObject.addProperty("is_black", isBlack);
+        jsonObject.addProperty("user_role", user.getRole());
+        jsonObject.addProperty("profile_image", user.getProfileImg());
+        jsonObject.addProperty("nickname", user.getNickname());
+        return jsonObject.toString();
+    }
+
 }

@@ -10,14 +10,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.user.model.entity.User;
+
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 /**
  * 스프링 시큐리티에 저장할 유저 정보
  */
 @ToString
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class PrincipalUser implements UserDetails {
 
     private User user;
+
+    private boolean isAnonymous;
 
     public PrincipalUser(User user) {
         this.user = user;
@@ -61,5 +70,9 @@ public class PrincipalUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return StatusType.ACTIVE.name().equals(user.getStatus());
+    }
+
+    public boolean isAnonymous() {
+        return isAnonymous;
     }
 }
