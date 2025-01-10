@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Collections;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,6 +14,16 @@ import lombok.Getter;
 public class PriceGraphResponseDTO {
     @Schema(description = "날짜별 데이터")
     private final List<PriceDataPoint> dataPoints;
+
+    /**
+     * 빈 응답을 생성하는 팩토리 메서드
+     * @return 빈 데이터 포인트 리스트를 가진 PriceGraphResponseDTO
+     */
+    public static PriceGraphResponseDTO empty() {
+        return PriceGraphResponseDTO.builder()
+                .dataPoints(Collections.emptyList())
+                .build();
+    }
 
     @Getter
     @Builder

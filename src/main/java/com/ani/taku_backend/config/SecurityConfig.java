@@ -64,8 +64,10 @@ public class SecurityConfig {
                 .successHandler(this.oAuth2SuccessHandler)
                 .failureHandler(this.oAuth2FailureHandler)
             )
+
             .addFilterBefore(refreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, RefreshTokenFilter.class);
+
 
         return http.build();
     }

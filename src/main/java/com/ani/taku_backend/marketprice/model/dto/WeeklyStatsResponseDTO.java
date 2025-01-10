@@ -34,4 +34,17 @@ public class WeeklyStatsResponseDTO {
         this.lowestPrice = lowestPrice;
         this.totalDeals = totalDeals;
     }
+
+    /**
+     * 빈 통계 데이터를 생성하는 팩토리 메서드
+     * @return 모든 값이 0인 WeeklyStatsResponseDTO
+     */
+    public static WeeklyStatsResponseDTO empty() {
+        return new WeeklyStatsResponseDTO(
+                0.0,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                0L
+        );
+    }
 }

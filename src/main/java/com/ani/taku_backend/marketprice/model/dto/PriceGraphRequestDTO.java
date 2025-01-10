@@ -7,8 +7,13 @@ import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
+/*
 @Getter
+@Setter
 @Builder
 @Schema(description = "시세 그래프 조회 요청 DTO")
 @AllArgsConstructor
@@ -25,4 +30,32 @@ public class PriceGraphRequestDTO {
 
     @Schema(description = "그래프 표시 옵션")
     private final GraphDisplayOption displayOption;
+}*/
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PriceGraphRequestDTO {
+
+    @NotBlank(message = "키워드는 필수입니다")
+    private String keyword;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fromDate;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate toDate;
+
+    private GraphDisplayOption displayOption;
+
+    @Override
+    public String toString() {
+        return "PriceGraphRequestDTO{" +
+                "keyword='" + keyword + '\'' +
+                ", fromDate=" + fromDate +
+                ", toDate=" + toDate +
+                ", displayOption=" + displayOption +
+                '}';
+    }
 }
