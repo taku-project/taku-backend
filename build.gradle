@@ -23,6 +23,8 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    all*.exclude group: 'org.slf4j', module: 'slf4j-simple'
 }
 
 repositories {
@@ -30,6 +32,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'ch.qos.logback:logback-classic'
     // Spring boot Starter
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
@@ -79,8 +82,12 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.33'
 
     //임배디드redis
-    testImplementation 'it.ozimov:embedded-redis:0.7.3'
-    testImplementation 'com.github.codemonstur:embedded-redis:1.0.0'
+    testImplementation('it.ozimov:embedded-redis:0.7.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+    testImplementation('com.github.codemonstur:embedded-redis:1.0.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
 }
 
 bootRun {
@@ -107,6 +114,15 @@ tasks.withType(JavaCompile) {
 
 tasks.named('test') {
     useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        exceptionFormat = 'full'
+    }
+
+    systemProperty 'spring.profiles.active', 'test'
 }
 
 compileJava {

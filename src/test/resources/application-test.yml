@@ -1,23 +1,22 @@
 spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
 
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  # Redis 설정 추가
   data:
     redis:
-      host: localhost  # 테스트 환경에서는 localhost 사용
+      host: localhost
       port: 6379
       password: 1111
       lettuce:
@@ -26,18 +25,13 @@ spring:
           max-idle: 10
           min-idle: 2
       repositories:
-        enabled: false  # 테스트 환경에서는 Redis 리포지토리 비활성화
+        enabled: false
 
-  # 캐시 설정
   cache:
-    type: redis
-    redis:
-      time-to-live: 3600000  # 1시간
-      cache-null-values: false
-      use-key-prefix: true
+    type: simple    # 테스트에서는 simple cache 사용
 
 logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type: trace
-    org.springframework.cache: debug  # 캐시 관련 로그 추가
+    org.springframework.cache: debug
