@@ -1,7 +1,6 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.Serializable;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,10 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @Schema(description = "시세 조회 응답 DTO")
-public class MarketPriceSearchResponseDTO implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
+public class MarketPriceSearchResponseDTO {
     @Schema(description = "검색 키워드", example = "원피스 루피 피규어")
     private final String keyword;
 

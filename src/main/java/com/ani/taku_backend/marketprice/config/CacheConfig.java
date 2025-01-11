@@ -18,6 +18,8 @@ public class CacheConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         return RedisCacheManager.builder(connectionFactory)
+                .withCacheConfiguration("marketPrice",
+                        defaultConfig().entryTtl(Duration.ofMinutes(10)))
                 .withCacheConfiguration("priceGraph",
                         defaultConfig().entryTtl(Duration.ofHours(1)))
                 .withCacheConfiguration("weeklyStats",

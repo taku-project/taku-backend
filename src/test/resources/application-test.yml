@@ -37,7 +37,7 @@ spring:
   # [캐시] 테스트 시에 Simple 사용
   # -----------------------
   cache:
-    type: simple
+    type: redis
 
 # --------------------------------
 # [JWT] placeholder 문제 해결 부분
