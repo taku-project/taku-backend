@@ -176,6 +176,7 @@ public class ShortsServiceImpl implements  ShortsService {
 
         if(!shortsCommentDTOs.isEmpty()) {
             this.setCommentUser(shortsCommentDTOs);
+            this.setCommentReplyUser(shortsCommentDTOs);
         }
         return shortsCommentDTOs;
     }
@@ -206,6 +207,32 @@ public class ShortsServiceImpl implements  ShortsService {
                     .findFirst()
                     .orElse(null));
         });
+    }
+
+    /**
+     * 대댓글 작성자 정보 설정
+     * @param shortsCommentDTOs
+     */
+    private void setCommentReplyUser(List<ShortsCommentDTO> shortsCommentDTOs) {
+        List<Long> userIds = shortsCommentDTOs.stream()
+            .flatMap(comment -> comment.getReplies().stream())
+            .map(reply -> reply.getUserId())
+            .distinct()
+            .collect(Collectors.toList());
+
+        if(!userIds.isEmpty()) {
+            List<User> users = this.userRepository.findByUserIdIn(userIds);
+            shortsCommentDTOs.forEach(comment ->{
+                comment.getReplies().forEach(reply -> {
+                    users.stream().filter(user -> user.getUserId().equals(reply.getUserId()))
+                    .findFirst()
+                    .ifPresent(user -> {
+                        reply.setNickname(user.getNickname());
+                        reply.setProfileImage(user.getProfileImg());
+                    });
+                });
+            });
+        }
     }
 
 
