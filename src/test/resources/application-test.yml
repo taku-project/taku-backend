@@ -1,4 +1,7 @@
 spring:
+  # -----------------------
+  # [DB] H2 인메모리 (테스트)
+  # -----------------------
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
@@ -14,22 +17,66 @@ spring:
       hibernate:
         format_sql: true
 
+  # -----------------------
+  # [Redis] (원격 서버)
+  # -----------------------
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: 1111
+      host: 52.79.201.184         # 원격 Redis 호스트
+      port: 6379                  # 원격 Redis 포트
+      password: 1111             # 실제 Redis 비밀번호
       lettuce:
         pool:
           max-active: 10
           max-idle: 10
           min-idle: 2
       repositories:
-        enabled: false
+        enabled: false  # 필요하다면 true로 변경
 
+  # -----------------------
+  # [캐시] 테스트 시에 Simple 사용
+  # -----------------------
   cache:
-    type: simple    # 테스트에서는 simple cache 사용
+    type: simple
 
+# --------------------------------
+# [JWT] placeholder 문제 해결 부분
+# --------------------------------
+jwt:
+  secret: 'ZHVja3VkdWNrdWR1Y2t1ZHVja3VkdWNrdWR1Y2t1QCQlXiYqKClfKy1EVSBLVQ=='
+  access-token-validity: 2592000000     # 1달
+  temporary-token-validity: 1800000     # 30분
+  refresh-token-validity: 2592000000    # 1달
+
+# --------------------------------
+# (필요 시) OAuth2 설정 (주석)
+# --------------------------------
+# spring:
+#   security:
+#     oauth2:
+#       client:
+#         registration:
+#           kakao:
+#             client-id: 45b4049cd6ced1b0a9a8e75a79364044
+#             client-secret: oTG3wW9C17SQ6GV5N6rVtroGN0EMy5KU
+#         provider:
+#           kakao:
+#             authorization-uri: https://kauth.kakao.com/oauth/authorize
+#             token-uri: https://kauth.kakao.com/oauth/token
+#             user-info-uri: https://kapi.kakao.com/v2/user/me
+#             user-name-attribute: id
+#   # ... (필요한 만큼 복사해 사용)
+
+# --------------------------------
+# [client] (OAuth2AuthenticationHandler 등에서 쓰는 프로퍼티)
+# --------------------------------
+client:
+  registration-url: https://duckwho.vercel.app/registration
+  login-success-url: https://duckwho.vercel.app/login
+
+# --------------------------------
+# [Logging] (테스트 시 디버깅 편의)
+# --------------------------------
 logging:
   level:
     org.hibernate.SQL: debug

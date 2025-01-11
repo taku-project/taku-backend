@@ -79,6 +79,7 @@ class CompletedDealServiceTest {
                 .price(new BigDecimal("50000"))
                 .itemCategories(figure)
                 .status(StatusType.ACTIVE)
+                .description("테스트용 나루토 피규어입니다.")
                 .build();
 
         duckuJangterRepository.save(product);

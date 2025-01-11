@@ -23,8 +23,9 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
-    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    // 로깅 충돌 방지
     all*.exclude group: 'org.slf4j', module: 'slf4j-simple'
+    all*.exclude group: 'commons-logging', module: 'commons-logging'
 }
 
 repositories {
@@ -32,8 +33,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'ch.qos.logback:logback-classic'
-    // Spring boot Starter
+    // Spring Boot Starter
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.mongodb:mongodb-driver-sync'
     implementation "com.querydsl:querydsl-jpa:$queryDslVersion:jakarta"
-    /* localDateTime 직렬화 역직렬화 필요 설정 */
+    /* localDateTime 직렬화/역직렬화 필요 설정 */
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
@@ -78,22 +78,24 @@ dependencies {
 
     implementation 'org.modelmapper:modelmapper:3.1.1'
 
-    // mysql
+    // MySQL
     implementation 'mysql:mysql-connector-java:8.0.33'
 
-    //임배디드redis
+    // 임베디드 Redis
     testImplementation('it.ozimov:embedded-redis:0.7.3') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
+        exclude group: 'commons-logging', module: 'commons-logging'
     }
     testImplementation('com.github.codemonstur:embedded-redis:1.0.0') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
+        exclude group: 'commons-logging', module: 'commons-logging'
     }
 }
 
 bootRun {
-//    String activeProfile = System.getProperty("spring.profiles.active") ?: "local"
-//    println "=========ENV : $activeProfile"
-//    systemProperty "spring.profiles.active", activeProfile
+    // String activeProfile = System.getProperty("spring.profiles.active") ?: "local"
+    // println "=========ENV : $activeProfile"
+    // systemProperty "spring.profiles.active", activeProfile
 }
 
 tasks.named('bootRun') {
@@ -107,11 +109,13 @@ clean {
     delete file(querydslSrcDir)
 }
 
+// QueryDSL 빌드 시 생성될 소스 디렉토리 및 Annotation Processor 경로
 tasks.withType(JavaCompile) {
     options.generatedSourceOutputDirectory = file(querydslSrcDir)
     options.annotationProcessorPath = configurations.annotationProcessor
 }
 
+// JUnit 설정
 tasks.named('test') {
     useJUnitPlatform()
     testLogging {
@@ -121,10 +125,10 @@ tasks.named('test') {
         showStackTraces true
         exceptionFormat = 'full'
     }
-
     systemProperty 'spring.profiles.active', 'test'
 }
 
+// 컴파일 시 파라미터 정보 유지
 compileJava {
     options.compilerArgs << '-parameters'
 }
