@@ -191,7 +191,7 @@ public class DuckuJangterService {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        log.info("아이템 카테고리 검증완료, 아이템카테고리: {} ", itemCategories.getName());
+        log.debug("아이템 카테고리 검증완료, 아이템카테고리: {} ", itemCategories.getName());
         return itemCategories;
     }
 

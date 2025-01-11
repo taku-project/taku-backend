@@ -92,7 +92,7 @@ public class CommentsService {
             Comments comments = Comments.createComments(user, post, commentsCreateRequestDTO.getContent());
 
             savedComments = commentsRepository.save(comments);
-            log.info("댓글 저장 완료, savedComments: {}", savedComments);
+            log.debug("댓글 저장 완료, savedComments: {}", savedComments);
 
         // 부모아이디 null != 넘어온 댓글 Id의 댓글, 즉 대댓글
         } else {
@@ -104,7 +104,7 @@ public class CommentsService {
 
             Comments comments = Comments.createCommentsReply(user, post, parentComments, commentsCreateRequestDTO.getContent());
             savedComments = commentsRepository.save(comments);
-            log.info("대댓글 저장 완료, savedComments: {}", savedComments);
+            log.debug("대댓글 저장 완료, savedComments: {}", savedComments);
         }
         return savedComments.getId();
     }
@@ -119,7 +119,7 @@ public class CommentsService {
 
         // 본문 수정
         findComments.updateComments(commentsUpdateRequestDTO.getContent());
-        log.info("댓글 본문 업데이트 완료 {}", commentsId);
+        log.debug("댓글 본문 업데이트 완료 {}", commentsId);
 
         return findComments.getId();
     }
@@ -130,7 +130,7 @@ public class CommentsService {
         checkAuthorAndAdmin(user, findComments);        // 작성자, 관리자 검증
         checkDeleteComments(findComments);              // 삭제 검증
         findComments.delete();
-        log.info("댓글 삭제 완료, commentsDeleteAt: {}", findComments.getDeletedAt());
+        log.debug("댓글 삭제 완료, commentsDeleteAt: {}", findComments.getDeletedAt());
     }
 
     // 해당 댓글이 삭제 처리 되어있으면 예외

@@ -137,10 +137,10 @@ public class PostService {
         checkCategory(categoryId, post);             // 카테고리 검증
 
         post.delete();                               // 삭제 로직
-        log.info("게시글 삭제 성공, post.getDeletedAt: {}", post.getDeletedAt());
+        log.debug("게시글 삭제 성공, post.getDeletedAt: {}", post.getDeletedAt());
         post.getCommunityImages().forEach(communityImage -> {
             communityImage.getImage().delete();
-            log.info("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
+            log.debug("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
         });
 
 
@@ -165,7 +165,7 @@ public class PostService {
                     .image(image)
                     .build();
             post.addCommunityImage(communityImage);
-            log.info("이미지 연관관계 적용 성공, communityImage.getImage().getId: {}", communityImage.getImage().getId());
+            log.debug("이미지 연관관계 적용 성공, communityImage.getImage().getId: {}", communityImage.getImage().getId());
         }
     }
 
@@ -179,7 +179,7 @@ public class PostService {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        log.info("카테고리 검증 완료, 카테고리 이름 {}", category.getName());
+        log.debug("카테고리 검증 완료, 카테고리 이름 {}", category.getName());
         return category;
     }
 
