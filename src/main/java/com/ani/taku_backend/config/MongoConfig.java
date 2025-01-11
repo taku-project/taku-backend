@@ -33,14 +33,5 @@ public class MongoConfig {
         ));
     }
 
-    /**
-     * 몽고 DB의 class 필드 제거
-     */
-    @Bean
-    public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory mongoDbFactory, MongoMappingContext mongoMappingContext) {
-        DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
-        MappingMongoConverter mappingConverter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
-        mappingConverter.setTypeMapper(new DefaultMongoTypeMapper(null));
-        return mappingConverter;
-    }
+
 }
