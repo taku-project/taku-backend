@@ -85,7 +85,12 @@ public class PostInteractionService {
             log.debug("카운터 초기화 성공");
         }
 
+        postLikeUpdate(type, findInteraction, findPost, user, requestCount, lockKey, countKey);
 
+        return counterRepository.getPostLikes(findPost.getId());       // 좋아요 개수 반환
+    }
+
+    private void postLikeUpdate(InteractionType type, Optional<PostInteraction> findInteraction, Post findPost, User user, int requestCount, String lockKey, String countKey) {
         if (findInteraction.isPresent()) {  // 상호작용이 이미 있으면 좋아요 취소, 즉 이미 좋아요를 눌렀던 상태
             interactionRepository.delete(findInteraction.get());
             counterRepository.decrementPostInteractionCounter(findPost.getId(), type);
@@ -107,7 +112,5 @@ public class PostInteractionService {
             redisService.setKeyValue(countKey, String.valueOf(requestCount + 1), LOCK_TIME);
             log.debug("1번 연속 입력");
         }
-
-        return counterRepository.getPostLikes(findPost.getId());       // 좋아요 개수 반환
     }
 }
