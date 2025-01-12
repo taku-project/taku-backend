@@ -10,4 +10,8 @@ public interface InteractionService {
     void cancelLike(User user, String shortsId);
 
     void createView(CreateShortsViewDTO createShortsViewReqDTO);
+  
+    void addDislike(User user, String shortsId);
+
+    void cancelDislike(User user, String shortsId);
 }
