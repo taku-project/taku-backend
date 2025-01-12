@@ -60,4 +60,4 @@ src/main/resources/*.yml
 
 
 # src/test/resources 디렉토리 내부 모든 파일/폴더 무시
-src/test/resources/
+src/test/resources/**
