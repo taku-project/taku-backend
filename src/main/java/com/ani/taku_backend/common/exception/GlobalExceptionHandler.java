@@ -28,8 +28,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public CommonResponse handleException(Exception e) {
-        log.error("handleException() in GlobalExceptionHandler throw Exception : {}", e.getMessage());
-        e.printStackTrace();
+        // 기존 코드: log.error("Exception : {}", e.getMessage());
+        // e.printStackTrace();
+
+        // 아래처럼 수정:
+        log.error("handleException() in GlobalExceptionHandler throw Exception : ", e);
+
         return CommonResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 

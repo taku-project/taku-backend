@@ -81,7 +81,6 @@ dependencies {
     // MySQL
     implementation 'mysql:mysql-connector-java:8.0.33'
 
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
 
     // 임베디드 Redis
     testImplementation('it.ozimov:embedded-redis:0.7.3') {
@@ -104,6 +103,7 @@ tasks.named('bootRun') {
     jvmArgs = ['--add-opens', 'java.base/java.time=ALL-UNNAMED']
 }
 
+
 // Querydsl 설정
 def querydslSrcDir = 'src/main/generated'
 
@@ -111,8 +111,8 @@ clean {
     delete file(querydslSrcDir)
 }
 
-// QueryDSL 빌드 시 생성될 소스 디렉토리 및 Annotation Processor 경로
 tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-parameters']
     options.generatedSourceOutputDirectory = file(querydslSrcDir)
     options.annotationProcessorPath = configurations.annotationProcessor
 }
@@ -130,11 +130,3 @@ tasks.named('test') {
     systemProperty 'spring.profiles.active', 'test'
 }
 
-// 컴파일 시 파라미터 정보 유지
-compileJava {
-    options.compilerArgs << '-parameters'
-}
-
-compileTestJava {
-    options.compilerArgs << '-parameters'
-}

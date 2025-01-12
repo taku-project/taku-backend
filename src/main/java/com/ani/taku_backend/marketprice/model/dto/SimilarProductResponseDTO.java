@@ -4,6 +4,7 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.marketprice.util.batch.TfidfService;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -11,10 +12,11 @@ import java.util.List;
 import lombok.Getter;
 
 /**
- * 유사 상품 정보 DTO (대표 썸네일 1개만)
+ * 유사 상품 정보 DTO
  */
 @Getter
 @Schema(description = "유사 상품 정보 DTO")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class SimilarProductResponseDTO {
 
     @Schema(description = "상품 ID", example = "123")
@@ -53,7 +55,7 @@ public class SimilarProductResponseDTO {
     }
 
     public static SimilarProductResponseDTO from(DuckuJangter product) {
-        // 대표 이미지 1장만 뽑는 예시 (여러 장 중 첫 번째를 선택)
+        // 썸네일을 대표 이미지 1장만 뽑는다 (여러 장 중 첫 번째를 선택)
         String singleImageUrl = product.getJangterImages().stream()
                 .findFirst()
                 .map(img -> img.getImage().getImageUrl())

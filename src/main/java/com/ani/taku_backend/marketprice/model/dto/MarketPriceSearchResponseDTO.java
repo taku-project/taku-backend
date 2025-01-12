@@ -2,12 +2,14 @@ package com.ani.taku_backend.marketprice.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class MarketPriceSearchResponseDTO {
 
     @Schema(description = "검색 키워드", example = "원피스 루피 피규어")

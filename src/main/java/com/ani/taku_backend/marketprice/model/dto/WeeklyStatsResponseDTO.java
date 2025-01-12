@@ -1,5 +1,6 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +14,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @JsonDeserialize(builder = WeeklyStatsResponseDTO.WeeklyStatsResponseDTOBuilder.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 @Schema(description = "최근 일주일 판매 통계 DTO")
 public class WeeklyStatsResponseDTO {
 
