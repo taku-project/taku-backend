@@ -68,7 +68,6 @@ public class MarketPriceStatsService {
      * 유사 상품 찾기
      */
     public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
-        // 간단한 예외처리
         List<String> extractedKeywords = extractKeywordService.extractKeywords(keyword);
         if (extractedKeywords.isEmpty()) {
             throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
@@ -78,7 +77,6 @@ public class MarketPriceStatsService {
                 tfidfService.calculateProductSimilarities(keyword, extractedKeywords);
 
         return similarProducts.stream()
-                // .map(SimilarProductResponseDTO::from)  // ← 모호
                 .map(productWithSimilarity -> SimilarProductResponseDTO.from(productWithSimilarity))
                 .limit(pageable.getPageSize())
                 .collect(Collectors.toList());

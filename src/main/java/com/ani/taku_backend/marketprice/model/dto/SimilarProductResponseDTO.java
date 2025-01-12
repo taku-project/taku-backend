@@ -55,7 +55,7 @@ public class SimilarProductResponseDTO {
     }
 
     public static SimilarProductResponseDTO from(DuckuJangter product) {
-        // 썸네일을 대표 이미지 1장만 뽑는다 (여러 장 중 첫 번째를 선택)
+        // 썸네일을 대표 이미지 1장만 뽑는다. 수정 가능성 존재
         String singleImageUrl = product.getJangterImages().stream()
                 .findFirst()
                 .map(img -> img.getImage().getImageUrl())

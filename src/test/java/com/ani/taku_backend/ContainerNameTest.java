@@ -8,7 +8,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @SpringBootTest(classes = TakuProjectApplication.class)
-@ExtendWith(SpringExtension.class) // JUnit5
+@ExtendWith(SpringExtension.class)
 public class ContainerNameTest {
 
     @Autowired
@@ -22,7 +22,6 @@ public class ContainerNameTest {
             for (String bean : beans) {
                 System.out.println("bean: " + bean);
             }
-            // 추가: cacheManager의 실제 클래스 이름 확인
             if (context.containsBean("cacheManager")) {
                 Object cacheManagerBean = context.getBean("cacheManager");
                 System.out.println(">>> cacheManager class = " + cacheManagerBean.getClass().getName());
