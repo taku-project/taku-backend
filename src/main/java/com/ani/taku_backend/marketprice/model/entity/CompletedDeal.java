@@ -67,4 +67,6 @@ public class CompletedDeal extends BaseTimeEntity {
         this.categoryName = categoryName;
         this.searchKeywords = searchKeywords;
     }
+
+
 }

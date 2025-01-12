@@ -162,15 +162,14 @@ public class CompletedDealService {
                     .similarProducts(getSimilarProducts(processedKeyword, pageable))
                     .build();
 
-        } catch (Exception e) {
-            log.error("시세 조회 중 오류 발생: {}", e.getMessage(), e);
-            return MarketPriceSearchResponseDTO.builder()
-                    .keyword(requestDTO.getKeyword())
-                    .priceGraph(PriceGraphResponseDTO.empty())
-                    .weeklyStats(WeeklyStatsResponseDTO.empty())
-                    .similarProducts(List.of())
-                    .build();
+        }  catch (Exception e) {
+        log.error("시세 조회 중 오류 발생: {}", e.getMessage(), e);
+
+        if (e instanceof DuckwhoException) {
+            throw e;
         }
+        throw new DuckwhoException(ErrorCode.MARKET_PRICE_NOT_FOUND);
+    }
     }
 
     private String processKeyword(String keyword) {

@@ -1,5 +1,6 @@
 package com.ani.taku_backend.marketprice.repository;
 
+import com.ani.taku_backend.common.model.entity.QImage;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QJangterImages;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
@@ -31,7 +32,7 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .select(
                         stats.registeredDate,
                         stats.registeredPrice.avg(),
-                        stats.soldPrice.avg(),
+                        stats.soldPrice.avg().coalesce(0.0),
                         stats.registeredDate.count()
                 )
                 .from(stats)
@@ -44,19 +45,28 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .fetch();
 
         List<PriceGraphResponseDTO.PriceDataPoint> dataPoints = results.stream()
-                .map(tuple -> PriceGraphResponseDTO.PriceDataPoint.builder()
-                        .date(tuple.get(stats.registeredDate))
-                        .registeredPrice(BigDecimal.valueOf(tuple.get(stats.registeredPrice.avg())))
-                        .soldPrice(BigDecimal.valueOf(tuple.get(stats.soldPrice.avg())))
-                        .dealCount(tuple.get(stats.registeredDate.count()).intValue())
-                        .build())
+                .map(tuple -> {
+                    LocalDate date = tuple.get(stats.registeredDate);
+                    Double avgRegPrice = tuple.get(stats.registeredPrice.avg());
+                    Double avgSoldPrice = tuple.get(stats.soldPrice.avg().coalesce(0.0));
+
+                    return PriceGraphResponseDTO.PriceDataPoint.builder()
+                            .date(date)
+                            .registeredPrice(BigDecimal.valueOf(
+                                    avgRegPrice != null ? avgRegPrice : 0.0
+                            ))
+                            .soldPrice(BigDecimal.valueOf(
+                                    avgSoldPrice != null ? avgSoldPrice : 0.0
+                            ))
+                            .dealCount(tuple.get(stats.registeredDate.count()).intValue())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return PriceGraphResponseDTO.builder()
                 .dataPoints(dataPoints)
                 .build();
     }
-
     @Override
     public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
         QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
@@ -81,6 +91,7 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
     public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
         QJangterImages jangterImages = QJangterImages.jangterImages;
+
 
         return queryFactory
                 .select(Projections.constructor(
