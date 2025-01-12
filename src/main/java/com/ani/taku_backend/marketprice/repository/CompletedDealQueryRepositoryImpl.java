@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,10 +81,12 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
 
         return queryFactory
-                .select(Projections.constructor(SimilarProductResponseDTO.class,
+                .select(Projections.constructor(
+                        SimilarProductResponseDTO.class,
                         jangter.id,
                         jangter.title,
                         jangter.price,
+                        // 인자 4: String (tfidfVector)
                         jangter.tfidfVector,
                         jangter.jangterImages.any().image.imageUrl
                 ))

@@ -28,7 +28,6 @@ public class TfidfService {
     private final ExtractKeywordService extractKeywordService;
     private final ObjectMapper objectMapper;
 
-    // 이미 상수화되어 있는 예시들
     private static final String TFIDF_CACHE_KEY = "market:tfidf:";
     private static final String DOC_FREQ_KEY = "market:document_frequencies";
     private static final String TOTAL_DOCS_KEY = "market:total_documents";

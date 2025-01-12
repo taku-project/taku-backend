@@ -1,12 +1,21 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import lombok.Builder;
 import lombok.Getter;
 
+/**
+ * 최근 일주일 판매 통계 DTO
+ */
 @Getter
+@Builder
+@JsonDeserialize(builder = WeeklyStatsResponseDTO.WeeklyStatsResponseDTOBuilder.class)
 @Schema(description = "최근 일주일 판매 통계 DTO")
 public class WeeklyStatsResponseDTO {
+
     @Schema(description = "평균 판매가", example = "81750")
     private final BigDecimal averagePrice;
 
@@ -19,32 +28,48 @@ public class WeeklyStatsResponseDTO {
     @Schema(description = "거래 건수", example = "42")
     private final long totalDeals;
 
-    public WeeklyStatsResponseDTO(
-            Double averagePrice,
+    public WeeklyStatsResponseDTO(Double avg, BigDecimal max, BigDecimal min, Long count) {
+        this(
+                (avg != null) ? BigDecimal.valueOf(avg) : BigDecimal.ZERO, // averagePrice
+                (max != null) ? max : BigDecimal.ZERO,                     // highestPrice
+                (min != null) ? min : BigDecimal.ZERO,                     // lowestPrice
+                (count != null) ? count : 0L                               // totalDeals
+        );
+    }
+
+    public static WeeklyStatsResponseDTO empty() {
+        return WeeklyStatsResponseDTO.builder()
+                .averagePrice(BigDecimal.ZERO)
+                .highestPrice(BigDecimal.ZERO)
+                .lowestPrice(BigDecimal.ZERO)
+                .totalDeals(0L)
+                .build();
+    }
+
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class WeeklyStatsResponseDTOBuilder {
+
+        public WeeklyStatsResponseDTO build() {
+            BigDecimal finalAvgPrice = (averagePrice == null) ? BigDecimal.ZERO : averagePrice;
+
+            return new WeeklyStatsResponseDTO(
+                    finalAvgPrice,
+                    (highestPrice == null) ? BigDecimal.ZERO : highestPrice,
+                    (lowestPrice == null) ? BigDecimal.ZERO : lowestPrice,
+                    totalDeals
+            );
+        }
+    }
+
+    private WeeklyStatsResponseDTO(
+            BigDecimal averagePrice,
             BigDecimal highestPrice,
             BigDecimal lowestPrice,
             long totalDeals
     ) {
-        if (averagePrice != null) {
-            this.averagePrice = BigDecimal.valueOf(averagePrice);
-        } else {
-            this.averagePrice = BigDecimal.ZERO;
-        }
+        this.averagePrice = averagePrice;
         this.highestPrice = highestPrice;
         this.lowestPrice = lowestPrice;
         this.totalDeals = totalDeals;
-    }
-
-    /**
-     * 빈 통계 데이터를 생성하는 팩토리 메서드
-     * @return 모든 값이 0인 WeeklyStatsResponseDTO
-     */
-    public static WeeklyStatsResponseDTO empty() {
-        return new WeeklyStatsResponseDTO(
-                0.0,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                0L
-        );
     }
 }

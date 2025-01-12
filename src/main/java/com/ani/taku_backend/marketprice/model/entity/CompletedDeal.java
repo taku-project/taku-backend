@@ -2,6 +2,7 @@ package com.ani.taku_backend.marketprice.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,7 +33,7 @@ public class CompletedDeal extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private DuckuJangter product;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "stats_id")
     private MarketPriceStats marketPriceStats;
 
