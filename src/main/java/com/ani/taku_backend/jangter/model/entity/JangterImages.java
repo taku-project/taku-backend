@@ -4,9 +4,6 @@ import com.ani.taku_backend.common.model.entity.Image;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Builder
 @Entity
 @Table(name = "jangter_images")

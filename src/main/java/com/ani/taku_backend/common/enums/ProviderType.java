@@ -17,7 +17,7 @@ public enum ProviderType {
    * 네이버 OAuth2를 통한 인증
    */
   NAVER("naver"),
-  
+
   /**
    * 구글 로그인
    * 구글 OAuth2를 통한 인증

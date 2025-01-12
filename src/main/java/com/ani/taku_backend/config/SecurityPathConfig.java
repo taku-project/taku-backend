@@ -38,20 +38,35 @@ public class SecurityPathConfig {
         "/static/**",
         "/public/**",
         "/resources/**",
-        "/META-INF/resources/**"
+//        "/api/shorts",
+//        "/api/shorts/*",
+//        "/api/shorts/**",
+        "/META-INF/resources/**",
+        "/shorts/**",
+        "/favicon.ico",
     };
 
     // 사용자 API 관련 설정
     public static final String USER_API_PATH = "/api/user/**";
 
+    // 쇼츠 API 관련 설정
+    public static final String SHORTS_API_PATH = "/api/shorts/**";
+    
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
             .anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
+    // 사용자 API 관련 설정
     public static boolean isUserApiPath(String path, String method) {
         return pathMatcher.match(USER_API_PATH, path) && 
             (method.equals("GET") || method.equals("POST"));
+    }
+
+    // 쇼츠 API 관련 설정
+    public static boolean isShortsApiPath(String path, String method) {
+        return pathMatcher.match(SHORTS_API_PATH, path) && 
+            (method.equals("GET"));
     }
 
     // GET 요청만 인증없이 통과
@@ -62,8 +77,6 @@ public class SecurityPathConfig {
     }
 
     public static boolean shouldSkipFilter(String path, String method) {
-        boolean isSkipped = isPermitAllPath(path) || isUserApiPath(path, method) || isPublicGetPath(path, method);
-        System.out.println("Path: " + path + ", Method: " + method + ", Skipped: " + isSkipped);
-        return isSkipped;
+        return isPermitAllPath(path) || isUserApiPath(path, method) || isShortsApiPath(path, method) || isPublicGetPath(path, method);
     }
 }
