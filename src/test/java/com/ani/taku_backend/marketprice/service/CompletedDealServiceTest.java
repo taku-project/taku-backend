@@ -76,7 +76,7 @@ class CompletedDealServiceTest {
     }
 
     /**
-     * ★ 각 테스트가 끝난 뒤 캐시를 비움
+     * 각 테스트가 끝난 뒤 캐시를 비움
      */
     @AfterEach
     void clearCaches() {

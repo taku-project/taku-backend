@@ -1,6 +1,7 @@
 package com.ani.taku_backend.marketprice.repository;
 
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.QJangterImages;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
 import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
@@ -79,6 +80,7 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
     @Override
     public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
+        QJangterImages jangterImages = QJangterImages.jangterImages;
 
         return queryFactory
                 .select(Projections.constructor(
@@ -86,11 +88,11 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                         jangter.id,
                         jangter.title,
                         jangter.price,
-                        // 인자 4: String (tfidfVector)
                         jangter.tfidfVector,
-                        jangter.jangterImages.any().image.imageUrl
+                        jangterImages.image.imageUrl
                 ))
                 .from(jangter)
+                .leftJoin(jangter.jangterImages, jangterImages)
                 .where(
                         jangter.title.contains(keyword),
                         jangter.deletedAt.isNull()
