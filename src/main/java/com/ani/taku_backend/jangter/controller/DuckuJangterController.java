@@ -9,12 +9,14 @@ import com.ani.taku_backend.jangter.service.DuckuJangterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,12 +34,29 @@ public class DuckuJangterController {
      * 판매글 생성
      */
     @Operation(
-            summary = "판매글 생성 생성",
-            description = """
-                    덕후 장터 판매글 생성
-                    - createDTO: 판매글 정보를 포함한 JSON 데이터
-                    - productImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
-                    """)
+        summary = "판매글 생성 생성",
+        description = """
+            덕후 장터 판매글 생성
+            - createDTO: 판매글 정보를 포함한 JSON 데이터
+            - productImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
+            """)
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = {
+            @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(
+                            name = "createDTO",
+                            contentType = "application/json"
+                    ),
+                    @Encoding(
+                            name = "productImage",
+                            contentType = "image/*"
+                    )
+                }
+            )
+        }
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -66,7 +85,7 @@ public class DuckuJangterController {
             summary = "판매글 상세 조회",
             description = "덕후 장터 판매글 상세 조회")
     @ApiResponses({
-            @ApiResponse(responseCode = "200",description = "게시글 수정 성공"),
+            @ApiResponse(responseCode = "200",description = "게시글 조회 성공"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글")
     })
     @GetMapping("/{productId}")
@@ -81,19 +100,36 @@ public class DuckuJangterController {
      * 덕후장터 판매글 업데이트
      */
     @Operation(
-            summary = "판매글 수정",
-            description = """
-                    덕후 장터 판매글 수정
-                    - updateDTO: 판매글 정보를 포함한 JSON 데이터
-                    - updateImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
-                    """)
+        summary = "판매글 수정",
+        description = """
+            덕후 장터 판매글 수정
+            - updateDTO: 판매글 정보를 포함한 JSON 데이터
+            - updateImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
+            """)
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = {
+            @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(
+                            name = "updateDTO",
+                            contentType = "application/json"
+                    ),
+                    @Encoding(
+                            name = "updateImage",
+                            contentType = "image/*"
+                    )
+                }
+            )
+        }
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
-    @PutMapping("/{productId}")
+    @PutMapping(path = "/{productId}", consumes = "multipart/form-data")
     @RequireUser
     public CommonResponse<Long> updateProduct(
                         @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,

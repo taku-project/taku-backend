@@ -1,5 +1,6 @@
 package com.ani.taku_backend.auth.service;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -9,7 +10,12 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import com.ani.taku_backend.user.service.BlackUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -18,9 +24,13 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.service.RedisService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -93,10 +103,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                     ));
 
         }
-
         boolean isBlack = this.blackUserService.findByUserId(findOptUser.get().getUserId()).isEmpty() ? false : true;
 
-        try{
+        try {
             attributes.put("user", findOptUser.get());
             attributes.put("is_black", isBlack);
         } catch (Exception e) {
