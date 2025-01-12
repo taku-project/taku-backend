@@ -47,12 +47,12 @@ public class ImageService {
 //        }
 
         if (imageList == null || imageList.isEmpty()) {
-            log.info("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
+            log.debug("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
             return new ArrayList<>();
         }
 
         if (imageList.size() == 1 && imageList.get(0).getSize() == 0) {
-            log.info("이미지가 ");
+            log.debug("이미지가 빈문자열로 넘어옴");
             return new ArrayList<>();
         }
 
@@ -81,7 +81,7 @@ public class ImageService {
                     .build();
 
             saveImageList.add(imageRepository.save(image));
-            log.info("이미지 저장 성공 {}", image);
+            log.debug("이미지 저장 성공 {}", image);
         }
         return saveImageList;
     }
@@ -94,7 +94,7 @@ public class ImageService {
             for (Image image : contentImage) {
                 fileService.deleteImageFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
                 image.delete();                                 // RDB에서 삭제
-                log.info("저장할 이미지 없음 -> 이미지 삭제 성공");
+                log.debug("저장할 이미지 없음 -> 이미지 삭제 성공");
             }
         }
 
@@ -105,13 +105,13 @@ public class ImageService {
                 fileService.deleteImageFile(filename);  // s3 에서 삭제(클라우드 플레어)
             });
             List<Image> deleteImageList = imageRepository.findByImageUrlIn(deleteImageUrl);
-            log.info("삭제할 이미지 조회 성공: {}", Arrays.toString(deleteImageList.toArray()));
+            log.debug("삭제할 이미지 조회 성공: {}", Arrays.toString(deleteImageList.toArray()));
 
             // RDB 삭제
             for (Image image : deleteImageList) {
-                log.info("삭제할 이미지 정보, image.getId: {}, image.getImageUrl: {}", image.getId(), image.getImageUrl());
+                log.debug("삭제할 이미지 정보, image.getId: {}, image.getImageUrl: {}", image.getId(), image.getImageUrl());
                 image.delete();
-                log.info("삭제 대상 이미지 삭제 성공, image.getDeletedAt(): {}", image.getDeletedAt());
+                log.debug("삭제 대상 이미지 삭제 성공, image.getDeletedAt(): {}", image.getDeletedAt());
             }
         }
 
@@ -131,7 +131,7 @@ public class ImageService {
             try {
                 validateImageCount(imageList);    // 5개 이상이면 예외 발생
                 String imageUrl = fileService.uploadImageFile(image);
-                log.info("r2 이미지 파일 업로드 성공 {}", imageUrl);
+                log.debug("r2 이미지 파일 업로드 성공 {}", imageUrl);
                 imageUrlList.add(imageUrl);
             } catch (IOException e) {
                 throw new DuckwhoException(FILE_UPLOAD_ERROR);
@@ -145,7 +145,7 @@ public class ImageService {
         String fileExtension = null;
         if (originalFilename != null && originalFilename.contains(".")) {
             fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
-            log.info("확장자 추출 성공 {}", fileExtension);
+            log.debug("확장자 추출 성공 {}", fileExtension);
         }
         return fileExtension;
     }

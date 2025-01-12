@@ -9,11 +9,14 @@ import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,7 +60,24 @@ public class PostController {
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
-    @PostMapping
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = {
+            @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(
+                            name = "createPost",
+                            contentType = "application/json"
+                    ),
+                    @Encoding(
+                            name = "postImage",
+                            contentType = "image/*"
+                    )
+                }
+            )
+        }
+    )
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> createPost(
             @Parameter(
                     description = "커뮤니티 생성 요청 JSON 데이터", required = true
@@ -99,8 +119,26 @@ public class PostController {
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
-    })    @RequireUser
-    @PutMapping("/{postId}")
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = {
+            @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(
+                            name = "updatePost",
+                            contentType = "application/json"
+                    ),
+                    @Encoding(
+                            name = "updatePostImage",
+                            contentType = "image/*"
+                    )
+                }
+            )
+        }
+    )
+    @RequireUser
+    @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
             @Parameter(
@@ -110,7 +148,7 @@ public class PostController {
             @Parameter(
                     description = "새로 업로드할 이미지 파일"
             )
-            @RequestPart(value = "updatePostImage", required = false) List<MultipartFile> imageList) {
+            @RequestPart(value = "updatePostImage") List<MultipartFile> imageList) {
 
         Long updatePostId = postService.updatePost(requestDTO, postId, imageList, null);
         return CommonResponse.ok(updatePostId);
