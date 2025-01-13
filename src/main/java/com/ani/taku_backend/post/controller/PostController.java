@@ -91,8 +91,8 @@ public class PostController {
     @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
             @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32")
-            @PathVariable("postId") Long postId,
-            @Valid PostUpdateRequestDTO requestDTO, @Parameter(hidden = true) PrincipalUser principalUser) {
+            @PathVariable("postId") Long postId, @Valid PostUpdateRequestDTO requestDTO,
+            @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
         Long updatePostId = postService.updatePost(postId, requestDTO, user);
@@ -112,8 +112,11 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public CommonResponse<Long> deletePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
-            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId) {
-        postService.deletePost(postId, categoryId, null);
+            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId,
+            @Parameter(hidden = true) PrincipalUser principalUser) {
+
+        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+        postService.deletePost(postId, categoryId, user);
         return CommonResponse.ok(null);
     }
 }

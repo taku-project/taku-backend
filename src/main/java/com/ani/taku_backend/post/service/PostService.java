@@ -39,8 +39,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
-    private final FileService fileService;
-    private final BlackUserService blackUserService;
 
     /**
      * 게시글 전체 조회
@@ -118,8 +116,7 @@ public class PostService {
      */
     @RequireUser
     @Transactional
-    public void deletePost(Long postId, long categoryId, PrincipalUser principalUser) {
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+    public void deletePost(Long postId, long categoryId, User user) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
