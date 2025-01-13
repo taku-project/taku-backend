@@ -43,7 +43,7 @@ public class PostService {
     private final BlackUserService blackUserService;
 
     /**
-     * 게시글 전체 조회 -> 삭제된 내역은 검색안되게 수정, 그리고 반환값에 전체 개수 반환
+     * 게시글 전체 조회
      */
     public PostListResponseDTO findAllPostList(PostListRequestDTO postListRequestDTO) {
 
@@ -68,19 +68,18 @@ public class PostService {
     @RequireUser
     @Transactional
     @ValidateProfanity(fields = {"title", "content"})
-    public Long createPost(PostCreateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
+    public Long createPost(PostCreateRequestDTO postCreateRequestDTO, User user) {
 
-        User user = blackUserService.checkBlackUser(principalUser);                              // 유저 검증
         Category category = checkCategory(postCreateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
-
-       List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
+        List<MultipartFile> imageList = postCreateRequestDTO.getImageList();
+        List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
 
         Post post = getPost(postCreateRequestDTO, user, category);                   // 게시글 생성
         setRelationCommunityImages(saveImageList, post);                             // 연관관계 설정
 
         Long savePostId = postRepository.save(post).getId();
-        log.info("게시글 저장 완료, savePostId: {}", savePostId);
+        log.debug("게시글 저장 완료, savePostId: {}", savePostId);
 
         return savePostId;
     }
@@ -91,9 +90,7 @@ public class PostService {
     @RequireUser
     @Transactional
     @ValidateProfanity(fields = {"title", "content"})
-    public Long updatePost(PostUpdateRequestDTO postUpdateRequestDTO, Long postId, List<MultipartFile> imageList, PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+    public Long updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO, User user) {
 
         // 게시글 조회, 없으면 예외
         Post post = postRepository.findById(postId)
@@ -103,18 +100,19 @@ public class PostService {
         checkDeleteProduct(post);                    // 삭제 검증
         Category itemCategory = checkCategory(postUpdateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
-        // 게시글 이미지
+        // 게시글의 이미지를 List<Image>로 저장
         List<Image> postImageList = post.getCommunityImages().stream().map(CommunityImage::getImage).toList();
 
-        // 업데이트 이미지
-        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), imageList, postImageList, user);
+        // 이미지 업데이트
+        List<MultipartFile> imageList = postUpdateRequestDTO.getImageList();
+        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), imageList, user);
 
         if (!newImageList.isEmpty()) {
             setRelationCommunityImages(newImageList, post);         // 연관관계 설정 -> 이미지 저장
         }
 
         post.updatePost(postUpdateRequestDTO, itemCategory);         // 게시글 수정
-        log.info("게시글 수정 성공, postId: {}", postId);
+        log.debug("게시글 수정 성공, postId: {}", postId);
 
         return post.getId();
     }

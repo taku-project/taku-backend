@@ -34,17 +34,8 @@ public class ImageService {
         return this.imageRepository.save(image);
     }
 
-
     @Transactional
     public List<Image> saveImageList(List<MultipartFile> imageList, User user) {
-
-//        if (imageList != null) {
-//            log.info("imageList.size: {}", imageList.size());
-//            log.info("imageList.isEmpty: {}", imageList.isEmpty());
-//            imageList.forEach(image -> {
-//                log.info("getName: {}, getContentType: {}, getSize: {}", image.getName(), image.getContentType(), image.getSize());
-//            });
-//        }
 
         if (imageList == null || imageList.isEmpty()) {
             log.debug("이미지 리스트가 비어 있음. 저장 로직 실행하지 않음");
@@ -87,16 +78,7 @@ public class ImageService {
     }
 
     @Transactional
-    public List<Image> getUpdateImageList(List<String> deleteImageUrl, List<MultipartFile> newImageList, List<Image> contentImage, User user) {
-
-        // 게시글에서 첨부파일을 모두 삭제하고 넘어옴
-        if (newImageList == null || newImageList.isEmpty()) {
-            for (Image image : contentImage) {
-                fileService.deleteImageFile(image.getFileName());    // s3 에서 삭제(클라우드 플레어)
-                image.delete();                                 // RDB에서 삭제
-                log.debug("저장할 이미지 없음 -> 이미지 삭제 성공");
-            }
-        }
+    public List<Image> getUpdateImageList(List<String> deleteImageUrl, List<MultipartFile> newImageList, User user) {
 
         // 삭제 대상인 이미지 리스트 삭제
         if (deleteImageUrl != null && !deleteImageUrl.isEmpty()) {

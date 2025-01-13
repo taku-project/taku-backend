@@ -114,7 +114,7 @@ public class DuckuJangterService {
         List<Image> productImageList = findProduct.getJangterImages().stream().map(JangterImages::getImage).toList();
 
         // 업데이트 이미지
-        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(), updateImageList, productImageList, user);
+        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(), updateImageList, user);
 
         if (newImageList != null && !newImageList.isEmpty()) {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
