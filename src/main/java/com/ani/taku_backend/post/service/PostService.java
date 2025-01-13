@@ -113,8 +113,6 @@ public class PostService {
             setRelationCommunityImages(newImageList, post);         // 연관관계 설정 -> 이미지 저장
         }
 
-
-
         post.updatePost(postUpdateRequestDTO, itemCategory);         // 게시글 수정
         log.info("게시글 수정 성공, postId: {}", postId);
 

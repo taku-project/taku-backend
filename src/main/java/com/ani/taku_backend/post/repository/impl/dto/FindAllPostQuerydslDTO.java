@@ -1,6 +1,5 @@
 package com.ani.taku_backend.post.repository.impl.dto;
 
-import com.ani.taku_backend.post.model.entity.Post;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
