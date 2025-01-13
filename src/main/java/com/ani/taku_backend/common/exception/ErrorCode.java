@@ -61,6 +61,10 @@ public enum ErrorCode {
     NOT_FOUND_SHORTS_COMMENT(40406, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     NOT_FOUND_SHORTS_REPLY(40407, HttpStatus.NOT_FOUND, "존재하지 않는 대댓글입니다."),
 
+    //marketprice
+    INVALID_DATE_RANGE(40006, HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다."),
+    MARKET_PRICE_NOT_FOUND(40406,HttpStatus.NOT_FOUND, "시세 정보를 찾을 수 없습니다."),
+
     // Post / Product
     NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다."),
 

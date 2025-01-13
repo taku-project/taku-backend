@@ -49,6 +49,9 @@ public class DuckuJangter extends BaseTimeEntity {
     @Column(length = 100, nullable = false)
     private StatusType status;  // 글 상태? 판매중? 판매완료? 이런거..?
 
+    @Column(name = "tfidf_vector",columnDefinition = "TEXT")
+    private String tfidfVector;  // TF-IDF 벡터값을 저장.
+
     private long viewCount;
     private LocalDateTime deletedAt;
 
@@ -107,4 +110,8 @@ public class DuckuJangter extends BaseTimeEntity {
         }
         return viewCount;
     }
+    public void updateTfidfVector(String tfidfVector) {
+        this.tfidfVector = tfidfVector;
+    }
+
 }

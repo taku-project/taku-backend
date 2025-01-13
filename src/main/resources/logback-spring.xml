@@ -1,36 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+    <!-- 로그가 저장될 디렉토리 경로 -->
     <property name="LOG_PATH" value="./logs"/>
 
-    <!-- Appenders -->
-    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- ========== Appenders ========== -->
+
+    <!-- (1) 콘솔 출력 Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 콘솔에는 INFO 이상만 찍고 싶다면 ThresholdFilter를 INFO로 설정 -->
+        <!-- 만약 TRACE 로그까지 보고 싶으면 이 필터를 제거하거나 level=TRACE 로 수정하세요 -->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
         <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%thread] %logger %msg%n</pattern>
+            <pattern>
+                [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%thread] %logger %msg%n
+            </pattern>
         </encoder>
     </appender>
 
+    <!-- (2) 파일 출력 Appender (info.log) -->
     <appender name="INFO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 이 파일에는 INFO 이상만 기록 -->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
         <file>${LOG_PATH}/info.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/info_${type}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <!-- 날짜별로 파일을 롤링하며 30일간 보관 -->
+            <fileNamePattern>${LOG_PATH}/info.%d{yyyy-MM-dd}.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%thread] %logger %msg%n</pattern>
+            <pattern>
+                [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%thread] %logger %msg%n
+            </pattern>
         </encoder>
     </appender>
 
-    <!-- TRACE > DEBUG > INFO > WARN > ERROR > OFF -->
-    <!-- Root Logger -->
+    <!-- ========== Logger 설정들 ========== -->
+
+    <!-- 1) 특정 패키지 (marketprice, jangter)만 TRACE로 -->
+    <logger name="com.ani.taku_backend.marketprice" level="DEBUG" />
+    <logger name="com.ani.taku_backend.jangter" level="DEBUG" />
+
+    <!-- 2) 자꾸 찍히는 sun.rmi 및 javax.management.remote.rmi는 WARN 으로 레벨 낮춤 -->
+    <logger name="sun.rmi" level="WARN" />
+    <logger name="javax.management.remote.rmi" level="WARN" />
+
+    <!-- 3) 루트 로거(그 외 모든 패키지)는 INFO -->
     <root level="INFO">
-        <appender-ref ref="console"/>
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="INFO_LOG"/>
     </root>
+
 </configuration>
