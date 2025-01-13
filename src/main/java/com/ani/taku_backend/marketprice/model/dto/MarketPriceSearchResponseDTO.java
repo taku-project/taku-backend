@@ -1,6 +1,5 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.Builder;
