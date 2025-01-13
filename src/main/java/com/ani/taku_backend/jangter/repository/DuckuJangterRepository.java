@@ -15,7 +15,3 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
 
     List<DuckuJangter> findByDeletedAtIsNull();
 }
-
-
-
-

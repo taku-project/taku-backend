@@ -8,9 +8,15 @@ import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,75 +31,73 @@ public class PostController {
     private final PostService postService;
     private final PostReadService postReadService;
 
-    @Operation(summary = "커뮤니티 게시글 조회(정렬, 검색)", description = """
-            필터 조건, 검색어, 정렬 순서에 따라 카테고리 별 게시글 목록을 조회
-            1. filter: 정렬 기준 선택
-                - latest: 최신순  (기준 값: 게시글 Id)
-                - likes : 좋아요순 (기준 값: 좋아요 수)
-                - views : 조회수순 (기준 값: 조회수)
-            
-            2. lastValue: 선택 된 정렬 기준의 마지막 정수 값, 타입 Long
-                - 정렬 기준이 최신 순이면 현재 데이터의 마지막 Id 값
-                - 정렬 기준이 좋아요 순이면 현재 데이터의 마지막 좋아요 값
-                - 정렬 기준이 조회수 순이면 현재 데이터의 마지막 조회수 값
-            
-            3. isAsc: 내림차순, 오름차순 여부
-                - false: 기본값, 내림차순
-                - true: 오름차순
-            
-            4. limit: 출력 페이지 개수
-                - 20개 (피그마에서는 5개였으나 확인이 필요함)
-            
-            5. keyword: 게시글 제목 + 내용 검색어
-            
-            6. categoryId: 게시글이 속한 카테고리 ID
-            """
+    @Operation(
+            summary = "커뮤니티글 전체 조회",
+            description = """
+                     - postCount: 카테고리 내부 게시글 조회된 개수(삭제된 게시글 반영),
+                     - responsePostList: 게시글 조회정보 리스트, 게시글 조회 성공 필드 확인
+                     """
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 조회 성공"),
+    })
     @GetMapping
-    public CommonResponse<List<PostListResponseDTO>> findAllPost(PostListRequestDTO requestDTO) {
-        List<PostListResponseDTO> postList = postService.findAllPost(
-                requestDTO.getFilter().toString(),
-                requestDTO.getLastValue(),
-                requestDTO.isAsc(),
-                requestDTO.getLimit(),
-                requestDTO.getKeyword(),
-                requestDTO.getCategoryId());
-
-        return CommonResponse.ok(postList);
+    public CommonResponse<PostListResponseDTO> findAllPostList(
+            @Parameter(description = "커뮤니티 글 전체 조회 DTO", required = true) PostListRequestDTO postListRequestDTO) {
+        log.info("postListRequestDTO: {}", postListRequestDTO.getSortFilterType());
+        PostListResponseDTO findResultList = postService.findAllPostList(postListRequestDTO);
+        return CommonResponse.ok(findResultList);
     }
 
-    @Operation(summary = "커뮤니티 게시글 생성", description = """
-            createPost(type: application/json)
-            1. categoryId: 접속한 카테고리 ID
-            2. title: 작성한 제목
-            3. content: 작성한 내용
-            4. imageList: 업로드한 이미지 정보(List)
-                1) originalFileName: 업로드 파일명
-                2) fileType: 파일 타입
-                3) fileSize: 크기
-           
-            postImage(type: multipartFile)
-            - 이미지데이터
-            """)
-    @RequireUser
-    @PostMapping
+    @Operation(
+            summary = "커뮤니티 게시글 생성",
+            description = """
+                    - createPost: 판매글 정보를 포함한 JSON 데이터,
+                    - postImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
+                    """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = {
+            @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(
+                            name = "createPost",
+                            contentType = "application/json"
+                    ),
+                    @Encoding(
+                            name = "postImage",
+                            contentType = "image/*"
+                    )
+                }
+            )
+        }
+    )
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> createPost(
-            PrincipalUser principalUser,
-            @Valid @RequestPart("createPost") PostCreateUpdateRequestDTO requestDTO,
+            @Parameter(
+                    description = "커뮤니티 생성 요청 JSON 데이터", required = true
+            )
+            @Valid @RequestPart("createPost") PostCreateRequestDTO requestDTO,
+            @Parameter(
+                    description = "게시글 첨부 이미지(필수값 아님)"
+            )
             @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
 
-        Long createPostId = postService.createPost(requestDTO, principalUser, imageList);
+        Long createPostId = postService.createPost(requestDTO, imageList, null);
         return CommonResponse.created(createPostId);
     }
 
-    @Operation(summary = "커뮤니티 게시글 상세 조회", description = """
-            1. 게시글 상세 조회(댓글은 나중에 작업)
-            """)
+    @Operation(summary = "커뮤니티 게시글 상세 조회", description = "댓글 미개발")
     @GetMapping("/{postId}")
     public CommonResponse<PostDetailResponseDTO> findPostDetail(
-            @PathVariable Long postId,
-            @ViewCountChecker Boolean canAddView,
-            PrincipalUser principalUser
+            @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
+            @Parameter(description = "조회를 했는지 여부", required = true) @ViewCountChecker Boolean canAddView,
+            @Parameter(description = "유저 정보?? 윤정님 확인 필요", required = true) PrincipalUser principalUser
     ) {
         Long currentUserId = null;
         if (principalUser != null) {
@@ -104,35 +108,67 @@ public class PostController {
         return CommonResponse.ok(detail);
     }
 
-    @Operation(summary = "커뮤니티 게시글 수정", description = """
-            updatePost(type: application/json)
-            1. categoryId: 접속한 카테고리 ID
-            2. title: 작성한 제목
-            3. content: 작성한 내용
-            4. imageList: 업로드한 이미지 정보(List)
-                1) originalFileName: 업로드 파일명
-                2) fileType: 파일 타입
-                3) fileSize: 크기
-           
-            postImage(type: multipartFile)
-            - 이미지데이터
-            """)
+    @Operation(
+            summary = "커뮤니티 게시글 수정",
+            description = """
+                    - updatePost: 게시글 업데이트 정보를 포함한 JSON 데이터
+                    - updatePostImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
+                    """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
+            @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = {
+            @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(
+                            name = "updatePost",
+                            contentType = "application/json"
+                    ),
+                    @Encoding(
+                            name = "updatePostImage",
+                            contentType = "image/*"
+                    )
+                }
+            )
+        }
+    )
     @RequireUser
-    @PutMapping("/{postId}")
-    public CommonResponse<Long> updatePost(@PathVariable Long postId,
-                                           PrincipalUser principalUser,
-                                           @Valid @RequestPart("updatePost") PostCreateUpdateRequestDTO requestDTO,
-                                           @RequestPart(value = "postImage", required = false) List<MultipartFile> imageList) {
-        Long updatePostId = postService.updatePost(requestDTO, principalUser, postId, imageList);
+    @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<Long> updatePost(
+            @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
+            @Parameter(
+                    description = "판매글 업데이트 요청 JSON 데이터", required = true
+            )
+            @RequestPart("updatePost") @Valid PostUpdateRequestDTO requestDTO,
+            @Parameter(
+                    description = "새로 업로드할 이미지 파일"
+            )
+            @RequestPart(value = "updatePostImage") List<MultipartFile> imageList) {
+
+        Long updatePostId = postService.updatePost(requestDTO, postId, imageList, null);
         return CommonResponse.ok(updatePostId);
     }
 
-    @Operation(summary = "커뮤니티 게시글 삭제")
+    @Operation(
+            summary = "커뮤니티 게시글 삭제",
+            description = "커뮤니티 게시글 삭제")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "게시글 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
+            @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
+    })
     @RequireUser
     @DeleteMapping("/{postId}")
-    public CommonResponse<Long> deletePost(@PathVariable Long postId,
-                                           PrincipalUser principalUser) {
-        Long deletePostId = postService.deletePost(postId, principalUser);
-        return CommonResponse.ok(deletePostId);
+    public CommonResponse<Long> deletePost(
+            @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
+            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId) {
+        postService.deletePost(postId, categoryId, null);
+        return CommonResponse.ok(null);
     }
 }

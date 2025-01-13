@@ -1,17 +1,15 @@
 package com.ani.taku_backend.user.model.dto;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
+import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.user.model.entity.User;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.user.model.entity.User;
-
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import java.util.ArrayList;
+import java.util.Collection;
 /**
  * 스프링 시큐리티에 저장할 유저 정보
  */
