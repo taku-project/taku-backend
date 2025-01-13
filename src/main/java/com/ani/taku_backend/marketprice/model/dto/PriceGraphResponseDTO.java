@@ -37,12 +37,26 @@ public class PriceGraphResponseDTO {
     @Getter
     @Builder
     @JsonDeserialize(builder = PriceDataPoint.PriceDataPointBuilder.class)
+    @Schema(description = "시세 데이터 포인트")
     public static class PriceDataPoint {
 
-        private final LocalDate date;            // 날짜
-        private final BigDecimal registeredPrice; // 등록 가격
-        private final BigDecimal soldPrice;       // 판매 가격
-        private final int dealCount;             // 거래 건수
+        @Schema(description = "날짜")
+        private final LocalDate date;
+
+        @Schema(description = "상품 ID")
+        private final Long productId;
+
+        @Schema(description = "상품 제목")
+        private final String title;
+
+        @Schema(description = "등록 가격")
+        private final BigDecimal registeredPrice;
+
+        @Schema(description = "판매 가격")
+        private final BigDecimal soldPrice;
+
+        @Schema(description = "거래 건수")
+        private final int dealCount;
 
         @JsonPOJOBuilder(withPrefix = "")
         public static class PriceDataPointBuilder {
