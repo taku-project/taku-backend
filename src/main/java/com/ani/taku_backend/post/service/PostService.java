@@ -63,7 +63,6 @@ public class PostService {
     /**
      * 게시글 작성
      */
-    @RequireUser
     @Transactional
     @ValidateProfanity(fields = {"title", "content"})
     public Long createPost(PostCreateRequestDTO postCreateRequestDTO, User user) {
@@ -85,7 +84,6 @@ public class PostService {
     /**
      * 게시글 업데이트
      */
-    @RequireUser
     @Transactional
     @ValidateProfanity(fields = {"title", "content"})
     public Long updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO, User user) {
