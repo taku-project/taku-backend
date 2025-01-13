@@ -2,6 +2,7 @@ package com.ani.taku_backend.post.model.dto;
 
 import com.ani.taku_backend.common.model.dto.ImageCreateRequestDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,6 @@ public class PostUpdateRequestDTO {
     @Schema(description = "삭제할 이미지 URL 리스트, DB에서 이미지 URL를 조회해야하므로 번거로울 시 Send empty value 체크 해제 후 테스트 진행")
     private List<String> deleteImageUrl;
 
-    @Schema(description = "업데이트할 이미지파일 (여러 파일 업로드 가능)")
+    @Schema(description = "업데이트할 이미지파일 (여러 파일 업로드 가능), 이미지 파일 업로드 안할 시 Send empty value 체크 해제 후 테스트 진행")
     private List<MultipartFile> imageList = new ArrayList<>();
 }

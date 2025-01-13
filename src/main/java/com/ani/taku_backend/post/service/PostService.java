@@ -100,12 +100,8 @@ public class PostService {
         checkDeleteProduct(post);                    // 삭제 검증
         Category itemCategory = checkCategory(postUpdateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
-        // 게시글의 이미지를 List<Image>로 저장
-        List<Image> postImageList = post.getCommunityImages().stream().map(CommunityImage::getImage).toList();
-
         // 이미지 업데이트
-        List<MultipartFile> imageList = postUpdateRequestDTO.getImageList();
-        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), imageList, user);
+        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), postUpdateRequestDTO.getImageList(), user);
 
         if (!newImageList.isEmpty()) {
             setRelationCommunityImages(newImageList, post);         // 연관관계 설정 -> 이미지 저장
