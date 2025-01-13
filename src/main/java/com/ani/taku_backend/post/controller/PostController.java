@@ -112,8 +112,11 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public CommonResponse<Long> deletePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
-            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId) {
-        postService.deletePost(postId, categoryId, null);
+            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId,
+            @Parameter(hidden = true) PrincipalUser principalUser) {
+
+        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+        postService.deletePost(postId, categoryId, user);
         return CommonResponse.ok(null);
     }
 }
