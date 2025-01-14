@@ -15,6 +15,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     METHOD_ARGUMENT_TYPE_MISMATCH(40002, HttpStatus.BAD_REQUEST, "잘못된 파라미터 타입입니다."),
     NOT_FOUND_END_POINT(40400, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
+    TOO_FAST_REQUEST(42900, HttpStatus.TOO_MANY_REQUESTS, "이전 요청을 처리하고 있습니다. 10초 후 다시 시도해주세요"),
 
     // Database
     DATA_INTEGRITY_VIOLATION(40003, HttpStatus.BAD_REQUEST, "데이터 무결성 위반"),
@@ -33,6 +34,7 @@ public enum ErrorCode {
     EMPTY_TOKEN(40104, HttpStatus.UNAUTHORIZED, "토큰이 비어있습니다."),
     UNAUTHORIZED_ACCESS(40105, HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다."),
     FORBIDDEN_ACCESS_ADMIN(40300, HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
+    UNSUPPORTED_PROVIDER(4006, HttpStatus.UNAUTHORIZED,"지원하지 않는 OAuth2 입니다."),
 
     // File
     FILE_UPLOAD_ERROR(50300, HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드에 실패했습니다."),
@@ -58,6 +60,10 @@ public enum ErrorCode {
     NOT_FOUND_SHORTS(40405, HttpStatus.NOT_FOUND, "존재하지 않는 쇼츠입니다."),
     NOT_FOUND_SHORTS_COMMENT(40406, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     NOT_FOUND_SHORTS_REPLY(40407, HttpStatus.NOT_FOUND, "존재하지 않는 대댓글입니다."),
+
+    //marketprice
+    INVALID_DATE_RANGE(40006, HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다."),
+    MARKET_PRICE_NOT_FOUND(40406,HttpStatus.NOT_FOUND, "시세 정보를 찾을 수 없습니다."),
 
     // Post / Product
     NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다."),

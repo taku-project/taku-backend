@@ -35,15 +35,15 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         long lastValue = postListRequestDTO.getLastValue();
         int limit = postListRequestDTO.getLimit();
         String keyword = postListRequestDTO.getKeyword();
-        boolean isAsc = postListRequestDTO.isAsc();
+        boolean asc = postListRequestDTO.isAsc();
         long categoryId = postListRequestDTO.getCategoryId();
 
         BooleanExpression byCategory = getCategory(categoryId, post);                           // 카테고리 구분
-        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, isAsc, post); // 정렬 필터
+        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, asc, post);   // 정렬 필터
         BooleanExpression byKeyword = getKeyword(keyword, post);                                // 키워드 검색
         BooleanExpression notDeleted = getNotDeleted(post);                                     // 삭제된글 제외
-        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, isAsc, post);                  // 첫번째 정렬 기준
-        OrderSpecifier<?> subSort = getSubSort(isAsc, post);                                    // 두번째 정렬 기준
+        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, asc, post);                    // 첫번째 정렬 기준
+        OrderSpecifier<?> subSort = getSubSort(asc, post);                                      // 두번째 정렬 기준
 
         return jpaQueryFactory
                 .select(new QFindAllPostQuerydslDTO(
@@ -52,17 +52,19 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.category.id,
                         post.title,
                         post.content,
-                        communityImage.image.imageUrl, // 이미지 url 반환
+                        communityImage.image.imageUrl,
                         post.updatedAt,
                         post.views
                 ))
                 .from(post)
-                .leftJoin(communityImage)
-                .on(communityImage.post.eq(post))       // 커뮤니티이미지와 post 조인 조건
+                .leftJoin(post.communityImages, communityImage)
+                .leftJoin(communityImage.image, image)
                 .where(notDeleted, byCategory, bySortFilter, byKeyword)
+                .groupBy(post.id)
                 .orderBy(mainSort, subSort)
-                .groupBy(post.id) // 게시글별로 그룹핑 -> 이미지 url 1개만 반환됨(첫번째)
+                .limit(limit)
                 .fetch();
+
     }
 
     /**

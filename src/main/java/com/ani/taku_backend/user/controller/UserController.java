@@ -182,10 +182,6 @@ public class UserController {
 	}
 
 
-	/*
-	* TO DO
-	* com.ani.taku_... 머시기 수정하기 위에 APiResponse 어노테이션이랑 이름이 같아서 발생하는 문제임
-	 * */
 	@GetMapping("/{userId}")
 	@Operation(
 			summary = "유저 정보 조회",

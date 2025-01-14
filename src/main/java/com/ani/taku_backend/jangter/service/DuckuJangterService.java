@@ -76,21 +76,18 @@ public class DuckuJangterService {
      * 장터글 저장
      */
     @Transactional
-    @RequireUser
     @ValidateProfanity(fields = {"title", "description"})  // 금칙어 적용 완료
-    public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO,
-                              List<MultipartFile> imageList,
-                              PrincipalUser principalUser) {
+    public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user) {
 
-        User user = blackUserService.checkBlackUser(principalUser);         // 블랙유저 검증
         ItemCategories itemCategory = checkItemCategory(productCreateRequestDTO.getCategoryId(), null); // 아이템 카테고리 검증
 
-        List<Image> saveImageList = imageService.saveImageList(imageList, user);                // 이미지 저장 - r2, rdb 모두 저장
+        // 이미지 저장 - r2, rdb 모두 저장
+        List<Image> saveImageList = imageService.saveImageList(productCreateRequestDTO.getImageList(), user);
         DuckuJangter product = createProduct(productCreateRequestDTO, user, itemCategory);      // 엔티티 생성
         setRelationJangterImages(saveImageList, product);                                       // jangerImages 연관관계 설정
 
         Long saveProductId = duckuJangterRepository.save(product).getId();
-        log.info("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
+        log.debug("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
 
         return saveProductId;
     }
@@ -121,14 +118,8 @@ public class DuckuJangterService {
      * 게시글 업데이트
      */
     @Transactional
-    @RequireUser
     @ValidateProfanity(fields = {"title", "description"})
-    public Long updateProduct(Long productId,
-                              ProductUpdateRequestDTO productUpdateRequestDTO,
-                              List<MultipartFile> updateImageList,
-                              PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
+    public Long updateProduct(Long productId, ProductUpdateRequestDTO productUpdateRequestDTO, User user) {
 
         // 게시글 조회
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
@@ -138,16 +129,14 @@ public class DuckuJangterService {
         checkAuthorAndAdmin(user, findProduct);     // 유저, 관리자 확인
         ItemCategories itemCategories = checkItemCategory(productUpdateRequestDTO.getCategoryId(), null);  // 카테고리 검증
 
-        // 덕후장터의 이미지
-        List<Image> productImageList = findProduct.getJangterImages().stream().map(JangterImages::getImage).toList();
-
         // 업데이트 이미지
-        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(), updateImageList, productImageList, user);
+        List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(),
+                                                                    productUpdateRequestDTO.getImageList(),
+                                                                    user);
 
-        if (!newImageList.isEmpty()) {
+        if (newImageList != null && !newImageList.isEmpty()) {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
         }
-
         findProduct.updateProduct(productUpdateRequestDTO, itemCategories);         // 장터글 업데이트
 
         log.info("장터글 업데이트 완료, 글 상세 {}", findProduct);
@@ -159,9 +148,7 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
-    public void deleteProduct(long productId, Long categoryId, PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser);
+    public void deleteProduct(long productId, Long categoryId, User user) {
 
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
@@ -220,7 +207,7 @@ public class DuckuJangterService {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        log.info("아이템 카테고리 검증완료, 아이템카테고리: {} ", itemCategories.getName());
+        log.debug("아이템 카테고리 검증완료, 아이템카테고리: {} ", itemCategories.getName());
         return itemCategories;
     }
 
