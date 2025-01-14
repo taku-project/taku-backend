@@ -1,10 +1,15 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.enums.LogType;
+import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -18,6 +23,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.ani.taku_backend.jangter.service.UserInteractionService;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
 public class DuckuJangterController {
 
     private final DuckuJangterService duckuJangterService;
-    private final BlackUserService blackUserService;
+    private final UserInteractionService userInteractionService;
 
     /**
      * 판매글 생성
@@ -111,5 +122,18 @@ public class DuckuJangterController {
         duckuJangterService.deleteProduct(productId, categoryId, user);
 
         return CommonResponse.ok(null);
+    }
+
+
+    @Operation(
+            summary = "판매글 추천",
+            description = "판매글 추천 API (로그인/비로그인 모두 가능)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "게시글 추천"),
+    })
+    @GetMapping("/{productId}/recommend")
+    public CommonResponse<ProductRecommendResponseDTO> recommendProduct(@PathVariable("productId") Long productId) {
+        ProductRecommendResponseDTO recommendProduct = this.duckuJangterService.recommendProduct(productId, null);
+        return CommonResponse.ok(recommendProduct);
     }
 }
