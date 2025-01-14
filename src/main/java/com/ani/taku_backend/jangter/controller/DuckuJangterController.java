@@ -38,7 +38,7 @@ public class DuckuJangterController {
 
     private final DuckuJangterService duckuJangterService;
     private final UserInteractionService userInteractionService;
-
+    private final BlackUserService blackUserService;
     /**
      * 판매글 생성
      */
