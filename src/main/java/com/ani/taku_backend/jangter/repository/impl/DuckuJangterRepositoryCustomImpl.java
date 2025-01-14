@@ -6,10 +6,13 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.QItemCategories;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.core.types.Projections;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,5 +60,21 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         return fetch;
     }
 
-    
+    @Override
+    public List<CategoryGroupCountDTO> findCategoryGroupCount() {
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QItemCategories itemCategories = QItemCategories.itemCategories;
+
+        return jpaQueryFactory
+            .select(Projections.constructor(CategoryGroupCountDTO.class,
+                itemCategories.id,
+                itemCategories.name,
+                duckuJangter.count()))
+            .from(duckuJangter)
+            .leftJoin(duckuJangter.itemCategories, itemCategories)
+            .where(duckuJangter.deletedAt.isNull())
+            .groupBy(itemCategories.id, itemCategories.name)
+            .orderBy(duckuJangter.count().desc())
+            .fetch();
+    }
 }
