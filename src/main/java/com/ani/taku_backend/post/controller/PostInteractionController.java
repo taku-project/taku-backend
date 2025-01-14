@@ -26,11 +26,7 @@ public class PostInteractionController {
      * 게시글 좋아요/취소
      */
 
-    @Operation(
-            summary = "커뮤니티 게시글 좋아요",
-            description = """
-                    - 응답 성공시 게시글의 좋아요 수 반환
-                    """)
+    @Operation(summary = "커뮤니티 게시글 좋아요", description = " 게시글의 좋아요/좋아요 취소 기능, 3번 연속 반복 입력 시 10초간 lock 설정이 됨")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "좋아요 요청 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않는 접근"),
