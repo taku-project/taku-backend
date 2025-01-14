@@ -8,14 +8,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Schema(description = "커뮤니티 게시글 댓글 생성 DTO")
 public class CommentsUpdateRequestDTO {
 
-    @Schema(description = "게시글 ID")
+    @Schema(description = "게시글 ID", example = "17")
     @NotNull(message = "{NotNull.comment.postId}")
     private Long postId;
 
-    @Schema(description = "댓글 내용")
+    @Schema(description = "댓글 내용", example = "편하게 테스트 댓글 달기")
     @NotNull(message = "{NotNull.comment.content}")
     @Size(max = 255, message = "댓글은 255자 이하로 작성해 주세요.")
     private String content;

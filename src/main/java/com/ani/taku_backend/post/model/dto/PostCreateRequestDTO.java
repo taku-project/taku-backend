@@ -31,6 +31,6 @@ public class PostCreateRequestDTO {
     @NotNull
     private String content;
 
-    @Schema(description = "게시글 첨부 이미지 파일 (여러 파일 업로드 가능)")
+    @Schema(description = "게시글 첨부 이미지 파일 (여러 파일 업로드 가능), 이미지 파일 업로드 안할 시 Send empty value 체크 해제 후 테스트 진행")
     private List<MultipartFile> imageList = new ArrayList<>();
 }

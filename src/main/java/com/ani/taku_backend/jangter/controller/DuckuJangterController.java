@@ -6,10 +6,11 @@ import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -17,9 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -28,51 +26,24 @@ import java.util.List;
 public class DuckuJangterController {
 
     private final DuckuJangterService duckuJangterService;
+    private final BlackUserService blackUserService;
 
     /**
      * 판매글 생성
      */
-    @Operation(
-        summary = "판매글 생성 생성",
-        description = """
-            덕후 장터 판매글 생성
-            - createDTO: 판매글 정보를 포함한 JSON 데이터
-            - productImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
-            """)
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = {
-            @Content(
-                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                encoding = {
-                    @Encoding(
-                            name = "createDTO",
-                            contentType = "application/json"
-                    ),
-                    @Encoding(
-                            name = "productImage",
-                            contentType = "image/*"
-                    )
-                }
-            )
-        }
-    )
+    @Operation(summary = "판매글 생성 생성", description = "덕후 장터 판매글 생성")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
-    @PostMapping(consumes = "multipart/form-data")
-    public CommonResponse<Long> createProduct(
-                @Parameter(
-                        description = "판매글 생성 요청 JSON 데이터", required = true
-                )
-                @RequestPart("createDTO") @Valid ProductCreateRequestDTO requestDTO,
-                @Parameter(
-                        description = "판매글 첨부 이미지(필수값 아님)"
-                )
-                @RequestPart(value = "productImage", required = false) List<MultipartFile> imageList) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequireUser
+    public CommonResponse<Long> createProduct(@Valid ProductCreateRequestDTO requestDTO,
+                                              @Parameter(hidden = true) PrincipalUser principalUser) {
 
-        Long productId = duckuJangterService.createProduct(requestDTO, imageList, null);
+        User user = blackUserService.checkBlackUser(principalUser);         // 블랙유저 검증
+        Long productId = duckuJangterService.createProduct(requestDTO, user);
 
         return CommonResponse.created(productId);
     }
@@ -80,68 +51,40 @@ public class DuckuJangterController {
     /**
      * 덕후장터 판매글 상세 조회
      */
-    @Operation(
-            summary = "판매글 상세 조회",
-            description = "덕후 장터 판매글 상세 조회")
+    @Operation(summary = "판매글 상세 조회", description = "덕후 장터 판매글 상세 조회")
     @ApiResponses({
             @ApiResponse(responseCode = "200",description = "게시글 조회 성공"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글")
     })
     @GetMapping("/{productId}")
     public CommonResponse<ProductFindDetailResponseDTO> findProductDetail(
-            @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId) {
-        log.info("판매글 컨트롤러 호출");
+            @Parameter(description = "게시글 ID", required = true, example = "41") @PathVariable("productId") long productId) {
+
+        log.debug("판매글 컨트롤러 호출");
         ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId, false);
+
         return CommonResponse.ok(productDetail);
     }
 
     /**
      * 덕후장터 판매글 업데이트
      */
-    @Operation(
-        summary = "판매글 수정",
-        description = """
-            덕후 장터 판매글 수정
-            - updateDTO: 판매글 정보를 포함한 JSON 데이터
-            - updateImage: 첨부할 이미지 파일 리스트 (이미지 파일, 필수값 아님)
-            """)
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = {
-            @Content(
-                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                encoding = {
-                    @Encoding(
-                            name = "updateDTO",
-                            contentType = "application/json"
-                    ),
-                    @Encoding(
-                            name = "updateImage",
-                            contentType = "image/*"
-                    )
-                }
-            )
-        }
-    )
+    @Operation(summary = "판매글 수정", description = "덕후 장터 판매글 수정, 기존 이미지를 삭제하거나 추가 할수 있음")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
-    @PutMapping(path = "/{productId}", consumes = "multipart/form-data")
+    @PutMapping(path = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
     public CommonResponse<Long> updateProduct(
-                        @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
-                        @Parameter(
-                              description = "판매글 업데이트 요청 JSON 데이터", required = true
-                        )
-                        @RequestPart("updateDTO") ProductUpdateRequestDTO requestDTO,
-                        @Parameter(
-                              description = "새로 업로드한 이미지 파일"
-                        )
-                        @RequestPart(value = "updateImage", required = false) List<MultipartFile> imageList) {
+                        @Parameter(description = "게시글 ID(구글 토큰 입력)", required = true, example = "74")
+                        @PathVariable("productId") long productId, @Valid ProductUpdateRequestDTO requestDTO,
+                        @Parameter(hidden = true) PrincipalUser principalUser) {
 
-        Long updateProductId = duckuJangterService.updateProduct(productId, requestDTO, imageList, null);
+        User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
+        Long updateProductId = duckuJangterService.updateProduct(productId, requestDTO, user);
 
         return CommonResponse.ok(updateProductId);
     }
@@ -159,11 +102,13 @@ public class DuckuJangterController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
     @DeleteMapping("/{productId}")
-    @RequireUser
     public CommonResponse<Void> deleteProduct(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
-            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") Long categoryId) {
-        duckuJangterService.deleteProduct(productId, categoryId, null);
+            @Parameter(description = "카테고리 ID", required = true, example = "4") @RequestParam("categoryId") Long categoryId,
+            @Parameter(hidden = true) PrincipalUser principalUser) {
+
+        User user = blackUserService.checkBlackUser(principalUser);
+        duckuJangterService.deleteProduct(productId, categoryId, user);
 
         return CommonResponse.ok(null);
     }
