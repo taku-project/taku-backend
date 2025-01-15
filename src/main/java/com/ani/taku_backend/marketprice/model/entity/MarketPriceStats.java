@@ -35,7 +35,6 @@ public class MarketPriceStats extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private DuckuJangter product;
 
-
     @NotNull
     @Column(length = 255, nullable = false)
     private String title;

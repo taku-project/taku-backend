@@ -64,6 +64,10 @@ public class DuckuJangter extends BaseTimeEntity {
 
     // TODO 북마크 연관관계
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buy_user_id")
+    private User buyUser;
+
     public void delete() {
         deletedAt = LocalDateTime.now();
     }

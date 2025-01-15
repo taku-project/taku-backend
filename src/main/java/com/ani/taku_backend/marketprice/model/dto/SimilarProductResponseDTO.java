@@ -2,21 +2,14 @@ package com.ani.taku_backend.marketprice.model.dto;
 
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.marketprice.util.batch.TfidfService;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
 
-/**
- * 유사 상품 정보 DTO
- */
 @Getter
+@Builder
 @Schema(description = "유사 상품 정보 DTO")
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class SimilarProductResponseDTO {
 
     @Schema(description = "상품 ID", example = "123")
@@ -28,62 +21,55 @@ public class SimilarProductResponseDTO {
     @Schema(description = "등록 가격", example = "21000")
     private final BigDecimal price;
 
-    @Schema(description = "TF-IDF 벡터 값(예시)", example = "JSON 형태 String 등")
+    @Schema(description = "TF-IDF 벡터 값", example = "0.5,0.3,0.2")
     private final String tfidfVector;
 
-    @Schema(description = "대표 썸네일 (단일 이미지 URL)")
-    private final List<String> imageUrls;
+    @Schema(description = "대표 썸네일 URL", example = "https://example.com/image.jpg")
+    private final String imageUrl;
 
-    @JsonCreator
+    @Builder
     public SimilarProductResponseDTO(
-            @JsonProperty("productId") Long productId,
-            @JsonProperty("title") String title,
-            @JsonProperty("price") BigDecimal price,
-            @JsonProperty("tfidfVector") String tfidfVector,
-            @JsonProperty("imageUrl") String imageUrl
+            Long productId,
+            String title,
+            BigDecimal price,
+            String tfidfVector,
+            String imageUrl
     ) {
         this.productId = productId;
         this.title = title;
         this.price = price;
         this.tfidfVector = tfidfVector;
-
-        if (imageUrl != null) {
-            this.imageUrls = Collections.singletonList(imageUrl);
-        } else {
-            this.imageUrls = Collections.emptyList();
-        }
+        this.imageUrl = imageUrl;
     }
 
     public static SimilarProductResponseDTO from(DuckuJangter product) {
-        // 썸네일을 대표 이미지 1장만 뽑는다. 수정 가능성 존재
         String singleImageUrl = product.getJangterImages().stream()
                 .findFirst()
                 .map(img -> img.getImage().getImageUrl())
                 .orElse(null);
 
-        return new SimilarProductResponseDTO(
-                product.getId(),
-                product.getTitle(),
-                product.getPrice(),
-                product.getTfidfVector(),   // String 형태로 가정
-                singleImageUrl
-        );
+        return SimilarProductResponseDTO.builder()
+                .productId(product.getId())
+                .title(product.getTitle())
+                .price(product.getPrice())
+                .tfidfVector(product.getTfidfVector())
+                .imageUrl(singleImageUrl)
+                .build();
     }
 
     public static SimilarProductResponseDTO from(TfidfService.ProductWithSimilarity productWithSimilarity) {
         DuckuJangter product = productWithSimilarity.getProduct();
-
         String singleImageUrl = product.getJangterImages().stream()
                 .findFirst()
                 .map(img -> img.getImage().getImageUrl())
                 .orElse(null);
 
-        return new SimilarProductResponseDTO(
-                product.getId(),
-                product.getTitle(),
-                product.getPrice(),
-                product.getTfidfVector(),
-                singleImageUrl
-        );
+        return SimilarProductResponseDTO.builder()
+                .productId(product.getId())
+                .title(product.getTitle())
+                .price(product.getPrice())
+                .tfidfVector(product.getTfidfVector())
+                .imageUrl(singleImageUrl)
+                .build();
     }
 }
