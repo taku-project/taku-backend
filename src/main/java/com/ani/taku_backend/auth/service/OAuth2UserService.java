@@ -117,10 +117,10 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         DefaultOAuth2User getOAuth2User = null;
         switch (providerType) {
             case GOOGLE:
-                getOAuth2User = new DefaultOAuth2User(AuthorityUtils.createAuthorityList(findOptUser.get().getRole()), attributes, "sub");
+                getOAuth2User = new DefaultOAuth2User(AuthorityUtils.createAuthorityList(findOptUser.get().getRole().name()), attributes, "sub");
                 break;
             case KAKAO:
-                getOAuth2User = new DefaultOAuth2User(AuthorityUtils.createAuthorityList(findOptUser.get().getRole()), attributes, "id");
+                getOAuth2User = new DefaultOAuth2User(AuthorityUtils.createAuthorityList(findOptUser.get().getRole().name()), attributes, "id");
                 break;
         }
         return getOAuth2User;

@@ -37,7 +37,7 @@ public class UserService {
       .providerType(userInfo.getProviderType().toString())
       .gender(userInfo.getGender())
       .ageRange(userInfo.getAgeRange())
-      .role(UserRole.USER.toString())
+      .role(UserRole.USER)
       .build();
 
     User savedUser = userRepository.save(user);
