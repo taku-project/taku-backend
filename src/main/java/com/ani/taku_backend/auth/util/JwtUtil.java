@@ -1,5 +1,6 @@
 package com.ani.taku_backend.auth.util;
 
+import com.ani.taku_backend.common.enums.ProviderType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -41,20 +42,32 @@ public class JwtUtil {
     }
 
     // 임시 토큰 생성 (회원가입용)
-    public String createTemporaryToken(Map<String, Object> attributes) {
+    public String createTemporaryToken(Map<String, Object> attributes, ProviderType providerType) {
         Map<String, Object> claims = new HashMap<>();
-        
-        // 카카오 계정 정보 추출
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        
-        // 필요한 정보만 claims에 저장
-        claims.put("email", kakaoAccount.get("email"));
-        claims.put("id", String.valueOf(attributes.get("id"))); // domesticId
-        claims.put("gender", String.valueOf(kakaoAccount.get("gender")).toUpperCase());
-        claims.put("age_range", String.valueOf(kakaoAccount.get("age_range")));
-        claims.put("nickname", ((Map<String, Object>)kakaoAccount.get("profile")).get("nickname"));
-        claims.put("profile_image_url", ((Map<String, Object>)kakaoAccount.get("profile")).get("profile_image_url"));
-        claims.put("type", "TEMPORARY");
+
+        // 구글은 젠더, 나이 정보 주지않음 -> null
+        switch (providerType) {
+            case GOOGLE:
+                claims.put("email", attributes.get("email"));
+                claims.put("id", String.valueOf(attributes.get("sub")));    // 구글 고유 아이디 -> domesticId
+                claims.put("nickname", attributes.get("name"));
+                claims.put("profile_image_url", attributes.get("picture"));
+                claims.put("type", "TEMPORARY");
+                break;
+            case KAKAO:
+                // 카카오 계정 정보 추출
+                Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+
+                // 필요한 정보만 claims에 저장
+                claims.put("email", kakaoAccount.get("email"));
+                claims.put("id", String.valueOf(attributes.get("id"))); // domesticId
+                claims.put("gender", String.valueOf(kakaoAccount.get("gender")).toUpperCase());
+                claims.put("age_range", String.valueOf(kakaoAccount.get("age_range")));
+                claims.put("nickname", ((Map<String, Object>)kakaoAccount.get("profile")).get("nickname"));
+                claims.put("profile_image_url", ((Map<String, Object>)kakaoAccount.get("profile")).get("profile_image_url"));
+                claims.put("type", "TEMPORARY");
+                break;
+        }
         
         return createToken(claims, temporaryTokenValidityTime);
     }

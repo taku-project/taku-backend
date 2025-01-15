@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -121,7 +120,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 		}
 
@@ -183,10 +182,6 @@ public class UserController {
 	}
 
 
-	/*
-	* TO DO
-	* com.ani.taku_... 머시기 수정하기 위에 APiResponse 어노테이션이랑 이름이 같아서 발생하는 문제임
-	 * */
 	@GetMapping("/{userId}")
 	@Operation(
 			summary = "유저 정보 조회",
@@ -234,7 +229,7 @@ public class UserController {
 				userService.updateProfileImg(userId, fileUrl);
 			}catch (Exception e){
 				System.out.println(e);
-				throw new FileException.FileUploadException("파일 업로드 실패");
+				throw new FileException.FileUploadException();
 			}
 
 			return CommonResponse.ok(fileUrl);

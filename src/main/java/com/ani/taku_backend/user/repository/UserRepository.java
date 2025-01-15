@@ -41,4 +41,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Query("UPDATE User u SET u.profileImg = :profileImg WHERE u.userId = :userId")
   void updateProfileImg(@Param("userId") Long userId,@Param("profileImg") String profileImg);
 
+
+  // 유저ID 리스트로 유저 조회
+  List<User> findByUserIdIn(List<Long> userIds);
+
+
 }
