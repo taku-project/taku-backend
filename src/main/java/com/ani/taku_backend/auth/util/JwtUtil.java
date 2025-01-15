@@ -1,6 +1,7 @@
 package com.ani.taku_backend.auth.util;
 
 import com.ani.taku_backend.common.enums.ProviderType;
+import com.ani.taku_backend.common.enums.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -79,7 +80,7 @@ public class JwtUtil {
         User userEntity = User.builder().userId(userDTO.getUserId())
             .nickname(userDTO.getNickname())
             .email(userDTO.getEmail())
-            .role(userDTO.getRole())
+            .role(UserRole.findKey(userDTO.getRole()))
             .providerType(userDTO.getProviderType())
             .profileImg(userDTO.getProfileImg())
             .status(userDTO.getStatus())
@@ -173,7 +174,7 @@ public class JwtUtil {
             .userId(userDTO.getUserId())
             .email(userDTO.getEmail())
             .nickname(userDTO.getNickname())
-            .role(userDTO.getRole())
+            .role(UserRole.findKey(userDTO.getRole()))
             .providerType(userDTO.getProviderType())
             .profileImg(userDTO.getProfileImg())
             .status(userDTO.getStatus())

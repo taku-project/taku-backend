@@ -45,7 +45,7 @@ public class UserDTO {
             .domesticId(user.getDomesticId())
             .gender(user.getGender())
             .ageRange(user.getAgeRange())
-            .role(user.getRole())
+            .role(user.getRole().name())
             .email(user.getEmail())
             .build();
     }
