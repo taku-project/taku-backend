@@ -66,19 +66,16 @@ public enum ErrorCode {
     MARKET_PRICE_NOT_FOUND(40406,HttpStatus.NOT_FOUND, "시세 정보를 찾을 수 없습니다."),
 
     // Post / Product
-    NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다."),-
-
-    // Chat
-    DUPLICATE_CHAT_ROOM(40903, HttpStatus.CONFLICT, "이미 존재하는 채팅방입니다."),
-    CHAT_ROOM_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다.");
-
+    NOT_FOUND_POST(40403, HttpStatus.NOT_FOUND, "존재하지 않는 글입니다."),
 
     // Comments
     NOT_FOUND_COMMENTS(40403, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
 
     // Interactive
     NOT_FOUND_INTERACTION(40408, HttpStatus.NOT_FOUND, "존재하지 않는 상호작용입니다."),
-    ;
+    // Chat
+    DUPLICATE_CHAT_ROOM(40903, HttpStatus.CONFLICT, "이미 존재하는 채팅방입니다."),
+    CHAT_ROOM_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다.");
     // 403 Forbidden
     private final Integer code;
     private final HttpStatus httpStatus;
