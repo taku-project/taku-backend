@@ -3,7 +3,11 @@ package com.ani.taku_backend.user.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.ani.taku_backend.user.converter.UserConverter;
+import com.ani.taku_backend.common.model.entity.Image;
+import com.ani.taku_backend.common.repository.ImageRepository;
+import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.user.model.entity.UserImage;
+import com.ani.taku_backend.user.repository.UserImageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,12 @@ import lombok.extern.log4j.Log4j2;
 public class UserService {
 
   private final UserRepository userRepository;
+
+  private final UserImageRepository userImageRepository;
+
+  private final ImageRepository imageRepository;
+
+  private final FileService fileService;
 
   // 유저 등록
   public User registerUser(OAuthUserInfo userInfo) {
@@ -87,8 +97,63 @@ public class UserService {
   }
 
   @Transactional
-  public void updateProfileImg(Long userId, String profileImg){
+  public void updateProfileImg(Long userId, String profileImg, Integer fileSize, String fileType, String originalName, String imageUrl){
+
+
+    //기존 image soft delete
+    Optional<UserImage> userImage = userImageRepository.findByUser_UserId(userId);
+    System.out.println(userImage+"유저 이미지 입니다. ");
+
+    if(userImage.isPresent()) { //만약, userImage Repo에 image가 있다면,
+      Long imageId = userImage.get().getImage().getId();
+      System.out.println(imageId+"이미지 id 임");
+
+      imageRepository.softDeleteByImageId(imageId);
+
+      //userImage Repository에서 지우기
+      userImageRepository.deleteByUser_UserId(userId);
+
+      //cloudflare r2에서 지우기
+      fileService.deleteImageFile(userImage.get().getImage().getFileName());
+
+
+    }
+
+
+    //새로운 iamge 넣기
+    Optional<User> user = userRepository.findById(userId);
+
+    String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+
+    Image image = Image.builder()
+            .imageUrl(imageUrl)
+            .fileSize(fileSize)
+            .fileName(fileName)
+            .fileType(fileType)
+            .originalName(originalName)
+            .user(user.get())
+            .build();
+
+    imageRepository.save(image);
+
+    UserImage userImage1 = UserImage.builder().user(user.get()).image(image).build();
+
+    userImageRepository.save(userImage1);
+
     userRepository.updateProfileImg(userId, profileImg);
+
+
+
+
+
+
+
+
+
+
+
+
+
   }
 
 }

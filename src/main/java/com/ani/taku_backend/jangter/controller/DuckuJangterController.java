@@ -8,14 +8,20 @@ import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
+
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -57,6 +63,19 @@ public class DuckuJangterController {
         Long productId = duckuJangterService.createProduct(requestDTO, user);
 
         return CommonResponse.created(productId);
+    }
+
+    /**
+     * 덕후 장터 판매 글 전체 목록 조회
+     */
+
+    @GetMapping("/products")
+    public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@RequestBody ProductFindListRequestDto request){
+
+        System.out.println("size:"+request.getSize());
+        List<ProductFindListResponseDto> products = duckuJangterService.getProducts(request);
+
+        return CommonResponse.ok(products);
     }
 
     /**

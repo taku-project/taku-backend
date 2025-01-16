@@ -116,6 +116,7 @@ public class FileService {
         }
     }
 
+
     public void deleteFolder(String folderPath) {
         try {
             // folderPath 하위의 객체 리스트 가져오기
@@ -153,3 +154,4 @@ public class FileService {
     }
 
 }
+
