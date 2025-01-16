@@ -53,8 +53,9 @@ public class User {
     @Column(name = "profile_img", columnDefinition = "TEXT")
     private String profileImg;            // 프로필이미지 URL
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 10)
-    private String status;                // 유저 상태 (예: ACTIVE, INACTIVE)
+    private UserStatus status;                // 유저 상태 (예: ACTIVE, INACTIVE)
 
     @Column(name = "domestic_id", length = 255)
     private String domesticId;            // 도메스틱ID

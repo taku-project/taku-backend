@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -44,8 +45,9 @@ public class Category extends BaseTimeEntity {
     @Column(name = "name" , length = 255)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "created_type" , length = 255)
-    private String createdType;
+    private UserRole createdType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status" , length = 100)
