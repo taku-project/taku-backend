@@ -3,7 +3,7 @@ package com.ani.taku_backend.user.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.ani.taku_backend.user.converter.UserConverter;
+import com.ani.taku_backend.user.model.entity.UserStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class UserService {
     User user = User.builder()
       .email(userInfo.getEmail())
       .domesticId(userInfo.getDomesticId())
-      .status(StatusType.ACTIVE.name())
+      .status(UserStatus.ACTIVE)
       .nickname(userInfo.getNickname())
       .profileImg(userInfo.getImageUrl())
       .providerType(userInfo.getProviderType().toString())
