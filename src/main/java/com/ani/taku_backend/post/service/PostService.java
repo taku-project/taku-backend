@@ -39,11 +39,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
-    private final FileService fileService;
-    private final BlackUserService blackUserService;
 
     /**
-     * 게시글 전체 조회 -> 삭제된 내역은 검색안되게 수정, 그리고 반환값에 전체 개수 반환
+     * 게시글 전체 조회
      */
     public PostListResponseDTO findAllPostList(PostListRequestDTO postListRequestDTO) {
 
@@ -65,22 +63,20 @@ public class PostService {
     /**
      * 게시글 작성
      */
-    @RequireUser
     @Transactional
     @ValidateProfanity(fields = {"title", "content"})
-    public Long createPost(PostCreateRequestDTO postCreateRequestDTO, List<MultipartFile> imageList, PrincipalUser principalUser) {
+    public Long createPost(PostCreateRequestDTO postCreateRequestDTO, User user) {
 
-        User user = blackUserService.checkBlackUser(principalUser);                              // 유저 검증
         Category category = checkCategory(postCreateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
-
-       List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
+        List<MultipartFile> imageList = postCreateRequestDTO.getImageList();
+        List<Image> saveImageList = imageService.saveImageList(imageList, user);     // 이미지 저장
 
         Post post = getPost(postCreateRequestDTO, user, category);                   // 게시글 생성
         setRelationCommunityImages(saveImageList, post);                             // 연관관계 설정
 
         Long savePostId = postRepository.save(post).getId();
-        log.info("게시글 저장 완료, savePostId: {}", savePostId);
+        log.debug("게시글 저장 완료, savePostId: {}", savePostId);
 
         return savePostId;
     }
@@ -88,12 +84,9 @@ public class PostService {
     /**
      * 게시글 업데이트
      */
-    @RequireUser
     @Transactional
     @ValidateProfanity(fields = {"title", "content"})
-    public Long updatePost(PostUpdateRequestDTO postUpdateRequestDTO, Long postId, List<MultipartFile> imageList, PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+    public Long updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO, User user) {
 
         // 게시글 조회, 없으면 예외
         Post post = postRepository.findById(postId)
@@ -103,20 +96,15 @@ public class PostService {
         checkDeleteProduct(post);                    // 삭제 검증
         Category itemCategory = checkCategory(postUpdateRequestDTO.getCategoryId(), null);     // 카테고리 확인
 
-        // 게시글 이미지
-        List<Image> postImageList = post.getCommunityImages().stream().map(CommunityImage::getImage).toList();
-
-        // 업데이트 이미지
-        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), imageList, postImageList, user);
+        // 이미지 업데이트
+        List<Image> newImageList = imageService.getUpdateImageList(postUpdateRequestDTO.getDeleteImageUrl(), postUpdateRequestDTO.getImageList(), user);
 
         if (!newImageList.isEmpty()) {
             setRelationCommunityImages(newImageList, post);         // 연관관계 설정 -> 이미지 저장
         }
 
-
-
         post.updatePost(postUpdateRequestDTO, itemCategory);         // 게시글 수정
-        log.info("게시글 수정 성공, postId: {}", postId);
+        log.debug("게시글 수정 성공, postId: {}", postId);
 
         return post.getId();
     }
@@ -126,8 +114,7 @@ public class PostService {
      */
     @RequireUser
     @Transactional
-    public void deletePost(Long postId, long categoryId, PrincipalUser principalUser) {
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+    public void deletePost(Long postId, long categoryId, User user) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
@@ -137,10 +124,10 @@ public class PostService {
         checkCategory(categoryId, post);             // 카테고리 검증
 
         post.delete();                               // 삭제 로직
-        log.info("게시글 삭제 성공, post.getDeletedAt: {}", post.getDeletedAt());
+        log.debug("게시글 삭제 성공, post.getDeletedAt: {}", post.getDeletedAt());
         post.getCommunityImages().forEach(communityImage -> {
             communityImage.getImage().delete();
-            log.info("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
+            log.debug("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
         });
 
 
@@ -165,7 +152,7 @@ public class PostService {
                     .image(image)
                     .build();
             post.addCommunityImage(communityImage);
-            log.info("이미지 연관관계 적용 성공, communityImage.getImage().getId: {}", communityImage.getImage().getId());
+            log.debug("이미지 연관관계 적용 성공, communityImage.getImage().getId: {}", communityImage.getImage().getId());
         }
     }
 
@@ -179,7 +166,7 @@ public class PostService {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
 
-        log.info("카테고리 검증 완료, 카테고리 이름 {}", category.getName());
+        log.debug("카테고리 검증 완료, 카테고리 이름 {}", category.getName());
         return category;
     }
 

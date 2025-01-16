@@ -147,7 +147,7 @@ public class FileService {
     public void deleteImageFile(String fileName) {
         try {
             client.deleteObject(imageBucket, fileName);
-            log.info("이미지 삭제 완료 imageBucket: {}, fileName: {}",imageBucket, fileName);
+            log.debug("이미지 삭제 완료 imageBucket: {}, fileName: {}",imageBucket, fileName);
         } catch (AmazonS3Exception e) {
             throw new AmazonS3Exception("Failed to delete file from Cloudflare R2: " + e.getMessage(), e);
         }

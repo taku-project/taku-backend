@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @Builder
@@ -75,6 +76,12 @@ public class ShortsCommentDTO {
         }
     }
 
+    @Setter
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "쇼츠 댓글 대댓글 정보")
     public static class CommentReplyDTO{
         @Schema(description = "쇼츠 댓글 대댓글 아이디")
         @JsonProperty("id")
@@ -86,6 +93,14 @@ public class ShortsCommentDTO {
         @JsonProperty("user_id")
         @Schema(description = "쇼츠 댓글 대댓글 작성자 아이디")
         private Long userId;
+
+        @JsonProperty("nickname")
+        @Schema(description = "쇼츠 댓글 대댓글 작성자 닉네임")
+        private String nickname;
+
+        @JsonProperty("profile_image")
+        @Schema(description = "쇼츠 댓글 대댓글 작성자 프로필 이미지")
+        private String profileImage;
 
         @JsonProperty("created_at")
         @Schema(description = "쇼츠 댓글 대댓글 생성 시간")

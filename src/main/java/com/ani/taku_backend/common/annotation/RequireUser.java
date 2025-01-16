@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 public @interface RequireUser {
     // 관리자 권한 필요 여부
     boolean isAdmin() default false;
+
+    boolean allowAnonymous() default false;
 }

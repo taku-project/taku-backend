@@ -3,6 +3,7 @@ package com.ani.taku_backend.common.aop;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -45,8 +46,17 @@ public class SecurityAspect {
 
         RequireUser requireUser = ((MethodSignature) joinPoint.getSignature()).getMethod().getAnnotation(RequireUser.class);
 
-        // Token 인증 정보
-        PrincipalUser principalUser = (PrincipalUser)authentication.getPrincipal();
+        PrincipalUser principalUser = null;
+        if(authentication.getPrincipal() instanceof PrincipalUser){
+            principalUser = (PrincipalUser)authentication.getPrincipal();
+        }else{
+            if(requireUser.allowAnonymous()){
+                principalUser = new PrincipalUser(null, true);
+            }else{
+                throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+            }
+        }
+
         // 관리자 권한 필요 여부
         checkAdmin(principalUser, requireUser.isAdmin());
 
@@ -134,11 +144,8 @@ public class SecurityAspect {
     }
 
     private void checkAdmin(PrincipalUser principalUser, boolean isAdmin) {
-        if (isAdmin && !principalUser.getUser().getRole().equals(UserRole.ADMIN.name())) {
+        if (isAdmin && !principalUser.getUser().getRole().equals(UserRole.ADMIN.name()) && !principalUser.isAnonymous()) {
             throw new DuckwhoException(ErrorCode.FORBIDDEN_ACCESS_ADMIN);
         }
     }
-
-
-    
 }

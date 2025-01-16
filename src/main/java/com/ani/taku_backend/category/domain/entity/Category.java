@@ -5,26 +5,27 @@ import java.util.List;
 
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /** 
  * 카테고리 테이블 엔티티
@@ -46,8 +47,9 @@ public class Category extends BaseTimeEntity {
     @Column(name = "created_type" , length = 255)
     private String createdType;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status" , length = 100)
-    private String status;
+    private CategoryStatus status;
 
     @Column(name = "view_count")
     private Long viewCount;
@@ -57,8 +59,8 @@ public class Category extends BaseTimeEntity {
     private User user;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<CategoryImage> categoryImages;
+    @OneToOne(mappedBy = "category", cascade = CascadeType.ALL)
+    private CategoryImage categoryImage;
 
     // TODO : 카테고리 애니장르
 
@@ -72,13 +74,16 @@ public class Category extends BaseTimeEntity {
             .name(requestCategoryCreateDTO.getName())
             .createdType(user.getRole())
             .viewCount(0L)
-            .status(StatusType.INACTIVE.name())
+            .status(CategoryStatus.INACTIVE)
             .user(user)
-            .categoryImages(new ArrayList<>()) 
+            .categoryImage(null)
             .categoryGenres(new ArrayList<>())
             .build();
     }
 
-
-
+    public void setCategoryImage(CategoryImage categoryImage) {
+        this.categoryImage = categoryImage;
+    }
 }
+
+

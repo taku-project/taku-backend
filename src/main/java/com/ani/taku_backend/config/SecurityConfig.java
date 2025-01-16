@@ -15,6 +15,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.ani.taku_backend.auth.handler.OAuth2AuthenticationHandler;
 import com.ani.taku_backend.auth.service.OAuth2UserService;
 import com.ani.taku_backend.config.filter.JwtAuthenticationFilter;
+import com.ani.taku_backend.config.filter.PublicEndpointFilter;
 import com.ani.taku_backend.config.filter.RefreshTokenFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationHandler.OAuth2FailureHandler oAuth2FailureHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RefreshTokenFilter refreshTokenFilter;
-    
+    private final PublicEndpointFilter publicEndpointFilter;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -67,8 +68,11 @@ public class SecurityConfig {
                 .successHandler(this.oAuth2SuccessHandler)
                 .failureHandler(this.oAuth2FailureHandler)
             )
+
             .addFilterBefore(refreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthenticationFilter, RefreshTokenFilter.class);
+            .addFilterBefore(publicEndpointFilter, RefreshTokenFilter.class)
+            .addFilterBefore(jwtAuthenticationFilter, PublicEndpointFilter.class);
+
 
         return http.build();
     }
