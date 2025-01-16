@@ -7,6 +7,7 @@ import com.ani.taku_backend.marketprice.model.dto.PriceGraphRequestDTO;
 import com.ani.taku_backend.marketprice.service.CompletedDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,13 +44,14 @@ public class CompletedDealController {
             @RequestParam(defaultValue = "ALL") GraphDisplayOption displayOption,
 
             @Parameter(description = "요청할 페이지 번호 (기본값: 0)", example = "0", required = false)
-            @RequestParam(defaultValue = "0") int page, // 페이지 번호
+            @RequestParam(defaultValue = "0") int page,
 
             @Parameter(description = "한 페이지당 데이터 개수 (기본값: 5)", example = "5", required = false)
-            @RequestParam(defaultValue = "5") int size, // 페이지 크기
+            @RequestParam(defaultValue = "5") int size,
 
-            @Parameter(description = "정렬 조건 (기본값: id,asc)", example = "id,asc", required = false)
-            @RequestParam(defaultValue = "id,asc") String sort // 정렬 조건
+            @Parameter(description = "정렬 방향")
+            @Schema(allowableValues = {"asc", "desc"}, example = "asc")
+            @RequestParam(defaultValue = "asc") String sort
     ) {
         try {
             log.debug("시세 조회 요청 - keyword: {}, startDate: {}, endDate: {}, displayOption: {}, page: {}, size: {}, sort: {}",
@@ -59,10 +61,9 @@ public class CompletedDealController {
             LocalDate parsedStartDate = LocalDate.parse(startDate, formatter);
             LocalDate parsedEndDate = LocalDate.parse(endDate, formatter);
 
-
-            String[] sortParams = sort.split(",");
-            Sort.Direction direction = Sort.Direction.fromString(sortParams[1]);
-            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
+            // 정렬 방향만 파라미터로 받고, 정렬 기준은 id로 고정하게 수정
+            Sort.Direction direction = Sort.Direction.fromString(sort);
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "id"));
 
             var requestDTO = new PriceGraphRequestDTO(keyword, parsedStartDate, parsedEndDate, displayOption);
 
