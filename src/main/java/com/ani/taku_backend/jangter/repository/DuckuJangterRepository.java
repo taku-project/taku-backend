@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long> {
+public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long>, DuckuJangterRepositoryCustom {
 
     @Modifying
     @Query("update DuckuJangter d set d.viewCount = d.viewCount + :viewCount where d.id = :productId")

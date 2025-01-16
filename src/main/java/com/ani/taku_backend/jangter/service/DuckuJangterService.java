@@ -1,6 +1,5 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.comments.model.entity.Comments;
 import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
@@ -14,11 +13,15 @@ import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
+import com.ani.taku_backend.jangter.repository.DuckuJangterRepositoryCustom;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
+
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -40,6 +43,7 @@ public class DuckuJangterService {
 
     private final DuckuJangterRepository duckuJangterRepository;
     private final ItemCategoriesRepository itemCategoriesRepository;
+
     private final ImageService imageService;
     private final BlackUserService blackUserService;
     private final FileService fileService;
@@ -209,5 +213,14 @@ public class DuckuJangterService {
         if (duckuJangter.getDeletedAt() != null) {
             throw new DuckwhoException(NOT_FOUND_POST);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request) {
+
+        System.out.println(request.getMaxPrice()+" "+request.getSize());
+        return duckuJangterRepository.findFilteredProducts(request.getSearchKeyword(), request.getCategories(),
+                request.getMinPrice(), request.getMaxPrice(), request.getSort(), request.getOrder(),
+                request.getLastId(), request.getSize());
     }
 }
