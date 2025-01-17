@@ -1,6 +1,8 @@
 package com.ani.taku_backend.auth.util;
 
 import com.ani.taku_backend.common.enums.ProviderType;
+import com.ani.taku_backend.common.enums.UserRole;
+import com.ani.taku_backend.user.model.entity.UserStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -27,6 +30,7 @@ public class JwtUtil {
     private final long temporaryTokenValidityTime;
     private final long refreshTokenValidityTime;
     private final ObjectMapper objectMapper;
+
     public JwtUtil(
         @Value("${jwt.secret}") String secret,
         @Value("${jwt.access-token-validity}") long accessTokenValidityTime,
@@ -57,14 +61,16 @@ public class JwtUtil {
             case KAKAO:
                 // 카카오 계정 정보 추출
                 Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+                Map<String, Object> profile = (Map<String, Object>) kakaoAccount.getOrDefault("profile", new HashMap<>());
+                String gender = (String) kakaoAccount.get("gender");
 
                 // 필요한 정보만 claims에 저장
                 claims.put("email", kakaoAccount.get("email"));
                 claims.put("id", String.valueOf(attributes.get("id"))); // domesticId
-                claims.put("gender", String.valueOf(kakaoAccount.get("gender")).toUpperCase());
-                claims.put("age_range", String.valueOf(kakaoAccount.get("age_range")));
-                claims.put("nickname", ((Map<String, Object>)kakaoAccount.get("profile")).get("nickname"));
-                claims.put("profile_image_url", ((Map<String, Object>)kakaoAccount.get("profile")).get("profile_image_url"));
+                claims.put("gender", StringUtils.hasText(gender) ? gender.toUpperCase() : null);
+                claims.put("age_range", kakaoAccount.get("age_range"));
+                claims.put("nickname", profile.get("nickname"));
+                claims.put("profile_image_url", profile.get("profile_image_url"));
                 claims.put("type", "TEMPORARY");
                 break;
         }
@@ -79,10 +85,10 @@ public class JwtUtil {
         User userEntity = User.builder().userId(userDTO.getUserId())
             .nickname(userDTO.getNickname())
             .email(userDTO.getEmail())
-            .role(userDTO.getRole())
+            .role(UserRole.findKey(userDTO.getRole()))
             .providerType(userDTO.getProviderType())
             .profileImg(userDTO.getProfileImg())
-            .status(userDTO.getStatus())
+            .status(UserStatus.findKey(userDTO.getStatus()))
             .domesticId(userDTO.getDomesticId())
             .gender(userDTO.getGender())
             .ageRange(userDTO.getAgeRange())
@@ -173,10 +179,10 @@ public class JwtUtil {
             .userId(userDTO.getUserId())
             .email(userDTO.getEmail())
             .nickname(userDTO.getNickname())
-            .role(userDTO.getRole())
+            .role(UserRole.findKey(userDTO.getRole()))
             .providerType(userDTO.getProviderType())
             .profileImg(userDTO.getProfileImg())
-            .status(userDTO.getStatus())
+            .status(UserStatus.findKey(userDTO.getStatus()))
             .domesticId(userDTO.getDomesticId())
             .gender(userDTO.getGender())
             .ageRange(userDTO.getAgeRange())
