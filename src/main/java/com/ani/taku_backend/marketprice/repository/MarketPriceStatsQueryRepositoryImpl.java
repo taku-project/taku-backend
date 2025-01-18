@@ -72,10 +72,10 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
                     .orderBy(stats.registeredDate.asc())
                     .fetch();
 
-            // 기존 데이터와 병합
+
             Map<LocalDate, PriceDataPoint> mergedData = dataPoints.stream()
                     .collect(Collectors.toMap(
-                            PriceDataPoint::getDate,
+                            point -> point.date(),
                             point -> point
                     ));
 
@@ -94,9 +94,9 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
                     } else {
                         return PriceDataPoint.builder()
                                 .date(date)
-                                .registeredPrice(v.getRegisteredPrice())
+                                .registeredPrice(v.registeredPrice())
                                 .soldPrice(soldPrice)
-                                .dealCount(v.getDealCount())
+                                .dealCount(v.dealCount())
                                 .build();
                     }
                 });
