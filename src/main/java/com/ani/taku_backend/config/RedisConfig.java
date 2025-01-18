@@ -1,57 +1,38 @@
 package com.ani.taku_backend.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-
+import org.springframework.http.HttpMethod;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @Configuration
-public class RedisConfig {
-    
-    @Value("${spring.data.redis.host}")
-    private String host;
-    
-    @Value("${spring.data.redis.port}")
-    private int port;
-    
-    @Value("${spring.data.redis.password}")
-    private String password;
-    
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(host);
-        redisConfig.setPort(port);
-        redisConfig.setPassword(password);
-        
-        return new LettuceConnectionFactory(redisConfig);
+@EnableWebSocketMessageBroker
+public class RedisConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Value("${client.front-url}")
+    private String frontUrl;
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins(frontUrl)
+                .withSockJS();
     }
-    
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
-        
-        // String 타입을 위한 serializer
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();
-        
-        // List<String>을 위한 serializer
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        
-        // key는 항상 String 타입으로
-        template.setKeySerializer(stringSerializer);
-        template.setHashKeySerializer(stringSerializer);
-        
-        // value는 타입에 따라 자동으로 선택되도록 설정
-        template.setValueSerializer(jsonSerializer);
-        template.setHashValueSerializer(jsonSerializer);
-        
-        return template;
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/sub");
+        registry.setApplicationDestinationPrefixes("/pub");
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.setMessageSizeLimit(160 * 64 * 1024)
+                .setSendTimeLimit(20 * 10000)
+                .setSendBufferSizeLimit(3 * 512 * 1024);
     }
 }

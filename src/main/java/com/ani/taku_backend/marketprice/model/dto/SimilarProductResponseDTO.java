@@ -1,14 +1,21 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
+import com.ani.taku_backend.common.util.TypeIdResolverForDevTools;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.marketprice.util.batch.TfidfService;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import lombok.Builder;
 
 @Builder
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.CLASS,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "@class"
+)
+@JsonTypeIdResolver(TypeIdResolverForDevTools.class)
 @Schema(description = "유사 상품 정보 DTO")
 public record SimilarProductResponseDTO(
         @Schema(description = "상품 ID", example = "123")
@@ -26,35 +33,29 @@ public record SimilarProductResponseDTO(
         @Schema(description = "대표 썸네일 URL", example = "https://example.com/image.jpg")
         String imageUrl
 ) {
-    public static SimilarProductResponseDTO from(DuckuJangter product) {
-        String singleImageUrl = product.getJangterImages().stream()
+    private static String extractImageUrl(DuckuJangter product) {
+        return product.getJangterImages().stream()
                 .findFirst()
                 .map(img -> img.getImage().getImageUrl())
                 .orElse(null);
+    }
 
+    private static SimilarProductResponseDTO createFrom(DuckuJangter product, String imageUrl) {
         return new SimilarProductResponseDTO(
                 product.getId(),
                 product.getTitle(),
                 product.getPrice(),
                 product.getTfidfVector(),
-                singleImageUrl
+                imageUrl
         );
     }
 
+    public static SimilarProductResponseDTO from(DuckuJangter product) {
+        return createFrom(product, extractImageUrl(product));
+    }
 
     public static SimilarProductResponseDTO from(TfidfService.ProductWithSimilarity productWithSimilarity) {
         DuckuJangter product = productWithSimilarity.getProduct();
-        String singleImageUrl = product.getJangterImages().stream()
-                .findFirst()
-                .map(img -> img.getImage().getImageUrl())
-                .orElse(null);
-
-        return new SimilarProductResponseDTO(
-                product.getId(),
-                product.getTitle(),
-                product.getPrice(),
-                product.getTfidfVector(),
-                singleImageUrl
-        );
+        return createFrom(product, extractImageUrl(product));
     }
 }

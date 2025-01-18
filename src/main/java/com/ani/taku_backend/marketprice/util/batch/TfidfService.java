@@ -112,7 +112,7 @@ public class TfidfService {
                 .collect(Collectors.toList());
     }
 
-    @Scheduled(fixedRate = DOCUMENT_STATS_UPDATE_RATE) // 1시간마다 갱신
+    //@Scheduled(fixedRate = DOCUMENT_STATS_UPDATE_RATE) // 1시간마다 갱신
     public void updateDocumentStatistics() {
         try {
             List<DuckuJangter> allProducts = duckuJangterRepository.findByDeletedAtIsNull();

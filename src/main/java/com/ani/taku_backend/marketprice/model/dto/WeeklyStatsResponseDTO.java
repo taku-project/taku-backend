@@ -1,12 +1,19 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
+import com.ani.taku_backend.common.util.TypeIdResolverForDevTools;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import lombok.Builder;
 
 @Builder
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.CLASS,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "@class"
+)
+@JsonTypeIdResolver(TypeIdResolverForDevTools.class)
 @Schema(description = "최근 일주일 판매 통계 DTO")
 public record WeeklyStatsResponseDTO(
         @Schema(description = "평균 판매가", example = "81750")
