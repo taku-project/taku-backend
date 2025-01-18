@@ -30,4 +30,12 @@ public class ChatRoomController {
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(userId);
         return CommonResponse.ok(chatRooms);
     }
+
+    @GetMapping("/{roomId}")
+    public CommonResponse<ChatRoomResponseDTO> getChatRoom(
+            @PathVariable String roomId,
+            @RequestParam Long userId) {
+        ChatRoomResponseDTO chatRoom = chatRoomService.findChatRoom(roomId, userId);
+        return CommonResponse.ok(chatRoom);
+    }
 }

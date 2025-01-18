@@ -58,4 +58,15 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
         }
     }
+
+    public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        if (!chatRoom.getBuyerId().equals(userId) && !chatRoom.getSellerId().equals(userId)) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        return ChatRoomResponseDTO.of(chatRoom, userId);
+    }
 }
