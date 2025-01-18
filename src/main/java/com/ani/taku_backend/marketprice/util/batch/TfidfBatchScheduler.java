@@ -11,6 +11,7 @@ import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 
 import java.util.List;
 
+@Profile("!local")
 @Component
 @RequiredArgsConstructor
 @Slf4j
