@@ -33,7 +33,7 @@ public class CompletedDealController {
     @GetMapping("/search")
     public CommonResponse<MarketPriceSearchResponseDTO> searchMarketPrice(
             @Parameter(description = "검색 키워드", required = true)
-            @RequestParam String keyword,
+            @RequestParam("keyword") String keyword,
 
             @Parameter(description = "시작 날짜 (yyyy-MM-dd)", required = true)
             @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -43,14 +43,17 @@ public class CompletedDealController {
             @DateTimeFormat(pattern = "yyyy-MM-dd")
             @RequestParam LocalDate endDate,
 
+
             @Parameter(description = "그래프 표시 옵션 (기본값: ALL)", required = false)
-            @RequestParam(defaultValue = "ALL") GraphDisplayOption displayOption,
+            @RequestParam(defaultValue = "ALL", name = "displayOption") GraphDisplayOption displayOption,
+
 
             @Parameter(description = "정렬 방향", schema = @Schema(allowableValues = {"ASC", "DESC"}))
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
 
             @ParameterObject 
             @PageableDefault(size = 5) Pageable pageable
+
     ) {
         try {
             var requestDTO = new PriceGraphRequestDTO(keyword, startDate, endDate, displayOption);

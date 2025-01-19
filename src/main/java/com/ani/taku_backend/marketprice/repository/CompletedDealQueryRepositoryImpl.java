@@ -1,8 +1,5 @@
 package com.ani.taku_backend.marketprice.repository;
 
-import com.ani.taku_backend.common.model.entity.QImage;
-import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.QJangterImages;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
 import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
@@ -18,6 +15,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.ani.taku_backend.jangter.model.entity.QDuckuJangter.duckuJangter;
+import static com.ani.taku_backend.jangter.model.entity.QJangterImages.jangterImages;
 
 @RequiredArgsConstructor
 public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepository {
@@ -89,26 +89,22 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
 
     @Override
     public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
-        QDuckuJangter jangter = QDuckuJangter.duckuJangter;
-        QJangterImages jangterImages = QJangterImages.jangterImages;
-
-
         return queryFactory
                 .select(Projections.constructor(
                         SimilarProductResponseDTO.class,
-                        jangter.id,
-                        jangter.title,
-                        jangter.price,
-                        jangter.tfidfVector,
+                        duckuJangter.id,
+                        duckuJangter.title,
+                        duckuJangter.price,
+                        duckuJangter.tfidfVector,
                         jangterImages.image.imageUrl
                 ))
-                .from(jangter)
-                .leftJoin(jangter.jangterImages, jangterImages)
+                .from(duckuJangter)
+                .leftJoin(duckuJangter.jangterImages, jangterImages)
                 .where(
-                        jangter.title.contains(keyword),
-                        jangter.deletedAt.isNull()
+                        duckuJangter.title.contains(keyword),
+                        duckuJangter.deletedAt.isNull()
                 )
-                .orderBy(jangter.id.desc())  // 최신순
+                .orderBy(duckuJangter.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
