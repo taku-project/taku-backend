@@ -8,6 +8,7 @@ import com.ani.taku_backend.marketprice.service.CompletedDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 
@@ -44,8 +46,11 @@ public class CompletedDealController {
             @Parameter(description = "그래프 표시 옵션 (기본값: ALL)", required = false)
             @RequestParam(defaultValue = "ALL") GraphDisplayOption displayOption,
 
+            @Parameter(description = "정렬 방향", schema = @Schema(allowableValues = {"ASC", "DESC"}))
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+
             @ParameterObject 
-            @PageableDefault(size = 5, sort = "id") Pageable pageable
+            @PageableDefault(size = 5) Pageable pageable
     ) {
         try {
             var requestDTO = new PriceGraphRequestDTO(keyword, startDate, endDate, displayOption);
