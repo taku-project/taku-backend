@@ -1,6 +1,5 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.comments.model.entity.Comments;
 import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
@@ -22,8 +21,18 @@ import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
+import com.ani.taku_backend.jangter.score.calculator.BookmarkScoreCalculator;
+import com.ani.taku_backend.jangter.score.calculator.PurchaseHistoryScoreCalculator;
+import com.ani.taku_backend.jangter.score.calculator.SearchHistoryScoreCalculator;
+import com.ani.taku_backend.jangter.score.calculator.ViewHistoryScoreCalculator;
+import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
+import com.ani.taku_backend.jangter.vo.UserPurchaseHistory;
+import com.ani.taku_backend.jangter.vo.UserSearchHistory;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -31,28 +40,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.ani.taku_backend.jangter.model.entity.UserInteraction;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
-import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
-import com.ani.taku_backend.jangter.vo.UserPurchaseHistory;
-import com.ani.taku_backend.jangter.vo.UserSearchHistory;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.ani.taku_backend.common.exception.ErrorCode.*;
-
-import com.ani.taku_backend.jangter.score.calculator.*;
+import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_CATEGORY;
+import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_POST;
+import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_ACCESS;
 
 @Slf4j
 @Service
