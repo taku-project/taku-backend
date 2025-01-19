@@ -39,7 +39,7 @@ public class TfidfService {
 
     @PostConstruct
     public void init() {
-        updateDocumentStatistics();
+        // updateDocumentStatistics();
     }
 
     public Map<String, Double> getTfidfVector(Long productId) {
