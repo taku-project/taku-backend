@@ -138,8 +138,8 @@ public class ApiCategoryController {
     })
     @GetMapping("")
     public CommonResponse<Page<ResponseCategorySeachDTO>> searchCategories(
-        @ModelAttribute RequestCategorySearch requestCategorySearch,
-        @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+        @Parameter(hidden = true) @ModelAttribute RequestCategorySearch requestCategorySearch,
+        @Parameter(hidden = true) @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
         return CommonResponse.ok(result);
