@@ -96,7 +96,7 @@ public class ApiCategoryController {
 			)
 		}
 	)
-    @PostMapping(value = "" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
     public CommonResponse<ResponseCategoryDTO> createCategory(
         @RequestPart("category")@Parameter(description = "카테고리 정보 <code>RequestCategoryCreateDTO</code> 스키마 참고 <code>Content-Type: application/json</code>") RequestCategoryCreateDTO requestCategoryCreateDTO,
@@ -136,7 +136,7 @@ public class ApiCategoryController {
             schema = @Schema(type = "string")
         )
     })
-    @GetMapping("")
+    @GetMapping
     public CommonResponse<Page<ResponseCategorySeachDTO>> searchCategories(
         @Parameter(hidden = true) @ModelAttribute RequestCategorySearch requestCategorySearch,
         @Parameter(hidden = true) @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
