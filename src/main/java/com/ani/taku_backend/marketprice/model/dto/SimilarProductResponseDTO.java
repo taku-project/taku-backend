@@ -1,11 +1,9 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
-import com.ani.taku_backend.common.util.TypeIdResolverForDevTools;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.marketprice.util.batch.TfidfService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import lombok.Builder;
