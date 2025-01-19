@@ -25,7 +25,6 @@ public class UserJangterRepositoryImpl implements UserJangterRepository {
 
     @Override
     public PageImpl<UserPurchaseResponseDTO> findUserPurchaseList(Long userId, Pageable pageable) {
-        // TODO 검색 키워드 있으면 리팩토링 하기
         long totalCount = queryFactory
                 .select(completedDeal.count())
                 .from(completedDeal)
