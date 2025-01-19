@@ -31,25 +31,25 @@ public class CompletedDealController {
     @GetMapping("/search")
     public CommonResponse<MarketPriceSearchResponseDTO> searchMarketPrice(
             @Parameter(description = "검색 키워드", required = true)
-            @RequestParam String keyword,
+            @RequestParam("keyword") String keyword,
 
             @Parameter(description = "시작 날짜 (yyyy-MM-dd)", required = true)
-            @RequestParam String startDate,
+            @RequestParam("startDate") String startDate,
 
             @Parameter(description = "종료 날짜 (yyyy-MM-dd)", required = true)
-            @RequestParam String endDate,
+            @RequestParam("endDate") String endDate,
 
             @Parameter(description = "그래프 표시 옵션 (기본값: ALL)", required = false)
-            @RequestParam(defaultValue = "ALL") GraphDisplayOption displayOption,
+            @RequestParam(defaultValue = "ALL", name = "displayOption") GraphDisplayOption displayOption,
 
             @Parameter(description = "요청할 페이지 번호 (기본값: 0)", example = "0", required = false)
-            @RequestParam(defaultValue = "0") int page, // 페이지 번호
+            @RequestParam(defaultValue = "0", name = "page") int page, // 페이지 번호
 
             @Parameter(description = "한 페이지당 데이터 개수 (기본값: 5)", example = "5", required = false)
-            @RequestParam(defaultValue = "5") int size, // 페이지 크기
+            @RequestParam(defaultValue = "5", name = "size") int size, // 페이지 크기
 
             @Parameter(description = "정렬 조건 (기본값: id,asc)", example = "id,asc", required = false)
-            @RequestParam(defaultValue = "id,asc") String sort // 정렬 조건
+            @RequestParam(defaultValue = "id,asc", name = "sort") String sort // 정렬 조건
     ) {
         try {
             log.debug("시세 조회 요청 - keyword: {}, startDate: {}, endDate: {}, displayOption: {}, page: {}, size: {}, sort: {}",
