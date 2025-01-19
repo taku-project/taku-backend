@@ -26,7 +26,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
-        resolver.setFallbackPageable(PageRequest.of(0, 20, Sort.by("ID").ascending()));
+        resolver.setFallbackPageable(PageRequest.of(0, 20, Sort.by("ID").descending()));
         resolvers.add(resolver);
     }
 

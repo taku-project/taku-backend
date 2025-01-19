@@ -6,6 +6,8 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -34,6 +36,19 @@ public class SwaggerConfig {
         SecurityRequirement securityRequirement = new SecurityRequirement()
                 .addList("bearerAuth");
 
+        Parameter page = new Parameter().in("query")
+                .name("page")
+                .description("페이지 번호 0부터 시작")
+                .required(false)
+                .schema(new StringSchema().example("0"));
+
+        Parameter size = new Parameter()
+                .in("query")
+                .name("size")
+                .description("한 페이지에 들어갈 항목들의 갯수")
+                .required(false)
+                .schema(new StringSchema().example("10"));
+
         return new OpenAPI()
                 .servers(
                         Arrays.asList(
@@ -56,7 +71,12 @@ public class SwaggerConfig {
                                         .email("test@gmail.com") // 이메일 주소
                         )
                 )
-                .components(new Components().addSecuritySchemes("bearerAuth", bearerAuthScheme))
+                .components(
+                    new Components()
+                        .addSecuritySchemes("bearerAuth", bearerAuthScheme)
+                        .addParameters("page", page)
+                        .addParameters("size", size)
+                )
                 .addSecurityItem(securityRequirement);
     }
 
