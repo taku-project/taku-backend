@@ -44,8 +44,8 @@ public class Interaction<T extends InteractionDetail> {
     @Field("created_at")
     private LocalDateTime createdAt;
 
-    public static Interaction createLike(Shorts shorts, Long userId) {
-        return new Interaction(shorts, userId, InteractionType.LIKE, null);
+    public static Interaction createLikeDisLike(Shorts shorts, Long userId, InteractionType interactionType) {
+        return new Interaction(shorts, userId, interactionType, null);
     }
 
     public static Interaction createView(Shorts shorts, Long userId, InteractionDetail detail) {

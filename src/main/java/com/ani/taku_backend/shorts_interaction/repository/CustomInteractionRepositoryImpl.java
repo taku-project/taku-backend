@@ -67,7 +67,7 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
     }
 
     @Override
-    public InteractionResponse findUserLikeDislikeInteractions(Long userId, String shortsId) {
+    public Optional<InteractionResponse> findUserLikeDislikeInteractions(Long userId, String shortsId) {
         if(userId == null) {
             return null;
         }
@@ -103,7 +103,7 @@ public class CustomInteractionRepositoryImpl implements CustomInteractionReposit
 
         Aggregation likeInteractionAggregation = Aggregation.newAggregation(match, group, projection);
         AggregationResults<Map> resultMaps = mongoTemplate.aggregate(likeInteractionAggregation, Interaction.class, Map.class);
-        return InteractionResponse.fromMap(resultMaps.getUniqueMappedResult());
+        return Optional.ofNullable(InteractionResponse.fromMap(resultMaps.getUniqueMappedResult()));
     }
 
     @Override

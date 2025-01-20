@@ -12,7 +12,7 @@ public interface CustomInteractionRepository {
     // 사용자가 누른 좋아요 / 싫어요 여부 반환
     ShortsLikeInteractionResponseDTO isUserLikeInterAction(Long userId, String shortsId);
     // 사용자가 누른 좋아요 / 싫어요 정보 반환
-    InteractionResponse findUserLikeDislikeInteractions(Long userId, String shortsId);
+    Optional<InteractionResponse> findUserLikeDislikeInteractions(Long userId, String shortsId);
 
     Optional<UserInteractionResponse> findUserLikeInteractions(Long userId, String shortsId);
 
