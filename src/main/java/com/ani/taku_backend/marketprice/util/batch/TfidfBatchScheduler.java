@@ -13,9 +13,9 @@ import java.util.List;
 
 //@Profile("!local")
 //@Component
-//@RequiredArgsConstructor
-//@Slf4j
-//public class TfidfBatchScheduler {
+@RequiredArgsConstructor
+@Slf4j
+public class TfidfBatchScheduler {
 //    private final TfidfBatchService tfidfBatchService;
 //    private final DuckuJangterRepository duckuJangterRepository;
 //
@@ -42,4 +42,4 @@ import java.util.List;
 //            log.error("Failed to calculate TF-IDF: {}", e.getMessage(), e);
 //        }
 //    }
-//}
+}
