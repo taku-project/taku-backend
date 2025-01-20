@@ -2,7 +2,8 @@ package com.ani.taku_backend.user_jangter.repository;
 
 import com.ani.taku_backend.user_jangter.domain.CompleteJangterSortType;
 import com.ani.taku_backend.user_jangter.dto.QUserPurchaseResponseDTO;
-import com.ani.taku_backend.user_jangter.dto.UserPurchaseResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.UserCellResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.UserPurchaseResponseDTO;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -45,18 +46,56 @@ public class UserJangterRepositoryImpl implements UserJangterRepository {
                     )
                 )
                 .where(
-                    completedDeal.purchaseUserId.eq(userId)
+                    eqPurchaseId(userId)
                 )
                 .from(completedDeal)
                 .orderBy(orderCondition(pageable.getSort()))
                 .limit(pageable.getPageSize())
                 .fetch();
+
         return new PageImpl<>(userPurchaseResponseDTOList, pageable, totalCount);
+    }
+
+    @Override
+    public PageImpl<UserCellResponseDTO> findUserCellList(Long userId, Pageable pageable) {
+        long totalCount = queryFactory
+                .select(completedDeal.count())
+                .from(completedDeal)
+                .where(
+                    eqCellId(userId)
+                )
+                .fetchOne();
+
+        List<UserCellResponseDTO> userCellResponseDTOList =
+                queryFactory
+                    .select(
+                        new QUserCellResponseDTO(
+                            completedDeal.id,
+                            completedDeal.product.id,
+                            completedDeal.title,
+                            completedDeal.price,
+                            completedDeal.categoryName
+                        )
+                    )
+                    .where(
+                        eqCellId(userId)
+                    )
+                    .from(completedDeal)
+                    .orderBy(orderCondition(pageable.getSort()))
+                    .limit(pageable.getPageSize())
+                    .fetch();
+
+        return new PageImpl<>(userCellResponseDTOList, pageable, totalCount);
+    }
+
+    private BooleanExpression eqCellId(Long purchaseId) {
+        return completedDeal.cellUserId.eq(purchaseId);
     }
 
     private BooleanExpression eqPurchaseId(Long purchaseId) {
         return completedDeal.purchaseUserId.eq(purchaseId);
     }
+
     private OrderSpecifier[] orderCondition(Sort sort) {
         List<OrderSpecifier> ORDERS = new ArrayList<>();
 

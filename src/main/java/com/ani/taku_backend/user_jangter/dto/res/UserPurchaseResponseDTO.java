@@ -1,4 +1,4 @@
-package com.ani.taku_backend.user_jangter.dto;
+package com.ani.taku_backend.user_jangter.dto.res;
 
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;

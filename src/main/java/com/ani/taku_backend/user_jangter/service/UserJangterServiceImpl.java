@@ -1,6 +1,7 @@
 package com.ani.taku_backend.user_jangter.service;
 
-import com.ani.taku_backend.user_jangter.dto.UserPurchaseResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.UserCellResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.UserPurchaseResponseDTO;
 import com.ani.taku_backend.user_jangter.repository.UserJangterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
@@ -15,5 +16,10 @@ public class UserJangterServiceImpl implements UserJangterService {
     @Override
     public PageImpl<UserPurchaseResponseDTO> findUserPurchaseList(Long userId, Pageable pageable) {
         return userJangterRepository.findUserPurchaseList(userId, pageable);
+    }
+
+    @Override
+    public PageImpl<UserCellResponseDTO> findUserCellList(Long userId, Pageable pageable) {
+        return userJangterRepository.findUserCellList(userId, pageable);
     }
 }
