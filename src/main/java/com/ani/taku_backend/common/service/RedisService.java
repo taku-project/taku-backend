@@ -1,7 +1,6 @@
 package com.ani.taku_backend.common.service;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.redis.core.RedisTemplate;
