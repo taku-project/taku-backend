@@ -1,6 +1,5 @@
 package com.ani.taku_backend.config;
 
-
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -8,9 +7,11 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,20 +19,19 @@ import java.util.Arrays;
 
 @Configuration
 public class SwaggerConfig {
-    //http://localhost:8080/swagger-ui/index.html
     private static final String API_TITLE = "Taku-Backend API";
     private static final String API_VERSION = "0.0.1";
     private static final String API_DESCRIPTION = "Taku-Backend API 명세서";
 
-    @Value("${server.port}") // 실행 중인 포트를 가져옵니다. 기본값은 8080.
+    @Value("${server.port}")
     private String serverPort;
 
     @Bean
     public OpenAPI customOpenAPI() {
         SecurityScheme bearerAuthScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP) // HTTP 인증 방식
-                .scheme("bearer") // Bearer 타입 지정
-                .bearerFormat("JWT"); // Bearer 토큰 포맷 지정
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT");
 
         SecurityRequirement securityRequirement = new SecurityRequirement()
                 .addList("bearerAuth");
@@ -50,26 +50,22 @@ public class SwaggerConfig {
                 .schema(new StringSchema().example("10"));
 
         return new OpenAPI()
-                .servers(
-                        Arrays.asList(
-                            new Server().url("http://localhost:" + serverPort).description("Local 서버"),
-                            new Server().url("https://api-duckwho.xyz").description("Duckwho API 서버")
-                        )
-                )
-                .info(new Info() // API 문서 정보 설정
-                        .title(API_TITLE) // API 제목
-                        .version(API_VERSION) // API 버전
-                        .description(API_DESCRIPTION) // API 설명
-                        .termsOfService("https://www.example.com/terms") // 서비스 약관 링크
-                        .license( // 라이센스 정보
-                                new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")
-                        )
-                        .contact( // 연락처 정보
-                                new Contact()
-                                        .name("Support Team") // 지원 팀 이름
-                                        .url("https://www.example.com/support") // 지원 페이지 링크
-                                        .email("test@gmail.com") // 이메일 주소
-                        )
+                .servers(Arrays.asList(
+                        new Server().url("http://localhost:" + serverPort).description("Local 서버"),
+                        new Server().url("https://api-duckwho.xyz").description("Duckwho API 서버")
+                ))
+                .info(new Info()
+                        .title(API_TITLE)
+                        .version(API_VERSION)
+                        .description(API_DESCRIPTION)
+                        .termsOfService("https://www.example.com/terms")
+                        .license(new License()
+                                .name("Apache 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0"))
+                        .contact(new Contact()
+                                .name("Support Team")
+                                .url("https://www.example.com/support")
+                                .email("test@gmail.com"))
                 )
                 .components(
                     new Components()
@@ -80,5 +76,25 @@ public class SwaggerConfig {
                 .addSecurityItem(securityRequirement);
     }
 
-
+    @Bean
+    public OpenApiCustomizer openApiCustomizer() {
+        return openApi -> {
+            var schemas = openApi.getComponents().getSchemas();
+            if (schemas != null) {
+                schemas.forEach((key, schema) -> {
+                    var properties = schema.getProperties();
+                    if (properties != null) {
+                        properties.forEach((propName, prop) -> {
+                            if (prop instanceof Schema) {
+                                Schema<?> sp = (Schema<?>) prop;
+                                if (sp.getExample() == null && sp.getDescription() != null) {
+                                    sp.setExample(sp.getDescription());
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        };
+    }
 }

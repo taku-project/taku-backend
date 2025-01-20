@@ -204,13 +204,13 @@ class CompletedDealServiceTest {
         );
 
         assertNotNull(result);
-        assertEquals("나루토 피규어", result.getKeyword());
+        assertEquals("나루토 피규어", result.keyword());
 
         // priceGraph 데이터가 비어있지 않아야 함
-        assertFalse(result.getPriceGraph().getDataPoints().isEmpty());
+        assertFalse(result.priceGraph().dataPoints().isEmpty());
 
         // weeklyStats(주간 통계)도 존재해야 함
-        assertNotNull(result.getWeeklyStats());
+        assertNotNull(result.weeklyStats());
 
         /*// "유사 상품" 모킹 결과가 존재하기 때문에, 비어있지 않아야 함-> 이미지 부분떄문에 오류가 나 주석처리
         assertFalse(result.getSimilarProducts().isEmpty());*/
@@ -232,9 +232,9 @@ class CompletedDealServiceTest {
         );
 
         assertNotNull(result);
-        assertTrue(result.getPriceGraph().getDataPoints().isEmpty());
-        assertEquals(0, result.getWeeklyStats().getTotalDeals());
-        assertTrue(result.getSimilarProducts().isEmpty());
+        assertTrue(result.priceGraph().dataPoints().isEmpty());
+        assertEquals(0, result.weeklyStats().totalDeals());
+        assertTrue(result.similarProducts().isEmpty());
     }
 
     @Test

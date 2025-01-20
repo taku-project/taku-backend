@@ -2,9 +2,11 @@ package com.ani.taku_backend.shorts.domain.entity;
 
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.shorts.domain.vo.InteractionDetail;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
@@ -19,6 +21,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
 public class Interaction<T extends InteractionDetail> {
 

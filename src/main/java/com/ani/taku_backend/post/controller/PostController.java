@@ -1,10 +1,13 @@
 package com.ani.taku_backend.post.controller;
 
-import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.response.CommonResponse;
-import com.ani.taku_backend.common.service.ImageService;
-import com.ani.taku_backend.post.model.dto.*;
+import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
+import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
+import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -12,8 +15,6 @@ import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -21,10 +22,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
