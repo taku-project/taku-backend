@@ -37,6 +37,9 @@ public class CompletedDeal extends BaseTimeEntity {
     @JoinColumn(name = "stats_id")
     private MarketPriceStats marketPriceStats;
 
+    @Column(name = "purchaser_id")
+    private Long purchaseUserId;
+
     @NotNull
     @Column(length = 255, nullable = false)
     private String title;
@@ -56,6 +59,7 @@ public class CompletedDeal extends BaseTimeEntity {
             DuckuJangter product,
             MarketPriceStats marketPriceStats,
             String title,
+            Long purchaseUserId,
             BigDecimal price,
             String categoryName,
             String searchKeywords
@@ -64,6 +68,7 @@ public class CompletedDeal extends BaseTimeEntity {
         this.marketPriceStats = marketPriceStats;
         this.title = title;
         this.price = price;
+        this.purchaseUserId = purchaseUserId;
         this.categoryName = categoryName;
         this.searchKeywords = searchKeywords;
     }
