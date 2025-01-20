@@ -3,16 +3,9 @@ package com.ani.taku_backend.user_jangter.controller;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
-import com.ani.taku_backend.user_jangter.dto.UserPurchaseResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.UserCellResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.UserPurchaseResponseDTO;
 import com.ani.taku_backend.user_jangter.service.UserJangterService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageImpl;
@@ -30,14 +23,23 @@ public class UserJangterControllerImpl implements UserJangterController {
     private final UserJangterService userJangterService;
 
     @GetMapping("/{userId}/purchase")
-    public CommonResponse<PageImpl<UserPurchaseResponseDTO>> findUserPurchases(
+    public CommonResponse<PageImpl<UserPurchaseResponseDTO>> findUserPurchaseList(
             @AuthenticationPrincipal PrincipalUser principalUser,
             @PathVariable("userId") Long userId ,
-            @ParameterObject
-            Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         User user = principalUser.getUser();
-//        CompleteJangterSortType.ID;
+
         PageImpl<UserPurchaseResponseDTO> userPurchasePageList =  userJangterService.findUserPurchaseList(userId, pageable);
+
+        return CommonResponse.ok(userPurchasePageList);
+    }
+
+    @GetMapping("/{userId}/sell")
+    public CommonResponse<PageImpl<UserCellResponseDTO>> findUserCellList(
+            @AuthenticationPrincipal PrincipalUser principalUser,
+            @PathVariable("userId") Long userId ,
+            @ParameterObject Pageable pageable) {
+        PageImpl<UserCellResponseDTO> userPurchasePageList =  userJangterService.findUserCellList(userId, pageable);
 
         return CommonResponse.ok(userPurchasePageList);
     }
