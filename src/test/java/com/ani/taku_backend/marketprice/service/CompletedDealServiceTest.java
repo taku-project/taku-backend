@@ -12,7 +12,6 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
-import com.ani.taku_backend.marketprice.config.CacheConfig;
 import com.ani.taku_backend.marketprice.config.DateConfig;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
 import com.ani.taku_backend.marketprice.model.dto.MarketPriceSearchResponseDTO;
@@ -58,9 +57,6 @@ class CompletedDealServiceTest {
 
     @Autowired
     private DateConfig dateConfig;
-
-    @Autowired
-    private CacheConfig cacheConfig;
 
     @Autowired
     private CacheManager cacheManager;
