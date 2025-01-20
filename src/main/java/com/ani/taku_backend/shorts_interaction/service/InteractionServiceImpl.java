@@ -1,6 +1,5 @@
 package com.ani.taku_backend.shorts_interaction.service;
 
-import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
@@ -55,7 +54,7 @@ public class InteractionServiceImpl implements InteractionService {
             shorts.addLikeCount();
         }
 
-        Interaction interaction = Interaction.createLikeDisLike(shorts, user.getUserId(), InteractionType.LIKE);
+        Interaction interaction = Interaction.createLike(shorts, user.getUserId());
 
         interactionRepository.save(interaction);
         shortsRepository.save(shorts);
@@ -104,7 +103,7 @@ public class InteractionServiceImpl implements InteractionService {
             shorts.addDislikeCount();
         }
 
-        Interaction interaction = Interaction.createLikeDisLike(shorts, user.getUserId(), InteractionType.DISLIKE);
+        Interaction interaction = Interaction.createDisLike(shorts, user.getUserId());
 
         interactionRepository.save(interaction);
         shortsRepository.save(shorts);

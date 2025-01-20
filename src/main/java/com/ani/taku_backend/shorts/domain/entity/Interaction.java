@@ -1,8 +1,6 @@
 package com.ani.taku_backend.shorts.domain.entity;
 
 import com.ani.taku_backend.common.enums.InteractionType;
-import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.shorts.domain.vo.InteractionDetail;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -46,12 +44,12 @@ public class Interaction<T extends InteractionDetail> {
     @Field("created_at")
     private LocalDateTime createdAt;
 
-    public static Interaction createLikeDisLike(Shorts shorts, Long userId, InteractionType interactionType) {
-        if(InteractionType.LIKE != interactionType && InteractionType.DISLIKE != interactionType) {
-            throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
-        }
+    public static Interaction createLike(Shorts shorts, Long userId) {
+        return new Interaction(shorts, userId, InteractionType.LIKE, null);
+    }
 
-        return new Interaction(shorts, userId, interactionType, null);
+    public static Interaction createDisLike(Shorts shorts, Long userId) {
+        return new Interaction(shorts, userId, InteractionType.DISLIKE, null);
     }
 
     public static Interaction createView(Shorts shorts, Long userId, InteractionDetail detail) {
