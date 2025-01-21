@@ -5,7 +5,7 @@ on:
     branches: [ "develop" ]  # develop 브랜치에 머지 or 직접 push되면 실행
     
 env:
-  ECS_TASK_DEFINITION: task-definition.json
+  ECS_TASK_DEFINITION: repo1/task-definition.json
   CONTAINER_NAME: backend-deploy
   ECS_SERVICE: duckwho-service
   ECS_CLUSTER: duckwho-cluster
