@@ -1,7 +1,8 @@
 package com.ani.taku_backend.user_jangter.repository;
 
 import com.ani.taku_backend.user_jangter.domain.CompleteJangterSortType;
-import com.ani.taku_backend.user_jangter.dto.QUserPurchaseResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.QUserCellResponseDTO;
+import com.ani.taku_backend.user_jangter.dto.res.QUserPurchaseResponseDTO;
 import com.ani.taku_backend.user_jangter.dto.res.UserCellResponseDTO;
 import com.ani.taku_backend.user_jangter.dto.res.UserPurchaseResponseDTO;
 import com.querydsl.core.types.Order;
