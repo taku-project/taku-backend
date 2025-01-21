@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          path: 'repo1'
 
       # (2) 필요하다면 설정 Repo2를 추가로 체크아웃 (private일 경우 token 필요)
       - name: Checkout config (repo2)
