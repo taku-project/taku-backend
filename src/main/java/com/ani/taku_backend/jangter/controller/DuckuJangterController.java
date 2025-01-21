@@ -6,7 +6,8 @@ import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
-import com.ani.taku_backend.jangter.service.DuckuJangterServiceImpl;
+import com.ani.taku_backend.jangter.service.DuckuJangterService;
+import com.ani.taku_backend.jangter.service.UserInteractionService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -21,15 +22,13 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import com.ani.taku_backend.jangter.service.UserInteractionService;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/jangter")
 @RequiredArgsConstructor
 public class DuckuJangterController {
 
-    private final DuckuJangterServiceImpl duckuJangterService;
+    private final DuckuJangterService duckuJangterService;
     private final UserInteractionService userInteractionService;
     private final BlackUserService blackUserService;
     /**

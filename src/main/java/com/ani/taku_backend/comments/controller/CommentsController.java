@@ -2,7 +2,7 @@ package com.ani.taku_backend.comments.controller;
 
 import com.ani.taku_backend.comments.model.dto.CommentsCreateRequestDTO;
 import com.ani.taku_backend.comments.model.dto.CommentsUpdateRequestDTO;
-import com.ani.taku_backend.comments.service.CommentsServiceImpl;
+import com.ani.taku_backend.comments.service.CommentsService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class CommentsController {
 
-    private final CommentsServiceImpl commentsService;
+    private final CommentsService commentsService;
     private final BlackUserService blackUserService;
 
     /**
