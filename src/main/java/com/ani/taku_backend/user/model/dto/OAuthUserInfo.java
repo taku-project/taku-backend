@@ -47,7 +47,7 @@ public class OAuthUserInfo {
     private static OAuthUserInfo ofKakao(Claims claims) {
         OAuthUserInfo userInfo = new OAuthUserInfo();
         userInfo.email = claims.get("email", String.class);
-        userInfo.domesticId = claims.get("id", String.class);
+        userInfo.domesticId = claims.get("domesticId", String.class);
         userInfo.nickname = claims.get("nickname", String.class);
         userInfo.gender = claims.get("gender", String.class);
         userInfo.ageRange = claims.get("age_range", String.class);

@@ -1,7 +1,8 @@
 package com.ani.taku_backend.user.model.dto;
 
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.model.entity.UserStatus;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,12 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.user.model.entity.User;
-
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 /**
  * 스프링 시큐리티에 저장할 유저 정보
  */
@@ -69,7 +64,7 @@ public class PrincipalUser implements UserDetails {
     // 계정 활성 여부 반환
     @Override
     public boolean isEnabled() {
-        return StatusType.ACTIVE.name().equals(user.getStatus());
+        return UserStatus.ACTIVE.equals(user.getStatus());
     }
 
     public boolean isAnonymous() {

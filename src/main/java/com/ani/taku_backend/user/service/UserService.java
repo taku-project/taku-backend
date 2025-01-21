@@ -1,23 +1,20 @@
 package com.ani.taku_backend.user.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.ani.taku_backend.common.enums.UserRole;
+import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
+import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
+import com.ani.taku_backend.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.common.enums.UserRole;
-import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
-import com.ani.taku_backend.user.model.entity.User;
-import com.ani.taku_backend.user.repository.UserRepository;
-import com.ani.taku_backend.user.model.dto.*;
+import java.util.List;
+import java.util.Optional;
 
-import static com.ani.taku_backend.user.converter.UserConverter.*;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
 
 @Service
 @RequiredArgsConstructor
@@ -47,26 +44,24 @@ public class UserService {
   }
 
   // 유저 조회
-  public Optional<User>  getUser(String email) {
-    Optional<User> byDomesticId = this.userRepository.findByEmailAndStatus(email, StatusType.ACTIVE.name());
-    return byDomesticId;
+  public Optional<User> getUserByDomesticId(String domesticId) {
+      return this.userRepository.findByDomesticIdAndStatus(domesticId, UserStatus.ACTIVE);
   }
 
   // 닉네임 체크
-  public boolean checkNickname(String nickname) {
+  public boolean isNicknameDuplication(String nickname) {
     List<User> users = this.userRepository.findByNickname(nickname);
-    return users.isEmpty() ? false : true;
+    return !users.isEmpty();
   }
 
-  // 유저 삭제
-  public Optional<User> findByUserIdAndStatus(Long userId, StatusType status) {
-    return this.userRepository.findByUserIdAndStatus(userId, status.name());
+  public Optional<User> findByUserIdAndStatus(Long userId, UserStatus status) {
+    return this.userRepository.findByUserIdAndStatus(userId, status);
   }
 
   // 유저 상태 업데이트
   @Transactional //transactional 붙여주지 않으면 오류 난다.
-  public int updateUserStatus(Long userId, StatusType status) {
-    return this.userRepository.updateUserStatus(userId, status.name());
+  public int updateUserStatus(Long userId, UserStatus status) {
+    return this.userRepository.updateUserStatus(userId, status);
   }
 
   public UserDetailDto getUserDetail(Long userId){
