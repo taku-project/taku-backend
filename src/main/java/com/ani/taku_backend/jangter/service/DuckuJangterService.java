@@ -108,9 +108,9 @@ public class DuckuJangterService {
         // 조회수 증가 로직
         long addViewCount = findProductDetail.addViewCount(isFirstView);
 
-        log.info("장터글 조회 완료, 장터글 상세: {}", findProductDetail);
+        log.debug("장터글 조회 완료, 장터글 상세: {}", findProductDetail);
 
-        return new ProductFindDetailResponseDTO(findProductDetail, findProductDetail.getStatus(), addViewCount);
+        return new ProductFindDetailResponseDTO(findProductDetail, addViewCount);
     }
 
     /**
@@ -124,7 +124,7 @@ public class DuckuJangterService {
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        checkDeleteProduct(findProduct);    //  삭제 검증
+        checkDeleteProduct(findProduct);            //  삭제 검증
         checkAuthorAndAdmin(user, findProduct);     // 유저, 관리자 확인
         ItemCategories itemCategories = checkItemCategory(productUpdateRequestDTO.getCategoryId(), null);  // 카테고리 검증
 
@@ -138,7 +138,7 @@ public class DuckuJangterService {
         }
         findProduct.updateProduct(productUpdateRequestDTO, itemCategories);         // 장터글 업데이트
 
-        log.info("장터글 업데이트 완료, 글 상세 {}", findProduct);
+        log.debug("장터글 업데이트 완료, 글 상세 {}", findProduct);
         return findProduct.getId();
     }
 
@@ -162,7 +162,7 @@ public class DuckuJangterService {
             jangterImages.getImage().delete();
             fileService.deleteImageFile(jangterImages.getImage().getFileName());
         });
-        log.info("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
+        log.debug("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
     }
 
     private void validateDelete(DuckuJangter findProductDetail) {
@@ -238,22 +238,22 @@ public class DuckuJangterService {
         BigDecimal priceRangePercentage = new BigDecimal("0.20"); // 20%
         BigDecimal minPrice = price.subtract(price.multiply(priceRangePercentage));
         BigDecimal maxPrice = price.add(price.multiply(priceRangePercentage));
-        log.info("title : {}, price : {}, minPrice : {}, maxPrice : {}", title, price, minPrice, maxPrice);
+        log.debug("title : {}, price : {}, minPrice : {}, maxPrice : {}", title, price, minPrice, maxPrice);
 
         List<String> keywords = this.extractKeywordService.extractKeywords(title);
-        log.info("keywords : {}", keywords);
+        log.debug("keywords : {}", keywords);
 
         // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
             .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE , productId);
 
         if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
-            log.info("추천 상품 부족으로 랜덤 조회");
+            log.debug("추천 상품 부족으로 랜덤 조회");
             return getRandomProducts(itemCategoryId, productId);
         }
         
         recommendProducts.forEach(item -> {
-            log.info("추천 상품: {}", item.getTitle());
+            log.debug("추천 상품: {}", item.getTitle());
         });
 
         Long userId = principalUser.getUserId();
@@ -443,11 +443,11 @@ public class DuckuJangterService {
     }
 
           private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
-        log.info("랜덤 상품 조회");
+        log.debug("랜덤 상품 조회");
         List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(StatusType.ACTIVE.name(), categoryId, productId);
         randomProducts.clear();
         if(randomProducts.size() < 5){
-            log.info("전체 카테고리에서 랜덤조회");
+            log.debug("전체 카테고리에서 랜덤조회");
             randomProducts.addAll(this.duckuJangterRepository.findRandom(StatusType.ACTIVE.name(), productId));
         }
 
