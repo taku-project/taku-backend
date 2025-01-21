@@ -49,4 +49,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-     
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/duckwho-dev:latest repo1
+          docker push ${{ steps.login-ecr.outputs.registry }}/duckwho-dev:latest
+
