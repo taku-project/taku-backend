@@ -1,16 +1,12 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.enums.LogType;
-import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
-import com.ani.taku_backend.jangter.service.DuckuJangterService;
+import com.ani.taku_backend.jangter.service.DuckuJangterServiceImpl;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -23,12 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.ani.taku_backend.jangter.service.UserInteractionService;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -36,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DuckuJangterController {
 
-    private final DuckuJangterService duckuJangterService;
+    private final DuckuJangterServiceImpl duckuJangterService;
     private final UserInteractionService userInteractionService;
     private final BlackUserService blackUserService;
     /**
