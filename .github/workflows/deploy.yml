@@ -81,4 +81,3 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-          image: ${{ steps.build-image.outputs.image }}
