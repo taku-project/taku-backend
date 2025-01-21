@@ -7,7 +7,6 @@ import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
@@ -17,9 +16,7 @@ import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.post.repository.impl.dto.FindAllPostQuerydslDTO;
-import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
-import com.ani.taku_backend.user.service.BlackUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -114,14 +111,13 @@ public class PostService {
      */
     @RequireUser
     @Transactional
-    public void deletePost(Long postId, long categoryId, User user) {
+    public void deletePost(Long postId, User user) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkAuthorAndAdmin(user, post);             // 수정 권한 확인
         checkDeleteProduct(post);                    // 삭제 검증
-        checkCategory(categoryId, post);             // 카테고리 검증
 
         post.delete();                               // 삭제 로직
         log.debug("게시글 삭제 성공, post.getDeletedAt: {}", post.getDeletedAt());
@@ -129,8 +125,6 @@ public class PostService {
             communityImage.getImage().delete();
             log.debug("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
         });
-
-
     }
 
     // 게시글 생성

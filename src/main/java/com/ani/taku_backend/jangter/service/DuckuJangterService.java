@@ -147,12 +147,11 @@ public class DuckuJangterService {
      */
     @Transactional
     @RequireUser
-    public void deleteProduct(long productId, Long categoryId, User user) {
+    public void deleteProduct(long productId, User user) {
 
         DuckuJangter findProduct = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        checkItemCategory(categoryId, findProduct);     // 카테고리 검증
         checkAuthorAndAdmin(user, findProduct);         // 유저, 관리자 확인
         checkDeleteProduct(findProduct);                //  삭제 검증
 

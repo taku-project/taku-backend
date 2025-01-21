@@ -115,11 +115,10 @@ public class DuckuJangterController {
     @DeleteMapping("/{productId}")
     public CommonResponse<Void> deleteProduct(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
-            @Parameter(description = "카테고리 ID", required = true, example = "4") @RequestParam("categoryId") Long categoryId,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);
-        duckuJangterService.deleteProduct(productId, categoryId, user);
+        duckuJangterService.deleteProduct(productId, user);
 
         return CommonResponse.ok(null);
     }
