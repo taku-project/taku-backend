@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,8 +43,9 @@ public class DuckuJangterController {
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
-    public CommonResponse<Long> createProduct(@Valid ProductCreateRequestDTO requestDTO,
-                                              @Parameter(hidden = true) PrincipalUser principalUser) {
+    public CommonResponse<Long> createProduct(
+                                @ParameterObject @Valid ProductCreateRequestDTO requestDTO,
+                                @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);         // 블랙유저 검증
         Long productId = duckuJangterService.createProduct(requestDTO, user);
@@ -61,7 +63,7 @@ public class DuckuJangterController {
     })
     @GetMapping("/{productId}")
     public CommonResponse<ProductFindDetailResponseDTO> findProductDetail(
-            @Parameter(description = "게시글 ID", required = true, example = "41") @PathVariable("productId") long productId) {
+            @Parameter(description = "판매글 ID", required = true, example = "20") @PathVariable("productId") long productId) {
 
         log.debug("판매글 컨트롤러 호출");
         ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId, false);
@@ -83,7 +85,8 @@ public class DuckuJangterController {
     @RequireUser
     public CommonResponse<Long> updateProduct(
                         @Parameter(description = "게시글 ID(구글 토큰 입력)", required = true, example = "74")
-                        @PathVariable("productId") long productId, @Valid ProductUpdateRequestDTO requestDTO,
+                        @PathVariable("productId") long productId,
+                        @ParameterObject @Valid ProductUpdateRequestDTO requestDTO,
                         @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증

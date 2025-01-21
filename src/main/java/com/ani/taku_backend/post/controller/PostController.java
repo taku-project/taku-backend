@@ -9,7 +9,7 @@ import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.service.PostReadService;
-import com.ani.taku_backend.post.service.PostService;
+import com.ani.taku_backend.post.service.PostServiceImpl;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -37,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/community/posts")
 public class PostController {
 
-    private final PostService postService;
+    private final PostServiceImpl postService;
     private final PostReadService postReadService;
     private final BlackUserService blackUserService;
 
@@ -60,7 +59,7 @@ public class PostController {
     })
     @RequireUser
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<Long> createPost(@Valid PostCreateRequestDTO requestDTO,
+    public CommonResponse<Long> createPost(@ParameterObject @Valid PostCreateRequestDTO requestDTO,
                                            @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser); // 유저 검증
@@ -95,8 +94,8 @@ public class PostController {
     @RequireUser
     @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
-            @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32")
-            @PathVariable("postId") Long postId, @Valid PostUpdateRequestDTO requestDTO,
+            @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32") @PathVariable("postId") Long postId,
+            @ParameterObject @Valid PostUpdateRequestDTO requestDTO,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
