@@ -25,6 +25,7 @@ import com.ani.taku_backend.shorts_interaction.repository.InteractionRepository;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.shorts.repository.ShortsRepository;
 import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.repository.UserRepository;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -88,7 +89,7 @@ public class ShortsServiceImpl implements  ShortsService {
         try {
             User uploader = userRepository.findById(user.getUserId())
                     .orElseThrow(UserException.UserNotFoundException::new);
-            if("INACTIVE".equals(uploader.getStatus())) {
+            if(UserStatus.INACTIVE == uploader.getStatus()) {
                 throw new UserException(ErrorCode.USER_NOT_FOUND.getMessage());
             }
 
@@ -401,10 +402,11 @@ public class ShortsServiceImpl implements  ShortsService {
 
         User user = principalUser.getUser();
 
-        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(this.mongoTemplate.findById(
+        Interaction byId = this.mongoTemplate.findById(
                 ObjectIdUtil.convertToObjectId(commentId),
                 Interaction.class
-        )).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
+        );
+        Interaction<CommentDetail> commentInteraction = Optional.ofNullable(byId).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_SHORTS_COMMENT));
 
         CommentDetail commentDetail = commentInteraction.getDetails();
 
