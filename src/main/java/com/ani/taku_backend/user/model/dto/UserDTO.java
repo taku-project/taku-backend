@@ -41,11 +41,11 @@ public class UserDTO {
             .nickname(user.getNickname())
             .providerType(user.getProviderType())
             .profileImg(user.getProfileImg())
-            .status(user.getStatus())
+            .status(user.getStatus().name())
             .domesticId(user.getDomesticId())
             .gender(user.getGender())
             .ageRange(user.getAgeRange())
-            .role(user.getRole())
+            .role(user.getRole().name())
             .email(user.getEmail())
             .build();
     }

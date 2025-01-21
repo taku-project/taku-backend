@@ -6,6 +6,7 @@ import java.util.List;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +18,10 @@ import lombok.ToString;
 public class ResponseCategorySeachDTO {
     private Long id;    // 카테고리 아이디
     private String name;    // 카테고리 이름
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime createdAt;    // 카테고리 생성일
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime updatedAt;    // 카테고리 수정일
     private String status;    // 카테고리 상태
     private Long viewCount;    // 조회수

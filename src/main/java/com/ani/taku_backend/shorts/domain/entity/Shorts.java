@@ -1,5 +1,6 @@
 package com.ani.taku_backend.shorts.domain.entity;
 
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.user.model.entity.User;
@@ -36,7 +37,7 @@ public class Shorts {
     @Field(name = "profile_img")
     private String profileImg;
     @Field(name = "role")
-    private String role;
+    private UserRole role;
     @Field(name = "description")
     private String description;
     @Field(name = "tags")

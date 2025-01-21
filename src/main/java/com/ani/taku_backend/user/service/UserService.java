@@ -8,6 +8,7 @@ import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.entity.UserImage;
 import com.ani.taku_backend.user.repository.UserImageRepository;
+import com.ani.taku_backend.user.model.entity.UserStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,13 +42,13 @@ public class UserService {
     User user = User.builder()
       .email(userInfo.getEmail())
       .domesticId(userInfo.getDomesticId())
-      .status(StatusType.ACTIVE.name())
+      .status(UserStatus.ACTIVE)
       .nickname(userInfo.getNickname())
       .profileImg(userInfo.getImageUrl())
       .providerType(userInfo.getProviderType().toString())
       .gender(userInfo.getGender())
       .ageRange(userInfo.getAgeRange())
-      .role(UserRole.USER.toString())
+      .role(UserRole.USER)
       .build();
 
     User savedUser = userRepository.save(user);
@@ -102,11 +103,9 @@ public class UserService {
 
     //기존 image soft delete
     Optional<UserImage> userImage = userImageRepository.findByUser_UserId(userId);
-    System.out.println(userImage+"유저 이미지 입니다. ");
 
     if(userImage.isPresent()) { //만약, userImage Repo에 image가 있다면,
       Long imageId = userImage.get().getImage().getId();
-      System.out.println(imageId+"이미지 id 임");
 
       imageRepository.softDeleteByImageId(imageId);
 
@@ -141,17 +140,6 @@ public class UserService {
     userImageRepository.save(userImage1);
 
     userRepository.updateProfileImg(userId, profileImg);
-
-
-
-
-
-
-
-
-
-
-
 
 
   }

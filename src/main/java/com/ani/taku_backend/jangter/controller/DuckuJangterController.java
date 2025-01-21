@@ -72,7 +72,12 @@ public class DuckuJangterController {
     @GetMapping("/products")
     public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@RequestBody ProductFindListRequestDto request){
 
-        System.out.println("size:"+request.getSize());
+        userInteractionService.saveLog(null, LogType.SEARCH, SearchLogDetail.builder()
+                .searchKeyword(request.getSearchKeyword())
+                .searchCategory(request.getCategories())
+                .sortType(request.getSort()).
+                build());
+
         List<ProductFindListResponseDto> products = duckuJangterService.getProducts(request);
 
         return CommonResponse.ok(products);

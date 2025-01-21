@@ -1,9 +1,18 @@
 package com.ani.taku_backend.common.enums;
 
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import java.util.Arrays;
+
 /**
  * 시스템 내의 사용자 권한 레벨을 관리
  */
-public enum UserRole {
+@Getter
+@RequiredArgsConstructor
+public enum UserRole implements EnumCode {
   
   /**
    * 일반 사용자 권한
@@ -15,23 +24,17 @@ public enum UserRole {
    * 관리자 권한
    * 시스템 관리 및 모든 기능에 접근 가능한 관리자
    */
-  ADMIN("ROLE_ADMIN");
+  ADMIN("ROLE_ADMIN"),
+  BLACKLIST("ROLE_BLACKLIST"),
+  ;
 
   private final String value;
 
-  /**
-   * UserRole 생성자
-   * @param value 권한을 나타내는 문자열 값
-   */
-  UserRole(String value) {
-      this.value = value;
-  }
+  public static UserRole findKey(String role) {
+    return Arrays.stream(UserRole.values())
+            .filter(userRole -> userRole.getValue().equals(role) || userRole.name().equals(role))
+            .findFirst()
+            .orElseThrow(()-> new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE));
 
-  /**
-   * 권한 값 반환
-   * @return 권한을 나타내는 문자열
-   */
-  public String getValue() {
-      return value;
   }
 }

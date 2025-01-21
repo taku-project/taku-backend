@@ -4,6 +4,7 @@ import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.entity.CategoryStatus;
+import com.ani.taku_backend.common.enums.UserRole;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,13 +17,13 @@ import java.util.List;
 public class AdminCategoryResDTO {
     private Long id;
     private String name;
-    private String createdType;
+    private UserRole createdType;
     private CategoryStatus status;
     private String imageUrl;
     private List<AniGenreResDTO> aniCategoryList;
 
     @QueryProjection
-    public AdminCategoryResDTO(Long id, String name, String createdType, CategoryStatus status, String imageUrl, List<AniGenreResDTO> aniCategoryList) {
+    public AdminCategoryResDTO(Long id, String name, UserRole createdType, CategoryStatus status, String imageUrl, List<AniGenreResDTO> aniCategoryList) {
         this.id = id;
         this.name = name;
         this.createdType = createdType;
