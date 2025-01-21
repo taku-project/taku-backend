@@ -19,8 +19,8 @@ public class ItemCategoriesController {
     private final ItemCategoriesService itemCategoriesService;
 
     @Operation(
-            summary = "덕후장터 아이템 카테고리 ID 전체 조회",
-            description = "api로 GET요청만 하면 덕후장터 아이템 카테고리 ID가 전체 조회됨(생성, 수정 시 사용)")
+            summary = "덕후장터 아이템 카테고리 전체 조회",
+            description = "API로 GET요청시 덕후장터 아이템 카테고리 ID와 NAME이 List로 반환됨")
     @ApiResponses({
             @ApiResponse(responseCode = "200",description = "아이템 리스트 전송 성공")
     })

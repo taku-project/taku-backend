@@ -16,7 +16,11 @@ public class ItemCategoriesResponseDTO {
     @Schema(description = "아이템 카테고리 id 전체 반환")
     private List<Long> itemCategoryIdList;
 
+    @Schema(description = "아이템 카테고리 이름 전체 반환")
+    private List<String> itemCategoryNameList;
+
     public ItemCategoriesResponseDTO(List<ItemCategories> itemCategoryNameList) {
         this.itemCategoryIdList = itemCategoryNameList.stream().map(ItemCategories::getId).collect(Collectors.toList());
+        this.itemCategoryNameList = itemCategoryNameList.stream().map(ItemCategories::getName).collect(Collectors.toList());
     }
 }
