@@ -29,7 +29,7 @@ public class ChatRoomResponseDTO {
                 chatRoom.getBuyerId(),
                 chatRoom.getSellerId(),
                 chatRoom.getLastMessageId(),
-                Math.max(0, unreadCount),
+                Math.max(0, unreadCount),   //TODO 읽음 업데이트 구현 시 삭제
                 chatRoom.getCreatedAt()
         );
     }

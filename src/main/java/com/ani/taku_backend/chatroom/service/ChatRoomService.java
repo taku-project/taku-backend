@@ -1,10 +1,13 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.model.document.ChatroomMetaInfo;
+import com.ani.taku_backend.chatroom.model.document.ParticipantInfo;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.repository.ChatroomMetaRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatroomMetaRepository chatroomMetaRepository;
 
     @Transactional
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
@@ -68,5 +72,29 @@ public class ChatRoomService {
         }
 
         return ChatRoomResponseDTO.of(chatRoom, userId);
+    }
+
+    public Integer getChatRoomUnreadCount(String roomId, String userId) {
+        ChatroomMetaInfo metaInfo = chatroomMetaRepository.findById(roomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId);
+        if (participantInfo == null) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        return participantInfo.getMessageStock();
+    }
+
+    public Integer getTotalUnreadCount(String userId) {
+        List<ChatroomMetaInfo> userChatrooms = chatroomMetaRepository
+                .findByParticipantsInfoUserIdOrderByUpdateAtDesc(userId);
+
+        return userChatrooms.stream()
+                .map(chatroom -> {
+                    ParticipantInfo participantInfo = chatroom.getParticipants().getInfo().get(userId);
+                    return participantInfo != null ? participantInfo.getMessageStock() : 0;
+                })
+                .reduce(0, Integer::sum);
     }
 }
