@@ -44,17 +44,26 @@ public class Shorts {
     private List<String> tags;
     @Field(name = "file_info")
     private VideoMetadata fileInfo;
+
     @Field(name = "popularity_metrics")
     private PopularityMetric popularityMetrics;
 
     @CreatedDate
     private LocalDateTime createdAt;
 
+    public void addLikeCount() {
+        increaseLikeCount();
+    }
+
     public void addLikeCount(boolean hasDislike) {
         if(hasDislike) {
             decreaseDislikeCount();
         }
         increaseLikeCount();
+    }
+
+    public void addDislikeCount() {
+        increaseDislikeCount();
     }
 
     public void addDislikeCount(boolean haslike) {
@@ -78,7 +87,7 @@ public class Shorts {
         this.popularityMetrics.dislikes += 1;
     }
 
-    public void decreaseDislikeCount() {
+    private void decreaseDislikeCount() {
         if(this.popularityMetrics.dislikes > 0) {
             this.popularityMetrics.dislikes -= 1;
         }
