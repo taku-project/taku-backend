@@ -35,6 +35,7 @@ jobs:
       - name: Copy config
         run: |
           cp -r repo2/* repo1/src/main/resources/
+          ls repo1/src/main/resources/
 
       # (4) Gradle Build
       - name: Gradle build
