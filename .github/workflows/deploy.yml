@@ -18,7 +18,7 @@ jobs:
       - name: Checkout config (repo2)
         uses: actions/checkout@v4
         with:
-          repository: 'ORG_NAME/duckwho-config'  # 실제 org/repo
+          repository: 'taku-project/duckwho-config'  # 실제 org/repo
           ref: 'main'                           # config를 main 브랜치에서 가져올지, develop에서 가져올지는 팀 정책에 따라
           path: 'repo2'
           token: ${{ secrets.PRIVATE_REPO_TOKEN }}  # private이라면
