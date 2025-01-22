@@ -1,16 +1,13 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.enums.LogType;
-import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
+import com.ani.taku_backend.jangter.service.UserInteractionService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -21,14 +18,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.ani.taku_backend.jangter.service.UserInteractionService;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -50,8 +42,9 @@ public class DuckuJangterController {
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
-    public CommonResponse<Long> createProduct(@Valid ProductCreateRequestDTO requestDTO,
-                                              @Parameter(hidden = true) PrincipalUser principalUser) {
+    public CommonResponse<Long> createProduct(
+                                @ParameterObject @Valid ProductCreateRequestDTO requestDTO,
+                                @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);         // 블랙유저 검증
         Long productId = duckuJangterService.createProduct(requestDTO, user);
@@ -69,7 +62,7 @@ public class DuckuJangterController {
     })
     @GetMapping("/{productId}")
     public CommonResponse<ProductFindDetailResponseDTO> findProductDetail(
-            @Parameter(description = "게시글 ID", required = true, example = "41") @PathVariable("productId") long productId) {
+            @Parameter(description = "판매글 ID", required = true, example = "20") @PathVariable("productId") long productId) {
 
         log.debug("판매글 컨트롤러 호출");
         ProductFindDetailResponseDTO productDetail = duckuJangterService.findProductDetail(productId, false);
@@ -91,7 +84,8 @@ public class DuckuJangterController {
     @RequireUser
     public CommonResponse<Long> updateProduct(
                         @Parameter(description = "게시글 ID(구글 토큰 입력)", required = true, example = "74")
-                        @PathVariable("productId") long productId, @Valid ProductUpdateRequestDTO requestDTO,
+                        @PathVariable("productId") long productId,
+                        @ParameterObject @Valid ProductUpdateRequestDTO requestDTO,
                         @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
@@ -115,11 +109,10 @@ public class DuckuJangterController {
     @DeleteMapping("/{productId}")
     public CommonResponse<Void> deleteProduct(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("productId") long productId,
-            @Parameter(description = "카테고리 ID", required = true, example = "4") @RequestParam("categoryId") Long categoryId,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);
-        duckuJangterService.deleteProduct(productId, categoryId, user);
+        duckuJangterService.deleteProduct(productId, user);
 
         return CommonResponse.ok(null);
     }

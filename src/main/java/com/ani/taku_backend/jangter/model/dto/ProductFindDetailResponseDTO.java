@@ -34,16 +34,25 @@ public class ProductFindDetailResponseDTO {
     @Schema(description = "조회수")
     private long viewCount;
 
+    @Schema(description = "장터 카테고리 ID")
+    private long itemCategoryId;
+
+    @Schema(description = "판매자 Id")
+    private long userId;
+
     @Schema(description = "이미지 리스트")
     private List<String> imageUrlList;
 
-    public ProductFindDetailResponseDTO(DuckuJangter duckuJangter, StatusType status, Long addViewCount) {
+    public ProductFindDetailResponseDTO(DuckuJangter duckuJangter, Long addViewCount) {
         this.title = duckuJangter.getTitle();
         this.description = duckuJangter.getDescription();
         this.price = duckuJangter.getPrice();
-        this.status = status;
+        this.status = duckuJangter.getStatus();
         this.createdAt = duckuJangter.getCreatedAt();
+        this.itemCategoryId = duckuJangter.getId();
+        this.userId = duckuJangter.getUser().getUserId();
         this.viewCount = addViewCount;
+
 
         // DuckuJangter와 연관된 이미지 URL 추출
         this.imageUrlList = duckuJangter.getJangterImages()

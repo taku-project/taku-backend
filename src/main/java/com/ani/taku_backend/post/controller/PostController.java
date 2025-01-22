@@ -3,11 +3,7 @@ package com.ani.taku_backend.post.controller;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.response.CommonResponse;
-import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
-import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
-import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
-import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
-import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
+import com.ani.taku_backend.post.model.dto.*;
 import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -22,14 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -60,7 +49,7 @@ public class PostController {
     })
     @RequireUser
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<Long> createPost(@Valid PostCreateRequestDTO requestDTO,
+    public CommonResponse<Long> createPost(@ParameterObject @Valid PostCreateRequestDTO requestDTO,
                                            @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser); // 유저 검증
@@ -95,8 +84,8 @@ public class PostController {
     @RequireUser
     @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
-            @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32")
-            @PathVariable("postId") Long postId, @Valid PostUpdateRequestDTO requestDTO,
+            @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32") @PathVariable("postId") Long postId,
+            @ParameterObject @Valid PostUpdateRequestDTO requestDTO,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
@@ -117,11 +106,10 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public CommonResponse<Long> deletePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
-            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
-        postService.deletePost(postId, categoryId, user);
+        postService.deletePost(postId, user);
         return CommonResponse.ok(null);
     }
 }
