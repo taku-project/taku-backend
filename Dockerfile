@@ -14,8 +14,6 @@ RUN chmod +x ./gradlew
 RUN ./gradlew build -x test --parallel 
 
 
-
-
 #COPY ./build
 #RUN gradle build -x test --parallel
 
