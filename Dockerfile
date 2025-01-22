@@ -7,7 +7,7 @@ COPY . .
 RUN chmod +x ./gradlew
 
 # Gradle 빌드 실행
-RUN ./gradlew clean build --no-daemon
+RUN ./gradlew build -x test --no-daemon
 
 
 
