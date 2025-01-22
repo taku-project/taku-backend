@@ -1,5 +1,5 @@
 # 1. Java 17 베이스 이미지 선택 (플랫폼 명시)
-FROM --platform=linux/arm64 eclipse-temurin:17-jdk-jammy AS builder
+FROM --platform=linux/arm64 eclipse-temurin:17.0.10_7-jre AS builder
 
 # 작업 디렉토리를 /app으로 설정합니다. 이 위치를 기준으로 이후 명령이 실행됩니다.
 WORKDIR /app
@@ -17,7 +17,8 @@ ENV SPRING_DATA_REDIS_PORT=${SPRING_DATA_REDIS_PORT}
 ENV SPRING_DATA_REDIS_PASSWORD=${SPRING_DATA_REDIS_PASSWORD}
 
 # 호스트 머신의 build/libs 디렉토리에서 .jar 파일을 컨테이너의 app.jar로 복사합니다.
-COPY /src/main/resources/application.yml .
+COPY /src/main/resources/application.yml application.yml
+
 COPY /build/libs/*.jar app.jar
 
 
