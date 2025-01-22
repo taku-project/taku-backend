@@ -1,5 +1,17 @@
+FROM gradle:7.4-jdk17-alpine as builder
+WORKDIR /build
+
+COPY . /build
+RUN gradle clean build --no-daemon
+
+
+#COPY ./build
+#RUN gradle build -x test --parallel
+
+
+
 # 1. Java 17 베이스 이미지 선택 (플랫폼 명시)
-FROM --platform=linux/arm64 eclipse-temurin:17.0.10_7-jre AS builder
+FROM --platform=linux/arm64 eclipse-temurin:17.0.10_7-jre 
 
 # 작업 디렉토리를 /app으로 설정합니다. 이 위치를 기준으로 이후 명령이 실행됩니다.
 WORKDIR /app
@@ -19,8 +31,7 @@ ENV SPRING_DATA_REDIS_PASSWORD=${SPRING_DATA_REDIS_PASSWORD}
 # 호스트 머신의 build/libs 디렉토리에서 .jar 파일을 컨테이너의 app.jar로 복사합니다.
 # COPY /src/main/resources/application.yml application.yml
 
-COPY /build/libs/*.jar app.jar
-
+COPY --from==builder /build/build/libs/*.jar app.jar
 
 # 여기서는 Java 애플리케이션(JAR 파일)을 실행합니다.
 CMD ["java", "-jar","-Dspring.data.redis.port=6379","-Dspring.data.redis.host=52.79.201.184","-Dspring.data.redis.password=1111", "app.jar" ]
