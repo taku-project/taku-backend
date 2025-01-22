@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.QDuckuJangterBookmark;
 import com.ani.taku_backend.jangter.model.entity.QItemCategories;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -77,4 +79,41 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
             .orderBy(duckuJangter.count().desc())
             .fetch();
     }
+
+    @Override
+    public List<ProductViewAndBookmarkDTO> findProductViewAndBookmark(Long categoryId) {
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QDuckuJangterBookmark duckuJangterBookmark = QDuckuJangterBookmark.duckuJangterBookmark;
+
+        return jpaQueryFactory
+            .select(Projections.constructor(ProductViewAndBookmarkDTO.class,
+                duckuJangter.id,
+                duckuJangter.viewCount,
+                duckuJangterBookmark.isNotNull()))
+            .from(duckuJangter)
+            .leftJoin(duckuJangterBookmark)
+            .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
+            .where(duckuJangter.status.eq(StatusType.ACTIVE),
+                duckuJangter.itemCategories.id.eq(categoryId))
+            .fetch();
+    }
+
+    @Override
+    public List<ProductViewAndBookmarkDTO> findProductViewAndBookmarkByProductId(Long productId) {
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QDuckuJangterBookmark duckuJangterBookmark = QDuckuJangterBookmark.duckuJangterBookmark;
+
+        return jpaQueryFactory
+            .select(Projections.constructor(ProductViewAndBookmarkDTO.class,
+                duckuJangter.id,
+                duckuJangter.viewCount,
+                duckuJangterBookmark.isNotNull()))
+            .from(duckuJangter)
+            .leftJoin(duckuJangterBookmark)
+            .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
+            .where(duckuJangter.id.eq(productId) , duckuJangter.deletedAt.isNull() , duckuJangter.status.eq(StatusType.ACTIVE))
+            .fetch();
+    }
+
+    
 }

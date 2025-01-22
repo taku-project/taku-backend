@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -19,12 +20,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
+
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.common.enums.PeriodType;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.ProductScoreDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 
 @Builder
@@ -33,6 +39,7 @@ import jakarta.persistence.Column;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@ToString(exclude = {"jangterRankStats" , "duckuJangter"})
 public class JangterRankBase extends BaseTimeEntity {
 
     @Id
@@ -54,7 +61,32 @@ public class JangterRankBase extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private DuckuJangter duckuJangter;
 
-
-    @OneToMany(fetch = FetchType.LAZY , mappedBy = "jangterRankBase")
+    @OneToMany(fetch = FetchType.LAZY , mappedBy = "jangterRankBase" , cascade = CascadeType.ALL , orphanRemoval = true)
     private List<JangterRankStats> jangterRankStats;
+
+    @Column(name = "period_type", length = 15)
+    @Enumerated(EnumType.STRING)
+    private PeriodType periodType;
+
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
+
+    @Column(name = "period_key")
+    private String periodKey;
+
+    public static JangterRankBase create(ProductScoreDTO productScoreDTO) {
+        return JangterRankBase.builder()
+            .totalScore(productScoreDTO.getTotalScore())
+            .status(StatusType.ACTIVE)
+            .rankIdx(productScoreDTO.getRank())
+            .duckuJangter(DuckuJangter.reference(productScoreDTO.getProductId()))
+            .build();
+    }
+
+    public void addRankStats(List<JangterRankStats> stats) {
+        this.jangterRankStats = stats;
+    }
 }

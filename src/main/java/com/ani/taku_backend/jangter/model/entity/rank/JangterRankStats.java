@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import jakarta.persistence.*;
 
@@ -23,15 +26,8 @@ public class JangterRankStats {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "count")
-    private Long count;
-
     @Column(name = "score")
-    private Long score;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "period_id")
-    private JangterRankPeriod jangterRankPeriod;
+    private BigDecimal score;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_id")
