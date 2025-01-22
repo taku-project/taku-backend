@@ -16,4 +16,12 @@ public class ParticipantInfo {
         this.messageStock = 0;
         this.lastDisconnectedAt = Instant.now();
     }
+
+    public void plusMessage() {
+        this.messageStock++;
+    }
+
+    public void resetMessageStock() {
+        this.messageStock = 0;
+    }
 }

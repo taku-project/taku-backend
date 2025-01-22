@@ -30,13 +30,21 @@ public class ChatRoomService {
         validateNewChatRoom(requestDto);
 
         ChatRoom chatRoom = ChatRoom.builder()
-                .articleId(requestDto.getArticleId())
-                .buyerId(requestDto.getBuyerId())
-                .sellerId(requestDto.getSellerId())
+                .articleId(requestDto.articleId())
+                .buyerId(requestDto.buyerId())
+                .sellerId(requestDto.sellerId())
                 .build();
 
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
-        return ChatRoomResponseDTO.of(savedRoom, requestDto.getBuyerId());
+
+        // 채팅방 메타정보 생성
+        ChatroomMetaInfo metaInfo = ChatroomMetaInfo.builder()
+                .chatroomId(savedRoom.getRoomId())
+                .build();
+        metaInfo.initializeParticipants(requestDto.buyerId(), requestDto.sellerId());
+        chatroomMetaRepository.save(metaInfo);
+
+        return ChatRoomResponseDTO.of(savedRoom);
     }
 
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
@@ -50,15 +58,15 @@ public class ChatRoomService {
         allRooms.addAll(sellerRooms);
 
         return allRooms.stream()
-                .map(room -> ChatRoomResponseDTO.of(room, userId))
+                .map(ChatRoomResponseDTO::of)
                 .collect(Collectors.toList());
     }
 
     private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
         if (chatRoomRepository.existsByArticleIdAndBuyerIdAndSellerId(
-                requestDto.getArticleId(),
-                requestDto.getBuyerId(),
-                requestDto.getSellerId())) {
+                requestDto.articleId(),
+                requestDto.buyerId(),
+                requestDto.sellerId())) {
             throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
         }
     }
@@ -71,14 +79,14 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        return ChatRoomResponseDTO.of(chatRoom, userId);
+        return ChatRoomResponseDTO.of(chatRoom);
     }
 
-    public Integer getChatRoomUnreadCount(String roomId, String userId) {
+    public Integer getChatRoomUnreadCount(String roomId, Long userId) {  // String -> Long
         ChatroomMetaInfo metaInfo = chatroomMetaRepository.findById(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId);
+        ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId.toString());
         if (participantInfo == null) {
             throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
@@ -86,13 +94,13 @@ public class ChatRoomService {
         return participantInfo.getMessageStock();
     }
 
-    public Integer getTotalUnreadCount(String userId) {
+    public Integer getTotalUnreadCount(Long userId) {  // String -> Long
         List<ChatroomMetaInfo> userChatrooms = chatroomMetaRepository
-                .findByParticipantsInfoUserIdOrderByUpdateAtDesc(userId);
+                .findAllByUserIdOrderByUpdateAtDesc(userId.toString());
 
         return userChatrooms.stream()
                 .map(chatroom -> {
-                    ParticipantInfo participantInfo = chatroom.getParticipants().getInfo().get(userId);
+                    ParticipantInfo participantInfo = chatroom.getParticipants().getInfo().get(userId.toString());
                     return participantInfo != null ? participantInfo.getMessageStock() : 0;
                 })
                 .reduce(0, Integer::sum);

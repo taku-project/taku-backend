@@ -42,14 +42,14 @@ public class ChatRoomController {
     @GetMapping("/{roomId}/unread")
     public CommonResponse<Integer> getChatRoomUnreadCount(
             @PathVariable String roomId,
-            @RequestParam String userId) {
+            @RequestParam Long userId) {
         Integer unreadCount = chatRoomService.getChatRoomUnreadCount(roomId, userId);
         return CommonResponse.ok(unreadCount);
     }
 
     @GetMapping("/unread/total")
     public CommonResponse<Integer> getTotalUnreadCount(
-            @RequestParam String userId) {
+            @RequestParam Long userId) {
         Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(userId);
         return CommonResponse.ok(totalUnreadCount);
     }

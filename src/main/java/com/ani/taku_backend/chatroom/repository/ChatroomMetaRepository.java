@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ChatroomMetaRepository extends MongoRepository<ChatroomMetaInfo, String> {
-    List<ChatroomMetaInfo> findByParticipantsInfoUserIdOrderByUpdateAtDesc(String userId);
+    List<ChatroomMetaInfo> findAllByUserIdOrderByUpdateAtDesc(String userId);
 }
