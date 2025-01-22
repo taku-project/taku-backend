@@ -31,7 +31,7 @@ ENV SPRING_DATA_REDIS_PASSWORD=${SPRING_DATA_REDIS_PASSWORD}
 # 호스트 머신의 build/libs 디렉토리에서 .jar 파일을 컨테이너의 app.jar로 복사합니다.
 # COPY /src/main/resources/application.yml application.yml
 
-COPY --from==builder /build/build/libs/*.jar app.jar
+COPY --from=builder /build/build/libs/*.jar app.jar
 
 # 여기서는 Java 애플리케이션(JAR 파일)을 실행합니다.
 CMD ["java", "-jar","-Dspring.data.redis.port=6379","-Dspring.data.redis.host=52.79.201.184","-Dspring.data.redis.password=1111", "app.jar" ]
