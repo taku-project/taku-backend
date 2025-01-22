@@ -70,9 +70,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
+       # 환경 변수로 이미지 출력 설정
       - name: Set image output
-        id: set-image-outpus
-        run: echo "::set-output name=image::${{ steps.login-ecr.outputs.registry }}/duckwho:latest"
+        run: echo "IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/duckwho:latest" >> $GITHUB_ENV
           
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -80,7 +80,7 @@ jobs:
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.set-image-output.outputs.image }}
+          image: ${{ env.IMAGE_URI }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
