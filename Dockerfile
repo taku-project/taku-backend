@@ -1,7 +1,7 @@
 FROM gradle:7.4-jdk17-alpine as builder
 WORKDIR /build
 
-COPY . /build
+COPY . .
 RUN gradle clean build --no-daemon
 
 
