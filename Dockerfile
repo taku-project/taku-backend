@@ -17,7 +17,7 @@ ENV SPRING_DATA_REDIS_PORT=${SPRING_DATA_REDIS_PORT}
 ENV SPRING_DATA_REDIS_PASSWORD=${SPRING_DATA_REDIS_PASSWORD}
 
 # 호스트 머신의 build/libs 디렉토리에서 .jar 파일을 컨테이너의 app.jar로 복사합니다.
-COPY /src/main/resources/application.yml application.yml
+# COPY /src/main/resources/application.yml application.yml
 
 COPY /build/libs/*.jar app.jar
 
