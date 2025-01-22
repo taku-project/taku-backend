@@ -82,7 +82,7 @@ public class ChatRoomService {
         return ChatRoomResponseDTO.of(chatRoom);
     }
 
-    public Integer getChatRoomUnreadCount(String roomId, Long userId) {  // String -> Long
+    public Integer getChatRoomUnreadCount(String roomId, Long userId) {
         ChatroomMetaInfo metaInfo = chatroomMetaRepository.findById(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
@@ -94,9 +94,9 @@ public class ChatRoomService {
         return participantInfo.getMessageStock();
     }
 
-    public Integer getTotalUnreadCount(Long userId) {  // String -> Long
+    public Integer getTotalUnreadCount(Long userId) {
         List<ChatroomMetaInfo> userChatrooms = chatroomMetaRepository
-                .findAllByUserIdOrderByUpdateAtDesc(userId.toString());
+                .findByParticipantIdOrderByUpdateAtDesc(userId.toString());
 
         return userChatrooms.stream()
                 .map(chatroom -> {
