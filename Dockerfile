@@ -1,4 +1,4 @@
-FROM gradle:7.4-jdk17-alpine as builder
+FROM --platform=linux/arm64 eclipse-temurin:17-jdk-jammy AS builder
 WORKDIR /build
 
 COPY . .
