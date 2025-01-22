@@ -1,13 +1,17 @@
 FROM gradle:7.4-jdk17 AS builder
 WORKDIR /build
 
-COPY . .
+# 그래들 파일이 변경되었을 때만 새롭게 의존패키지 다운로드 받게함.
+COPY build.gradle settings.gradle /build/
+RUN gradle build -x test --parallel --continue > /dev/null 2>&1 || true
+
+COPY . /build
 
 # gradlew 실행 권한 부여
 RUN chmod +x ./gradlew
 
 # Gradle 빌드 실행
-RUN ./gradlew build -x test --no-daemon
+RUN gradle build -x test --parallel 
 
 
 
