@@ -38,12 +38,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         boolean asc = postListRequestDTO.isAsc();
         long categoryId = postListRequestDTO.getCategoryId();
 
-        BooleanExpression byCategory = getCategory(categoryId, post);                           // 카테고리 구분
-        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, asc, post);   // 정렬 필터
-        BooleanExpression byKeyword = getKeyword(keyword, post);                                // 키워드 검색
-        BooleanExpression notDeleted = getNotDeleted(post);                                     // 삭제된글 제외
-        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, asc, post);                    // 첫번째 정렬 기준
-        OrderSpecifier<?> subSort = getSubSort(asc, post);                                      // 두번째 정렬 기준
+        BooleanExpression byCategory = getCategory(categoryId);                           // 카테고리 구분
+        BooleanExpression bySortFilter = getSortFilter(sortFilterType, lastValue, asc);   // 정렬 필터
+        BooleanExpression byKeyword = getKeyword(keyword);                                // 키워드 검색
+        BooleanExpression notDeleted = getNotDeleted();                                     // 삭제된글 제외
+        OrderSpecifier<?> mainSort = getMainSort(sortFilterType, asc);                    // 첫번째 정렬 기준
+        OrderSpecifier<?> subSort = getSubSort(asc);                                      // 두번째 정렬 기준
 
         return jpaQueryFactory
                 .select(new QFindAllPostQuerydslDTO(
@@ -70,14 +70,14 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     /**
      * 삭제된 데이터는 제외
      */
-    private BooleanExpression getNotDeleted(QPost post) {
+    private BooleanExpression getNotDeleted() {
         return post.deletedAt.isNull();
     }
 
     /**
      * 카테고리 구분
      */
-    private BooleanExpression getCategory(Long categoryId, QPost post) {
+    private BooleanExpression getCategory(Long categoryId) {
         if (categoryId != null) {
             return post.category.id.eq(categoryId);
         }
@@ -87,7 +87,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     /**
      * 제목 + 내용으로 키워드 검색
      */
-    private BooleanExpression getKeyword(String keyword, QPost post) {
+    private BooleanExpression getKeyword(String keyword) {
         if (keyword != null && !keyword.isEmpty()) {
             return post.title.contains(keyword).or(post.content.contains(keyword));
         } else {
@@ -99,7 +99,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
      * 정렬 필터 선택
      * - isAsc -> true, 오름 차순
      */
-    private BooleanExpression getSortFilter(String sortFilterType, Long lastValue, boolean isAsc, QPost post) {
+    private BooleanExpression getSortFilter(String sortFilterType, Long lastValue, boolean isAsc) {
 
         if (sortFilterType.equals(SortFilterType.LIKES.getValue()) && lastValue != null && lastValue > 0) {
 //            return isAsc ? post.likes.gt(lastValue) : post.likes.lt(lastValue);
@@ -118,7 +118,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     /**
      * 첫번째 정렬 기준
      */
-    private OrderSpecifier<?> getMainSort(String sortFilterType, boolean isAsc, QPost post) {
+    private OrderSpecifier<?> getMainSort(String sortFilterType, boolean isAsc) {
         if (sortFilterType.equals(SortFilterType.LIKES.getValue())) {
 //            return isAsc ? post.likes.asc() : post.likes.desc();
             return null;        // 좋아요 기능 -> 몽고DB사용, 좋아요 개발 되면 붙이기
@@ -133,7 +133,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     /**
      * 두번째 정렬 기준 - 무조건 id 순서
      */
-    private OrderSpecifier<?> getSubSort(boolean isAsc, QPost post) {
+    private OrderSpecifier<?> getSubSort(boolean isAsc) {
         return isAsc ? post.id.asc() : post.id.desc();
     }
 }
