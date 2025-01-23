@@ -41,7 +41,11 @@ public class PostController {
         return CommonResponse.ok(findResultList);
     }
 
-    @Operation(summary = "커뮤니티 게시글 생성", description = "커뮤티니 게시글을 생성하는 기능")
+    @Operation(summary = "커뮤니티 게시글 생성",
+            description = """
+                    커뮤티니 게시글을 생성하는 기능(스웨거 오류로 여기다 설명)\n
+                    imageList - 추가할 이미지 리스트(이미지 파일)
+                    """)
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -49,7 +53,7 @@ public class PostController {
     })
     @RequireUser
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<Long> createPost(@ParameterObject @Valid PostCreateRequestDTO requestDTO,
+    public CommonResponse<Long> createPost(@Valid PostCreateRequestDTO requestDTO,
                                            @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser); // 유저 검증
@@ -74,7 +78,12 @@ public class PostController {
         return CommonResponse.ok(detail);
     }
 
-    @Operation(summary = "커뮤니티 게시글 수정", description = "게시글 수정, 기존 이미지를 삭제하거나 추가할 수 있음")
+    @Operation(summary = "커뮤니티 게시글 수정",
+            description = """
+                        게시글 수정, 기존 이미지를 삭제하거나 추가할 수 있음(스웨거 오류로 여기다 설명)\n
+                        deleteImageUrl - 기존 글에서 삭제된 이미지 Url 리스트(문자열)\n
+                        imageList - 추가된 이미지 리스트(이미지 파일)
+                        """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -85,7 +94,7 @@ public class PostController {
     @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
             @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32") @PathVariable("postId") Long postId,
-            @ParameterObject @Valid PostUpdateRequestDTO requestDTO,
+            @Valid PostUpdateRequestDTO requestDTO,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증

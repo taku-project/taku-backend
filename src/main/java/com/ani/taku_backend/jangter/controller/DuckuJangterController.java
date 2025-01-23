@@ -31,19 +31,23 @@ public class DuckuJangterController {
     private final DuckuJangterService duckuJangterService;
     private final UserInteractionService userInteractionService;
     private final BlackUserService blackUserService;
+
     /**
      * 판매글 생성
      */
-    @Operation(summary = "판매글 생성 생성", description = "덕후 장터 판매글 생성")
+    @Operation(summary = "판매글 생성 생성", description = """
+                        덕후 장터 판매글 생성\n
+                        imageList - 추가할 이미지 리스트(이미지 파일)
+                        """)
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> createProduct(
-                                @ParameterObject @Valid ProductCreateRequestDTO requestDTO,
+                                @Valid ProductCreateRequestDTO requestDTO,
                                 @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);         // 블랙유저 검증
@@ -73,7 +77,12 @@ public class DuckuJangterController {
     /**
      * 덕후장터 판매글 업데이트
      */
-    @Operation(summary = "판매글 수정", description = "덕후 장터 판매글 수정, 기존 이미지를 삭제하거나 추가 할수 있음")
+    @Operation(summary = "판매글 수정",
+            description = """
+                        덕후 장터 판매글 수정, 기존 이미지를 삭제하거나 추가 할수 있음(스웨거 오류로 여기다 설명)\n
+                        deleteImageUrl - 기존 글에서 삭제된 이미지 Url 리스트(문자열)\n
+                        imageList - 추가된 이미지 리스트(이미지 파일)
+                        """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -85,7 +94,7 @@ public class DuckuJangterController {
     public CommonResponse<Long> updateProduct(
                         @Parameter(description = "게시글 ID(구글 토큰 입력)", required = true, example = "74")
                         @PathVariable("productId") long productId,
-                        @ParameterObject @Valid ProductUpdateRequestDTO requestDTO,
+                        @Valid ProductUpdateRequestDTO requestDTO,
                         @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);        // 블랙 유저인지 검증
