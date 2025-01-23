@@ -69,6 +69,7 @@ jobs:
           tags: ${{ steps.login-ecr.outputs.registry }}/duckwho:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/arm64
           
        # 환경 변수로 이미지 출력 설정
       - name: Set image output
