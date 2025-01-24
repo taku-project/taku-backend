@@ -30,4 +30,27 @@ public class ChatRoomController {
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(userId);
         return CommonResponse.ok(chatRooms);
     }
+
+    @GetMapping("/{roomId}")
+    public CommonResponse<ChatRoomResponseDTO> getChatRoom(
+            @PathVariable String roomId,
+            @RequestParam Long userId) {
+        ChatRoomResponseDTO chatRoom = chatRoomService.findChatRoom(roomId, userId);
+        return CommonResponse.ok(chatRoom);
+    }
+
+    @GetMapping("/{roomId}/unread")
+    public CommonResponse<Integer> getChatRoomUnreadCount(
+            @PathVariable String roomId,
+            @RequestParam Long userId) {
+        Integer unreadCount = chatRoomService.getChatRoomUnreadCount(roomId, userId);
+        return CommonResponse.ok(unreadCount);
+    }
+
+    @GetMapping("/unread/total")
+    public CommonResponse<Integer> getTotalUnreadCount(
+            @RequestParam Long userId) {
+        Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(userId);
+        return CommonResponse.ok(totalUnreadCount);
+    }
 }
