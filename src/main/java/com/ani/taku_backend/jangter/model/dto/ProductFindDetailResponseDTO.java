@@ -49,7 +49,7 @@ public class ProductFindDetailResponseDTO {
         this.price = duckuJangter.getPrice();
         this.status = duckuJangter.getStatus();
         this.createdAt = duckuJangter.getCreatedAt();
-        this.itemCategoryId = duckuJangter.getId();
+        this.itemCategoryId = duckuJangter.getItemCategories().getId();
         this.userId = duckuJangter.getUser().getUserId();
         this.viewCount = addViewCount;
 
