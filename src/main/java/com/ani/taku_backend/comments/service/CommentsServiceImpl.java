@@ -138,6 +138,17 @@ public class CommentsServiceImpl implements CommentsService {
         }
     }
 
+    /**
+     * 게시글의 댓글 목록 조회
+     * - 최상위 댓글과 대댓글을 계층 구조로 조회
+     * - 최상위 댓글은 생성일시 기준 내림차순 정렬
+     * - 대댓글은 생성일시 기준 오름차순 정렬
+     * - 삭제된 댓글은 제외하고 조회
+     *
+     * @param postId 게시글 ID
+     * @param currentUserId 현재 로그인한 사용자 ID (null 가능)
+     * @return 댓글 목록 (대댓글 포함)
+     */
     @Override
     @Transactional(readOnly = true)
     public List<CommentsResponseDTO> getPostComments(Long postId, Long currentUserId) {
@@ -147,7 +158,6 @@ public class CommentsServiceImpl implements CommentsService {
         // 각 댓글에 대한 ResponseDTO 생성 (대댓글 포함)
         return parentComments.stream()
                 .map(comment -> {
-
                     CommentsResponseDTO parentDto = CommentsResponseDTO.of(comment, currentUserId);
 
                     // 대댓글 조회 및 변환

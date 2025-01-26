@@ -1,5 +1,6 @@
 package com.ani.taku_backend.post.model.dto;
 
+import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,6 +37,8 @@ public class PostDetailResponseDTO {
     @Schema(description = "보여줄 이미지 URL")
     private final List<String> imageUrls;
 
+    private List<CommentsResponseDTO> comments;
+
     public PostDetailResponseDTO(Post post, boolean owner) {
         this.postId = post.getId();
         this.title = post.getTitle();
@@ -48,5 +51,7 @@ public class PostDetailResponseDTO {
         this.imageUrls = post.getCommunityImages().stream()
                 .map(communityImage -> communityImage.getImage().getImageUrl())
                 .toList();
+
+        this.comments = comments;
     }
 }
