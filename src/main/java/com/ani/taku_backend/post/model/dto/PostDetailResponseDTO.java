@@ -4,6 +4,7 @@ import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,7 @@ public class PostDetailResponseDTO {
     @Schema(description = "조회수")
     private final Long viewCount;
 
-    @Schema(description = "봤는지 안봤는지? 윤정님 확인 필요")
+    @Schema(description = "현재 사용자가 게시글의 작성자인지 여부")
     private final boolean owner;
 
     @Schema(description = "카테고리ID")
@@ -37,13 +38,14 @@ public class PostDetailResponseDTO {
     @Schema(description = "보여줄 이미지 URL")
     private final List<String> imageUrls;
 
-    private List<CommentsResponseDTO> comments;
+    @Schema(description = "게시글의 댓글 목록")
+    private final List<CommentsResponseDTO> comments;
 
-    public PostDetailResponseDTO(Post post, boolean owner) {
+    public PostDetailResponseDTO(Post post, boolean owner, List<CommentsResponseDTO> comments) {
         this.postId = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.updateAt = post.getUpdatedAt();    // 업데이트로 수정
+        this.updateAt = post.getUpdatedAt();
         this.viewCount = post.getViews();
         this.categoryId = post.getCategory().getId();
         this.owner = owner;
@@ -51,7 +53,8 @@ public class PostDetailResponseDTO {
         this.imageUrls = post.getCommunityImages().stream()
                 .map(communityImage -> communityImage.getImage().getImageUrl())
                 .toList();
-
         this.comments = comments;
+
+
     }
 }

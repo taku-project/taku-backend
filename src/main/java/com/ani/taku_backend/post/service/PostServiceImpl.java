@@ -2,6 +2,8 @@ package com.ani.taku_backend.post.service;
 
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
+import com.ani.taku_backend.comments.service.CommentsService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.UserRole;
@@ -37,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
+    private final CommentsService commentsService;
 
 
     /**
@@ -131,6 +134,9 @@ public class PostServiceImpl implements PostService {
 
     /**
      * 게시글 상세 조회
+     * - 게시글 정보와 함께 댓글 목록을 조회
+     * - 조회수 증가 처리
+     * - 삭제된 게시글 체크
      */
     @Transactional
     public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
@@ -146,11 +152,15 @@ public class PostServiceImpl implements PostService {
         }
 
         boolean isOwner = false;
-        if (post.getUser() != null && currentUserId != null && post.getUser().getUserId().equals(currentUserId)) {
+        if (post.getUser() != null && currentUserId != null &&
+                post.getUser().getUserId().equals(currentUserId)) {
             isOwner = true;
         }
 
-        return new PostDetailResponseDTO(post, isOwner);
+        // 댓글 목록 조회
+        List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
+
+        return new PostDetailResponseDTO(post, isOwner, comments);
     }
 
     // 게시글 생성
