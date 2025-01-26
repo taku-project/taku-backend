@@ -4,7 +4,6 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;
-import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
 
     private final PostService postService;
-    private final PostReadService postReadService;
     private final BlackUserService blackUserService;
 
     @Operation(summary = "커뮤니티글 전체 조회", description = "검색어와 정렬필터 기능이 포함된 게시글 조회")
@@ -62,19 +60,22 @@ public class PostController {
         return CommonResponse.created(createPostId);
     }
 
+/*  로그인한 사용자의 경우: 사용자 ID를 통해 게시글 소유자 여부를 확인합니다 (isOwner 판단)
+    비로그인 사용자의 경우: null을 전달하여 게시글 조회만 가능하도록 합니다*/
+
     @Operation(summary = "커뮤니티 게시글 상세 조회", description = "댓글 미개발")
     @GetMapping("/{postId}")
     public CommonResponse<PostDetailResponseDTO> findPostDetail(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
             @Parameter(description = "조회를 했는지 여부", required = true) @ViewCountChecker Boolean canAddView,
-            @Parameter(description = "유저 정보?? 윤정님 확인 필요", required = true) PrincipalUser principalUser
+            @Parameter(description = "유저 정보", required = false) PrincipalUser principalUser
     ) {
         Long currentUserId = null;
         if (principalUser != null) {
             currentUserId = principalUser.getUserId();
         }
 
-        PostDetailResponseDTO detail = postReadService.getPostDetail(postId, canAddView, currentUserId);
+        PostDetailResponseDTO detail = postService.getPostDetail(postId, canAddView, currentUserId);
         return CommonResponse.ok(detail);
     }
 

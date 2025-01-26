@@ -9,6 +9,7 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
@@ -36,6 +37,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
+
 
     /**
      * 게시글 전체 조회
@@ -125,6 +127,30 @@ public class PostServiceImpl implements PostService {
             communityImage.getImage().delete();
             log.debug("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
         });
+    }
+
+    /**
+     * 게시글 상세 조회
+     */
+    @Transactional
+    public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+
+        if (post.getDeletedAt() != null) {
+            throw new DuckwhoException(NOT_FOUND_POST);
+        }
+
+        if (canAddView) {
+            post.addViews();
+        }
+
+        boolean isOwner = false;
+        if (post.getUser() != null && currentUserId != null && post.getUser().getUserId().equals(currentUserId)) {
+            isOwner = true;
+        }
+
+        return new PostDetailResponseDTO(post, isOwner);
     }
 
     // 게시글 생성
