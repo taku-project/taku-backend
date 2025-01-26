@@ -21,7 +21,7 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
 
     List<DuckuJangter> findByDeletedAtIsNull();
 
-    @Query("select d from DuckuJangter d where d.buyUser.id = :userId")
+    @Query("select d from DuckuJangter d where d.buyUser.userId = :userId")
     List<DuckuJangter> findByBuyUserId(@Param("userId") Long userId);
 
     List<DuckuJangter> findByIdIn(List<Long> productIds);

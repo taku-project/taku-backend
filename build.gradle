@@ -132,3 +132,11 @@ tasks.named('test') {
     systemProperty 'spring.profiles.active', 'test'
 }
 
+compileJava {
+    options.compilerArgs += ['-parameters']
+}
+
+compileTestJava {
+    options.compilerArgs += ['-parameters']
+}
+

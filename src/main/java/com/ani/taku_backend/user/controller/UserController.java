@@ -1,7 +1,6 @@
 package com.ani.taku_backend.user.controller;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
@@ -9,9 +8,10 @@ import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
-import com.ani.taku_backend.user.model.dto.*;
-import com.ani.taku_backend.user.model.dto.requestDto.*;
+import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.dto.requestDto.UserEditDto;
 import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,9 +27,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.io.IOException;
 import java.util.Optional;
@@ -109,7 +116,7 @@ public class UserController {
 		userInfo.setNickname(requestRegisterUser.getNickname());
 
 		// 이미 가입된 유저인지 확인
-		Optional<User> byDomesticId = this.userService.getUser(userInfo.getEmail());
+		Optional<User> byDomesticId = this.userService.getUserByDomesticId(userInfo.getDomesticId());
 
 		if (byDomesticId.isPresent()) {
 			throw new UserException.UserAlreadyExistsException("이미 가입된 유저입니다.");
@@ -145,7 +152,7 @@ public class UserController {
 		description = "닉네임",
 		example = "looco"
 	) String nickname) {
-		return CommonResponse.ok(this.userService.checkNickname(nickname));
+		return CommonResponse.ok(this.userService.isNicknameDuplication(nickname));
 	}
 
 
@@ -166,14 +173,14 @@ public class UserController {
 	) {
 
 		// 유저 조회 
-		Optional<User> user = this.userService.findByUserIdAndStatus(userId, StatusType.ACTIVE);
+		Optional<User> user = this.userService.findByUserIdAndStatus(userId, UserStatus.ACTIVE);
 		user.orElseThrow(() -> {
 			log.info("여기니?");
 			return new UserException.UserNotFoundException("존재 하지 않거나,이미 삭제된 유저입니다.");
 		});
 
 		// 유저 삭제
-		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), StatusType.INACTIVE);
+		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), UserStatus.INACTIVE);
 		if(updateUserStatus == 0) {
 			throw new UserException.UserAlreadyDeletedException("이미 삭제된 유저입니다.");
 		}
@@ -210,7 +217,7 @@ public class UserController {
 
 		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
-			if(userService.checkNickname(nickname)){ //이미 존재하는 닉네임일 경우
+			if(userService.isNicknameDuplication(nickname)){ //이미 존재하는 닉네임일 경우
 				System.out.println("이미 존재하는 닉네임 입니다. ");
 				return CommonResponse.created("이미 존재하는 닉네임입니다. ");
 			}else{ // 닉네임 vaildation 통과를 했을 경우

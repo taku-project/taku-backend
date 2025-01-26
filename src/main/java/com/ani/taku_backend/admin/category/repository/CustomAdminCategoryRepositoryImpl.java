@@ -33,6 +33,7 @@ public class CustomAdminCategoryRepositoryImpl implements CustomAdminCategoryRep
     @Override
     public Page<Category> findCategoryList(Long userId, AdminCategoryListReqDTO categoryListReqDTO) {
         Pageable pageable = categoryListReqDTO.getPageable();
+
         List<Long> categoryIds = queryFactory
                 .select(category.id)
                 .from(category)

@@ -1,6 +1,5 @@
 package com.ani.taku_backend.shorts_interaction.service;
 
-import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
@@ -34,23 +33,31 @@ public class InteractionServiceImpl implements InteractionService {
         Shorts shorts = shortsRepository.findById(shortsId)
                 .orElseThrow(FileException.FileNotFoundException::new);
 
-        InteractionResponse userLikeInterAction = interactionRepository.findUserLikeDislikeInteractions(user.getUserId(), shortsId);
+        Optional<InteractionResponse> userLikeInterAction = interactionRepository.findUserLikeDislikeInteractions(user.getUserId(), shortsId);
 
-        // 좋아요가 없을 때
-        if(userLikeInterAction.getLike() == null) {
-            boolean hasDislike = userLikeInterAction.getDislike() == null;
+        if(userLikeInterAction.isPresent()) {
+            InteractionResponse interactionResponse = userLikeInterAction.get();
+
+            if(interactionResponse.getLike() != null) return;
+
+            boolean hasDislike = interactionResponse.getDislike() != null;
+
             shorts.addLikeCount(hasDislike);
-            Interaction interaction = Interaction.createLike(shorts, user.getUserId());
 
-            shortsRepository.save(shorts);
             if(hasDislike) {
-                String disLikeId = userLikeInterAction.getDislike().getId();
+                String disLikeId = interactionResponse.getDislike().getId();
                 Interaction disLikeInteraction = interactionRepository.findById(new ObjectId(disLikeId))
                         .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_INTERACTION));
                 interactionRepository.delete(disLikeInteraction);
             }
-            interactionRepository.save(interaction);
+        } else {
+            shorts.addLikeCount();
         }
+
+        Interaction interaction = Interaction.createLike(shorts, user.getUserId());
+
+        interactionRepository.save(interaction);
+        shortsRepository.save(shorts);
     }
 
     @Transactional
@@ -75,23 +82,31 @@ public class InteractionServiceImpl implements InteractionService {
         Shorts shorts = shortsRepository.findById(shortsId)
                             .orElseThrow(FileException.FileNotFoundException::new);
 
-        InteractionResponse userLikeInterAction = interactionRepository.findUserLikeDislikeInteractions(user.getUserId(), shortsId);
+        Optional<InteractionResponse> userLikeInterAction = interactionRepository.findUserLikeDislikeInteractions(user.getUserId(), shortsId);
 
-        // 싫어요가 없을 때만 추가
-        if(userLikeInterAction.getDislike() == null) {
-            boolean hasLike = userLikeInterAction.getLike() != null;
+        if(userLikeInterAction.isPresent()) {
+            InteractionResponse interactionResponse = userLikeInterAction.get();
+
+            if(interactionResponse.getDislike() != null) return;
+
+            boolean hasLike = interactionResponse.getLike() != null;
+
             shorts.addDislikeCount(hasLike);
-            Interaction dislikeInteraction = Interaction.createLike(shorts, user.getUserId());
 
-            shortsRepository.save(shorts);
             if(hasLike) {
-                String likeId = userLikeInterAction.getLike().getId();
+                String likeId = interactionResponse.getLike().getId();
                 Interaction likeInteraction = interactionRepository.findById(new ObjectId(likeId))
                         .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_INTERACTION));
                 interactionRepository.delete(likeInteraction);
             }
-            interactionRepository.save(dislikeInteraction);
+        } else {
+            shorts.addDislikeCount();
         }
+
+        Interaction interaction = Interaction.createDisLike(shorts, user.getUserId());
+
+        interactionRepository.save(interaction);
+        shortsRepository.save(shorts);
     }
 
     @Transactional
@@ -104,13 +119,14 @@ public class InteractionServiceImpl implements InteractionService {
 
         if(userDislikeInterActionOptional.isPresent()) {
             UserInteractionResponse interactionResponse = userDislikeInterActionOptional.get();
-            shorts.decreaseDislikeCount();
+
+            shorts.addDislikeCount();
             shortsRepository.save(shorts);
             interactionRepository.deleteById(new ObjectId(interactionResponse.getId()));
         }
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     @Override
     public void createView(CreateShortsViewDTO createShortsViewReqDTO) {
         Shorts shorts = shortsRepository.findById(createShortsViewReqDTO.getShortsId())

@@ -48,6 +48,10 @@ public class Interaction<T extends InteractionDetail> {
         return new Interaction(shorts, userId, InteractionType.LIKE, null);
     }
 
+    public static Interaction createDisLike(Shorts shorts, Long userId) {
+        return new Interaction(shorts, userId, InteractionType.DISLIKE, null);
+    }
+
     public static Interaction createView(Shorts shorts, Long userId, InteractionDetail detail) {
         return new Interaction(shorts, userId, InteractionType.VIEW, detail);
     }

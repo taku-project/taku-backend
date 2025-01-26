@@ -1,0 +1,92 @@
+name: Deploy to Amazon ECS (DEV)
+
+on:
+  push:
+    branches: [ "develop" ]  # develop 브랜치에 머지 or 직접 push되면 실행
+    
+env:
+  ECS_TASK_DEFINITION: repo1/task-definition.json
+  CONTAINER_NAME: backend-deploy
+  ECS_SERVICE: duckwho-service
+  ECS_CLUSTER: duckwho-cluster
+  ECR_REPOSITORY: duckwho
+  
+jobs:
+  build-and-deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3 # buildx 설정
+      # (1) 이 레포(repo1) 체크아웃 (백엔드 코드)
+      - name: Checkout backend (repo1)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: 'repo1'
+
+      # (2) 필요하다면 설정 Repo2를 추가로 체크아웃 (private일 경우 token 필요)
+      - name: Checkout config (repo2)
+        uses: actions/checkout@v4
+        with:
+          repository: 'taku-project/duckwho-config'  # 실제 org/repo
+          ref: 'main'                           # config를 main 브랜치에서 가져올지, develop에서 가져올지는 팀 정책에 따라
+          path: 'repo2'
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}  # private이라면
+
+      # (3) config 파일 복사
+      - name: Copy config
+        run: |
+          cp -r repo2/* repo1/src/main/resources/
+          ls repo1/src/main/resources/
+
+     # (4) Gradle Build
+      - name: Gradle build
+        working-directory: repo1
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build -x test
+
+      # (5) AWS 로그인 -> Docker Build/Push -> ECS(dev) 배포
+      #     (구체 내용은 이전 예시들과 동일)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: repo1          # Dockerfile이 있는 디렉토리 경로
+          file: repo1/Dockerfile 
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/duckwho:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/arm64
+          
+       # 환경 변수로 이미지 출력 설정
+      - name: Set image output
+        run: echo "IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/duckwho:latest" >> $GITHUB_ENV
+          
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.IMAGE_URI }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          

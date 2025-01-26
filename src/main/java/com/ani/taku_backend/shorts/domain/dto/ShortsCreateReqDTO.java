@@ -18,17 +18,34 @@ import java.util.List;
 @AllArgsConstructor
 public class ShortsCreateReqDTO {
 
-    @Schema(description = "쇼츠 파일", required = true)
+    @Schema(
+        description = "쇼츠 파일",
+        type = "string",
+        format = "binary",
+        required = true
+    )
     @NotNull
     private MultipartFile file;
-    @Schema(description = "제목", required = true)
+
+    @Schema(
+        description = "제목",
+        example = "나의 첫 쇼츠",
+        required = true
+    )
     @NotBlank
     private String title;
 
-    @Schema(description = "한 줄 설명", required = true)
+    @Schema(
+        description = "한 줄 설명",
+        example = "재미있는 쇼츠입니다",
+        required = true
+    )
     @NotBlank
     private String description;
 
-    @Schema(description = "해시태그 목록", required = true)
+    @Schema(
+        description = "해시태그 목록",
+        example = "[\"애니\", \"재미있다\", \"쇼츠\"]"
+    )
     private List<String> tags;
 }

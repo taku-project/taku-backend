@@ -38,15 +38,6 @@ public class ChatRoom extends BaseTimeEntity {
     @Column(name = "seller_id", nullable = false)
     private Long sellerId;
 
-    @Column(name = "last_message_id")
-    private Long lastMessageId = 0L;
-
-    @Column(name = "buyer_last_read_message_id")
-    private Long buyerLastReadMessageId = 0L;
-
-    @Column(name = "seller_last_read_message_id")
-    private Long sellerLastReadMessageId = 0L;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
@@ -57,18 +48,6 @@ public class ChatRoom extends BaseTimeEntity {
         this.articleId = articleId;
         this.buyerId = buyerId;
         this.sellerId = sellerId;
-    }
-
-    public void updateLastMessage(Long messageId) {
-        this.lastMessageId = messageId;
-    }
-
-    public void updateBuyerLastRead(Long messageId) {
-        this.buyerLastReadMessageId = messageId;
-    }
-
-    public void updateSellerLastRead(Long messageId) {
-        this.sellerLastReadMessageId = messageId;
     }
 
     public void deactivate() {

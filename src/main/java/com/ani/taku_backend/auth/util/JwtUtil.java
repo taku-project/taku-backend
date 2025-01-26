@@ -66,7 +66,7 @@ public class JwtUtil {
 
                 // 필요한 정보만 claims에 저장
                 claims.put("email", kakaoAccount.get("email"));
-                claims.put("id", String.valueOf(attributes.get("id"))); // domesticId
+                claims.put("domesticId", String.valueOf(attributes.get("id"))); // domesticId
                 claims.put("gender", StringUtils.hasText(gender) ? gender.toUpperCase() : null);
                 claims.put("age_range", kakaoAccount.get("age_range"));
                 claims.put("nickname", profile.get("nickname"));
