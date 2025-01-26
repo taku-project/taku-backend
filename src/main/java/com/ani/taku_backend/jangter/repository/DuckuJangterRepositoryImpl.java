@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
@@ -15,6 +16,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -38,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
+
 
     @Override
     public List<ProductFindListResponseDto> findFilteredProducts(
@@ -111,6 +114,8 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
 
         return predicate;
     }
+
+
 
     private BooleanExpression applyPaginationCondition(String sort, String order, Long lastId) {
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;

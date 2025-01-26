@@ -14,30 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-<<<<<<< HEAD
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.entity.UserImage;
 import com.ani.taku_backend.user.repository.UserImageRepository;
-import com.ani.taku_backend.user.model.entity.UserStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.common.enums.UserRole;
-import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
-import com.ani.taku_backend.user.model.entity.User;
-import com.ani.taku_backend.user.repository.UserRepository;
-import com.ani.taku_backend.user.model.dto.*;
 
-import static com.ani.taku_backend.user.converter.UserConverter.*;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-=======
 import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
->>>>>>> 9cba25c665019976566c3be711a63f3e74aa7da6
+
 
 @Service
 @RequiredArgsConstructor

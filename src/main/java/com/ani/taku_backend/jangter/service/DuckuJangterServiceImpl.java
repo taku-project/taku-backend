@@ -1,5 +1,6 @@
 package com.ani.taku_backend.jangter.service;
 
+
 import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
@@ -18,6 +19,8 @@ import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
@@ -71,6 +74,15 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
+
+    @Transactional(readOnly = true)
+    public List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request) {
+
+        return duckuJangterRepository.findFilteredProducts(request.getSearchKeyword(), request.getCategoryId(),
+                request.getMinPrice(), request.getMaxPrice(), request.getSort(), request.getOrder(),
+                request.getLastId(), request.getSize());
+    }
+
 
     /**
      * 장터글 저장
@@ -131,8 +143,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // 업데이트 이미지
         List<Image> newImageList = imageService.getUpdateImageList(productUpdateRequestDTO.getDeleteImageUrl(),
-                                                                    productUpdateRequestDTO.getImageList(),
-                                                                    user);
+                productUpdateRequestDTO.getImageList(),
+                user);
 
         if (newImageList != null && !newImageList.isEmpty()) {
             setRelationJangterImages(newImageList, findProduct);   // 연관관계 설정
@@ -219,14 +231,14 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         final Long itemCategoryId = product.getItemCategories().getId();
-        
+
 
         if(principalUser.isAnonymous()){
             log.info("익명 사용자 추천 상품 조회");
             return getRandomProducts(itemCategoryId, productId);
         }
 
-        
+
         String title = product.getTitle();
         BigDecimal price = product.getPrice();
         BigDecimal priceRangePercentage = new BigDecimal("0.20"); // 20%
@@ -239,13 +251,13 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
-            .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE , productId);
+                .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE , productId);
 
         if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
             log.debug("추천 상품 부족으로 랜덤 조회");
             return getRandomProducts(itemCategoryId, productId);
         }
-        
+
         recommendProducts.forEach(item -> {
             log.debug("추천 상품: {}", item.getTitle());
         });
@@ -287,20 +299,20 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
             List<String> recommendProductKeywords = this.extractKeywordService.extractKeywords(recommendProduct.getTitle());
 
             // 각 스코어 계산을 비동기로 실행
-            CompletableFuture<Double> viewScoreFuture = CompletableFuture.supplyAsync(() -> 
-                this.viewHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userViewHistory)
+            CompletableFuture<Double> viewScoreFuture = CompletableFuture.supplyAsync(() ->
+                    this.viewHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userViewHistory)
             );
 
-            CompletableFuture<Double> searchScoreFuture = CompletableFuture.supplyAsync(() -> 
-                this.searchHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userSearchHistory)
+            CompletableFuture<Double> searchScoreFuture = CompletableFuture.supplyAsync(() ->
+                    this.searchHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userSearchHistory)
             );
 
-            CompletableFuture<Double> purchaseScoreFuture = CompletableFuture.supplyAsync(() -> 
-                this.purchaseHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userPurchaseHistory)
+            CompletableFuture<Double> purchaseScoreFuture = CompletableFuture.supplyAsync(() ->
+                    this.purchaseHistoryScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userPurchaseHistory)
             );
 
-            CompletableFuture<Double> bookmarkScoreFuture = CompletableFuture.supplyAsync(() -> 
-                this.bookmarkScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userBookmarkHistory)
+            CompletableFuture<Double> bookmarkScoreFuture = CompletableFuture.supplyAsync(() ->
+                    this.bookmarkScoreCalculator.calculate(recommendProduct, recommendProductKeywords, userBookmarkHistory)
             );
 
             CompletableFuture.allOf(viewScoreFuture, searchScoreFuture, purchaseScoreFuture, bookmarkScoreFuture).join();
@@ -316,35 +328,35 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
             // 구매 이력 점수 (50%)
             double purchaseScore = purchaseHistoryScore * 0.5;
-            
+
             // 찜 목록 점수 (20%)
             double bookmarkFinalScore = bookmarkScore * 0.2;
 
             // 최종 점수 합산 (100%)
             double finalScore = searchAndViewHistoryScore + purchaseScore + bookmarkFinalScore;
-            
+
             // 상품 ID와 최종 점수 저장
             productScores.put(recommendProduct.getId(), finalScore);
 
-            log.info("상품: {}, 최종점수: {}, (조회/검색: {}, 구매: {}, 찜: {})", 
-                recommendProduct.getTitle(), 
-                finalScore,
-                searchAndViewHistoryScore,
-                purchaseScore,
-                bookmarkFinalScore);
+            log.info("상품: {}, 최종점수: {}, (조회/검색: {}, 구매: {}, 찜: {})",
+                    recommendProduct.getTitle(),
+                    finalScore,
+                    searchAndViewHistoryScore,
+                    purchaseScore,
+                    bookmarkFinalScore);
         });
 
         if(!productScores.isEmpty()) {
             List<DuckuJangter> sortedProducts = recommendProducts.stream()
-                // 스코어가 0.0 이상인 상품만 조회
-                .filter(item -> productScores.containsKey(item.getId()) && productScores.get(item.getId()) > 0.0)
-                .sorted((p1, p2) -> Double.compare(productScores.get(p2.getId()), productScores.get(p1.getId())))
-                .limit(5)
-                .collect(Collectors.toList());
+                    // 스코어가 0.0 이상인 상품만 조회
+                    .filter(item -> productScores.containsKey(item.getId()) && productScores.get(item.getId()) > 0.0)
+                    .sorted((p1, p2) -> Double.compare(productScores.get(p2.getId()), productScores.get(p1.getId())))
+                    .limit(5)
+                    .collect(Collectors.toList());
 
             // 필터링 후 데이터가 5건 이하일 경우 랜덤 조회
-            return sortedProducts.size() >= 5 ? 
-                    ProductRecommendResponseDTO.of(sortedProducts) : 
+            return sortedProducts.size() >= 5 ?
+                    ProductRecommendResponseDTO.of(sortedProducts) :
                     getRandomProducts(itemCategoryId, productId);
         }else{
             return ProductRecommendResponseDTO.empty();
@@ -373,10 +385,10 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         }
 
         List<String> buyUserProductTitleKeywords = buyUserProducts.stream()
-            .map(item -> extractKeywordService.extractKeywords(item.getTitle()))
-            .flatMap(List::stream)
-            .distinct()
-            .collect(Collectors.toList());
+                .map(item -> extractKeywordService.extractKeywords(item.getTitle()))
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
 
         return UserPurchaseHistory.create(buyUserProducts, buyUserProductTitleKeywords);
     }
@@ -391,12 +403,12 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         List<DuckuJangter> searchedProducts = this.duckuJangterRepository.findByIdIn(searchedProductIds);
 
         return UserSearchHistory.create(
-            searchedProducts.parallelStream()
-                .map(item -> this.extractKeywordService.extractKeywords(item.getTitle()))
-                .flatMap(List::stream)
-                .distinct()
-                .toList(),
-            searchedProducts.stream().map(item -> item.getItemCategories().getId()).distinct().toList()
+                searchedProducts.parallelStream()
+                        .map(item -> this.extractKeywordService.extractKeywords(item.getTitle()))
+                        .flatMap(List::stream)
+                        .distinct()
+                        .toList(),
+                searchedProducts.stream().map(item -> item.getItemCategories().getId()).distinct().toList()
         );
     }
 
@@ -404,16 +416,16 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         List<UserInteraction> searchHistory = this.userInteractionService.findLatestByUserId(userId, LogType.SEARCH);
         // 검색이력 키워드 , 카테고리 추출
         UserSearchHistory userSearchHistory = UserSearchHistory.create(
-            searchHistory.stream()
-                .map(item -> this.extractKeywordService.extractKeywords(((SearchLogDetail)item.getLogDetail()).getSearchKeyword()))
-                .flatMap(List::stream)
-                .distinct()
-                .toList(),
-            searchHistory.stream()
-                .map(item -> ((SearchLogDetail)item.getLogDetail()).getSearchCategory())
-                .distinct()
-                .findFirst()
-                .orElse(Arrays.asList())
+                searchHistory.stream()
+                        .map(item -> this.extractKeywordService.extractKeywords(((SearchLogDetail)item.getLogDetail()).getSearchKeyword()))
+                        .flatMap(List::stream)
+                        .distinct()
+                        .toList(),
+                searchHistory.stream()
+                        .map(item -> ((SearchLogDetail)item.getLogDetail()).getSearchCategory())
+                        .distinct()
+                        .findFirst()
+                        .orElse(Arrays.asList())
         );
 
         return userSearchHistory;
@@ -425,9 +437,9 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         UserBookmarkHistory userBookmarkHistory = null;
         if(!bookmarkList.isEmpty()){
             List<DuckuJangter> bookmarkedProducts = bookmarkList.stream()
-                .flatMap(bookmark -> bookmark.getDuckuJangterBookmarks().stream())
-                .map(jangterBookmark -> jangterBookmark.getJangter())
-                .toList();
+                    .flatMap(bookmark -> bookmark.getDuckuJangterBookmarks().stream())
+                    .map(jangterBookmark -> jangterBookmark.getJangter())
+                    .toList();
 
             userBookmarkHistory = UserBookmarkHistory.create(bookmarkedProducts, keywords);
             log.info("################## >>>>>>>>>>> userBookmarkHistory : {}", userBookmarkHistory);
@@ -436,7 +448,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         return userBookmarkHistory;
     }
 
-          private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
+    private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
         log.debug("랜덤 상품 조회");
         List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(StatusType.ACTIVE.name(), categoryId, productId);
         randomProducts.clear();
