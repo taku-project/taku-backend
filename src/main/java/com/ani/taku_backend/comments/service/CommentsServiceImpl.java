@@ -1,6 +1,7 @@
 package com.ani.taku_backend.comments.service;
 
 import com.ani.taku_backend.comments.model.dto.CommentsCreateRequestDTO;
+import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.comments.model.dto.CommentsUpdateRequestDTO;
 import com.ani.taku_backend.comments.model.entity.Comments;
 import com.ani.taku_backend.comments.repository.CommentsRepository;
@@ -12,6 +13,7 @@ import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -134,5 +136,36 @@ public class CommentsServiceImpl implements CommentsService {
                 !user.getUserId().equals(findComments.getUser().getUserId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentsResponseDTO> getPostComments(Long postId, Long currentUserId) {
+        // 최상위 댓글 조회
+        List<Comments> parentComments = commentsRepository.findParentComments(postId);
+
+        // 각 댓글에 대한 ResponseDTO 생성 (대댓글 포함)
+        return parentComments.stream()
+                .map(comment -> {
+
+                    CommentsResponseDTO parentDto = CommentsResponseDTO.of(comment, currentUserId);
+
+                    // 대댓글 조회 및 변환
+                    List<Comments> replies = commentsRepository.findChildComments(comment.getId());
+
+                    List<CommentsResponseDTO> replyDtos = replies.stream()
+                            .map(reply -> CommentsResponseDTO.of(reply, currentUserId))
+                            .toList();
+
+                    return new CommentsResponseDTO(
+                            parentDto.id(),
+                            parentDto.content(),
+                            parentDto.createdAt(),
+                            parentDto.user(),
+                            parentDto.isOwner(),
+                            replyDtos
+                    );
+                })
+                .toList();
     }
 }
