@@ -15,11 +15,14 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.ani.taku_backend.common.model.entity.QImage.image;
 import static com.ani.taku_backend.jangter.model.entity.QDuckuJangter.duckuJangter;
@@ -39,7 +42,7 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
     @Override
     public List<ProductFindListResponseDto> findFilteredProducts(
             String keyword,
-            String category,
+            Long categoryId,
             Integer minPrice,
             Integer maxPrice,
             String sort,
@@ -52,7 +55,8 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
         QItemCategories itemCategories = QItemCategories.itemCategories;
         QJangterImages jangterImages = QJangterImages.jangterImages;
 
-        System.out.println(keyword+category+minPrice+maxPrice+sort+order+lastId+limit);
+        System.out.println("keyword: "+keyword+"categoryId:"+categoryId+"minPrice:" + minPrice + "maxPrice: "+ maxPrice+ "sort: " + sort+ "order: "+ order+"lastId: "+lastId);
+
         var query = queryFactory.select(Projections.constructor(
                         ProductFindListResponseDto.class,
                         duckuJangter.id,
@@ -70,7 +74,7 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
                  // left join을 사용하여 이미지 컬렉션을 안전하게 가져옴
                 .where(
                         duckuJangter.deletedAt.isNull(),
-                        applyFilters(keyword, category, minPrice, maxPrice),
+                        applyFilters(keyword, categoryId, minPrice, maxPrice),
                         applyPaginationCondition(sort, order, lastId))
                 .orderBy(buildOrder(sort,order));
 
@@ -79,7 +83,7 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
         return query.limit(limit).fetch();
     }
 
-    private BooleanExpression applyFilters(String keyword, String category, Integer minPrice, Integer maxPrice) {
+    private BooleanExpression applyFilters(String keyword, Long categoryId, Integer minPrice, Integer maxPrice) {
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
         BooleanExpression predicate = duckuJangter.deletedAt.isNull(); // 기본 조건
@@ -91,18 +95,17 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
             );
         }
 
-        System.out.println("category"+category);
-        System.out.println(category.equals(""));
-        if (!category.equals("")) {
-            System.out.println("category 조건 추가");
-            predicate = predicate.and(duckuJangter.itemCategories.name.eq(category));
+        if(categoryId==0){}else{
+            predicate = predicate.and(duckuJangter.itemCategories.id.eq(categoryId));
+
         }
 
-        if (minPrice != null) {
+        if (minPrice == null){}else{
+
             predicate = predicate.and(duckuJangter.price.goe(minPrice));
         }
 
-        if (maxPrice != null) {
+        if (maxPrice == null){}else {
             predicate = predicate.and(duckuJangter.price.loe(maxPrice));
         }
 

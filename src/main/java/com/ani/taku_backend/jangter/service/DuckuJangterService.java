@@ -379,7 +379,7 @@ public class DuckuJangterService {
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request) {
 
-        return duckuJangterRepository.findFilteredProducts(request.getSearchKeyword(), request.getCategories(),
+        return duckuJangterRepository.findFilteredProducts(request.getSearchKeyword(), request.getCategoryId(),
                 request.getMinPrice(), request.getMaxPrice(), request.getSort(), request.getOrder(),
                 request.getLastId(), request.getSize());
     }

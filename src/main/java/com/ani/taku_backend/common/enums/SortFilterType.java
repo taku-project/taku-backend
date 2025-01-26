@@ -14,6 +14,11 @@ public enum SortFilterType {
     LATEST("latest"),
 
     /**
+     * 오래된 순 - 커뮤니티 글, 상품 적용
+     */
+    OLDEST("oldest"),
+
+    /**
      * 조회수 기준 - 커뮤니티 글 적용
      */
     VIEWS("views"),

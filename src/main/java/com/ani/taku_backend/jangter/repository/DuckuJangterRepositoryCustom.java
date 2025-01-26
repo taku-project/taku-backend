@@ -12,7 +12,7 @@ public interface DuckuJangterRepositoryCustom{
 
     List<ProductFindListResponseDto> findFilteredProducts(
             String keyword,
-            String category,
+            Long categoryId,
             Integer minPrice,
             Integer maxPrice,
             String sort,

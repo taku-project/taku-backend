@@ -1,5 +1,6 @@
 package com.ani.taku_backend.jangter.controller;
 
+import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.SortFilterType;
@@ -34,7 +35,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ani.taku_backend.jangter.service.UserInteractionService;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import static com.ani.taku_backend.common.enums.SortFilterType.*;
 
 @Slf4j
 @RestController
@@ -70,13 +74,29 @@ public class DuckuJangterController {
      */
 
     @GetMapping("/products")
-    public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@RequestBody ProductFindListRequestDto request){
+    public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@ModelAttribute ProductFindListRequestDto request){
+
+        SortFilterType sortFilterType;
+        if(request.getOrder().equals("desc")){
+            if(request.getSort()=="day"){
+                sortFilterType = OLDEST;
+            }else{
+                sortFilterType = PRICE_DESC;
+            }
+        }else{
+
+            if(request.getSort()=="day"){
+                sortFilterType = LATEST;
+            }else{
+                sortFilterType = PRICE_ASC;
+            }
+        }
 
         userInteractionService.saveLog(null, LogType.SEARCH, SearchLogDetail.builder()
                 .searchKeyword(request.getSearchKeyword())
-                .searchCategory(request.getCategories())
-                .sortType(request.getSort()).
-                build());
+                .searchCategory(Collections.singletonList(request.getCategoryId()))
+                .sortType(sortFilterType)
+                .build());
 
         List<ProductFindListResponseDto> products = duckuJangterService.getProducts(request);
 
