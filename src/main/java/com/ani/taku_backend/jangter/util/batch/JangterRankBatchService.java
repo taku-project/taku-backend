@@ -3,7 +3,6 @@ package com.ani.taku_backend.jangter.util.batch;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 import java.util.Arrays;
@@ -44,6 +43,9 @@ public class JangterRankBatchService {
     private final JangterRankTypeRepository jangterRankTypeRepository;
     private final JangterRankBaseRepository jangterRankBaseRepository;
     
+    /**
+     * 장터 일별 랭킹 생성
+     */
     public void createJangterDailyRank() {
         List<JangterRankType> jangterRankTypes = jangterRankTypeRepository.findAll();
         log.info("장터 랭킹 조회 완료 : {}", jangterRankTypes);
@@ -86,6 +88,9 @@ public class JangterRankBatchService {
         jangterRankBaseRepository.saveAll(jangterRankBases);
     }
 
+    /**
+     * 장터 주간 랭킹 생성
+     */
     public void createJangterWeeklyRank() {
 
         List<JangterRankType> jangterRankTypes = jangterRankTypeRepository.findAll();
@@ -167,6 +172,88 @@ public class JangterRankBatchService {
         log.info("장터 랭킹 생성 완료");
     }
 
+    /**
+     * 장터 월간 랭킹 생성
+     */
+    public void createJangterMonthlyRank() {
+        List<JangterRankType> jangterRankTypes = jangterRankTypeRepository.findAll();
+        Map<RankType, JangterRankType> rankTypeMap = jangterRankTypes.stream()
+        .filter(rankType -> rankType.getStatus() == StatusType.ACTIVE)
+        .collect(Collectors.toMap(
+            JangterRankType::getType,
+            rankType -> rankType
+        ));
+
+        JangterRankType bookmarkType = Optional.ofNullable(rankTypeMap.get(RankType.BOOKMARK))
+            .orElseThrow(() -> new IllegalArgumentException("북마크 랭킹 타입 조회 실패"));
+        JangterRankType viewType = Optional.ofNullable(rankTypeMap.get(RankType.VIEW))
+            .orElseThrow(() -> new IllegalArgumentException("조회수 랭킹 타입 조회 실패"));
+
+
+        LocalDateTime now = LocalDateTime.now().minusDays(1);
+        LocalDateTime monthStart = LocalDateTime.now().minusMonths(1)  // 1달 전
+            .withDayOfMonth(1)  // 해당 월의 1일로 설정
+            .withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime monthEnd = now
+            .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        
+        // 한달치 데이터 조회
+        List<JangterRankBase> monthlyRanks = jangterRankBaseRepository
+            .findByStartDateBetweenAndPeriodTypeOrderByTotalScoreDesc(
+                monthStart, 
+                monthEnd,
+                PeriodType.WEEK
+        );
+
+        // 일주일치 데이터 조회 후 중복 제거 (높은 점수만 유지)
+        List<JangterRankBase> uniqueRanks = monthlyRanks.stream()
+            .collect(Collectors.groupingBy(
+                rank -> rank.getDuckuJangter().getId(),  // 상품 ID로 그룹핑
+                Collectors.maxBy(Comparator.comparing(JangterRankBase::getTotalScore))  // 최고 점수 선택
+            ))
+            .values()
+            .stream()
+            .map(Optional::get)
+            .sorted(Comparator.comparing(JangterRankBase::getTotalScore).reversed())  // 다시 점수순 정렬
+            .collect(Collectors.toList());
+
+        log.info("전체 랭킹 수: {}, 중복 제거 후: {}", monthlyRanks.size(), uniqueRanks.size());
+
+        List<ProductViewAndBookmarkDTO> productViewAndBookmarkDTOs = uniqueRanks.stream().map(rank -> {
+            return duckuJangterRepository.findProductViewAndBookmarkByProductId(rank.getDuckuJangter().getId());
+        }).flatMap(List::stream).toList();
+
+        long maxViewCount = getMaxViewCount(productViewAndBookmarkDTOs);
+        // 스코어링
+        List<ProductScoreDTO> rankScores = scoreRanking(productViewAndBookmarkDTOs , viewType , bookmarkType , maxViewCount);
+
+        // 랭킹 부여
+        setRank(rankScores);
+        // 랭킹 저장
+
+
+        // 이전 달의 연도와 월을 가져옴
+        LocalDateTime previousMonth = now.minusMonths(1);
+        
+        // 월간 랭킹의 periodKey 포맷팅 (예: 2024-01)
+        String periodKey = String.format("%d-%02d", 
+            previousMonth.getYear(),
+            previousMonth.getMonthValue()
+        );
+
+        // 결과: "2024-01"
+        log.info("Period Key: {}", periodKey);
+
+        List<JangterRankBase> jangterRankBases = saveRank(rankScores , viewType , bookmarkType , PeriodType.MONTH , 
+            monthStart , monthEnd , periodKey);
+        jangterRankBaseRepository.saveAll(jangterRankBases);
+
+        log.info("월간 집계 기간: {} ~ {}", 
+            monthStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+            monthEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        );
+        log.info("장터 랭킹 생성 완료");
+    }
 
 
     private List<ProductViewAndBookmarkDTO> getCategoryGroupCount() {

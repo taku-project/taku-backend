@@ -61,7 +61,7 @@ public class JangterRankBase extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private DuckuJangter duckuJangter;
 
-    @OneToMany(fetch = FetchType.LAZY , mappedBy = "jangterRankBase" , cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY , mappedBy = "jangterRankBase" , orphanRemoval = true)
     private List<JangterRankStats> jangterRankStats;
 
     @Column(name = "period_type", length = 15)

@@ -19,19 +19,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.ani.taku_backend.common.enums.PeriodType;
-import com.ani.taku_backend.common.enums.RankType;
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
-import com.ani.taku_backend.jangter.model.dto.ProductScoreDTO;
-import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.rank.JangterRankBase;
-import com.ani.taku_backend.jangter.model.entity.rank.JangterRankStats;
-import com.ani.taku_backend.jangter.model.entity.rank.JangterRankType;
-import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
-import com.ani.taku_backend.jangter.repository.JangterRankBaseRepository;
-import com.ani.taku_backend.jangter.repository.JangterRankTypeRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +32,9 @@ public class JangterRankScheduler {
 
     private static final String JANGTER_WEEKLY_RANK_CRON_EXPRESSION = "0 0 0 ? * MON";
 
+    // 매월 1일 0시에 실행
+    private static final String JANGTER_MONTHLY_RANK_CRON_EXPRESSION = "0 0 0 1 * ?";
+
     private final JangterRankBatchService jangterRankBatchService;
     @Scheduled(cron = JANGTER_DAILY_RANK_CRON_EXPRESSION)
     public void createJangterDailyRank() {
@@ -57,16 +47,25 @@ public class JangterRankScheduler {
     @Scheduled(cron = JANGTER_WEEKLY_RANK_CRON_EXPRESSION)
     public void createJangterWeeklyRank() {
         log.info("장터 주간 랭킹 생성 시작");
-
         jangterRankBatchService.createJangterWeeklyRank();
-
         log.info("장터 주간 랭킹 생성 완료");
-
     }
 
-    // @EventListener(ApplicationReadyEvent.class)
-    // public void init() {
-    //     log.info("장터 랭킹 생성 초기화 완료");
-    //     // createJangterWeeklyRank();
-    // }
+    @Scheduled(cron = JANGTER_MONTHLY_RANK_CRON_EXPRESSION)
+    public void createJangterMonthlyRank() {
+        log.info("장터 월간 랭킹 생성 시작");
+        jangterRankBatchService.createJangterMonthlyRank();
+        log.info("장터 월간 랭킹 생성 완료");
+    }
+
+
+    /**
+     * local test 용도
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
+        // createJangterDailyRank();
+        // createJangterWeeklyRank();
+        // createJangterMonthlyRank();
+    }
 }
