@@ -1,6 +1,8 @@
 package com.ani.taku_backend.user.controller;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
@@ -119,7 +121,7 @@ public class UserController {
 		Optional<User> byDomesticId = this.userService.getUserByDomesticId(userInfo.getDomesticId());
 
 		if (byDomesticId.isPresent()) {
-			throw new UserException.UserAlreadyExistsException("이미 가입된 유저입니다.");
+			throw new DuckwhoException(ErrorCode.USER_ALREADY_EXISTS);
 		}
 
 		// 프로필 이미지 업로드
@@ -127,7 +129,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException();
+				throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
 			}
 		}
 
