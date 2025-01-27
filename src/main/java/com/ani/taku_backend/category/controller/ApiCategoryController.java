@@ -25,14 +25,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/category")
 @RequiredArgsConstructor
 @Slf4j
-public class RestCategoryController {
+public class ApiCategoryController {
 
     private final CategoryService categoryService;
     private final FileService fileService;
@@ -90,7 +96,7 @@ public class RestCategoryController {
 			)
 		}
 	)
-    @PostMapping(value = "" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
     public CommonResponse<ResponseCategoryDTO> createCategory(
         @RequestPart("category")@Parameter(description = "카테고리 정보 <code>RequestCategoryCreateDTO</code> 스키마 참고 <code>Content-Type: application/json</code>") RequestCategoryCreateDTO requestCategoryCreateDTO,
@@ -130,10 +136,10 @@ public class RestCategoryController {
             schema = @Schema(type = "string")
         )
     })
-    @GetMapping("")
+    @GetMapping
     public CommonResponse<Page<ResponseCategorySeachDTO>> searchCategories(
-        @ModelAttribute RequestCategorySearch requestCategorySearch,
-        @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+        @Parameter(hidden = true) @ModelAttribute RequestCategorySearch requestCategorySearch,
+        @Parameter(hidden = true) @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
         return CommonResponse.ok(result);

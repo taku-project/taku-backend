@@ -4,20 +4,18 @@ import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /**
  * 카테고리 이미지 테이블 엔티티
@@ -34,12 +32,12 @@ public class CategoryImage extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JsonIgnore
     @JoinColumn(name = "image_id", nullable = false)
     private Image image;
 
-    @ManyToOne
+    @OneToOne
     @JsonBackReference
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

@@ -30,6 +30,9 @@ public class PostDetailResponseDTO {
     @Schema(description = "봤는지 안봤는지? 윤정님 확인 필요")
     private final boolean owner;
 
+    @Schema(description = "카테고리ID")
+    private final long categoryId;
+
     @Schema(description = "보여줄 이미지 URL")
     private final List<String> imageUrls;
 
@@ -39,6 +42,7 @@ public class PostDetailResponseDTO {
         this.content = post.getContent();
         this.updateAt = post.getUpdatedAt();    // 업데이트로 수정
         this.viewCount = post.getViews();
+        this.categoryId = post.getCategory().getId();
         this.owner = owner;
 
         this.imageUrls = post.getCommunityImages().stream()

@@ -22,7 +22,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -52,6 +55,13 @@ import java.util.List;
 public class ShortsController {
     private final ShortsService shortsService;
     private final BlackUserService blackUserService;
+
+    @Operation(summary = "테스트", description = "배포 테스트용 api")
+    @GetMapping
+    public CommonResponse<String> aaa () {
+        return CommonResponse.ok(null);
+    }
+
     @Operation(summary = "쇼츠 업로드", description = "파일을 스토리지에 업로드합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "API 요청 성공"),
@@ -59,9 +69,16 @@ public class ShortsController {
             @ApiResponse(responseCode = "403", description = "사용자 로그인이 되어있지 않았을 때")
     })
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public CommonResponse<String> uploadFile(@AuthenticationPrincipal PrincipalUser userDetails,
-        @Valid @ModelAttribute ShortsCreateReqDTO shortsCreateReqDTO) {
-
+    public CommonResponse<String> uploadFile(
+        @Parameter(description = "사용자 정보", hidden = true) @AuthenticationPrincipal PrincipalUser userDetails,
+        @Parameter(
+            description = "쇼츠 정보",
+            required = true,
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                schema = @Schema(implementation = ShortsCreateReqDTO.class))
+        )
+        @Valid @ModelAttribute ShortsCreateReqDTO shortsCreateReqDTO
+    ) {
         MultipartFile file = shortsCreateReqDTO.getFile();
         // 파일 확장자 동영상 파일인지 검토
         if(VideoType.isSupportedFileFormat(file.getName())) {

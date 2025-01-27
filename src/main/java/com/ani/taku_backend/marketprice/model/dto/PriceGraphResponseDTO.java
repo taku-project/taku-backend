@@ -1,51 +1,47 @@
 package com.ani.taku_backend.marketprice.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
-import lombok.Getter;
 
-/**
- * 시세 그래프 응답 DTO
- */
-@Getter
 @Builder
-@JsonDeserialize(builder = PriceGraphResponseDTO.PriceGraphResponseDTOBuilder.class)
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "시세 그래프 응답 DTO")
-public class PriceGraphResponseDTO {
-
+public record PriceGraphResponseDTO(
     @Schema(description = "날짜별 데이터")
-    private final List<PriceDataPoint> dataPoints;
-
+    List<PriceDataPoint> dataPoints
+) {
     public static PriceGraphResponseDTO empty() {
-        return PriceGraphResponseDTO.builder()
-                .dataPoints(Collections.emptyList())
-                .build();
+        return new PriceGraphResponseDTO(Collections.emptyList());
     }
 
-    @JsonPOJOBuilder(withPrefix = "")
-    public static class PriceGraphResponseDTOBuilder {
-    }
-
-    @Getter
     @Builder
-    @JsonDeserialize(builder = PriceDataPoint.PriceDataPointBuilder.class)
-    public static class PriceDataPoint {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema(description = "시세 데이터 포인트")
+    public record PriceDataPoint(
+        @Schema(description = "날짜", example = "2024-01-01")
+        LocalDate date,
 
-        private final LocalDate date;            // 날짜
-        private final BigDecimal registeredPrice; // 등록 가격
-        private final BigDecimal soldPrice;       // 판매 가격
-        private final int dealCount;             // 거래 건수
+        @Schema(description = "상품 ID", example = "1")
+        Long productId,
 
-        @JsonPOJOBuilder(withPrefix = "")
-        public static class PriceDataPointBuilder {
-        }
-    }
+        @Schema(description = "상품 제목", example = "원피스 루피 피규어")
+        String title,
+
+        @Schema(description = "등록 가격", example = "50000")
+        BigDecimal registeredPrice,
+
+        @Schema(description = "판매 가격", example = "45000")
+        BigDecimal soldPrice,
+
+        @Schema(description = "거래 건수", example = "3")
+        int dealCount
+    ) {}
 }

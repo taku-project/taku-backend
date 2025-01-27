@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
@@ -87,24 +88,16 @@ public class DuckuJangter extends BaseTimeEntity {
         BigDecimal updatePrice = productUpdateRequestDTO.getPrice();
 
         if (updateTitle != null && !updateTitle.equals(this.title)) {
-            log.debug("게시글 제목 수정 전, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
             this.title = updateTitle;
-            log.debug("게시글 제목 수정 후, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
         }
         if (updateDescription != null && !updateDescription.equals(this.description)) {
-            log.debug("게시글 본문 수정 전, 기존 본문: {}, 수정 본문: {}", this.description, updateDescription);
             this.description = updateDescription;
-            log.debug("게시글 본문 수정 후, 기존 본문: {}, 수정 본문: {}", this.description, updateDescription);
         }
         if (updatePrice != null && !updatePrice.equals(this.price)) {
-            log.debug("게시글 가격 수정 전, 기존 가격: {}, 수정 가격: {}", this.description, updateDescription);
             this.price = updatePrice;
-            log.debug("게시글 가격 수정 후, 기존 가격: {}, 수정 가격: {}", this.description, updateDescription);
         }
         if (itemCategories != null && !itemCategories.equals(this.itemCategories)) {
-            log.debug("카테고리 수정 전, 기존 카테고리: {}, 수정 카테고리: {}", this.itemCategories.getId(), itemCategories.getId());
             this.itemCategories = itemCategories;
-            log.debug("카테고리 수정 후, 기존 카테고리: {}, 수정 카테고리: {}", this.itemCategories.getId(), itemCategories.getId());
         }
     }
 

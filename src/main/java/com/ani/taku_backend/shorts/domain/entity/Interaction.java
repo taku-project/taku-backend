@@ -2,9 +2,11 @@ package com.ani.taku_backend.shorts.domain.entity;
 
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.shorts.domain.vo.InteractionDetail;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
@@ -19,6 +21,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
 public class Interaction<T extends InteractionDetail> {
 
@@ -43,6 +46,10 @@ public class Interaction<T extends InteractionDetail> {
 
     public static Interaction createLike(Shorts shorts, Long userId) {
         return new Interaction(shorts, userId, InteractionType.LIKE, null);
+    }
+
+    public static Interaction createDisLike(Shorts shorts, Long userId) {
+        return new Interaction(shorts, userId, InteractionType.DISLIKE, null);
     }
 
     public static Interaction createView(Shorts shorts, Long userId, InteractionDetail detail) {

@@ -149,7 +149,7 @@ public class OAuth2AuthenticationHandler {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("user_id", user.getUserId());
         jsonObject.addProperty("is_black", isBlack);
-        jsonObject.addProperty("user_role", user.getRole());
+        jsonObject.addProperty("user_role", user.getRole().name());
         jsonObject.addProperty("profile_image", user.getProfileImg());
         jsonObject.addProperty("nickname", user.getNickname());
         return jsonObject.toString();

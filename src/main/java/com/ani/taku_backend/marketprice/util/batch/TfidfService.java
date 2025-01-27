@@ -37,10 +37,10 @@ public class TfidfService {
     // 1시간마다 갱신(밀리초로 3600000)
     private static final long DOCUMENT_STATS_UPDATE_RATE = 3600000L;
 
-    // @PostConstruct
-    // public void init() {
-    //     updateDocumentStatistics();
-    // }
+    @PostConstruct
+    public void init() {
+        // updateDocumentStatistics();
+    }
 
     public Map<String, Double> getTfidfVector(Long productId) {
         String cacheKey = TFIDF_CACHE_KEY + productId;
@@ -112,7 +112,7 @@ public class TfidfService {
                 .collect(Collectors.toList());
     }
 
-    @Scheduled(fixedRate = DOCUMENT_STATS_UPDATE_RATE) // 1시간마다 갱신
+    //@Scheduled(fixedRate = DOCUMENT_STATS_UPDATE_RATE) // 1시간마다 갱신
     public void updateDocumentStatistics() {
         try {
             List<DuckuJangter> allProducts = duckuJangterRepository.findByDeletedAtIsNull();

@@ -142,22 +142,22 @@ public class CompletedDealService {
                     ": ''")
     public MarketPriceSearchResponseDTO searchMarketPrice(PriceGraphRequestDTO requestDTO, Pageable pageable) {
         try {
-            if (requestDTO == null || requestDTO.getKeyword() == null) {
+            if (requestDTO == null || requestDTO.keyword() == null) {
                 throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
             }
 
-            LocalDate startDate = Optional.ofNullable(requestDTO.getFromDate())
+            LocalDate startDate = Optional.ofNullable(requestDTO.fromDate())
                     .orElseGet(dateConfig::getDefaultStartDate);
-            LocalDate endDate = Optional.ofNullable(requestDTO.getToDate())
+            LocalDate endDate = Optional.ofNullable(requestDTO.toDate())
                     .orElseGet(dateConfig::getDefaultEndDate);
 
             validateDateRange(startDate, endDate);
 
-            String processedKeyword = processKeyword(requestDTO.getKeyword());
+            String processedKeyword = processKeyword(requestDTO.keyword());
 
             return MarketPriceSearchResponseDTO.builder()
-                    .keyword(requestDTO.getKeyword())
-                    .priceGraph(getPriceGraphData(processedKeyword, startDate, endDate, requestDTO.getDisplayOption()))
+                    .keyword(requestDTO.keyword())
+                    .priceGraph(getPriceGraphData(processedKeyword, startDate, endDate, requestDTO.displayOption()))
                     .weeklyStats(getWeeklyStats(processedKeyword))
                     .similarProducts(getSimilarProducts(processedKeyword, pageable))
                     .build();
@@ -184,7 +184,7 @@ public class CompletedDealService {
     private PriceGraphResponseDTO getPriceGraphData(String keyword, LocalDate startDate, LocalDate endDate, GraphDisplayOption option) {
         try {
             PriceGraphResponseDTO data = completedDealRepository.getPriceGraph(keyword, startDate, endDate, option);
-            if (data == null || data.getDataPoints().isEmpty()) {
+            if (data == null || data.dataPoints().isEmpty()) {
                 log.warn("키워드 '{}' 에 대한 가격 데이터를 찾을 수 없습니다.", keyword);
                 return PriceGraphResponseDTO.empty();
             }

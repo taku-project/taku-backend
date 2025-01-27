@@ -1,9 +1,8 @@
 package com.ani.taku_backend.post.controller;
 
-import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.response.CommonResponse;
-import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.post.model.dto.*;
 import com.ani.taku_backend.post.service.PostReadService;
 import com.ani.taku_backend.post.service.PostService;
@@ -12,8 +11,6 @@ import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -22,9 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -47,7 +41,11 @@ public class PostController {
         return CommonResponse.ok(findResultList);
     }
 
-    @Operation(summary = "커뮤니티 게시글 생성", description = "커뮤티니 게시글을 생성하는 기능")
+    @Operation(summary = "커뮤니티 게시글 생성",
+            description = """
+                    커뮤티니 게시글을 생성하는 기능(스웨거 오류로 여기다 설명)\n
+                    imageList - 추가할 이미지 리스트(이미지 파일)
+                    """)
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -80,7 +78,12 @@ public class PostController {
         return CommonResponse.ok(detail);
     }
 
-    @Operation(summary = "커뮤니티 게시글 수정", description = "게시글 수정, 기존 이미지를 삭제하거나 추가할 수 있음")
+    @Operation(summary = "커뮤니티 게시글 수정",
+            description = """
+                        게시글 수정, 기존 이미지를 삭제하거나 추가할 수 있음(스웨거 오류로 여기다 설명)\n
+                        deleteImageUrl - 기존 글에서 삭제된 이미지 Url 리스트(문자열)\n
+                        imageList - 추가된 이미지 리스트(이미지 파일)
+                        """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -90,8 +93,8 @@ public class PostController {
     @RequireUser
     @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
-            @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32")
-            @PathVariable("postId") Long postId, @Valid PostUpdateRequestDTO requestDTO,
+            @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32") @PathVariable("postId") Long postId,
+            @Valid PostUpdateRequestDTO requestDTO,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
@@ -112,11 +115,10 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public CommonResponse<Long> deletePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
-            @Parameter(description = "카테고리 ID", required = true) @RequestParam("categoryId") long categoryId,
             @Parameter(hidden = true) PrincipalUser principalUser) {
 
         User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
-        postService.deletePost(postId, categoryId, user);
+        postService.deletePost(postId, user);
         return CommonResponse.ok(null);
     }
 }

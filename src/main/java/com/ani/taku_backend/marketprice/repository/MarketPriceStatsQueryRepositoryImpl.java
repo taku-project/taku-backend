@@ -8,6 +8,7 @@ import com.ani.taku_backend.marketprice.model.entity.QMarketPriceStats;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
@@ -24,7 +25,10 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
 
     @Override
     public PriceGraphResponseDTO getPriceGraph(
-            String title, LocalDate fromDate, LocalDate toDate, GraphDisplayOption option) {
+            @Parameter(description = "검색할 상품 제목") String title,
+            @Parameter(description = "조회 시작 날짜") LocalDate fromDate,
+            @Parameter(description = "조회 종료 날짜") LocalDate toDate,
+            @Parameter(description = "그래프 표시 옵션") GraphDisplayOption option) {
 
         List<PriceDataPoint> dataPoints = new ArrayList<>();
 
@@ -72,10 +76,10 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
                     .orderBy(stats.registeredDate.asc())
                     .fetch();
 
-            // 기존 데이터와 병합
+
             Map<LocalDate, PriceDataPoint> mergedData = dataPoints.stream()
                     .collect(Collectors.toMap(
-                            PriceDataPoint::getDate,
+                            point -> point.date(),
                             point -> point
                     ));
 
@@ -94,9 +98,9 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
                     } else {
                         return PriceDataPoint.builder()
                                 .date(date)
-                                .registeredPrice(v.getRegisteredPrice())
+                                .registeredPrice(v.registeredPrice())
                                 .soldPrice(soldPrice)
-                                .dealCount(v.getDealCount())
+                                .dealCount(v.dealCount())
                                 .build();
                     }
                 });
@@ -111,7 +115,8 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
     }
 
     @Override
-    public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
+    public WeeklyStatsResponseDTO getWeeklyStats(
+            @Parameter(description = "검색할 상품 키워드") String keyword) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(7);
 

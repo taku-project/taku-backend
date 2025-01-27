@@ -1,0 +1,38 @@
+{
+    "family": "duckwho-deploy-task",
+    "networkMode": "awsvpc",
+    "executionRoleArn": "arn:aws:iam::354918395041:role/duckwho-ecs-role",
+    "taskRoleArn": "arn:aws:iam::354918395041:role/duckwho-ecs-role",
+    "containerDefinitions": [
+        {
+            "name": "backend-deploy",
+            "image": "354918395041.dkr.ecr.ap-northeast-2.amazonaws.com/duckwho:latest",
+            "portMappings": [
+                {
+                    "name": "deploy-port",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/duckwho-deploy-task",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-create-group": "true",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ],
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "1024",
+    "memory": "2048",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    }
+}

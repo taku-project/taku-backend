@@ -1,5 +1,6 @@
 package com.ani.taku_backend.shorts.domain.entity;
 
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCreateReqDTO;
 import com.ani.taku_backend.shorts.domain.dto.ShortsFFmPegUrlResDTO;
 import com.ani.taku_backend.user.model.entity.User;
@@ -36,24 +37,33 @@ public class Shorts {
     @Field(name = "profile_img")
     private String profileImg;
     @Field(name = "role")
-    private String role;
+    private UserRole role;
     @Field(name = "description")
     private String description;
     @Field(name = "tags")
     private List<String> tags;
     @Field(name = "file_info")
     private VideoMetadata fileInfo;
+
     @Field(name = "popularity_metrics")
     private PopularityMetric popularityMetrics;
 
     @CreatedDate
     private LocalDateTime createdAt;
 
+    public void addLikeCount() {
+        increaseLikeCount();
+    }
+
     public void addLikeCount(boolean hasDislike) {
         if(hasDislike) {
             decreaseDislikeCount();
         }
         increaseLikeCount();
+    }
+
+    public void addDislikeCount() {
+        increaseDislikeCount();
     }
 
     public void addDislikeCount(boolean haslike) {
@@ -77,7 +87,7 @@ public class Shorts {
         this.popularityMetrics.dislikes += 1;
     }
 
-    public void decreaseDislikeCount() {
+    private void decreaseDislikeCount() {
         if(this.popularityMetrics.dislikes > 0) {
             this.popularityMetrics.dislikes -= 1;
         }
