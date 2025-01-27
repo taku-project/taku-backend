@@ -45,7 +45,7 @@ public class UserService {
 
   // 유저 조회
   public Optional<User> getUserByDomesticId(String domesticId) {
-      return this.userRepository.findByDomesticIdAndStatus(domesticId, UserStatus.ACTIVE);
+      return this.userRepository.findFirstByDomesticIdAndStatus(domesticId, UserStatus.ACTIVE);
   }
 
   // 닉네임 체크
