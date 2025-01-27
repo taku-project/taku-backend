@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class JangterRankScheduler {
 
     // 매일 1시에 실행
-    private static final String JANGTER_DAILY_RANK_CRON_EXPRESSION = "0 0 1 * * *";
+    private static final String JANGTER_DAILY_RANK_CRON_EXPRESSION = "0 0 0 * * *";
 
     private static final String JANGTER_WEEKLY_RANK_CRON_EXPRESSION = "0 0 0 ? * MON";
 
