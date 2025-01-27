@@ -133,7 +133,7 @@ public class OAuth2AuthenticationHandler {
 
                 if (error.getErrorCode().equals("NOT_FOUND_USER") && error.getUri() != null) {
                     response.setHeader("Authorization", "Bearer " + error.getDescription());
-                    response.sendRedirect(error.getUri());
+                    response.sendRedirect(error.getUri()+"?code="+error.getDescription());
                     return;
                 }
             }
