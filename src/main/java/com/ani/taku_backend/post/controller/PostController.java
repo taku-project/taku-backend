@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,9 +33,7 @@ public class PostController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "게시글 조회 성공")})
     @GetMapping
     public CommonResponse<PostListResponseDTO> findAllPostList(@ParameterObject @Valid PostListRequestDTO postListRequestDTO) {
-
         log.debug("postListRequestDTO: {}", postListRequestDTO.getSortFilterType());
-
         PostListResponseDTO findResultList = postService.findAllPostList(postListRequestDTO);
         return CommonResponse.ok(findResultList);
     }
@@ -52,39 +51,33 @@ public class PostController {
     @RequireUser
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> createPost(@Valid PostCreateRequestDTO requestDTO,
-                                           @Parameter(hidden = true) PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser); // 유저 검증
-
+                                         @Parameter(hidden = true) PrincipalUser principalUser) {
+        User user = blackUserService.checkBlackUser(principalUser);
         Long createPostId = postService.createPost(requestDTO, user);
         return CommonResponse.created(createPostId);
     }
 
-/*  로그인한 사용자의 경우: 사용자 ID를 통해 게시글 소유자 여부를 확인합니다 (isOwner 판단)
-    비로그인 사용자의 경우: null을 전달하여 게시글 조회만 가능하도록 합니다*/
-
-    @Operation(summary = "커뮤니티 게시글 상세 조회", description = "댓글 미개발")
+    @Operation(summary = "커뮤니티 게시글 상세 조회", description = "게시글의 상세 정보와 댓글을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 게시글")
+    })
     @GetMapping("/{postId}")
     public CommonResponse<PostDetailResponseDTO> findPostDetail(
-            @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
-            @Parameter(description = "조회를 했는지 여부", required = true) @ViewCountChecker Boolean canAddView,
-            @Parameter(description = "유저 정보", required = false) PrincipalUser principalUser
-    ) {
-        Long currentUserId = null;
-        if (principalUser != null) {
-            currentUserId = principalUser.getUserId();
-        }
-
+            @Parameter(description = "게시글 ID") @PathVariable Long postId,
+            @Parameter(description = "조회수 증가 여부") @ViewCountChecker @RequestParam(defaultValue = "true") Boolean canAddView,
+            @Parameter(description = "로그인한 사용자 정보 (없을 경우 null)", hidden = true) PrincipalUser principalUser) {
+        Long currentUserId = principalUser != null ? principalUser.getUserId() : null;
         PostDetailResponseDTO detail = postService.getPostDetail(postId, canAddView, currentUserId);
         return CommonResponse.ok(detail);
     }
 
     @Operation(summary = "커뮤니티 게시글 수정",
             description = """
-                        게시글 수정, 기존 이미지를 삭제하거나 추가할 수 있음(스웨거 오류로 여기다 설명)\n
-                        deleteImageUrl - 기존 글에서 삭제된 이미지 Url 리스트(문자열)\n
-                        imageList - 추가된 이미지 리스트(이미지 파일)
-                        """)
+                    게시글 수정, 기존 이미지를 삭제하거나 추가할 수 있음(스웨거 오류로 여기다 설명)\n
+                    deleteImageUrl - 기존 글에서 삭제된 이미지 Url 리스트(문자열)\n
+                    imageList - 추가된 이미지 리스트(이미지 파일)
+                    """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -92,13 +85,12 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
     @RequireUser
-    @PutMapping(path ="/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<Long> updatePost(
             @Parameter(description = "게시글 ID(구글 테스트 토큰을 입력하세요)", required = true, example = "32") @PathVariable("postId") Long postId,
             @Valid PostUpdateRequestDTO requestDTO,
             @Parameter(hidden = true) PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+        User user = blackUserService.checkBlackUser(principalUser);
         Long updatePostId = postService.updatePost(postId, requestDTO, user);
         return CommonResponse.ok(updatePostId);
     }
@@ -107,7 +99,7 @@ public class PostController {
             summary = "커뮤니티 게시글 삭제",
             description = "커뮤니티 게시글 삭제")
     @ApiResponses({
-            @ApiResponse(responseCode = "200",description = "게시글 삭제 성공"),
+            @ApiResponse(responseCode = "200", description = "게시글 삭제 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
             @ApiResponse(responseCode = "403", description = "존재하지 않는 게시글"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
@@ -117,8 +109,7 @@ public class PostController {
     public CommonResponse<Long> deletePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable("postId") Long postId,
             @Parameter(hidden = true) PrincipalUser principalUser) {
-
-        User user = blackUserService.checkBlackUser(principalUser);             // 유저 검증
+        User user = blackUserService.checkBlackUser(principalUser);
         postService.deletePost(postId, user);
         return CommonResponse.ok(null);
     }

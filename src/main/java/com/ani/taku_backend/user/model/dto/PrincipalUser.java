@@ -32,14 +32,18 @@ public class PrincipalUser implements UserDetails {
     }
 
     public Long getUserId() {
-        return user.getUserId();
+        return user != null ? user.getUserId() : null;
     }
 
     // 권한 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+        if (user != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+        } else {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ANONYMOUS"));
+        }
         return authorities;
     }
 
@@ -52,7 +56,7 @@ public class PrincipalUser implements UserDetails {
     // 이메일 반환
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user != null ? user.getEmail() : null;
     }
 
     // 계정 만료 여부 반환
@@ -61,13 +65,25 @@ public class PrincipalUser implements UserDetails {
         return true;
     }
 
+    // 계정 잠금 여부 반환
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    // 비밀번호 만료 여부 반환
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
     // 계정 활성 여부 반환
     @Override
     public boolean isEnabled() {
-        return UserStatus.ACTIVE.equals(user.getStatus());
+        return user != null && UserStatus.ACTIVE.equals(user.getStatus());
     }
 
     public boolean isAnonymous() {
-        return isAnonymous;
+        return isAnonymous || user == null;
     }
 }
