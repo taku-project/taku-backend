@@ -107,11 +107,11 @@ public class UserController {
 		if(registrationToken.startsWith("Bearer ")) {
 			registrationToken = registrationToken.substring(7);
 		}else{
-			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+			throw new DuckwhoException(ErrorCode.EMPTY_TOKEN);
 		}
 
 		if (!this.jwtUtil.validateToken(registrationToken)) {
-			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+			throw new DuckwhoException(ErrorCode.INVALID_TOKEN);
 		}
 
 		OAuthUserInfo userInfo = OAuthUserInfo.of(requestRegisterUser.getProviderType(), this.jwtUtil.extractAllClaims(registrationToken));
