@@ -19,4 +19,6 @@ public interface DuckuJangterService {
     void deleteProduct(long productId, User user);
 
     ProductRecommendResponseDTO recommendProduct(Long productId, PrincipalUser principalUser);
+
+    ProductRankInfoResponseDTO getJangterRank();
 }
