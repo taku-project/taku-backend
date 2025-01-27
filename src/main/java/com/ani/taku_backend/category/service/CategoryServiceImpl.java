@@ -101,7 +101,9 @@ public class CategoryServiceImpl implements CategoryService {
         if(!categoryOptional.isPresent()) {
             throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
         }
-        return modelMapper.map(categoryOptional.get(), ResponseCategoryDTO.class);
+
+
+        return ResponseCategoryDTO.of(categoryOptional.get());
     }
 
     /**
