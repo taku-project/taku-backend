@@ -157,7 +157,7 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             CreateImageDTO imageDTO = CreateImageDTO.builder()
                 .uploadId(user.getUserId())
-                .imageUrl(fileService.uploadVideoFile(uploadFile))
+                .imageUrl(fileService.uploadImageFile(uploadFile))
                 .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
                 .originalFileName(uploadFile.getOriginalFilename())
                 .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))
