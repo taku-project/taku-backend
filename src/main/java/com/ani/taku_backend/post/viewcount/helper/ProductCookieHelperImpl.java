@@ -50,7 +50,8 @@ public class ProductCookieHelperImpl implements ProductCookieHelper {
         }
         cookie.setPath("/");
         cookie.setMaxAge(COOKIE_EXPIRE_SEC);
-        // 필요 시 cookie.setHttpOnly(true), cookie.setSecure(true) 설정
+        cookie.setHttpOnly(true);  // JavaScript에서 접근 불가능하게 설정
+        cookie.setSecure(false);   // 개발 환경에서는 false로 설정
         response.addCookie(cookie);
     }
 }

@@ -65,7 +65,7 @@ public class PostController {
     @GetMapping("/{postId}")
     public CommonResponse<PostDetailResponseDTO> findPostDetail(
             @Parameter(description = "게시글 ID") @PathVariable Long postId,
-            @Parameter(description = "조회수 증가 여부") @ViewCountChecker @RequestParam(defaultValue = "true") Boolean canAddView,
+            @Parameter(description = "조회수 증가 여부") @ViewCountChecker Boolean canAddView,
             @Parameter(description = "로그인한 사용자 정보 (없을 경우 null)", hidden = true) PrincipalUser principalUser) {
         Long currentUserId = principalUser != null ? principalUser.getUserId() : null;
         PostDetailResponseDTO detail = postService.getPostDetail(postId, canAddView, currentUserId);
