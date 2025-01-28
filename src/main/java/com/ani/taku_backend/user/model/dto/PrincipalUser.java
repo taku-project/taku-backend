@@ -65,18 +65,6 @@ public class PrincipalUser implements UserDetails {
         return true;
     }
 
-    // 계정 잠금 여부 반환
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    // 비밀번호 만료 여부 반환
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
     // 계정 활성 여부 반환
     @Override
     public boolean isEnabled() {
