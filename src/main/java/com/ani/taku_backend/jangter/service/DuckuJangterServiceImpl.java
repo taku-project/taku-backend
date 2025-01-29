@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.LogType;
+import com.ani.taku_backend.common.enums.PeriodType;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
@@ -16,6 +17,7 @@ import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
@@ -24,8 +26,10 @@ import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
+import com.ani.taku_backend.jangter.model.entity.rank.JangterRankBase;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
+import com.ani.taku_backend.jangter.repository.JangterRankBaseRepository;
 import com.ani.taku_backend.jangter.score.calculator.BookmarkScoreCalculator;
 import com.ani.taku_backend.jangter.score.calculator.PurchaseHistoryScoreCalculator;
 import com.ani.taku_backend.jangter.score.calculator.SearchHistoryScoreCalculator;
@@ -42,8 +46,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,6 +80,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
+
+    private final JangterRankBaseRepository jangterRankBaseRepository;
 
     /**
      * 장터글 저장
@@ -447,5 +458,64 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         return ProductRecommendResponseDTO.of(randomProducts);
     }
+
+        @Override
+        public ProductRankInfoResponseDTO getJangterRank() {
+            LocalDateTime now = LocalDateTime.now();
+
+            Map<PeriodType, List<ProductRankInfoResponseDTO.ProductRankInfo>> rankInfo = new HashMap<>();
+
+            // 일간
+            List<JangterRankBase> dailyRanks = this.jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
+                PeriodType.DAY, now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            );
+
+            rankInfo.put(PeriodType.DAY, convertToProductRankInfo(dailyRanks));
+
+            // 주간 랭킹 조회 (yyyy-MM-Wxx 형식)
+            WeekFields weekFields = WeekFields.of(Locale.getDefault());
+            int weekNumber = now.get(weekFields.weekOfMonth());
+            String weeklyPeriodKey = String.format("%d-%02d-W%02d",
+                now.getYear(),
+                now.getMonthValue(),
+                weekNumber
+            );
+
+            List<JangterRankBase> weeklyRanks = jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
+                PeriodType.WEEK,
+                weeklyPeriodKey
+            );
+            rankInfo.put(PeriodType.WEEK, convertToProductRankInfo(weeklyRanks));
+
+
+            // 월간 랭킹 조회 (yyyy-MM 형식)
+            String monthlyPeriodKey = String.format("%d-%02d", now.getYear(), now.getMonthValue());
+            List<JangterRankBase> monthlyRanks = jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
+                PeriodType.MONTH,
+                monthlyPeriodKey
+            );
+            rankInfo.put(PeriodType.MONTH, convertToProductRankInfo(monthlyRanks));
+
+            return ProductRankInfoResponseDTO.builder().rankInfo(rankInfo).build();
+        }
+
+        private List<ProductRankInfoResponseDTO.ProductRankInfo> convertToProductRankInfo(List<JangterRankBase> ranks) {
+            return ranks.stream()
+                .map(rank -> {
+                    DuckuJangter jangter = rank.getDuckuJangter();
+                    String imageUrl = jangter.getJangterImages().isEmpty() ? null : 
+                        jangter.getJangterImages().get(0).getImage().getImageUrl();
+                    
+                    return ProductRankInfoResponseDTO.ProductRankInfo.builder()
+                        .rankIdx(rank.getRankIdx())
+                        .productId(jangter.getId())
+                        .productName(jangter.getTitle())
+                        .productImage(imageUrl)
+                        .productPrice(jangter.getPrice())
+                        .authorName(jangter.getUser().getNickname())
+                        .build();
+                })
+                .collect(Collectors.toList());
+        }
 
 }

@@ -111,4 +111,10 @@ public class DuckuJangter extends BaseTimeEntity {
         this.tfidfVector = tfidfVector;
     }
 
+    public static DuckuJangter reference(Long id) {
+        DuckuJangter duckuJangter = new DuckuJangter();
+        duckuJangter.id = id;
+        return duckuJangter;
+    }
+
 }
