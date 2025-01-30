@@ -20,7 +20,10 @@ public class SecurityPathConfig {
             "/api/market-price/**",
 
             // 아이템 카테고리
-            "/api/itemCategory"
+            "/api/itemCategory",
+
+            // 커뮤니티 카테고리
+            "/api/category"
     };
 
     // 인증이 필요없는 정적 리소스 경로
