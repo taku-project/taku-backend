@@ -23,7 +23,8 @@ public class SecurityPathConfig {
             "/api/itemCategory",
 
             // 커뮤니티 카테고리
-            "/api/category"
+            "/api/category",
+            "/api/category/**"
     };
 
     // 인증이 필요없는 정적 리소스 경로
