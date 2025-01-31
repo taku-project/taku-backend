@@ -1,23 +1,38 @@
 package com.ani.taku_backend.chatroom.model.dto;
 
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.user.model.entity.User;
 import java.time.LocalDateTime;
 
 public record ChatRoomResponseDTO(
         Long id,
         String roomId,
         Long articleId,
-        Long buyerId,
-        Long sellerId,
+        ParticipantDTO buyer,
+        ParticipantDTO seller,
         LocalDateTime createdAt
 ) {
-    public static ChatRoomResponseDTO of(ChatRoom chatRoom) {
+    public record ParticipantDTO(
+            Long userId,
+            String nickname,
+            String profileImg
+    ) {
+        public static ParticipantDTO from(User user) {
+            return new ParticipantDTO(
+                    user.getUserId(),
+                    user.getNickname(),
+                    user.getProfileImg()
+            );
+        }
+    }
+
+    public static ChatRoomResponseDTO of(ChatRoom chatRoom, User buyer, User seller) {
         return new ChatRoomResponseDTO(
                 chatRoom.getId(),
                 chatRoom.getRoomId(),
                 chatRoom.getArticleId(),
-                chatRoom.getBuyerId(),
-                chatRoom.getSellerId(),
+                ParticipantDTO.from(buyer),
+                ParticipantDTO.from(seller),
                 chatRoom.getCreatedAt()
         );
     }

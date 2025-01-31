@@ -10,6 +10,8 @@ import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.chatroom.repository.ChatroomMetaRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatroomMetaRepository chatroomMetaRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
@@ -44,7 +47,12 @@ public class ChatRoomService {
         metaInfo.initializeParticipants(requestDto.buyerId(), requestDto.sellerId());
         chatroomMetaRepository.save(metaInfo);
 
-        return ChatRoomResponseDTO.of(savedRoom);
+        User buyer = userRepository.findById(requestDto.buyerId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+        User seller = userRepository.findById(requestDto.sellerId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+
+        return ChatRoomResponseDTO.of(savedRoom, buyer, seller);
     }
 
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
@@ -58,7 +66,13 @@ public class ChatRoomService {
         allRooms.addAll(sellerRooms);
 
         return allRooms.stream()
-                .map(ChatRoomResponseDTO::of)
+                .map(chatRoom -> {
+                    User buyer = userRepository.findById(chatRoom.getBuyerId())
+                            .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+                    User seller = userRepository.findById(chatRoom.getSellerId())
+                            .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+                    return ChatRoomResponseDTO.of(chatRoom, buyer, seller);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -79,7 +93,12 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        return ChatRoomResponseDTO.of(chatRoom);
+        User buyer = userRepository.findById(chatRoom.getBuyerId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+        User seller = userRepository.findById(chatRoom.getSellerId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+
+        return ChatRoomResponseDTO.of(chatRoom, buyer, seller);
     }
 
     public Integer getChatRoomUnreadCount(String roomId, Long userId) {
