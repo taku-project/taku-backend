@@ -15,6 +15,5 @@ public record ChatRoomRequestDTO(
 ) {
     @Builder
     public ChatRoomRequestDTO {
-        // validation추가
     }
 }

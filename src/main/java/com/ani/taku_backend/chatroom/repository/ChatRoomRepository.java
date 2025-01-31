@@ -10,10 +10,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     /**
+     * 특정 구매자의 모든 채팅방 목록을 조회합니다.
+     * 생성일시 기준 내림차순으로 정렬됩니다.
+     */
+    List<ChatRoom> findByBuyerIdOrderByCreatedAtDesc(Long buyerId);
+
+    /**
+     * 특정 판매자의 모든 채팅방 목록을 조회합니다.
+     * 생성일시 기준 내림차순으로 정렬됩니다.
+     */
+    List<ChatRoom> findBySellerIdOrderByCreatedAtDesc(Long sellerId);
+
+    /**
      * 특정 구매자의 활성화된 채팅방 목록을 조회합니다.
      * 생성일시 기준 내림차순으로 정렬됩니다.
      */
-
     List<ChatRoom> findByStatusAndBuyerIdOrderByCreatedAtDesc(ChatRoomStatus status, Long buyerId);
 
     /**

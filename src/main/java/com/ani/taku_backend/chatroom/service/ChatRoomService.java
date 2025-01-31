@@ -52,26 +52,26 @@ public class ChatRoomService {
         User seller = userRepository.findById(requestDto.sellerId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
 
-        return ChatRoomResponseDTO.of(savedRoom, buyer, seller);
+        return ChatRoomResponseDTO.of(savedRoom, buyer, seller, requestDto.buyerId());
     }
 
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-        List<ChatRoom> buyerRooms = chatRoomRepository
-                .findByStatusAndBuyerIdOrderByCreatedAtDesc(ChatRoomStatus.ACTIVE, userId);
-        List<ChatRoom> sellerRooms = chatRoomRepository
-                .findByStatusAndSellerIdOrderByCreatedAtDesc(ChatRoomStatus.ACTIVE, userId);
+        // 구매자 또는 판매자로 참여한 모든 채팅방을 가져옴
+        List<ChatRoom> buyerRooms = chatRoomRepository.findByBuyerIdOrderByCreatedAtDesc(userId);
+        List<ChatRoom> sellerRooms = chatRoomRepository.findBySellerIdOrderByCreatedAtDesc(userId);
 
         List<ChatRoom> allRooms = new ArrayList<>();
         allRooms.addAll(buyerRooms);
         allRooms.addAll(sellerRooms);
 
         return allRooms.stream()
+                .filter(chatRoom -> !chatRoom.hasUserLeft(userId)) // 자신이 나간 채팅방은 제외
                 .map(chatRoom -> {
                     User buyer = userRepository.findById(chatRoom.getBuyerId())
                             .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
                     User seller = userRepository.findById(chatRoom.getSellerId())
                             .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
-                    return ChatRoomResponseDTO.of(chatRoom, buyer, seller);
+                    return ChatRoomResponseDTO.of(chatRoom, buyer, seller, userId);
                 })
                 .collect(Collectors.toList());
     }
@@ -89,7 +89,12 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        if (!chatRoom.getBuyerId().equals(userId) && !chatRoom.getSellerId().equals(userId)) {
+        if (!chatRoom.isParticipant(userId)) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 자신이 나간 채팅방은 조회할 수 없음
+        if (chatRoom.hasUserLeft(userId)) {
             throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -98,7 +103,7 @@ public class ChatRoomService {
         User seller = userRepository.findById(chatRoom.getSellerId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
 
-        return ChatRoomResponseDTO.of(chatRoom, buyer, seller);
+        return ChatRoomResponseDTO.of(chatRoom, buyer, seller, userId);
     }
 
     public Integer getChatRoomUnreadCount(String roomId, Long userId) {
