@@ -4,14 +4,11 @@ import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-//TODO
-// 댓글 기능 구현되면 연결필요
 @Getter
 public class PostDetailResponseDTO {
 
@@ -41,7 +38,10 @@ public class PostDetailResponseDTO {
     @Schema(description = "게시글의 댓글 목록")
     private final List<CommentsResponseDTO> comments;
 
-    public PostDetailResponseDTO(Post post, boolean owner, List<CommentsResponseDTO> comments) {
+    @Schema(description = "좋아요 수")
+    private final long likeCount;
+
+    public PostDetailResponseDTO(Post post, boolean owner, List<CommentsResponseDTO> comments, long likeCount) {
         this.postId = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
@@ -49,12 +49,11 @@ public class PostDetailResponseDTO {
         this.viewCount = post.getViews();
         this.categoryId = post.getCategory().getId();
         this.owner = owner;
+        this.likeCount = likeCount;
 
         this.imageUrls = post.getCommunityImages().stream()
                 .map(communityImage -> communityImage.getImage().getImageUrl())
                 .toList();
         this.comments = comments;
-
-
     }
 }

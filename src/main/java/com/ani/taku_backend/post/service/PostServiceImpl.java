@@ -17,6 +17,7 @@ import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
+import com.ani.taku_backend.post.repository.PostInteractionCounterRepository;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.post.repository.impl.dto.FindAllPostQuerydslDTO;
 import com.ani.taku_backend.user.model.entity.User;
@@ -40,6 +41,7 @@ public class PostServiceImpl implements PostService {
     private final CategoryRepository categoryRepository;
     private final ImageService imageService;
     private final CommentsService commentsService;
+    private final PostInteractionCounterRepository postInteractionCounterRepository;
 
 
     /**
@@ -137,6 +139,7 @@ public class PostServiceImpl implements PostService {
      * - 게시글 정보와 함께 댓글 목록을 조회
      * - 조회수 증가 처리
      * - 삭제된 게시글 체크
+     * - 좋아요 정보
      */
     @Transactional
     public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
@@ -160,8 +163,21 @@ public class PostServiceImpl implements PostService {
         // 댓글 목록 조회
         List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
 
-        return new PostDetailResponseDTO(post, isOwner, comments);
+        // MongoDB에서 좋아요 수 조회
+        long likeCount = getPostLikeCount(postId);
+
+        return new PostDetailResponseDTO(post, isOwner, comments, likeCount);
     }
+
+    /**
+     * MongoDB에서 게시글의 좋아요 수를 조회합니다.
+     * @param postId 게시글 ID
+     * @return 좋아요 수
+     */
+    private long getPostLikeCount(Long postId) {
+        return postInteractionCounterRepository.getPostLikes(postId);
+    }
+
 
     // 게시글 생성
     private Post getPost(PostCreateRequestDTO postCreateRequestDTO, User user, Category category) {
