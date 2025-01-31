@@ -1,21 +1,27 @@
 package com.ani.taku_backend.chatroom.model.dto;
 
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomLeftBy;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.user.model.entity.User;
 import java.time.LocalDateTime;
 
 public record ChatRoomResponseDTO(
-        Long id,
-        String roomId,
-        Long articleId,
-        ParticipantDTO buyer,
-        ParticipantDTO seller,
-        LocalDateTime createdAt,
-        ChatRoomLeftBy leftBy,
-        String leaveMessage,
-        boolean canSendMessage
+        ChatRoomInfoDTO info,
+        ParticipantsDTO participants,
+        ChatRoomStatusDTO status
 ) {
+
+    public record ChatRoomInfoDTO(
+            Long id,
+            String roomId,
+            Long articleId,
+            LocalDateTime createdAt
+    ) {}
+
+    public record ParticipantsDTO(
+            ParticipantDTO buyer,
+            ParticipantDTO seller
+    ) {}
+
     public record ParticipantDTO(
             Long userId,
             String nickname,
@@ -30,17 +36,32 @@ public record ChatRoomResponseDTO(
         }
     }
 
-    public static ChatRoomResponseDTO of(ChatRoom chatRoom, User buyer, User seller, Long currentUserId) {
+    public record ChatRoomStatusDTO(
+            boolean canSendMessage,
+            String exitMessage
+    ) {}
+
+    public static ChatRoomResponseDTO of(
+            ChatRoom chatRoom,
+            User buyer,
+            User seller,
+            Long currentUserId
+    ) {
         return new ChatRoomResponseDTO(
-                chatRoom.getId(),
-                chatRoom.getRoomId(),
-                chatRoom.getArticleId(),
-                ParticipantDTO.from(buyer),
-                ParticipantDTO.from(seller),
-                chatRoom.getCreatedAt(),
-                chatRoom.getLeftBy(),
-                chatRoom.getExitMessage(),
-                chatRoom.canSendMessage(currentUserId)
+                new ChatRoomInfoDTO(
+                        chatRoom.getId(),
+                        chatRoom.getRoomId(),
+                        chatRoom.getArticleId(),
+                        chatRoom.getCreatedAt()
+                ),
+                new ParticipantsDTO(
+                        ParticipantDTO.from(buyer),
+                        ParticipantDTO.from(seller)
+                ),
+                new ChatRoomStatusDTO(
+                        chatRoom.canSendMessage(currentUserId),
+                        chatRoom.getExitMessage()
+                )
         );
     }
 }
