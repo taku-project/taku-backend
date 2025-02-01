@@ -19,6 +19,7 @@ import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
@@ -78,9 +79,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request) {
 
-        return duckuJangterRepository.findFilteredProducts(request.getSearchKeyword(), request.getCategoryId(),
-                request.getMinPrice(), request.getMaxPrice(), request.getSort(), request.getOrder(),
-                request.getLastId(), request.getSize());
+        return duckuJangterRepository.findFilteredProducts(request);
     }
 
 
@@ -251,7 +250,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
-                .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE , productId);
+                .findRecommendFilteredProducts(new FindRecommendFilteredProductsRequestDTO(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE, productId));
 
         if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
             log.debug("추천 상품 부족으로 랜덤 조회");

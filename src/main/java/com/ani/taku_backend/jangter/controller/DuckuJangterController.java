@@ -13,6 +13,7 @@ import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
 
@@ -87,26 +88,24 @@ public class DuckuJangterController {
     public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@ModelAttribute ProductFindListRequestDto request){
 
         SortFilterType sortFilterType;
-        if(request.getOrder().equals("desc")){
-            if(request.getSort()=="day"){
-                sortFilterType = OLDEST;
-            }else{
-                sortFilterType = PRICE_DESC;
-            }
-        }else{
 
-            if(request.getSort()=="day"){
-                sortFilterType = LATEST;
-            }else{
-                sortFilterType = PRICE_ASC;
-            }
+        boolean isDesc = "desc".equalsIgnoreCase(request.getOrder());
+        boolean isDaySort = "day".equalsIgnoreCase(request.getSort());
+
+        if (isDesc) {
+            sortFilterType = isDaySort ? SortFilterType.OLDEST : SortFilterType.PRICE_DESC;
+        } else {
+            sortFilterType =  isDaySort ? SortFilterType.LATEST : SortFilterType.PRICE_ASC;
         }
 
-        userInteractionService.saveLog(null, LogType.SEARCH, SearchLogDetail.builder()
+        UserInteraction.LogDetail logDetail = SearchLogDetail.builder()
                 .searchKeyword(request.getSearchKeyword())
                 .searchCategory(Collections.singletonList(request.getCategoryId()))
                 .sortType(sortFilterType)
-                .build());
+                .build();
+
+
+        userInteractionService.saveLog(null, LogType.SEARCH, logDetail );
 
         List<ProductFindListResponseDto> products = duckuJangterService.getProducts(request);
 

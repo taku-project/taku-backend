@@ -41,6 +41,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.ani.taku_backend.common.exception.ErrorCode.INVALID_INPUT_VALUE;
+
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -215,6 +217,9 @@ public class UserController {
 
 	){
 
+		if(request==null){
+			return CommonResponse.fail(INVALID_INPUT_VALUE);
+		}
 		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
 			if(userService.isNicknameDuplication(nickname)){ //이미 존재하는 닉네임일 경우

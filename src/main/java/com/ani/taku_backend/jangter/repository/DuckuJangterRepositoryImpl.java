@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
@@ -44,21 +45,24 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
 
     @Override
     public List<ProductFindListResponseDto> findFilteredProducts(
-            String keyword,
-            Long categoryId,
-            Integer minPrice,
-            Integer maxPrice,
-            String sort,
-            String order,
-            Long lastId,
-            int limit) {
+            ProductFindListRequestDto request
+           ) {
+
+        String keyword = request.getSearchKeyword();
+        Long categoryId = request.getCategoryId();
+        Integer minPrice = request.getMinPrice();
+        Integer maxPrice  = request.getMaxPrice();
+        String sort = request.getSort();
+        String order = request.getOrder();
+        Long lastId = request.getLastId();
+        int limit = request.getSize();
 
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
         QUser user = QUser.user;
         QItemCategories itemCategories = QItemCategories.itemCategories;
         QJangterImages jangterImages = QJangterImages.jangterImages;
 
-        System.out.println("keyword: "+keyword+"categoryId:"+categoryId+"minPrice:" + minPrice + "maxPrice: "+ maxPrice+ "sort: " + sort+ "order: "+ order+"lastId: "+lastId);
+        //System.out.println("keyword: "+keyword+"categoryId:"+categoryId+"minPrice:" + minPrice + "maxPrice: "+ maxPrice+ "sort: " + sort+ "order: "+ order+"lastId: "+lastId);
 
         var query = queryFactory.select(Projections.constructor(
                         ProductFindListResponseDto.class,
@@ -79,11 +83,13 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
                         duckuJangter.deletedAt.isNull(),
                         applyFilters(keyword, categoryId, minPrice, maxPrice),
                         applyPaginationCondition(sort, order, lastId))
-                .orderBy(buildOrder(sort,order));
+                .orderBy(buildOrder(sort,order))
+                .limit(limit)
+                .fetch();
 
 
         // 페이지네이션
-        return query.limit(limit).fetch();
+        return query;
     }
 
     private BooleanExpression applyFilters(String keyword, Long categoryId, Integer minPrice, Integer maxPrice) {
@@ -213,9 +219,14 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
      * @return 추천 상품 리스트
      */
     @Override
-    public List<DuckuJangter> findRecommendFilteredProducts(List<String> keywords, BigDecimal minPrice,
-                                                            BigDecimal maxPrice, Long itemCategoryId, StatusType status, Long productId) {
+    public List<DuckuJangter> findRecommendFilteredProducts(FindRecommendFilteredProductsRequestDTO request) {
 
+        List<String> keywords = request.getKeywords();
+        BigDecimal minPrice = request.getMinPrice();
+        BigDecimal maxPrice = request.getMaxPrice();
+        Long itemCategoryId = request.getItemCategoryId();
+        StatusType status = request.getStatus();
+        Long productId = request.getProductId();
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
         BooleanBuilder titleConditions = new BooleanBuilder();
