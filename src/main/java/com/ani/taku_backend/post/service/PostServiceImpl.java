@@ -63,9 +63,6 @@ public class PostServiceImpl implements PostService {
         return new PostListResponseDTO(getPostList);
     }
 
-    private String getSortFilter(Pageable pageable) {
-        return pageable.getSort().stream().findFirst().map(Sort.Order::getProperty).orElse(SortFilterType.ID.getValue());
-    }
 
     /**
      * 게시글 작성
