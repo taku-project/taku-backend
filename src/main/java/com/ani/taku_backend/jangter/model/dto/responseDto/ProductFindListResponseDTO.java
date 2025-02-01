@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Builder
-public class ProductFindListResponseDto {
+public class ProductFindListResponseDTO {
 
     private Long id; //상품 아이디
 
@@ -29,7 +29,7 @@ public class ProductFindListResponseDto {
 
     private Long viewCount;
 
-    public ProductFindListResponseDto(Long id, String title, BigDecimal price, String imageUrl, String userNickname, Long viewCount) {
+    public ProductFindListResponseDTO(Long id, String title, BigDecimal price, String imageUrl, String userNickname, Long viewCount) {
         this.id = id;
         this.title = title;
         this.price = price;

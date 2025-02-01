@@ -1,6 +1,5 @@
 package com.ani.taku_backend.jangter.controller;
 
-import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.SortFilterType;
@@ -12,11 +11,10 @@ import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 
 
-import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
-import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
-import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
 
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
 import com.ani.taku_backend.jangter.service.UserInteractionService;
@@ -26,27 +24,17 @@ import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import com.ani.taku_backend.jangter.service.UserInteractionService;
-
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-
-import static com.ani.taku_backend.common.enums.SortFilterType.*;
 
 @Slf4j
 @RestController
@@ -92,7 +80,7 @@ public class DuckuJangterController {
 
     })
     @GetMapping("/products")
-    public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@ModelAttribute ProductFindListRequestDto request){
+    public CommonResponse<List<ProductFindListResponseDTO>> findProductItems(@ModelAttribute ProductFindListRequestDTO request){
 
         SortFilterType sortFilterType;
 
@@ -114,7 +102,7 @@ public class DuckuJangterController {
 
         userInteractionService.saveLog(null, LogType.SEARCH, logDetail );
 
-        List<ProductFindListResponseDto> products = duckuJangterService.getProducts(request);
+        List<ProductFindListResponseDTO> products = duckuJangterService.getProducts(request);
 
         return CommonResponse.ok(products);
     }

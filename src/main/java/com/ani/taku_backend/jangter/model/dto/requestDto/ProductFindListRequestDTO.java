@@ -5,12 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProductFindListRequestDto {
+public class ProductFindListRequestDTO {
 
     @Schema(description = "정렬 기준 (가격: price, 날짜: day)", example = "price")
     private String sort;

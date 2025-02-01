@@ -22,8 +22,8 @@ import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
-import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
-import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
@@ -88,7 +88,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final JangterRankBaseRepository jangterRankBaseRepository;
 
     @Transactional(readOnly = true)
-    public List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request) {
+    public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {
 
         return duckuJangterRepository.findFilteredProducts(request);
     }

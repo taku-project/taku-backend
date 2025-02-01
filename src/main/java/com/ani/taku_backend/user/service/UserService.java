@@ -2,7 +2,7 @@ package com.ani.taku_backend.user.service;
 
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.dto.UserDetailDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.repository.UserRepository;
@@ -79,7 +79,7 @@ public class UserService {
     return this.userRepository.updateUserStatus(userId, status);
   }
 
-  public UserDetailDto getUserDetail(Long userId){
+  public UserDetailDTO getUserDetail(Long userId){
 
     //Optional로 해야하는 이유
     Optional<User> user = userRepository.findById(userId);

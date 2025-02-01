@@ -4,8 +4,8 @@ import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
-import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
-import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.*;
 import com.ani.taku_backend.user.model.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
@@ -38,8 +38,8 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
 
 
     @Override
-    public List<ProductFindListResponseDto> findFilteredProducts(
-            ProductFindListRequestDto request
+    public List<ProductFindListResponseDTO> findFilteredProducts(
+            ProductFindListRequestDTO request
            ) {
 
         String keyword = request.getSearchKeyword();
@@ -59,7 +59,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         //System.out.println("keyword: "+keyword+"categoryId:"+categoryId+"minPrice:" + minPrice + "maxPrice: "+ maxPrice+ "sort: " + sort+ "order: "+ order+"lastId: "+lastId);
 
         var query = queryFactory.select(Projections.constructor(
-                        ProductFindListResponseDto.class,
+                        ProductFindListResponseDTO.class,
                         duckuJangter.id,
                         duckuJangter.title,
                         duckuJangter.price,
