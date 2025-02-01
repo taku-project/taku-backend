@@ -14,7 +14,7 @@ import com.ani.taku_backend.user.model.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
   // 도메스틱ID와 상태로 유저 조회 -> 이메일과 상태로 유저 조회로 변경
-  Optional<User> findByDomesticIdAndStatus(String domesticId, UserStatus status);
+  Optional<User> findFirstByDomesticIdAndStatus(String domesticId, UserStatus status);
 
   // 닉네임 조회
   List<User> findByNickname(String nickname);

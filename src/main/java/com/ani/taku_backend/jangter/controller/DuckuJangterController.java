@@ -7,6 +7,7 @@ import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 
@@ -28,6 +29,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -185,7 +187,9 @@ public class DuckuJangterController {
 
     @Operation(
             summary = "판매글 추천",
-            description = "판매글 추천 API (로그인/비로그인 모두 가능)")
+            description = "판매글 추천 API (로그인/비로그인 모두 가능)",
+            security = { @SecurityRequirement(name = "Bearer Auth") }
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200",description = "게시글 추천"),
     })
@@ -193,5 +197,16 @@ public class DuckuJangterController {
     public CommonResponse<ProductRecommendResponseDTO> recommendProduct(@PathVariable("productId") Long productId) {
         ProductRecommendResponseDTO recommendProduct = this.duckuJangterService.recommendProduct(productId, null);
         return CommonResponse.ok(recommendProduct);
+    }
+
+
+    @Operation(summary = "장터 랭킹 일괄 조회", description = "장터 랭킹 일괄 조회")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "장터 랭킹 조회 성공")
+    })
+    @GetMapping("/rank")
+    public CommonResponse<ProductRankInfoResponseDTO> getJangterRank() {
+        ProductRankInfoResponseDTO productRankInfoResponseDTO = this.duckuJangterService.getJangterRank();
+        return CommonResponse.ok(productRankInfoResponseDTO);
     }
 }

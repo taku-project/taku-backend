@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.service;
 
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
@@ -30,8 +31,12 @@ public interface DuckuJangterService {
 
     ProductRecommendResponseDTO recommendProduct(Long productId, PrincipalUser principalUser);
 
+<<<<<<< HEAD
     List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request);
 
 
 
+=======
+    ProductRankInfoResponseDTO getJangterRank();
+>>>>>>> 29deb652045d929ff8879f0b960f96338de8fec1
 }
