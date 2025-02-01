@@ -24,7 +24,7 @@ public enum InteractionType implements EnumCode {
 
     public static InteractionType fromValue(String value) {
         for (InteractionType type : InteractionType.values()) {
-            if (type.getValue().equals(value)) {
+            if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }
         }
