@@ -31,12 +31,7 @@ public interface DuckuJangterService {
 
     ProductRecommendResponseDTO recommendProduct(Long productId, PrincipalUser principalUser);
 
-<<<<<<< HEAD
     List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request);
 
-
-
-=======
     ProductRankInfoResponseDTO getJangterRank();
->>>>>>> 29deb652045d929ff8879f0b960f96338de8fec1
 }

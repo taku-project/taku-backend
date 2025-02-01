@@ -1,13 +1,12 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.QItemCategories;
-import com.ani.taku_backend.jangter.model.entity.QJangterImages;
+import com.ani.taku_backend.jangter.model.entity.*;
 import com.ani.taku_backend.user.model.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
@@ -17,28 +16,23 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static com.ani.taku_backend.common.model.entity.QImage.image;
 import static com.ani.taku_backend.jangter.model.entity.QDuckuJangter.duckuJangter;
 
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
+public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
 
@@ -209,15 +203,7 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
         return orders.toArray(new OrderSpecifier[0]);
     }
 
-    /**
-     * 추천 상품 1차 필터링 조회
-     * @param keywords 키워드
-     * @param minPrice 최소 가격
-     * @param maxPrice 최대 가격
-     * @param itemCategoryId 카테고리 아이디
-     * @param status 상태
-     * @return 추천 상품 리스트
-     */
+
     @Override
     public List<DuckuJangter> findRecommendFilteredProducts(FindRecommendFilteredProductsRequestDTO request) {
 
@@ -249,5 +235,59 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
 
         return fetch;
     }
+
+    @Override
+    public List<CategoryGroupCountDTO> findCategoryGroupCount() {
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QItemCategories itemCategories = QItemCategories.itemCategories;
+
+        return queryFactory
+                .select(Projections.constructor(CategoryGroupCountDTO.class,
+                        itemCategories.id,
+                        itemCategories.name,
+                        duckuJangter.count()))
+                .from(duckuJangter)
+                .leftJoin(duckuJangter.itemCategories, itemCategories)
+                .where(duckuJangter.deletedAt.isNull())
+                .groupBy(itemCategories.id, itemCategories.name)
+                .orderBy(duckuJangter.count().desc())
+                .fetch();
+    }
+
+    @Override
+    public List<ProductViewAndBookmarkDTO> findProductViewAndBookmark(Long categoryId) {
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QDuckuJangterBookmark duckuJangterBookmark = QDuckuJangterBookmark.duckuJangterBookmark;
+
+        return queryFactory
+                .select(Projections.constructor(ProductViewAndBookmarkDTO.class,
+                        duckuJangter.id,
+                        duckuJangter.viewCount,
+                        duckuJangterBookmark.isNotNull()))
+                .from(duckuJangter)
+                .leftJoin(duckuJangterBookmark)
+                .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
+                .where(duckuJangter.status.eq(StatusType.ACTIVE),
+                        duckuJangter.itemCategories.id.eq(categoryId))
+                .fetch();
+    }
+
+    @Override
+    public List<ProductViewAndBookmarkDTO> findProductViewAndBookmarkByProductId(Long productId) {
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QDuckuJangterBookmark duckuJangterBookmark = QDuckuJangterBookmark.duckuJangterBookmark;
+
+        return queryFactory
+                .select(Projections.constructor(ProductViewAndBookmarkDTO.class,
+                        duckuJangter.id,
+                        duckuJangter.viewCount,
+                        duckuJangterBookmark.isNotNull()))
+                .from(duckuJangter)
+                .leftJoin(duckuJangterBookmark)
+                .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
+                .where(duckuJangter.id.eq(productId) , duckuJangter.deletedAt.isNull() , duckuJangter.status.eq(StatusType.ACTIVE))
+                .fetch();
+    }
+
 
 }

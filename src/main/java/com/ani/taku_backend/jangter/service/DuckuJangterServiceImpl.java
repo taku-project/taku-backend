@@ -85,16 +85,17 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
 
-<<<<<<< HEAD
+    private final JangterRankBaseRepository jangterRankBaseRepository;
+
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDto> getProducts(ProductFindListRequestDto request) {
 
         return duckuJangterRepository.findFilteredProducts(request);
     }
 
-=======
-    private final JangterRankBaseRepository jangterRankBaseRepository;
->>>>>>> 29deb652045d929ff8879f0b960f96338de8fec1
+
+
+
 
     /**
      * 장터글 저장

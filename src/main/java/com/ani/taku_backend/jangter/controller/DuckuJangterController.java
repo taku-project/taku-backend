@@ -86,6 +86,11 @@ public class DuckuJangterController {
      * 덕후 장터 판매 글 전체 목록 조회
      */
 
+    @Operation(summary = "판매글 전체 조회", description = "덕후 장터 판매글 전체 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "성공"),
+
+    })
     @GetMapping("/products")
     public CommonResponse<List<ProductFindListResponseDto>> findProductItems(@ModelAttribute ProductFindListRequestDto request){
 

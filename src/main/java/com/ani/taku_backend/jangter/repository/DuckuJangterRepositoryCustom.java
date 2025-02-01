@@ -1,6 +1,8 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
@@ -19,5 +21,12 @@ public interface DuckuJangterRepositoryCustom{
     List<DuckuJangter> findRecommendFilteredProducts(
             FindRecommendFilteredProductsRequestDTO request
     );
+
+    List<CategoryGroupCountDTO> findCategoryGroupCount();
+
+
+    List<ProductViewAndBookmarkDTO> findProductViewAndBookmark(Long categoryId);
+
+    List<ProductViewAndBookmarkDTO> findProductViewAndBookmarkByProductId(Long productId);
 
 }
