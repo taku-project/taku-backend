@@ -3,9 +3,11 @@ package com.ani.taku_backend.chatroom.controller;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.service.ChatRoomService;
+import com.ani.taku_backend.chatroom.service.ChatService;
 import com.ani.taku_backend.common.response.CommonResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +18,9 @@ import java.util.List;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
+
+    @Autowired
+    private ChatService chatService;
 
     @PostMapping
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
@@ -53,4 +58,33 @@ public class ChatRoomController {
         Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(userId);
         return CommonResponse.ok(totalUnreadCount);
     }
+
+    // 메시지 전송, 개발 완료
+    @PostMapping("/send")
+    public CommonResponse<Long> sendMessage(@RequestParam Long roomId,
+                            @RequestParam Long senderId,
+                            @RequestParam String content) {
+        chatService.sendMessage(roomId, senderId, content);
+        return CommonResponse.ok(null);
+    }
+
+
+    // 채팅방 나가기, 개발 완료
+    @PostMapping("/leave")
+    public CommonResponse<Long>  leaveRoom(@RequestParam Long chatRoomId,
+                          @RequestParam Long userId) {
+        chatService.leaveRoom(chatRoomId, userId);
+        return CommonResponse.ok(null);
+    }
+
+    // 메시지 읽음 상태 업데이트,
+    @PostMapping("/mark-as-read")
+    public CommonResponse<Long> markMessagesAsRead(@RequestParam Long chatRoomId,
+                                   @RequestParam Long userId) {
+        chatService.markMessagesAsRead(chatRoomId, userId);
+        return CommonResponse.ok(null);
+    }
+
+
+
 }

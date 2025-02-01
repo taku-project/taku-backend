@@ -1,8 +1,8 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDto;
-import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDto;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
+
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QItemCategories;
@@ -16,21 +16,16 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static com.ani.taku_backend.common.model.entity.QImage.image;
 import static com.ani.taku_backend.jangter.model.entity.QDuckuJangter.duckuJangter;
 
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -43,7 +38,7 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
 
 
     @Override
-    public List<ProductFindListResponseDto> findFilteredProducts(
+    public List<ProductFindListResponseDTO> findFilteredProducts(
             String keyword,
             Long categoryId,
             Integer minPrice,
@@ -61,7 +56,7 @@ public class DuckuJangterRepositoryImpl implements DuckuJangterRepositoryCustom{
         System.out.println("keyword: "+keyword+"categoryId:"+categoryId+"minPrice:" + minPrice + "maxPrice: "+ maxPrice+ "sort: " + sort+ "order: "+ order+"lastId: "+lastId);
 
         var query = queryFactory.select(Projections.constructor(
-                        ProductFindListResponseDto.class,
+                        ProductFindListResponseDTO.class,
                         duckuJangter.id,
                         duckuJangter.title,
                         duckuJangter.price,
