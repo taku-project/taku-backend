@@ -70,15 +70,6 @@ public class ApiCategoryController {
             content = @Content(schema = @Schema(implementation = ExceptionDto.class))
         )
     })
-    @Parameters({
-        @Parameter(
-            name = "Authorization",
-            in = ParameterIn.HEADER,
-            required = true,
-            description = "JWT 토큰",
-            example = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhZ2VfcmFuZ2..."
-        )
-    })
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		content = {
 			@Content(

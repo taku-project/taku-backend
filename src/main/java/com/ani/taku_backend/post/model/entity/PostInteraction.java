@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
-@JsonIgnoreProperties({"_class"})   // 직렬화 과정에서 _class 필드를 무시
 @Document(collection = "posts_interaction")
 @Getter
 @Builder

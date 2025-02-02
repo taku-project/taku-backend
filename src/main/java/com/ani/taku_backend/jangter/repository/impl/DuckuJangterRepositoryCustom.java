@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 
 public interface DuckuJangterRepositoryCustom {
@@ -16,6 +18,12 @@ public interface DuckuJangterRepositoryCustom {
         StatusType status,
         Long productId
     );
+
+    List<CategoryGroupCountDTO> findCategoryGroupCount();
+
+    List<ProductViewAndBookmarkDTO> findProductViewAndBookmark(Long categoryId);
+
+    List<ProductViewAndBookmarkDTO> findProductViewAndBookmarkByProductId(Long productId);
 
     
 }

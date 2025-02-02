@@ -1,14 +1,15 @@
-package com.ani.taku_backend.post.repository.impl.dto;
+package com.ani.taku_backend.post.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class FindAllPostQuerydslDTO {
+public class FindPostQueryDTO {
     @Schema(description = "게시글 ID")
     private Long id;
 
@@ -34,11 +35,22 @@ public class FindAllPostQuerydslDTO {
     @Schema(description = "조회수")
     private long views;
 
+    @Schema(description = "좋아요수")
+    private long likes;
+
+    @Schema(description = "유저 닉네임")
+    private String userNickname;
+
+    @Schema(description = "유저 이미지")
+    private String userImageUrl;
+
     @QueryProjection
-    public FindAllPostQuerydslDTO(long postId, long userId, long categoryId,
-                                  String title, String content, String imageUrl,
-                                  LocalDateTime updatedAt, long views) {
-        this.id = postId;
+    @Builder
+    public FindPostQueryDTO(Long id, Long userId, Long categoryId,
+                            String title, String content, String imageUrl,
+                            LocalDateTime updatedAt, long views,
+                            String userNickname, String userImageUrl) {
+        this.id = id;
         this.userId = userId;
         this.categoryId = categoryId;
         this.title = title;
@@ -46,5 +58,11 @@ public class FindAllPostQuerydslDTO {
         this.imageUrl = imageUrl;
         this.updatedAt = updatedAt;
         this.views = views;
+        this.userNickname = userNickname;
+        this.userImageUrl = userImageUrl;
+    }
+
+    public void updateLikes(long likes) {
+        this.likes = likes;
     }
 }

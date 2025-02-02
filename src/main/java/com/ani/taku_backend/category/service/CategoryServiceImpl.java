@@ -101,7 +101,9 @@ public class CategoryServiceImpl implements CategoryService {
         if(!categoryOptional.isPresent()) {
             throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
         }
-        return modelMapper.map(categoryOptional.get(), ResponseCategoryDTO.class);
+
+
+        return ResponseCategoryDTO.of(categoryOptional.get());
     }
 
     /**
@@ -157,7 +159,7 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             CreateImageDTO imageDTO = CreateImageDTO.builder()
                 .uploadId(user.getUserId())
-                .imageUrl(fileService.uploadVideoFile(uploadFile))
+                .imageUrl(fileService.uploadImageFile(uploadFile))
                 .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
                 .originalFileName(uploadFile.getOriginalFilename())
                 .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))

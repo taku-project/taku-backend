@@ -16,6 +16,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +31,32 @@ public class PostController {
     private final PostService postService;
     private final BlackUserService blackUserService;
 
-    @Operation(summary = "커뮤니티글 전체 조회", description = "검색어와 정렬필터 기능이 포함된 게시글 조회")
+    @Operation(
+        summary = "커뮤니티글 전체 조회",
+        description = "검색어와 정렬필터 기능이 포함된 게시글 조회",
+        parameters = {
+            @Parameter(name = "page", description = "페이지 번호(0부터 시작)", example = "0"),
+            @Parameter(name = "size", description = "페이지 수", example = "20"),
+            @Parameter(name = "sort",
+                    description = """
+                        정렬 필터와 정렬 방식,\n
+                        입력 방법: 정렬 필터,정렬 방식(띄어쓰기 없어야함)\n
+                        정렬 필터: id(최신순), views(조회수순)\n
+                        정렬 방식: desc(내림차순, 기본값), asc(오름차순)
+                        """,
+                    example = "id,desc")
+        }
+    )
     @ApiResponses({@ApiResponse(responseCode = "200", description = "게시글 조회 성공")})
     @GetMapping
-    public CommonResponse<PostListResponseDTO> findAllPostList(@ParameterObject @Valid PostListRequestDTO postListRequestDTO) {
-        log.debug("postListRequestDTO: {}", postListRequestDTO.getSortFilterType());
-        PostListResponseDTO findResultList = postService.findAllPostList(postListRequestDTO);
+
+    public CommonResponse<PostListResponseDTO> findPostPage(
+            @ParameterObject @Valid PostListRequestDTO postListRequestDTO,
+            @Parameter(hidden = true) @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        postListRequestDTO.postListRequestValidate();
+
+        PostListResponseDTO findResultList = postService.findPostList(postListRequestDTO, pageable);
         return CommonResponse.ok(findResultList);
     }
 

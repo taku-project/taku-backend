@@ -27,24 +27,24 @@ public class FileController {
 
     private final FileService fileUploadService;
 
-    @Operation(summary = "파일 업로드", description = "파일을 스토리지에 업로드합니다.")
+    @Operation(summary = "비디오 업로드", description = "비디오를 스토리지에 업로드합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "File upload : SUCCESS"),
+            @ApiResponse(responseCode = "200", description = "Video upload : SUCCESS"),
             @ApiResponse(responseCode = "400", description = "Bad Request: Invalid input data.")
     })
-    @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public String uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+    @PostMapping(path = "/upload/video", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String uploadVideoFile(@RequestParam("video") MultipartFile file) throws IOException {
         String uploadUrl = fileUploadService.uploadVideoFile(file);
-        return "파일이 스토리지에 업로드 되었습니다. UploadUrl: " + uploadUrl;
+        return "비디오가 스토리지에 업로드 되었습니다. UploadUrl: " + uploadUrl;
     }
 
-    @Operation(summary = "파일 다운로드", description = "파일을 스토리지에서 다운로드합니다.")
+    @Operation(summary = "비디오 다운로드", description = "비디오을 스토리지에서 다운로드합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "File download : SUCCESS"),
+            @ApiResponse(responseCode = "200", description = "Video download : SUCCESS"),
             @ApiResponse(responseCode = "400", description = "Bad Request: Invalid input data.")
     })
-    @GetMapping("/download/{fileName}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) throws AmazonS3Exception {
+    @GetMapping("/download/video/{fileName}")
+    public ResponseEntity<Resource> downloadVideoFile(@PathVariable String fileName) throws AmazonS3Exception {
         try {
             S3Object s3Object = fileUploadService.getVideoFile(fileName);
             byte[] fileContent = s3Object.getObjectContent().readAllBytes();
@@ -59,4 +59,35 @@ public class FileController {
         }
     }
 
+    @Operation(summary = "이미지 업로드", description = "이미지를 스토리지에 업로드합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "File upload : SUCCESS"),
+            @ApiResponse(responseCode = "400", description = "Bad Request: Invalid input data.")
+    })
+    @PostMapping(path = "/upload/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String uploadImageFile(@RequestParam("file") MultipartFile file) throws IOException {
+        String uploadUrl = fileUploadService.uploadImageFile(file);
+        return "이미지가 스토리지에 업로드 되었습니다. UploadUrl: " + uploadUrl;
+    }
+
+    @Operation(summary = "이미지 다운로드", description = "이미지를 스토리지에서 다운로드합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "File download : SUCCESS"),
+            @ApiResponse(responseCode = "400", description = "Bad Request: Invalid input data.")
+    })
+    @GetMapping("/download/image/{fileName}")
+    public ResponseEntity<Resource> downloadImageFile(@PathVariable String fileName) throws AmazonS3Exception {
+        try {
+            S3Object s3Object = fileUploadService.getImageFile(fileName);
+            byte[] fileContent = s3Object.getObjectContent().readAllBytes();
+            Resource resource = new ByteArrayResource(fileContent);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            throw new AmazonS3Exception("Failed to download file: " + e.getMessage(), e);
+        }
+    }
 }

@@ -6,6 +6,7 @@ import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.comments.service.CommentsService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
+import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
@@ -17,17 +18,24 @@ import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
+
+import com.ani.taku_backend.post.model.entity.PostInteractionCounter;
 import com.ani.taku_backend.post.repository.PostInteractionCounterRepository;
 import com.ani.taku_backend.post.repository.PostRepository;
-import com.ani.taku_backend.post.repository.impl.dto.FindAllPostQuerydslDTO;
+import com.ani.taku_backend.post.model.dto.FindPostQueryDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.*;
 
@@ -39,6 +47,7 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
+    private final PostInteractionCounterRepository counterRepository;
     private final ImageService imageService;
     private final CommentsService commentsService;
     private final PostInteractionCounterRepository postInteractionCounterRepository;
@@ -47,22 +56,20 @@ public class PostServiceImpl implements PostService {
     /**
      * 게시글 전체 조회
      */
-    public PostListResponseDTO findAllPostList(PostListRequestDTO postListRequestDTO) {
-
+    public PostListResponseDTO findPostList(PostListRequestDTO postListRequestDTO, Pageable pageable) {
         // 검색 키워드 검증 - 공백제거(양옆, 중간), 공백만 넘어온 키워드 null처리
         String keyword = postListRequestDTO.getKeyword();
         if (keyword != null) {
             keyword = keyword.trim().isEmpty() ? null : keyword.replaceAll("\\s+", "");
+            postListRequestDTO.setKeyword(keyword);
         }
 
-        long postCount = postRepository.countPostByDeletedAtIsNullAndCategoryId(postListRequestDTO.getCategoryId());
-        log.info("post 전체개수 조회, postCount: {}", postCount);
+        Page<FindPostQueryDTO> getPostList = postRepository.findPostListPage(postListRequestDTO, pageable);
+        updateLikesCount(getPostList);
 
-        List<FindAllPostQuerydslDTO> fineResultList = postRepository.findAllPostWithNoOffset(postListRequestDTO);
-        log.info("페이징 쿼리 성공");
-
-        return new PostListResponseDTO(postCount, fineResultList);
+        return new PostListResponseDTO(getPostList);
     }
+
 
     /**
      * 게시글 작성
@@ -81,6 +88,9 @@ public class PostServiceImpl implements PostService {
 
         Long savePostId = postRepository.save(post).getId();
         log.debug("게시글 저장 완료, savePostId: {}", savePostId);
+
+        PostInteractionCounter counter = PostInteractionCounter.create(post);
+        counterRepository.save(counter);
 
         return savePostId;
     }
@@ -116,7 +126,6 @@ public class PostServiceImpl implements PostService {
     /**
      * 게시글 삭제
      */
-    @RequireUser
     @Transactional
     public void deletePost(Long postId, User user) {
 
@@ -127,11 +136,12 @@ public class PostServiceImpl implements PostService {
         checkDeleteProduct(post);                    // 삭제 검증
 
         post.delete();                               // 삭제 로직
-        log.debug("게시글 삭제 성공, post.getDeletedAt: {}", post.getDeletedAt());
         post.getCommunityImages().forEach(communityImage -> {
             communityImage.getImage().delete();
-            log.debug("이미지 연관관계 삭제 성공, image.getDeletedAt: {}", communityImage.getImage().getDeletedAt());
         });
+
+        counterRepository.updateDeletedAt(post);
+
     }
 
     /**
@@ -232,5 +242,24 @@ public class PostServiceImpl implements PostService {
             throw new DuckwhoException(NOT_FOUND_POST);
         }
     }
+
+
+    // 정렬 필터 비교 메서드
+    private boolean isSortType(String sortProperty, SortFilterType... validTypes) {
+        return Arrays.stream(validTypes)
+                .anyMatch(type -> type.getValue().equalsIgnoreCase(sortProperty));
+    }
+
+
+    /**
+     * MongoDB에서 좋아요 개수를 가져와 DTO에 반영하는 메서드
+     */
+    private void updateLikesCount(Page<FindPostQueryDTO> postList) {
+        List<Long> postIds = postList.stream().map(FindPostQueryDTO::getId).toList();
+        Map<Long, Long> likesMap = counterRepository.findLikesByPostIds(postIds);
+
+        postList.forEach(dto -> dto.updateLikes(likesMap.getOrDefault(dto.getId(), 0L)));
+    }
+
 
 }
