@@ -7,7 +7,6 @@ import com.ani.taku_backend.post.model.dto.QFindPostQueryDTO;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +56,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .leftJoin(post.communityImages, communityImage)
                 .leftJoin(communityImage.image, image)
                 .where(predicate)
-                .orderBy(orderSpecifier) // ✅ 정렬 적용
+                .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -118,11 +117,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
      */
     private OrderSpecifier<Long> getOrderSpecifier(Pageable pageable) {
         if (pageable.getSort().isEmpty()) {
-            return post.id.desc(); // 기본 정렬 (최신순)
+            return post.id.desc();
         }
 
-        SortFilterType sortFilter = SortFilterType.ID; // 기본값: 최신순
-        boolean isAscending = false; // 기본 정렬 방향: 내림차순
+        SortFilterType sortFilter = SortFilterType.ID;
+        boolean isAscending = false;
 
         for (Order order : pageable.getSort()) {
             sortFilter = SortFilterType.valueOf(order.getProperty().toUpperCase());
@@ -133,7 +132,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return switch (sortFilter) {
             case ID -> isAscending ? post.id.asc() : post.id.desc();
             case VIEWS -> isAscending ? post.views.asc() : post.views.desc();
-            default -> post.id.desc(); // 기본 정렬 (최신순)
+            default -> post.id.desc();
         };
     }
 
