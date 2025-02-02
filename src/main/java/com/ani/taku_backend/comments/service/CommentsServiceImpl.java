@@ -152,20 +152,24 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentsResponseDTO> getPostComments(Long postId, Long currentUserId) {
-        // 최상위 댓글 조회
+        // 최상위 댓글과 대댓글을 함께 조회 (단일 쿼리로 모든 데이터를 가져옴)
         List<Comments> parentComments = commentsRepository.findParentComments(postId);
 
-        // 각 댓글에 대한 ResponseDTO 생성 (대댓글 포함)
+        // 각 댓글에 대한 ResponseDTO 생성
         return parentComments.stream()
                 .map(comment -> {
                     CommentsResponseDTO parentDto = CommentsResponseDTO.of(comment, currentUserId);
 
-                    // 대댓글 조회 및 변환
-                    List<Comments> replies = commentsRepository.findChildComments(comment.getId());
-
-                    List<CommentsResponseDTO> replyDtos = replies.stream()
-                            .map(reply -> CommentsResponseDTO.of(reply, currentUserId))
-                            .toList();
+                    // JOIN으로 이미 조회된 자식 댓글들을 필터링하고 정렬
+                    List<CommentsResponseDTO> replyDtos = comment.getParentComment() == null ? // 부모 댓글인 경우에만
+                            parentComments.stream()
+                                    .filter(reply -> reply.getParentComment() != null
+                                            && reply.getParentComment().getId() == comment.getId()
+                                            && reply.getDeletedAt() == null)
+                                    .sorted((r1, r2) -> r1.getCreatedAt().compareTo(r2.getCreatedAt()))
+                                    .map(reply -> CommentsResponseDTO.of(reply, currentUserId))
+                                    .toList()
+                            : List.of(); // 자식 댓글인 경우 빈 리스트 반환
 
                     return new CommentsResponseDTO(
                             parentDto.id(),
