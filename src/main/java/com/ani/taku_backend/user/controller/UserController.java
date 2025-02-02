@@ -10,6 +10,7 @@ import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
 import com.ani.taku_backend.user.model.dto.UserDetailDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
 import com.ani.taku_backend.user.model.dto.requestDto.UserEditDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
@@ -240,7 +241,8 @@ public class UserController {
 			System.out.println("multipart"+ multipartFile);
 			try {
 				fileUrl = fileService.uploadImageFile(multipartFile);
-				userService.updateProfileImg(userId, fileUrl, request.getFileSize(), request.getFileType(), request.getOriginalFileName(), fileUrl);
+				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, fileUrl,request.getFileSize(), request.getFileType(), request.getOriginalFileName());
+				userService.updateProfileImg(updateProfileImgRequestDTO);
 
 			}catch (Exception e){
 				System.out.println(e);

@@ -3,6 +3,7 @@ package com.ani.taku_backend.user.service;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.UserDetailDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.repository.UserRepository;
@@ -97,7 +98,15 @@ public class UserService {
   }
 
   @Transactional
-  public void updateProfileImg(Long userId, String profileImg, Integer fileSize, String fileType, String originalName, String imageUrl){
+  public void updateProfileImg(UpdateProfileImgRequestDTO request){
+
+
+    Long userId = request.getUserId();
+    String profileImg = request.getProfileImg();
+    Integer fileSize = request.getFileSize();
+    String fileType = request.getFileType();
+    String originalName = request.getOriginalFileName();
+
 
 
     //기존 image soft delete
@@ -121,10 +130,10 @@ public class UserService {
     //새로운 iamge 넣기
     Optional<User> user = userRepository.findById(userId);
 
-    String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+    String fileName =profileImg.substring(profileImg.lastIndexOf("/") + 1);
 
     Image image = Image.builder()
-            .imageUrl(imageUrl)
+            .imageUrl(profileImg)
             .fileSize(fileSize)
             .fileName(fileName)
             .fileType(fileType)
