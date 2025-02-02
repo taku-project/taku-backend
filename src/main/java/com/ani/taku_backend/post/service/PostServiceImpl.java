@@ -154,10 +154,12 @@ public class PostServiceImpl implements PostService {
             post.addViews();
         }
 
+        // 비로그인 사용자는 항상 false
         boolean isOwner = false;
-        if (post.getUser() != null && currentUserId != null &&
-                post.getUser().getUserId().equals(currentUserId)) {
-            isOwner = true;
+        
+        // 로그인한 사용자인 경우에만 소유자 체크
+        if (currentUserId != null && post.getUser() != null) {
+            isOwner = post.getUser().getUserId().equals(currentUserId);
         }
 
         // 댓글 목록 조회
