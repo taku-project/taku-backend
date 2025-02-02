@@ -1,6 +1,8 @@
 package com.ani.taku_backend.user.controller;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
@@ -55,7 +57,7 @@ public class UserController {
 	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 		summary = "유저 등록",
-		description = "유저를 등록합니다.",
+		description = "유저를 등록합니다...",
 		security = { @SecurityRequirement(name = "Bearer Auth") }
 	)
 	@Parameters({
@@ -105,11 +107,11 @@ public class UserController {
 		if(registrationToken.startsWith("Bearer ")) {
 			registrationToken = registrationToken.substring(7);
 		}else{
-			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+			throw new DuckwhoException(ErrorCode.EMPTY_TOKEN);
 		}
 
 		if (!this.jwtUtil.validateToken(registrationToken)) {
-			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+			throw new DuckwhoException(ErrorCode.INVALID_TOKEN);
 		}
 
 		OAuthUserInfo userInfo = OAuthUserInfo.of(requestRegisterUser.getProviderType(), this.jwtUtil.extractAllClaims(registrationToken));
@@ -119,7 +121,7 @@ public class UserController {
 		Optional<User> byDomesticId = this.userService.getUserByDomesticId(userInfo.getDomesticId());
 
 		if (byDomesticId.isPresent()) {
-			throw new UserException.UserAlreadyExistsException("이미 가입된 유저입니다.");
+			throw new DuckwhoException(ErrorCode.USER_ALREADY_EXISTS);
 		}
 
 		// 프로필 이미지 업로드
@@ -127,7 +129,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException();
+				throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
 			}
 		}
 

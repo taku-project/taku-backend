@@ -60,20 +60,9 @@ public class ModelMapperConfig {
         // CategoryImage -> CategoryImageDTO 매핑
         modelMapper.createTypeMap(CategoryImage.class, ResponseCategoryDTO.CategoryImageDTO.class)
             .addMapping(CategoryImage::getId, ResponseCategoryDTO.CategoryImageDTO::setId)
-            .addMappings(mapper -> {
-                mapper.<String>map(
-                    src -> src.getImage().getImageUrl(),
-                    (dest, v) -> dest.setImageUrl(v)
-                );
-                mapper.<String>map(
-                    src -> src.getImage().getFileName(),
-                    (dest, v) -> dest.setFileName(v)
-                );
-                mapper.<String>map(
-                    src -> src.getImage().getOriginalName(),
-                    (dest, v) -> dest.setOriginalFileName(v)
-                );
-            });
+            .addMapping(src -> src.getImage().getImageUrl(), ResponseCategoryDTO.CategoryImageDTO::setImageUrl)
+            .addMapping(src -> src.getImage().getFileName(), ResponseCategoryDTO.CategoryImageDTO::setFileName)
+            .addMapping(src -> src.getImage().getOriginalName(), ResponseCategoryDTO.CategoryImageDTO::setOriginalFileName);
 
         // CategoryGenre -> CategoryGenreDTO 매핑
         modelMapper.createTypeMap(CategoryGenre.class, ResponseCategoryDTO.CategoryGenreDTO.class)
