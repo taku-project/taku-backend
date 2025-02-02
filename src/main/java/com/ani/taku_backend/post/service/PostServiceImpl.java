@@ -2,6 +2,8 @@ package com.ani.taku_backend.post.service;
 
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
+import com.ani.taku_backend.comments.service.CommentsService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.SortFilterType;
@@ -10,11 +12,13 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
+import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
 import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
+
 import com.ani.taku_backend.post.model.entity.PostInteractionCounter;
 import com.ani.taku_backend.post.repository.PostInteractionCounterRepository;
 import com.ani.taku_backend.post.repository.PostRepository;
@@ -45,6 +49,9 @@ public class PostServiceImpl implements PostService {
     private final CategoryRepository categoryRepository;
     private final PostInteractionCounterRepository counterRepository;
     private final ImageService imageService;
+    private final CommentsService commentsService;
+    private final PostInteractionCounterRepository postInteractionCounterRepository;
+
 
     /**
      * 게시글 전체 조회
@@ -136,6 +143,53 @@ public class PostServiceImpl implements PostService {
         counterRepository.updateDeletedAt(post);
 
     }
+
+    /**
+     * 게시글 상세 조회
+     * - 게시글 정보와 함께 댓글 목록을 조회
+     * - 조회수 증가 처리
+     * - 삭제된 게시글 체크
+     * - 좋아요 정보
+     */
+    @Transactional
+    public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+
+        if (post.getDeletedAt() != null) {
+            throw new DuckwhoException(NOT_FOUND_POST);
+        }
+
+        if (canAddView) {
+            post.addViews();
+        }
+
+        // 비로그인 사용자는 항상 false
+        boolean isOwner = false;
+        
+        // 로그인한 사용자인 경우에만 소유자 체크
+        if (currentUserId != null && post.getUser() != null) {
+            isOwner = post.getUser().getUserId().equals(currentUserId);
+        }
+
+        // 댓글 목록 조회
+        List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
+
+        // MongoDB에서 좋아요 수 조회
+        long likeCount = getPostLikeCount(postId);
+
+        return new PostDetailResponseDTO(post, isOwner, comments, likeCount);
+    }
+
+    /**
+     * MongoDB에서 게시글의 좋아요 수를 조회합니다.
+     * @param postId 게시글 ID
+     * @return 좋아요 수
+     */
+    private long getPostLikeCount(Long postId) {
+        return postInteractionCounterRepository.getPostLikes(postId);
+    }
+
 
     // 게시글 생성
     private Post getPost(PostCreateRequestDTO postCreateRequestDTO, User user, Category category) {

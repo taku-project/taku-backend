@@ -1,6 +1,7 @@
 package com.ani.taku_backend.comments.service;
 
 import com.ani.taku_backend.comments.model.dto.CommentsCreateRequestDTO;
+import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.comments.model.dto.CommentsUpdateRequestDTO;
 import com.ani.taku_backend.comments.model.entity.Comments;
 import com.ani.taku_backend.comments.repository.CommentsRepository;
@@ -12,6 +13,7 @@ import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -134,5 +136,50 @@ public class CommentsServiceImpl implements CommentsService {
                 !user.getUserId().equals(findComments.getUser().getUserId())) {
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
+    }
+
+    /**
+     * 게시글의 댓글 목록 조회
+     * - 최상위 댓글과 대댓글을 계층 구조로 조회
+     * - 최상위 댓글은 생성일시 기준 내림차순 정렬
+     * - 대댓글은 생성일시 기준 오름차순 정렬
+     * - 삭제된 댓글은 제외하고 조회
+     *
+     * @param postId 게시글 ID
+     * @param currentUserId 현재 로그인한 사용자 ID (null 가능)
+     * @return 댓글 목록 (대댓글 포함)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentsResponseDTO> getPostComments(Long postId, Long currentUserId) {
+        // 최상위 댓글과 대댓글을 함께 조회 (단일 쿼리로 모든 데이터를 가져옴)
+        List<Comments> parentComments = commentsRepository.findParentComments(postId);
+
+        // 각 댓글에 대한 ResponseDTO 생성
+        return parentComments.stream()
+                .map(comment -> {
+                    CommentsResponseDTO parentDto = CommentsResponseDTO.of(comment, currentUserId);
+
+                    // JOIN으로 이미 조회된 자식 댓글들을 필터링하고 정렬
+                    List<CommentsResponseDTO> replyDtos = comment.getParentComment() == null ? // 부모 댓글인 경우에만
+                            parentComments.stream()
+                                    .filter(reply -> reply.getParentComment() != null
+                                            && reply.getParentComment().getId() == comment.getId()
+                                            && reply.getDeletedAt() == null)
+                                    .sorted((r1, r2) -> r1.getCreatedAt().compareTo(r2.getCreatedAt()))
+                                    .map(reply -> CommentsResponseDTO.of(reply, currentUserId))
+                                    .toList()
+                            : List.of(); // 자식 댓글인 경우 빈 리스트 반환
+
+                    return new CommentsResponseDTO(
+                            parentDto.id(),
+                            parentDto.content(),
+                            parentDto.createdAt(),
+                            parentDto.user(),
+                            parentDto.isOwner(),
+                            replyDtos
+                    );
+                })
+                .toList();
     }
 }
