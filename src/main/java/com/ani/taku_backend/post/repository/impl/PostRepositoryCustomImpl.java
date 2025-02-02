@@ -7,6 +7,7 @@ import com.ani.taku_backend.post.model.dto.QFindPostQueryDTO;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.category.id,
                         post.title,
                         post.content,
-                        communityImage.image.imageUrl,
+                        image.imageUrl,
                         post.updatedAt,
                         post.views,
                         post.user.nickname,
@@ -57,13 +58,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .leftJoin(communityImage.image, image)
                 .where(predicate)
                 .orderBy(orderSpecifier)
+                .groupBy(post.id)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         Long countActivePostsByCategory = getCountActivePostsByCategory(categoryId);
-
-        log.info("총 게시글 개수: {}", countActivePostsByCategory);
 
         return new PageImpl<>(results, pageable, countActivePostsByCategory);
     }
