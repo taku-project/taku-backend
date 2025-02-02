@@ -1,8 +1,12 @@
 package com.ani.taku_backend.post.controller;
 
+import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.service.PostInteractionService;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostInteractionController {
 
     private final PostInteractionService postInteractionService;
+    private final BlackUserService blackUserService;
 
     /**
      * 게시글 좋아요/취소
@@ -35,12 +40,13 @@ public class PostInteractionController {
             @ApiResponse(responseCode = "429", description = "이전 요청 처리 중, 10초간 좋아요 lock")
     })
     @PostMapping("/{postId}/like")
+    @RequireUser
     public CommonResponse<Long> postLikeInteraction(
-            @Parameter(description = "게시글 ID", required = true, example = "34") @PathVariable("postId") Long postId) {
+            @Parameter(description = "게시글 ID", required = true, example = "34") @PathVariable("postId") Long postId,
+            @Parameter(hidden = true) PrincipalUser principalUser) {
 
-        log.debug("좋아요 컨트롤러 시작");
-        long postLikeCount = postInteractionService.togglePostLike(postId, null, InteractionType.LIKE);
-        log.debug("좋아요 반영 성공");
+        User user = blackUserService.checkBlackUser(principalUser); // 유저 검증
+        long postLikeCount = postInteractionService.togglePostLike(postId, user, InteractionType.LIKE);
 
         return CommonResponse.ok(postLikeCount);
     }
