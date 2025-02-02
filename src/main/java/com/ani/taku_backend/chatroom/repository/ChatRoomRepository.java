@@ -37,7 +37,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     /**
      * WebSocket 세션 관리를 위한 roomId로 채팅방을 조회합니다.
      * 참여자 정보가 필요하지 않은 경우에 사용됩니다.
+     *
+     * @deprecated 현재 미사용. WebSocket 구현 계획 확인 후 삭제 예정
      */
+    @Deprecated(forRemoval = true, since = "2024-02-09")
     Optional<ChatRoom> findByRoomId(String roomId);
 
     /**
