@@ -3,6 +3,7 @@ package com.ani.taku_backend.chatroom.model.entity;
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomLeftBy;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
+import com.ani.taku_backend.user.model.entity.User;  // User 엔티티 import 추가
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,7 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.FetchType;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -38,6 +42,14 @@ public class ChatRoom extends BaseTimeEntity {
 
     @Column(name = "seller_id", nullable = false)
     private Long sellerId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id", insertable = false, updatable = false)
+    private User buyer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", insertable = false, updatable = false)
+    private User seller;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -89,9 +101,9 @@ public class ChatRoom extends BaseTimeEntity {
         }
         // 채팅방이 비활성화 상태이고, 나간 사람이면 메시지를 보낼 수 없음
         boolean isBuyer = userId.equals(buyerId);
-        return status.isActive() || 
-               (isBuyer && leftBy != ChatRoomLeftBy.BUYER) || 
-               (!isBuyer && leftBy != ChatRoomLeftBy.SELLER);
+        return status.isActive() ||
+                (isBuyer && leftBy != ChatRoomLeftBy.BUYER) ||
+                (!isBuyer && leftBy != ChatRoomLeftBy.SELLER);
     }
 
     /**
@@ -109,7 +121,7 @@ public class ChatRoom extends BaseTimeEntity {
      */
     public boolean hasUserLeft(Long userId) {
         boolean isBuyer = userId.equals(buyerId);
-        return (isBuyer && leftBy == ChatRoomLeftBy.BUYER) || 
-               (!isBuyer && leftBy == ChatRoomLeftBy.SELLER);
+        return (isBuyer && leftBy == ChatRoomLeftBy.BUYER) ||
+                (!isBuyer && leftBy == ChatRoomLeftBy.SELLER);
     }
 }
