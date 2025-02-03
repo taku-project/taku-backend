@@ -1,6 +1,8 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
@@ -55,8 +57,6 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         QUser user = QUser.user;
         QItemCategories itemCategories = QItemCategories.itemCategories;
         QJangterImages jangterImages = QJangterImages.jangterImages;
-
-        //System.out.println("keyword: "+keyword+"categoryId:"+categoryId+"minPrice:" + minPrice + "maxPrice: "+ maxPrice+ "sort: " + sort+ "order: "+ order+"lastId: "+lastId);
 
         var query = queryFactory.select(Projections.constructor(
                         ProductFindListResponseDTO.class,
@@ -195,7 +195,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                     orders.add(new OrderSpecifier<>(Order.DESC, duckuJangter.createdAt));
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown order: " + order);
+                    throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
             }
 
         orders.add(new OrderSpecifier<>(Order.ASC, duckuJangter.id));
