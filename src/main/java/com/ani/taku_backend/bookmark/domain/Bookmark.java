@@ -1,4 +1,4 @@
-package com.ani.taku_backend.common.model.entity;
+package com.ani.taku_backend.bookmark.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

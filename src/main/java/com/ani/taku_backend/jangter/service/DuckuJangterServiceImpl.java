@@ -9,9 +9,9 @@ import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.model.entity.Bookmark;
+import com.ani.taku_backend.bookmark.domain.Bookmark;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.service.BookmarkService;
+import com.ani.taku_backend.bookmark.service.BookmarkServiceImpl;
 import com.ani.taku_backend.common.service.ExtractKeywordService;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
@@ -75,7 +75,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final FileService fileService;
     private final ExtractKeywordService extractKeywordService;
     private final UserInteractionService userInteractionService;
-    private final BookmarkService bookmarkService;
+    private final BookmarkServiceImpl bookmarkServiceImpl;
     private final ViewHistoryScoreCalculator viewHistoryScoreCalculator;
     private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
@@ -432,7 +432,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
     private UserBookmarkHistory getUserBookmarkHistory(Long userId , List<String> keywords) {
         // 사용자 찜목록 조회
-        List<Bookmark> bookmarkList = this.bookmarkService.findByUserIdWithJangterAndCategories(userId);
+        List<Bookmark> bookmarkList = this.bookmarkServiceImpl.findByUserIdWithJangterAndCategories(userId);
         UserBookmarkHistory userBookmarkHistory = null;
         if(!bookmarkList.isEmpty()){
             List<DuckuJangter> bookmarkedProducts = bookmarkList.stream()
