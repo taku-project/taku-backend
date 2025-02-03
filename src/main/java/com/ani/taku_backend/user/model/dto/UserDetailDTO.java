@@ -5,7 +5,7 @@ import lombok.*;
 
 @Getter
 @Builder
-public class UserDetailDto {
+public class UserDetailDTO {
 
     private String nickname;
 

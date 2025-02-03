@@ -2,7 +2,8 @@ package com.ani.taku_backend.user.service;
 
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.dto.UserDetailDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.repository.UserRepository;
@@ -14,7 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import com.ani.taku_backend.common.model.entity.Image;
+import com.ani.taku_backend.common.repository.ImageRepository;
+import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.user.model.entity.UserImage;
+import com.ani.taku_backend.user.repository.UserImageRepository;
+
+
+
 import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
+
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +32,12 @@ import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
 public class UserService {
 
   private final UserRepository userRepository;
+
+  private final UserImageRepository userImageRepository;
+
+  private final ImageRepository imageRepository;
+
+  private final FileService fileService;
 
   // 유저 등록
   public User registerUser(OAuthUserInfo userInfo) {
@@ -64,7 +80,7 @@ public class UserService {
     return this.userRepository.updateUserStatus(userId, status);
   }
 
-  public UserDetailDto getUserDetail(Long userId){
+  public UserDetailDTO getUserDetail(Long userId){
 
     //Optional로 해야하는 이유
     Optional<User> user = userRepository.findById(userId);
@@ -82,8 +98,58 @@ public class UserService {
   }
 
   @Transactional
-  public void updateProfileImg(Long userId, String profileImg){
+  public void updateProfileImg(UpdateProfileImgRequestDTO request){
+
+
+    Long userId = request.getUserId();
+    String profileImg = request.getProfileImg();
+    Integer fileSize = request.getFileSize();
+    String fileType = request.getFileType();
+    String originalName = request.getOriginalFileName();
+
+
+
+    //기존 image soft delete
+    Optional<UserImage> userImage = userImageRepository.findByUser_UserId(userId);
+
+    if(userImage.isPresent()) { //만약, userImage Repo에 image가 있다면,
+      Long imageId = userImage.get().getImage().getId();
+
+      imageRepository.softDeleteByImageId(imageId);
+
+      //userImage Repository에서 지우기
+      userImageRepository.deleteByUser_UserId(userId);
+
+      //cloudflare r2에서 지우기
+      fileService.deleteImageFile(userImage.get().getImage().getFileName());
+
+
+    }
+
+
+    //새로운 iamge 넣기
+    Optional<User> user = userRepository.findById(userId);
+
+    String fileName =profileImg.substring(profileImg.lastIndexOf("/") + 1);
+
+    Image image = Image.builder()
+            .imageUrl(profileImg)
+            .fileSize(fileSize)
+            .fileName(fileName)
+            .fileType(fileType)
+            .originalName(originalName)
+            .user(user.get())
+            .build();
+
+    imageRepository.save(image);
+
+    UserImage userImage1 = UserImage.builder().user(user.get()).image(image).build();
+
+    userImageRepository.save(userImage1);
+
     userRepository.updateProfileImg(userId, profileImg);
+
+
   }
 
 }

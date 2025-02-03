@@ -1,12 +1,21 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.enums.LogType;
+import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+
+
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction;
+import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
+
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
 import com.ani.taku_backend.jangter.service.UserInteractionService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -14,15 +23,18 @@ import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -56,6 +68,43 @@ public class DuckuJangterController {
         Long productId = duckuJangterService.createProduct(requestDTO, user);
 
         return CommonResponse.created(productId);
+    }
+
+    /**
+     * 덕후 장터 판매 글 전체 목록 조회
+     */
+
+    @Operation(summary = "판매글 전체 조회", description = "덕후 장터 판매글 전체 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "성공"),
+
+    })
+    @GetMapping("/products")
+    public CommonResponse<List<ProductFindListResponseDTO>> findProductItems(@ModelAttribute ProductFindListRequestDTO request){
+
+        SortFilterType sortFilterType;
+
+        boolean isDesc = "desc".equalsIgnoreCase(request.getOrder());
+        boolean isDaySort = "day".equalsIgnoreCase(request.getSort());
+
+        if (isDesc) {
+            sortFilterType = isDaySort ? SortFilterType.OLDEST : SortFilterType.PRICE_DESC;
+        } else {
+            sortFilterType =  isDaySort ? SortFilterType.LATEST : SortFilterType.PRICE_ASC;
+        }
+
+        UserInteraction.LogDetail logDetail = SearchLogDetail.builder()
+                .searchKeyword(request.getSearchKeyword())
+                .searchCategory(Collections.singletonList(request.getCategoryId()))
+                .sortType(sortFilterType)
+                .build();
+
+
+        userInteractionService.saveLog(null, LogType.SEARCH, logDetail );
+
+        List<ProductFindListResponseDTO> products = duckuJangterService.getProducts(request);
+
+        return CommonResponse.ok(products);
     }
 
     /**

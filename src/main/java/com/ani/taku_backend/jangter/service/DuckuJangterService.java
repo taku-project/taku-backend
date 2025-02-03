@@ -5,11 +5,16 @@ import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
-import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
+
 
 public interface DuckuJangterService {
+
     Long createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user);
 
     ProductFindDetailResponseDTO findProductDetail(long productId, boolean isFirstView);
@@ -19,6 +24,8 @@ public interface DuckuJangterService {
     void deleteProduct(long productId, User user);
 
     ProductRecommendResponseDTO recommendProduct(Long productId, PrincipalUser principalUser);
+
+    List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request);
 
     ProductRankInfoResponseDTO getJangterRank();
 }

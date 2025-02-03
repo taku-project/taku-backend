@@ -4,14 +4,14 @@ import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
-import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
-import com.ani.taku_backend.user.model.dto.requestDto.UserEditDto;
+import com.ani.taku_backend.user.model.dto.UserDetailDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UserEditDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.service.UserService;
@@ -42,6 +42,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import static com.ani.taku_backend.common.exception.ErrorCode.INVALID_INPUT_VALUE;
 
 @RestController
 @RequestMapping("/api/user")
@@ -197,9 +199,9 @@ public class UserController {
 			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
-	public CommonResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
+	public CommonResponse<UserDetailDTO>findUserDetail(@PathVariable Long userId){
 
-		UserDetailDto userDetail = userService.getUserDetail(userId);
+		UserDetailDTO userDetail = userService.getUserDetail(userId);
 
 		return CommonResponse.ok(userDetail);
 
@@ -213,11 +215,14 @@ public class UserController {
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
 	})
 	public CommonResponse<String>editUserDetail(@PathVariable Long userId
-		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request",required = false) @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDto request
+		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request") @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDTO request
 
 	){
 
-		if(request!=null){
+		if(request==null){
+			return CommonResponse.fail(INVALID_INPUT_VALUE);
+		}
+		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
 			if(userService.isNicknameDuplication(nickname)){ //이미 존재하는 닉네임일 경우
 				System.out.println("이미 존재하는 닉네임 입니다. ");
@@ -225,6 +230,7 @@ public class UserController {
 			}else{ // 닉네임 vaildation 통과를 했을 경우
 				System.out.println("이미 존재하는 닉네임이 아님으로, 업데이트를 시작합니다. ");
 				userService.updateNickname(userId, nickname);
+
 			}
 		}
 
@@ -235,7 +241,9 @@ public class UserController {
 			System.out.println("multipart"+ multipartFile);
 			try {
 				fileUrl = fileService.uploadImageFile(multipartFile);
-				userService.updateProfileImg(userId, fileUrl);
+				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, fileUrl,request.getFileSize(), request.getFileType(), request.getOriginalFileName());
+				userService.updateProfileImg(updateProfileImgRequestDTO);
+
 			}catch (Exception e){
 				System.out.println(e);
 				throw new FileException.FileUploadException();

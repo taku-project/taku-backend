@@ -3,7 +3,6 @@ package com.ani.taku_backend.jangter.repository;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.repository.impl.DuckuJangterRepositoryCustom;
 
 import io.lettuce.core.dynamic.annotation.Param;
 
@@ -13,8 +12,11 @@ import java.math.BigDecimal;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long> , DuckuJangterRepositoryCustom {
+
+
+public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long>, DuckuJangterRepositoryCustom {
 
     @Modifying
     @Query("update DuckuJangter d set d.viewCount = d.viewCount + :viewCount where d.id = :productId")
@@ -22,7 +24,7 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
 
     List<DuckuJangter> findByDeletedAtIsNull();
 
-    @Query("select d from DuckuJangter d where d.buyUser.id = :userId")
+    @Query("select d from DuckuJangter d where d.buyUser.userId = :userId")
     List<DuckuJangter> findByBuyUserId(@Param("userId") Long userId);
 
     List<DuckuJangter> findByIdIn(List<Long> productIds);
