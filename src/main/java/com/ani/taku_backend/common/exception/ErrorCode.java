@@ -34,6 +34,7 @@ public enum ErrorCode {
     EMPTY_TOKEN(40104, HttpStatus.UNAUTHORIZED, "토큰이 비어있습니다."),
     UNAUTHORIZED_ACCESS(40105, HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다."),
     FORBIDDEN_ACCESS_ADMIN(40300, HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
+    FORBIDDEN_ACCESS(40301, HttpStatus.FORBIDDEN, "해당 리소스에 대한 접근 권한이 없습니다."),
     UNSUPPORTED_PROVIDER(4006, HttpStatus.UNAUTHORIZED,"지원하지 않는 OAuth2 입니다."),
 
     // File
