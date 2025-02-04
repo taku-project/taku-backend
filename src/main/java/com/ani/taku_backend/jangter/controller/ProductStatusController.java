@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.enums.ProductStatusType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.service.ProductStatusService;
@@ -11,8 +12,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +30,10 @@ public class ProductStatusController {
     private final ProductStatusService productStatusService;
     private final BlackUserService blackUserService;
 
-    @Operation(summary = "상품 상태 변경", description = "상품의 판매 상태를 변경합니다 (판매중, 예약중, 판매완료)")
+    @Operation(
+        summary = "상품 상태 변경",
+        description = "상품의 판매 상태를 변경합니다 (판매중, 예약중, 판매완료)"
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
@@ -40,13 +47,13 @@ public class ProductStatusController {
             @PathVariable Long productId,
             
             @Parameter(description = "변경할 상태 정보", required = true)
-            @RequestBody @Valid ProductStatusUpdateRequestDTO request,
+            @RequestParam ProductStatusType status,
             
             @Parameter(hidden = true)
             @AuthenticationPrincipal PrincipalUser principalUser
     ) {
         User user = blackUserService.checkBlackUser(principalUser);
-        productStatusService.updateProductStatus(productId, request.getStatus(), user);
+        productStatusService.updateProductStatus(productId, status, user);
         return CommonResponse.ok(null);
     }
 } 
