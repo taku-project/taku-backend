@@ -1,7 +1,7 @@
 package com.ani.taku_backend.comments.model.dto;
 
 import com.ani.taku_backend.comments.model.entity.Comments;
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
+import com.ani.taku_backend.user.model.dto.UserDetailDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -20,7 +20,7 @@ public record CommentsResponseDTO(
         LocalDateTime createdAt,
 
         @Schema(description = "댓글 작성자 정보")
-        UserDetailDto user,
+        UserDetailDTO user,
 
         @Schema(description = "댓글 소유자 여부")
         boolean isOwner,
@@ -33,7 +33,7 @@ public record CommentsResponseDTO(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
-                UserDetailDto.builder()
+                UserDetailDTO.builder()
                         .nickname(comment.getUser().getNickname())
                         .profileImg(comment.getUser().getProfileImg())
                         .gender(comment.getUser().getGender())
