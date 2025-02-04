@@ -89,7 +89,10 @@ public class PostController {
             @Parameter(description = "게시글 ID") @PathVariable Long postId,
             @Parameter(description = "조회수 증가 여부") @ViewCountChecker Boolean canAddView,
             @Parameter(description = "로그인한 사용자 정보 (없을 경우 null)", hidden = true) PrincipalUser principalUser) {
-        Long currentUserId = principalUser != null ? principalUser.getUserId() : null;
+        Long currentUserId = null;
+        if (principalUser != null && principalUser.getUser() != null) {
+            currentUserId = principalUser.getUser().getUserId();
+        }
         PostDetailResponseDTO detail = postService.getPostDetail(postId, canAddView, currentUserId);
         return CommonResponse.ok(detail);
     }
