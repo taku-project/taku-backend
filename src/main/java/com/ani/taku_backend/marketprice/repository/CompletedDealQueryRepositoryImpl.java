@@ -10,6 +10,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.JPAExpressions;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -102,7 +104,14 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .leftJoin(duckuJangter.jangterImages, jangterImages)
                 .where(
                         duckuJangter.title.contains(keyword),
-                        duckuJangter.deletedAt.isNull()
+                        duckuJangter.deletedAt.isNull(),
+                        jangterImages.id.in(
+                            JPAExpressions
+                                .select(jangterImages.id.min())
+                                .from(jangterImages)
+                                .where(jangterImages.duckuJangter.id.eq(duckuJangter.id))
+                                .groupBy(jangterImages.duckuJangter.id)
+                        )
                 )
                 .orderBy(duckuJangter.id.desc())
                 .offset(pageable.getOffset())

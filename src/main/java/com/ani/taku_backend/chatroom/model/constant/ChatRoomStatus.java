@@ -1,6 +1,5 @@
 package com.ani.taku_backend.chatroom.model.constant;
 
-
 public enum ChatRoomStatus {
     ACTIVE("활성"),
     INACTIVE("비활성");

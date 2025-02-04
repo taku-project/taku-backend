@@ -75,7 +75,12 @@ public enum ErrorCode {
     NOT_FOUND_INTERACTION(40408, HttpStatus.NOT_FOUND, "존재하지 않는 상호작용입니다."),
     // Chat
     DUPLICATE_CHAT_ROOM(40903, HttpStatus.CONFLICT, "이미 존재하는 채팅방입니다."),
-    CHAT_ROOM_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다.");
+    CHAT_ROOM_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+
+    // Product Status
+    INVALID_PRODUCT_STATUS(40007, HttpStatus.BAD_REQUEST, "유효하지 않은 상품 상태 변경입니다."),
+    PRODUCT_NOT_FOR_SALE(40008, HttpStatus.BAD_REQUEST, "판매중인 상품만 예약할 수 있습니다."),
+    PRODUCT_NOT_RESERVED(40009, HttpStatus.BAD_REQUEST, "예약중인 상품만 상태를 변경할 수 있습니다.");
     // 403 Forbidden
     private final Integer code;
     private final HttpStatus httpStatus;

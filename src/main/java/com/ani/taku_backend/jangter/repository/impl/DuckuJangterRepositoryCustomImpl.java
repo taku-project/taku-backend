@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.enums.ProductStatusType;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
@@ -37,7 +37,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
      */
     @Override
     public List<DuckuJangter> findRecommendFilteredProducts(List<String> keywords, BigDecimal minPrice,
-            BigDecimal maxPrice, Long itemCategoryId, StatusType status, Long productId) {
+            BigDecimal maxPrice, Long itemCategoryId, ProductStatusType status, Long productId) {
 
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
@@ -93,7 +93,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
             .from(duckuJangter)
             .leftJoin(duckuJangterBookmark)
             .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
-            .where(duckuJangter.status.eq(StatusType.ACTIVE),
+            .where(duckuJangter.status.eq(ProductStatusType.FOR_SALE),
                 duckuJangter.itemCategories.id.eq(categoryId))
             .fetch();
     }
@@ -111,7 +111,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
             .from(duckuJangter)
             .leftJoin(duckuJangterBookmark)
             .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
-            .where(duckuJangter.id.eq(productId) , duckuJangter.deletedAt.isNull() , duckuJangter.status.eq(StatusType.ACTIVE))
+            .where(duckuJangter.id.eq(productId) , duckuJangter.deletedAt.isNull() , duckuJangter.status.eq(ProductStatusType.FOR_SALE))
             .fetch();
     }
 

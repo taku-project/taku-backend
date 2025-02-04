@@ -2,6 +2,9 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.enums.ProductStatusType;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.user.model.entity.User;
@@ -47,17 +50,14 @@ public class DuckuJangter extends BaseTimeEntity {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 100, nullable = false)
-    private StatusType status;  // 글 상태? 판매중? 판매완료? 이런거..?
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
+    private ProductStatusType status;  // 상품의 판매 상태 (판매중, 예약중, 거래완료)
 
     @Column(name = "tfidf_vector",columnDefinition = "TEXT")
     private String tfidfVector;  // TF-IDF 벡터값을 저장.
 
     private long viewCount;
     private LocalDateTime deletedAt;
-
-//    @Column(name = "buy_user_id")
-//    private Long buyUserId;
 
     @Builder.Default
     @OneToMany(mappedBy = "duckuJangter", cascade = CascadeType.PERSIST)
@@ -115,6 +115,64 @@ public class DuckuJangter extends BaseTimeEntity {
         DuckuJangter duckuJangter = new DuckuJangter();
         duckuJangter.id = id;
         return duckuJangter;
+    }
+
+    /**
+     * 상품의 판매 상태를 변경합니다.
+     * 상태 변경 시 적절한 검증을 수행합니다.
+     *
+     * @param newStatus 변경할 새로운 상태
+     * @throws DuckwhoException 유효하지 않은 상태 변경 시도시 발생
+     */
+    public void updateStatus(ProductStatusType newStatus) {
+        if (newStatus == null) {
+            throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
+        }
+        this.status = newStatus;
+    }
+
+    /**
+     * 상품을 예약 상태로 변경하고 구매 예정자를 설정합니다.
+     * 판매중 상태인 상품만 예약할 수 있습니다.
+     *
+     * @param buyer 구매 예정자
+     * @throws DuckwhoException 이미 예약중이거나 판매 완료된 상품인 경우 발생
+     */
+    public void reserve(User buyer) {
+        if (this.status != ProductStatusType.FOR_SALE) {
+            throw new DuckwhoException(ErrorCode.PRODUCT_NOT_FOR_SALE);
+        }
+        this.status = ProductStatusType.RESERVED;
+        this.buyUser = buyer;
+    }
+
+
+    /**
+     * 예약된 상품의 거래를 완료 상태로 변경합니다.
+     * 예약중 상태인 상품만 거래완료로 변경할 수 있습니다.
+     *
+     * @throws DuckwhoException 예약중이 아닌 상품을 거래완료로 변경 시도시 발생
+     */
+    public void completeSale() {
+        if (this.status != ProductStatusType.RESERVED) {
+            throw new DuckwhoException(ErrorCode.PRODUCT_NOT_RESERVED);
+        }
+        this.status = ProductStatusType.SOLD_OUT;
+    }
+
+
+    /**
+     * 예약된 상품의 예약을 취소하고 다시 판매중 상태로 변경합니다.
+     * 예약중 상태인 상품만 예약 취소가 가능합니다.
+     *
+     * @throws DuckwhoException 예약중이 아닌 상품의 예약 취소 시도시 발생
+     */
+    public void cancelReservation() {
+        if (this.status != ProductStatusType.RESERVED) {
+            throw new DuckwhoException(ErrorCode.PRODUCT_NOT_RESERVED);
+        }
+        this.status = ProductStatusType.FOR_SALE;
+        this.buyUser = null;
     }
 
 }

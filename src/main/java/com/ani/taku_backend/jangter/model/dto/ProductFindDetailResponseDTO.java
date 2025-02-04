@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.model.dto;
 
-import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.enums.ProductStatusType;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,8 +24,8 @@ public class ProductFindDetailResponseDTO {
     @Schema(description = "장터글 가격")
     private BigDecimal price;
 
-    @Schema(description = "판매 상태", example = "ACTIVE == 판매중")
-    private StatusType status;
+    @Schema(description = "판매 상태", example = "FOR_SALE == 판매중")
+    private ProductStatusType status;
 
     @Schema(description = "생성일")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)  // 테스트 해보기
