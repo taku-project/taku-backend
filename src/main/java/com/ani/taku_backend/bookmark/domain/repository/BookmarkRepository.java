@@ -1,11 +1,11 @@
-package com.ani.taku_backend.common.repository;
+package com.ani.taku_backend.bookmark.domain.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import com.ani.taku_backend.common.model.entity.Bookmark;
+import com.ani.taku_backend.bookmark.domain.Bookmark;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 

@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import com.ani.taku_backend.common.model.entity.Bookmark;
+import com.ani.taku_backend.bookmark.domain.Bookmark;
 
 import jakarta.persistence.*;
 
