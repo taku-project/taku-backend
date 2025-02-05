@@ -142,10 +142,13 @@ public class DuckuJangter extends BaseTimeEntity {
         if (this.status != ProductStatusType.FOR_SALE) {
             throw new DuckwhoException(ErrorCode.PRODUCT_NOT_FOR_SALE);
         }
+        if (buyer == null) {
+            throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
+        }
         this.status = ProductStatusType.RESERVED;
         this.buyUser = buyer;
+        log.debug("상품 예약 처리 - productId: {}, buyerId: {}", this.id, buyer.getUserId());
     }
-
 
     /**
      * 예약된 상품의 거래를 완료 상태로 변경합니다.
@@ -157,9 +160,12 @@ public class DuckuJangter extends BaseTimeEntity {
         if (this.status != ProductStatusType.RESERVED) {
             throw new DuckwhoException(ErrorCode.PRODUCT_NOT_RESERVED);
         }
+        if (this.buyUser == null) {
+            throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
+        }
         this.status = ProductStatusType.SOLD_OUT;
+        log.debug("상품 판매 완료 처리 - productId: {}, buyerId: {}", this.id, this.buyUser.getUserId());
     }
-
 
     /**
      * 예약된 상품의 예약을 취소하고 다시 판매중 상태로 변경합니다.
@@ -173,6 +179,7 @@ public class DuckuJangter extends BaseTimeEntity {
         }
         this.status = ProductStatusType.FOR_SALE;
         this.buyUser = null;
+        log.debug("상품 예약 취소 처리 - productId: {}", this.id);
     }
 
 }

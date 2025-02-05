@@ -10,6 +10,7 @@ import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.entity.Bookmark;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.BookmarkService;
@@ -534,11 +535,36 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         log.debug("상품 소유자 정보 - ownerId: {}", product.getUser().getUserId());
-        
         checkAuthorAndAdmin(user, product);
-        product.updateStatus(status);
-        
-        log.debug("상품 상태 변경 완료 - productId: {}, status: {}", productId, status);
+
+        // 현재 상태와 요청된 상태에 따라 적절한 상태 변경 메서드 호출
+        switch (status) {
+            case FOR_SALE -> {
+                if (product.getStatus() == ProductStatusType.RESERVED) {
+                    product.cancelReservation();
+                    log.info("상품 예약 취소 처리 완료 - productId: {}", productId);
+                } else {
+                    throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
+                }
+            }
+            case RESERVED -> {
+                if (product.getStatus() == ProductStatusType.FOR_SALE) {
+                    product.reserve(user);
+                    log.info("상품 예약 처리 완료 - productId: {}, buyerId: {}", productId, user.getUserId());
+                } else {
+                    throw new DuckwhoException(ErrorCode.PRODUCT_NOT_FOR_SALE);
+                }
+            }
+            case SOLD_OUT -> {
+                if (product.getStatus() == ProductStatusType.RESERVED) {
+                    product.completeSale();
+                    log.info("상품 판매 완료 처리 - productId: {}", productId);
+                } else {
+                    throw new DuckwhoException(ErrorCode.PRODUCT_NOT_RESERVED);
+                }
+            }
+            default -> throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
+        }
     }
 
 }
