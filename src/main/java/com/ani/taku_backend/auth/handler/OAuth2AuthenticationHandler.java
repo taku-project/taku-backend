@@ -86,7 +86,7 @@ public class OAuth2AuthenticationHandler {
             // URL 만들기 + 토큰 넣어서
             String redirectUrl = UriComponentsBuilder
                 .fromUriString(url)
-                .queryParam("accessToken", accessToken) // JWT 토큰 전달
+                .queryParam("token", accessToken) // JWT 토큰 전달
                 .queryParam("user", Base64.getEncoder().encodeToString(userToClientInfoJson(user, isBlack).getBytes())) // 사용자 정보 전달
                 .build()
                 .toUriString();

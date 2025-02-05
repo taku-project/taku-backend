@@ -93,7 +93,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             // 회원가입 URL 생성
             String redirectUrl = UriComponentsBuilder
                     .fromUriString(url)
-                    .queryParam("refreshToken", temporaryToken)
+                    .queryParam("token", temporaryToken)
                     .queryParam("provider", providerType.name())
                     .build()
                     .toUriString();
