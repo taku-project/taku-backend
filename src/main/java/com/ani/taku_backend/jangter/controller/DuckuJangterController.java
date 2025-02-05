@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.enums.ProductStatusType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -152,5 +154,32 @@ public class DuckuJangterController {
     public CommonResponse<ProductRankInfoResponseDTO> getJangterRank() {
         ProductRankInfoResponseDTO productRankInfoResponseDTO = this.duckuJangterService.getJangterRank();
         return CommonResponse.ok(productRankInfoResponseDTO);
+    }
+
+    @Operation(
+        summary = "상품 상태 변경",
+        description = "상품의 판매 상태를 변경합니다 (판매중, 예약중, 판매완료)"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 상품")
+    })
+    @RequireUser
+    @PutMapping("/{productId}/status")
+    public CommonResponse<Void> updateProductStatus(
+            @Parameter(description = "상품 ID", required = true)
+            @PathVariable Long productId,
+            
+            @Parameter(description = "변경할 상태 정보", required = true)
+            @RequestParam ProductStatusType status,
+            
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal PrincipalUser principalUser
+    ) {
+        User user = blackUserService.checkBlackUser(principalUser);
+        duckuJangterService.updateProductStatus(productId, status, user);
+        return CommonResponse.ok(null);
     }
 }

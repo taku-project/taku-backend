@@ -364,10 +364,15 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     }
     // 어드민이거나, 작성자와 다르면 예외
     private void checkAuthorAndAdmin(User user, DuckuJangter duckuJangter) {
+        log.debug("권한 체크 - userId: {}, userRole: {}, ownerId: {}", 
+            user.getUserId(), user.getRole(), duckuJangter.getUser().getUserId());
+            
         if ((!user.getRole().equals(UserRole.ADMIN.name())) &&
                 !user.getUserId().equals(duckuJangter.getUser().getUserId())) {
+            log.debug("권한 체크 실패 - 관리자 아님 && 소유자 아님");
             throw new DuckwhoException(UNAUTHORIZED_ACCESS);
         }
+        log.debug("권한 체크 성공");
     }
 
     // 삭제된 글이면 예외
@@ -518,5 +523,22 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 })
                 .collect(Collectors.toList());
         }
+
+    @Override
+    @Transactional
+    public void updateProductStatus(Long productId, ProductStatusType status, User user) {
+        log.debug("상품 상태 변경 시도 - productId: {}, status: {}, userId: {}, userRole: {}", 
+            productId, status, user.getUserId(), user.getRole());
+
+        DuckuJangter product = duckuJangterRepository.findById(productId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+
+        log.debug("상품 소유자 정보 - ownerId: {}", product.getUser().getUserId());
+        
+        checkAuthorAndAdmin(user, product);
+        product.updateStatus(status);
+        
+        log.debug("상품 상태 변경 완료 - productId: {}, status: {}", productId, status);
+    }
 
 }
