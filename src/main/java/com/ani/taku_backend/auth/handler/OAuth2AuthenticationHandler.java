@@ -40,8 +40,11 @@ public class OAuth2AuthenticationHandler {
     @Value("${jwt.refresh-token-validity}")
     private Long refreshTokenValidityTime;
 
-    @Value("${client.login-success-url}")
-    private String loginSuccessUrl;
+    @Value("${client.prod.login-success-url}")
+    private String prodLoginSuccessUrl;
+
+    @Value("${client.dev.login-success-url}")
+    private String devLoginSuccessUrl;
 
     @Component
     public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -73,18 +76,18 @@ public class OAuth2AuthenticationHandler {
             // 쿠키에 refresh token 저장
             setRefreshTokenCookie(response, refreshToken);
 
-            // 응답 헤더에 access token 추가
-            response.setHeader("Authorization", "Bearer " + accessToken);
-
-            // 응답 헤더에 사용자 정보 추가
             boolean isBlack = (boolean) principal.getAttributes().get("is_black");
-            response.setHeader("X-User-Info", Base64.getEncoder().encodeToString(userToClientInfoJson(user, isBlack).getBytes()));
 
-            log.info("accessToken : {}", accessToken);
+            String redirectBaseUrl = request.getHeader("Host");
+            log.info("OAuth2SuccessHandler.redirectBaseUrl: {}", redirectBaseUrl);
 
+            String url = redirectBaseUrl.contains("localhost") ? devLoginSuccessUrl : prodLoginSuccessUrl;
+            log.info("url {}", url);
             // URL 만들기 + 토큰 넣어서
             String redirectUrl = UriComponentsBuilder
-                .fromUriString(loginSuccessUrl)
+                .fromUriString(url)
+                .queryParam("accessToken", accessToken) // JWT 토큰 전달
+                .queryParam("user", Base64.getEncoder().encodeToString(userToClientInfoJson(user, isBlack).getBytes())) // 사용자 정보 전달
                 .build()
                 .toUriString();
 
@@ -123,17 +126,10 @@ public class OAuth2AuthenticationHandler {
             if (exception instanceof OAuth2AuthenticationException) {
                 OAuth2Error error = ((OAuth2AuthenticationException) exception).getError();
 
-                log.error("OAuth2 인증 실패 - Error: {}, Description: {}", 
-                    error.getErrorCode(), error.getDescription());
-
-                if (!"invalid_request".equals(error.getErrorCode())) {
-                    log.error("OAuth2 인증 실패 - Error: {}, Description: {}", 
-                        error.getErrorCode(), error.getDescription());
-                }
+                log.error("로그인 실패, 회원가입 으로 리다이렉트: {}", error.getUri());
 
                 if (error.getErrorCode().equals("NOT_FOUND_USER") && error.getUri() != null) {
-                    response.setHeader("Authorization", "Bearer " + error.getDescription());
-                    response.sendRedirect(error.getUri()+"?code="+error.getDescription());
+                    response.sendRedirect(error.getUri());
                     return;
                 }
             }

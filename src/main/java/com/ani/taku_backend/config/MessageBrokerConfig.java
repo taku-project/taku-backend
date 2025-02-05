@@ -12,13 +12,17 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Value("${client.front-url}")
-    private String frontUrl;
+    @Value("${client.prod.front-url}")
+    private String prodFrontUrl;
+
+    @Value("${client.dev.front-url}")
+    private String devFrontUrl;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")  // WebSocket 엔드포인트
-                .setAllowedOrigins(frontUrl)
+                .setAllowedOrigins(prodFrontUrl)
+                .setAllowedOrigins(devFrontUrl)
                 .withSockJS();
     }
 

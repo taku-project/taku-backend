@@ -1,21 +1,16 @@
 package com.ani.taku_backend.auth.service;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
+import com.ani.taku_backend.auth.util.JwtUtil;
 import com.ani.taku_backend.common.enums.ProviderType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.service.RedisService;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import com.ani.taku_backend.user.service.BlackUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -24,15 +19,13 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.ani.taku_backend.auth.util.JwtUtil;
-import com.ani.taku_backend.common.service.RedisService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.UNSUPPORTED_PROVIDER;
 
@@ -43,13 +36,14 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
     private final String ACCESS_TOKEN_KEY = "accessToken";
 
+    @Value("${client.prod.registration-url}")
+    private String prodRegistrationUrl;
 
-    @Value("${client.registration-url}")
-    private String registrationUrl;
+    @Value("${client.dev.registration-url}")
+    private String devRegistrationUrl;
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final RedisService redisService;
     private final BlackUserService blackUserService;
 
     @Override
@@ -83,23 +77,35 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         // User Select
         Optional<User> findOptUser = userRepository.findByEmail(email);
 
+        // HttpServletRequest 가져오기
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = (requestAttributes != null) ? requestAttributes.getRequest() : null;
+        String redirectBaseUrl = (request != null) ? Optional.ofNullable(request.getHeader("Host")).orElse("unknown") : "unknown";
+        log.info("redirectBaseUrl: {}", redirectBaseUrl);
+
         // 유저가 없으면 임시 토큰 생성
         if (findOptUser.isEmpty()) {
             // 임시 토큰 생성
-            String temporaryToken = jwtUtil.createTemporaryToken(attributes, providerType); // 프로바이더 주입
+            String temporaryToken = jwtUtil.createTemporaryToken(attributes, providerType);
+            String url = redirectBaseUrl.contains("localhost") ? devRegistrationUrl : prodRegistrationUrl;
+            log.info("url {}", url);
 
             // 회원가입 URL 생성
-            UriComponentsBuilder redirectUrl = UriComponentsBuilder
-                    .fromUriString(registrationUrl);
+            String redirectUrl = UriComponentsBuilder
+                    .fromUriString(url)
+                    .queryParam("refreshToken", temporaryToken)
+                    .queryParam("provider", providerType.name())
+                    .build()
+                    .toUriString();
 
-            log.info("회원가입 URL: {}", redirectUrl.toUriString());
+            log.info("회원가입 URL: {}", redirectUrl);
 
             // OAuth2Error 생성 시 description이 아닌 errorCode에 URL을 넣어줍니다
             throw new OAuth2AuthenticationException(
                     new OAuth2Error(
                             "NOT_FOUND_USER", // errorCode에 URL을 넣음
-                            temporaryToken, // description
-                            redirectUrl.toUriString() // uri (React 프로젝트 주소)
+                            "회원가입 페이지 리다이렉트", // description
+                            redirectUrl // uri (React 프로젝트 주소)
                     ));
 
         }
