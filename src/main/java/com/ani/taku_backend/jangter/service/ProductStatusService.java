@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.common.enums.ProductStatusType;
+import com.ani.taku_backend.jangter.enums.ProductStatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;

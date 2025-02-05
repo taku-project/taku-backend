@@ -24,6 +24,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class MarketPriceStatsService {
     private final ItemCategoriesRepository itemCategoriesRepository;
     private final TfidfService tfidfService;
     private final ExtractKeywordService extractKeywordService;
+    private static final Logger log = LoggerFactory.getLogger(MarketPriceStatsService.class);
 
     /**
      * priceGraph 캐시를 위한 메서드.
@@ -87,6 +90,9 @@ public class MarketPriceStatsService {
      */
     @Transactional
     public void saveMarketPriceStats(DuckuJangter product) {
+        log.info("시세 정보 저장 시작 - productId: {}, title: {}, price: {}", 
+            product.getId(), product.getTitle(), product.getPrice());
+
         MarketPriceStats stats = MarketPriceStats.builder()
                 .product(product)
                 .title(product.getTitle())
@@ -94,7 +100,9 @@ public class MarketPriceStatsService {
                 .registeredDate(LocalDate.now())
                 .build();
 
-        marketPriceStatsRepository.save(stats);
+        MarketPriceStats savedStats = marketPriceStatsRepository.save(stats);
+        log.info("시세 정보 저장 완료 - statsId: {}, productId: {}", 
+            savedStats.getStatsId(), product.getId());
     }
 
     /**
@@ -102,13 +110,21 @@ public class MarketPriceStatsService {
      */
     @Transactional
     public void updateSoldPrice(DuckuJangter product, BigDecimal soldPrice) {
+        log.info("판매 완료 시세 정보 업데이트 시작 - productId: {}, soldPrice: {}", 
+            product.getId(), soldPrice);
+
         // 가장 최근 시세 정보
         MarketPriceStats stats = marketPriceStatsRepository
                 .findFirstByProductOrderByRegisteredDateDesc(product)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.MARKET_PRICE_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.error("시세 정보를 찾을 수 없음 - productId: {}", product.getId());
+                    return new DuckwhoException(ErrorCode.MARKET_PRICE_NOT_FOUND);
+                });
 
         // 시세 정보 업데이트
         stats.updateSoldPrice(soldPrice);
+        log.info("시세 정보 업데이트 완료 - statsId: {}, productId: {}, soldPrice: {}", 
+            stats.getStatsId(), product.getId(), soldPrice);
 
         // 카테고리명
         String categoryName = findCategoryByTitle(product.getTitle());

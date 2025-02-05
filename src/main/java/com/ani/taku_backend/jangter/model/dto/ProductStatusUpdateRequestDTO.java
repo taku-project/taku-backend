@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.model.dto;
 
-import com.ani.taku_backend.common.enums.ProductStatusType;
+import com.ani.taku_backend.jangter.enums.ProductStatusType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

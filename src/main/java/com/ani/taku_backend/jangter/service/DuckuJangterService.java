@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.common.enums.ProductStatusType;
+import com.ani.taku_backend.jangter.enums.ProductStatusType;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;

@@ -1,7 +1,7 @@
 package com.ani.taku_backend.jangter.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.enums.ProductStatusType;
+import com.ani.taku_backend.jangter.enums.ProductStatusType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;

@@ -5,8 +5,7 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.PeriodType;
-import com.ani.taku_backend.common.enums.ProductStatusType;
-import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.enums.ProductStatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
@@ -39,6 +38,7 @@ import com.ani.taku_backend.jangter.score.calculator.ViewHistoryScoreCalculator;
 import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
 import com.ani.taku_backend.jangter.vo.UserPurchaseHistory;
 import com.ani.taku_backend.jangter.vo.UserSearchHistory;
+import com.ani.taku_backend.marketprice.service.MarketPriceStatsService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -84,6 +84,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
 
     private final JangterRankBaseRepository jangterRankBaseRepository;
+    private final MarketPriceStatsService marketPriceStatsService;
 
     /**
      * 장터글 저장
@@ -91,7 +92,6 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     @Transactional
     @ValidateProfanity(fields = {"title", "description"})  // 금칙어 적용 완료
     public Long createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user) {
-
         ItemCategories itemCategory = checkItemCategory(productCreateRequestDTO.getCategoryId(), null); // 아이템 카테고리 검증
 
         // 이미지 저장 - r2, rdb 모두 저장
@@ -99,8 +99,15 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         DuckuJangter product = createProduct(productCreateRequestDTO, user, itemCategory);      // 엔티티 생성
         setRelationJangterImages(saveImageList, product);                                       // jangerImages 연관관계 설정
 
-        Long saveProductId = duckuJangterRepository.save(product).getId();
-        log.debug("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
+        log.info("상품 저장 시작 - title: {}, price: {}", product.getTitle(), product.getPrice());
+        DuckuJangter savedProduct = duckuJangterRepository.save(product);
+        Long saveProductId = savedProduct.getId();
+        log.info("상품 저장 완료 - productId: {}", saveProductId);
+        
+        // 시세 정보 생성
+        log.info("시세 정보 생성 시작 - productId: {}", saveProductId);
+        marketPriceStatsService.saveMarketPriceStats(savedProduct);
+        log.info("시세 정보 생성 완료 - productId: {}", saveProductId);
 
         return saveProductId;
     }
@@ -525,43 +532,61 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 .collect(Collectors.toList());
         }
 
+    /**
+     * 상품의 상태를 변경하는 메서드입니다.
+     * 상태 변경 규칙:
+     * 1. FOR_SALE (판매중)으로 변경: 예약중인 상품만 가능
+     * 2. RESERVED (예약중)으로 변경: 판매중인 상품만 가능
+     * 3. SOLD_OUT (판매완료)으로 변경: 예약중인 상품만 가능
+     *
+     * 판매 완료 시 자동으로 시세 정보가 업데이트됩니다.
+     *
+     * @param productId 상태를 변경할 상품의 ID
+     * @param status 변경하고자 하는 상태 (FOR_SALE, RESERVED, SOLD_OUT)
+     * @param user 상태 변경을 요청한 사용자 (상품 소유자만 가능)
+     * @throws DuckwhoException 다음의 경우에 발생:
+     *         - NOT_FOUND_POST: 상품이 존재하지 않는 경우
+     *         - FORBIDDEN_ACCESS: 상품 소유자가 아닌 경우
+     *         - INVALID_PRODUCT_STATUS: 잘못된 상태 변경 시도
+     *         - PRODUCT_NOT_FOR_SALE: 판매중이 아닌 상품을 예약하려는 경우
+     *         - PRODUCT_NOT_RESERVED: 예약중이 아닌 상품을 판매완료하려는 경우
+     */
     @Override
     @Transactional
     public void updateProductStatus(Long productId, ProductStatusType status, User user) {
-        log.debug("상품 상태 변경 시도 - productId: {}, status: {}, userId: {}, userRole: {}", 
-            productId, status, user.getUserId(), user.getRole());
-
         DuckuJangter product = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        log.debug("상품 소유자 정보 - ownerId: {}", product.getUser().getUserId());
         checkAuthorAndAdmin(user, product);
+        
+        ProductStatusType currentStatus = product.getStatus();
+        log.debug("상품 상태 변경 시도 - productId: {}, currentStatus: {}, newStatus: {}", 
+            productId, currentStatus, status);
 
-        // 현재 상태와 요청된 상태에 따라 적절한 상태 변경 메서드 호출
         switch (status) {
             case FOR_SALE -> {
-                if (product.getStatus() == ProductStatusType.RESERVED) {
-                    product.cancelReservation();
-                    log.info("상품 예약 취소 처리 완료 - productId: {}", productId);
-                } else {
+                if (currentStatus != ProductStatusType.RESERVED) {
                     throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
                 }
+                product.cancelReservation();
+                log.info("상품 예약 취소 처리 완료 - productId: {}", productId);
             }
             case RESERVED -> {
-                if (product.getStatus() == ProductStatusType.FOR_SALE) {
-                    product.reserve(user);
-                    log.info("상품 예약 처리 완료 - productId: {}, buyerId: {}", productId, user.getUserId());
-                } else {
+                if (currentStatus != ProductStatusType.FOR_SALE) {
                     throw new DuckwhoException(ErrorCode.PRODUCT_NOT_FOR_SALE);
                 }
+                product.reserve(user);
+                log.info("상품 예약 처리 완료 - productId: {}, buyerId: {}", productId, user.getUserId());
             }
             case SOLD_OUT -> {
-                if (product.getStatus() == ProductStatusType.RESERVED) {
-                    product.completeSale();
-                    log.info("상품 판매 완료 처리 - productId: {}", productId);
-                } else {
+                if (currentStatus != ProductStatusType.RESERVED) {
                     throw new DuckwhoException(ErrorCode.PRODUCT_NOT_RESERVED);
                 }
+                product.completeSale();
+                // 판매 완료 시 시세 정보 업데이트
+                marketPriceStatsService.updateSoldPrice(product, product.getPrice());
+                log.info("상품 판매 완료 및 시세 정보 업데이트 - productId: {}, price: {}", 
+                    productId, product.getPrice());
             }
             default -> throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
         }

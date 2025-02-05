@@ -2,7 +2,7 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.common.enums.ProductStatusType;
+import com.ani.taku_backend.jangter.enums.ProductStatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.entity.Image;

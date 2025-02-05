@@ -76,15 +76,16 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
 
         return queryFactory
                 .select(Projections.constructor(WeeklyStatsResponseDTO.class,
-                        stats.registeredPrice.avg(),
-                        stats.registeredPrice.max(),
-                        stats.registeredPrice.min(),
+                        stats.soldPrice.avg(),
+                        stats.soldPrice.max(),
+                        stats.soldPrice.min(),
                         stats.registeredDate.count()
                 ))
                 .from(stats)
                 .where(
                         stats.title.contains(keyword),
-                        stats.registeredDate.goe(weekAgo)
+                        stats.registeredDate.goe(weekAgo),
+                        stats.soldPrice.isNotNull()
                 )
                 .fetchOne();
     }
