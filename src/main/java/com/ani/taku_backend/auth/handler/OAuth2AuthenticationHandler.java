@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Base64;
@@ -50,9 +51,9 @@ public class OAuth2AuthenticationHandler {
     public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         @Override
         public void onAuthenticationSuccess(
-            HttpServletRequest request, 
-            HttpServletResponse response, 
-            Authentication authentication
+                HttpServletRequest request,
+                HttpServletResponse response,
+                Authentication authentication
         ) throws IOException {
             log.info("OAuth2 인증 최종 성공 - User: {}", authentication.getName());
 
@@ -85,11 +86,11 @@ public class OAuth2AuthenticationHandler {
             log.info("url {}", url);
             // URL 만들기 + 토큰 넣어서
             String redirectUrl = UriComponentsBuilder
-                .fromUriString(url)
-                .queryParam("token", accessToken) // JWT 토큰 전달
-                .queryParam("user", Base64.getEncoder().encodeToString(userToClientInfoJson(user, isBlack).getBytes())) // 사용자 정보 전달
-                .build()
-                .toUriString();
+                    .fromUriString(url)
+                    .queryParam("token", accessToken) // JWT 토큰 전달
+                    .queryParam("user", Base64.getEncoder().encodeToString(userToClientInfoJson(user, isBlack).getBytes())) // 사용자 정보 전달
+                    .build()
+                    .toUriString();
 
             log.info("redirectUrl : {}", redirectUrl);
 
@@ -107,7 +108,7 @@ public class OAuth2AuthenticationHandler {
             refreshTokenCookie.setHttpOnly(true); // 클라이언트에서 직접 접근 불가
 
             //TODO: 추후 HTTPS 적용 시 활성화
-            // refreshTokenCookie.setSecure(true); // HTTPS에서만 전송
+            refreshTokenCookie.setSecure(true); // HTTPS에서만 전송
 
             refreshTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
             refreshTokenCookie.setMaxAge((int) Duration.ofDays(1).toSeconds()); // 유효기간 설정 (초 단위)
@@ -119,9 +120,9 @@ public class OAuth2AuthenticationHandler {
     public class OAuth2FailureHandler implements AuthenticationFailureHandler {
         @Override
         public void onAuthenticationFailure(
-            HttpServletRequest request, 
-            HttpServletResponse response, 
-            AuthenticationException exception
+                HttpServletRequest request,
+                HttpServletResponse response,
+                AuthenticationException exception
         ) throws IOException {
             if (exception instanceof OAuth2AuthenticationException) {
                 OAuth2Error error = ((OAuth2AuthenticationException) exception).getError();
@@ -133,15 +134,15 @@ public class OAuth2AuthenticationHandler {
                     return;
                 }
             }
-            
+
             response.sendError(
-                HttpServletResponse.SC_UNAUTHORIZED, 
-                "인증 실패: " + exception.getMessage()
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "인증 실패: " + exception.getMessage()
             );
         }
     }
 
-    private String userToClientInfoJson(User user , boolean isBlack) {
+    private String userToClientInfoJson(User user, boolean isBlack) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("user_id", user.getUserId());
         jsonObject.addProperty("is_black", isBlack);
