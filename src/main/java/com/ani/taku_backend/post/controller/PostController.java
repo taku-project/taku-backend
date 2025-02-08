@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ViewCountChecker;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;
+import com.ani.taku_backend.post.model.enums.PopularPeriodType;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @Slf4j
@@ -137,5 +139,17 @@ public class PostController {
         User user = blackUserService.checkBlackUser(principalUser);
         postService.deletePost(postId, user);
         return CommonResponse.ok(null);
+    }
+
+    @Operation(summary = "인기 글 조회", description = "모든 카테고리 중 기간 별 인기글을 조회힙니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인기글 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러 발생")
+    })
+    @GetMapping("/popular")
+    public CommonResponse<PopularPostLiestRequestDTO> getPopularityPosts(
+        @Parameter(description = "인기글 기간. WEEK(이번 주), MONTH(30일)", required = true) PopularPeriodType periodType) {
+        PopularPostLiestRequestDTO result = postService.getPopularityPosts(periodType);
+        return CommonResponse.ok(result);
     }
 }

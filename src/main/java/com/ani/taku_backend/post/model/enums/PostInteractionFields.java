@@ -7,6 +7,9 @@ public enum PostInteractionFields {
 
     ID("_id"),
     POST_LIKES("post_likes"),
+    VIEWS("views"),
+    COMMENTS("comments"),
+    CREATED_AT("created_at"),
     DELETED_AT("deleted_at"),
     CATEGORY_ID("category_id"),
     POSTS_INTERACTION_COUNTER("posts_interaction_counter"),

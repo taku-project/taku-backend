@@ -2,12 +2,14 @@ package com.ani.taku_backend.post.repository.impl;
 
 import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.post.model.dto.FindPostQueryDTO;
+import com.ani.taku_backend.post.model.dto.PopularPostItemDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.QFindPostQueryDTO;
+import com.ani.taku_backend.post.model.dto.QPopularPostItemDTO;
+import com.ani.taku_backend.post.model.entity.PostInteractionCounter;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +24,7 @@ import java.util.List;
 import static com.ani.taku_backend.common.model.entity.QImage.image;
 import static com.ani.taku_backend.post.model.entity.QCommunityImage.communityImage;
 import static com.ani.taku_backend.post.model.entity.QPost.post;
-
+import static com.ani.taku_backend.category.domain.entity.QCategory.category;
 
 @Repository
 @RequiredArgsConstructor
@@ -42,16 +44,16 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
         List<FindPostQueryDTO> results = jpaQueryFactory
                 .select(new QFindPostQueryDTO(
-                        post.id,
-                        post.user.userId,
-                        post.category.id,
-                        post.title,
-                        post.content,
-                        image.imageUrl,
-                        post.updatedAt,
-                        post.views,
-                        post.user.nickname,
-                        post.user.profileImg
+                    post.id,
+                    post.user.userId,
+                    post.category.id,
+                    post.title,
+                    post.content,
+                    image.imageUrl,
+                    post.updatedAt,
+                    post.views,
+                    post.user.nickname,
+                    post.user.profileImg
                 ))
                 .from(post)
                 .leftJoin(post.communityImages, communityImage)
@@ -66,6 +68,32 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         Long countActivePostsByCategory = getCountActivePostsByCategory(categoryId);
 
         return new PageImpl<>(results, pageable, countActivePostsByCategory);
+    }
+
+    @Override
+    public List<PopularPostItemDTO> findPopularityPosts(List<Long> postId) {
+        List<PopularPostItemDTO> result =
+                jpaQueryFactory.select(
+                    new QPopularPostItemDTO(
+                        post.id,
+                        post.user.userId,
+                        category.id,
+                        category.name,
+                        post.title,
+                        post.content,
+                        image.imageUrl,
+                        post.updatedAt,
+                        post.views,
+                        post.user.nickname,
+                        post.user.profileImg
+                    )
+                ).from(post)
+                .innerJoin(post.category, category)
+                .leftJoin(post.communityImages, communityImage).fetchJoin()
+                .leftJoin(communityImage.image, image).fetchJoin()
+                .where(post.id.in(postId))
+                .fetch();
+        return result;
     }
 
     private BooleanBuilder getBooleanBuilder(long categoryId, String keyword) {

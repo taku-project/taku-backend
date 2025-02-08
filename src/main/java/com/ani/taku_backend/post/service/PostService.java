@@ -1,10 +1,12 @@
 package com.ani.taku_backend.post.service;
 
+import com.ani.taku_backend.post.model.dto.PopularPostLiestRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostListResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostUpdateRequestDTO;
+import com.ani.taku_backend.post.model.enums.PopularPeriodType;
 import com.ani.taku_backend.user.model.entity.User;
 import org.springframework.data.domain.Pageable;
 
@@ -19,4 +21,6 @@ public interface PostService {
     void deletePost(Long postId, User user);
 
     PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId);
+
+    PopularPostLiestRequestDTO getPopularityPosts(PopularPeriodType periodType);
 }
