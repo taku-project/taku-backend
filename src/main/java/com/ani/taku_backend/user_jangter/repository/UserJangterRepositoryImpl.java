@@ -89,8 +89,8 @@ public class UserJangterRepositoryImpl implements UserJangterRepository {
         return new PageImpl<>(userCellResponseDTOList, pageable, totalCount);
     }
 
-    private BooleanExpression eqCellId(Long purchaseId) {
-        return completedDeal.cellUserId.eq(purchaseId);
+    private BooleanExpression eqCellId(Long cellerId) {
+        return completedDeal.cellUserId.eq(cellerId);
     }
 
     private BooleanExpression eqPurchaseId(Long purchaseId) {
