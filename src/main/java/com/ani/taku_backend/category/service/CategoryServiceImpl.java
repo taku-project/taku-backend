@@ -1,5 +1,7 @@
 package com.ani.taku_backend.category.service;
 
+import com.ani.taku_backend.category.domain.dto.AniGenreListReqDTO;
+import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
@@ -104,6 +106,14 @@ public class CategoryServiceImpl implements CategoryService {
 
 
         return ResponseCategoryDTO.of(categoryOptional.get());
+    }
+
+    @Override
+    public AniGenreListReqDTO findAniGenres(String keyword) {
+        List<AniGenreResDTO> aniGenres = animationGenreRepository.findByGenreName(keyword);
+        return AniGenreListReqDTO.builder()
+                .genres(aniGenres)
+                .build();
     }
 
     /**
