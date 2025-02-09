@@ -153,15 +153,16 @@ public class PostServiceImpl implements PostService {
      */
     @Transactional
     public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdWithImages(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         if (post.getDeletedAt() != null) {
             throw new DuckwhoException(NOT_FOUND_POST);
         }
 
+        // 조회수 증가 로직을 별도의 트랜잭션으로 처리
         if (canAddView) {
-            post.addViews();
+            postRepository.incrementViewCount(postId);
         }
 
         // 비로그인 사용자는 항상 false

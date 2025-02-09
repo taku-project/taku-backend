@@ -13,12 +13,21 @@ public interface CommentsRepository extends JpaRepository<Comments, Long> {
      */
     @Query("""
             SELECT DISTINCT c FROM Comments c
-            LEFT JOIN c.parentComment p
             JOIN FETCH c.user
             WHERE c.post.id = :postId
             AND c.deletedAt IS NULL
-            ORDER BY CASE WHEN c.parentComment IS NULL THEN c.createdAt ELSE p.createdAt END DESC,
-                     CASE WHEN c.parentComment IS NULL THEN 0 ELSE c.createdAt END ASC
+            AND c.parentComment IS NULL
+            ORDER BY c.createdAt DESC
             """)
     List<Comments> findParentComments(@Param("postId") Long postId);
+
+    @Query("""
+            SELECT DISTINCT c FROM Comments c
+            JOIN FETCH c.user
+            WHERE c.post.id = :postId
+            AND c.deletedAt IS NULL
+            AND c.parentComment.id = :parentCommentId
+            ORDER BY c.createdAt ASC
+            """)
+    List<Comments> findRepliesByParentCommentId(@Param("postId") Long postId, @Param("parentCommentId") Long parentCommentId);
 }
