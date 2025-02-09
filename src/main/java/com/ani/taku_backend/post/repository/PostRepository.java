@@ -17,7 +17,11 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query(value = "UPDATE posts SET views = views + 1 WHERE id = :postId", nativeQuery = true)
     void incrementViewCount(@Param("postId") Long postId);
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.communityImages ci LEFT JOIN FETCH ci.image WHERE p.id = :postId AND p.deletedAt IS NULL")
+    @Query("SELECT p FROM Post p " +
+           "LEFT JOIN FETCH p.user " +
+           "LEFT JOIN FETCH p.communityImages ci " +
+           "LEFT JOIN FETCH ci.image " +
+           "WHERE p.id = :postId AND p.deletedAt IS NULL")
     Optional<Post> findByIdWithImages(@Param("postId") Long postId);
 
 }

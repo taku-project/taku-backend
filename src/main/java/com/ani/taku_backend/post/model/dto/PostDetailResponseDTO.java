@@ -14,8 +14,16 @@ public class PostDetailResponseDTO {
 
     @Schema(description = "게시글 ID")
     private final Long postId;
+    
+    @Schema(description = "작성자 닉네임")
+    private final String authorNickname;
+    
+    @Schema(description = "작성자 프로필 이미지 URL")
+    private final String authorProfileUrl;
+    
     @Schema(description = "게시글 제목")
     private final String title;
+    
     @Schema(description = "게시글 본문")
     private final String content;
 
@@ -43,6 +51,8 @@ public class PostDetailResponseDTO {
 
     public PostDetailResponseDTO(Post post, boolean owner, List<CommentsResponseDTO> comments, long likeCount) {
         this.postId = post.getId();
+        this.authorNickname = post.getUser().getNickname();
+        this.authorProfileUrl = post.getUser().getProfileImg();
         this.title = post.getTitle();
         this.content = post.getContent();
         this.updateAt = post.getUpdatedAt();
