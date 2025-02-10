@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -92,11 +93,10 @@ public class ApiCategoryController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
     public CommonResponse<ResponseCategoryDTO> createCategory(
-        @RequestPart("category")@Parameter(description = "카테고리 정보 <code>RequestCategoryCreateDTO</code> 스키마 참고 <code>Content-Type: application/json</code>") RequestCategoryCreateDTO requestCategoryCreateDTO,
-        @RequestPart("image")@Parameter(description = "카테고리 이미지") MultipartFile image,
+        @Valid RequestCategoryCreateDTO requestCategoryCreateDTO,
         @Parameter(hidden = true) PrincipalUser principalUser
     ){
-        return CommonResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO, image));
+        return CommonResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO));
     }
 
     @Operation(
