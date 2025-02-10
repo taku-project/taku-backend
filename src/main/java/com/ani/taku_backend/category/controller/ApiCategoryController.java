@@ -161,7 +161,7 @@ public class ApiCategoryController {
     @GetMapping("/genres")
     public CommonResponse<AniGenreListReqDTO> findAniGenres(
         @Parameter(description = "검색 키워드", name = "keyword")
-        @RequestParam(name = "keyword") String keyword) {
+        @RequestParam(name = "keyword", required = false) String keyword) {
         AniGenreListReqDTO result = categoryService.findAniGenres(keyword);
         return CommonResponse.ok(result);
     }
