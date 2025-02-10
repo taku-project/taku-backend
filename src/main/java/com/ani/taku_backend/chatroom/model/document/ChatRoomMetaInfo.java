@@ -18,7 +18,7 @@ public class ChatRoomMetaInfo {
     private String lastMessage;
     private Instant updateAt;
 
-    private boolean isActive;
+    private boolean isActive = true;
 
     @Builder
     public ChatRoomMetaInfo(Long chatroomId) {

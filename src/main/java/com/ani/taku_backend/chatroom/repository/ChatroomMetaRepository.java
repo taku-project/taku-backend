@@ -13,7 +13,7 @@ public interface ChatroomMetaRepository extends MongoRepository<ChatRoomMetaInfo
     @Query("{ 'participants.info.?0': { $exists: true } }")
     List<ChatRoomMetaInfo> findByParticipantIdOrderByUpdateAtDesc(String userId);
 
-    @Aggregation("{ $match: { 'participants.info.userId': ?0 } }")
+    @Query("{ 'participants.info.?0': {$exists: true} }")
     List<ChatRoomMetaInfo> findByParticipantsUserId(Long userId);
 
 

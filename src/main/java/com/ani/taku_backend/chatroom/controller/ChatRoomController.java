@@ -31,6 +31,7 @@ public class ChatRoomController {
         return CommonResponse.created(responseDto);
     }
 
+    @Operation(summary = "채팅방 목록 가져오기")
     @GetMapping
     public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
             @RequestParam Long userId) {
@@ -75,7 +76,6 @@ public class ChatRoomController {
 
 
     @Operation(summary = "채팅방 나가기")
-    // 채팅방 나가기, 개발 완료
     @PostMapping("/leave")
     public CommonResponse<Long>  leaveRoom(@RequestParam Long chatRoomId,
                           @RequestParam Long userId) {
@@ -83,7 +83,6 @@ public class ChatRoomController {
         return CommonResponse.ok(null);
     }
 
-    // 메시지 읽음 상태 업데이트
     @PostMapping("/mark-as-read")
     public CommonResponse<Long> markMessagesAsRead(@RequestParam Long chatRoomId,
                                    @RequestParam Long userId) {

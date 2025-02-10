@@ -55,17 +55,28 @@ public class ChatRoomService {
 
         List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatroomMetaRepository
                 .findByParticipantsUserId(userId);  // participants에 userId가 포함된 채팅방 정보만 가져옴
+        System.out.println("info"+ userChatRoomMetaInfos.size());
+
+        // isConnected가 true인 채팅방만 필터링
+        List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
+                .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
+                        .anyMatch(participant -> participant.getIsConnected() != null
+                                && (boolean) participant.getIsConnected()))
+                .collect(Collectors.toList());
 
         // userChatRoomMetaInfos에서 각 채팅방의 ID를 추출
-        List<Long> chatRoomIds = userChatRoomMetaInfos.stream()
+        List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
                 .map(ChatRoomMetaInfo::getChatroomId)
                 .collect(Collectors.toList());
+
+        System.out.println("ss"+ chatRoomIds.size());
 
         // ChatRoom에서 해당 ID들만 조회
         List<ChatRoom> userChatRooms = chatRoomRepository
                 .findByIdInAndStatus(chatRoomIds, ChatRoomStatus.ACTIVE);  // 채팅방 상태가 ACTIVE인 것만 조회
 
 
+        System.out.println("here"+ userChatRooms.size());
         return userChatRooms.stream()
                 .map(chatRoom -> {
                     ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoom.getId()).get();
@@ -122,7 +133,7 @@ public class ChatRoomService {
                     ParticipantInfo participant = participants.getInfo().get(key);
 
                     // sellerId 또는 buyerId와 일치하는 userId가 있는지 확인
-                    if (!participant.getUserId().equals(requestDto.sellerId()) || !participant.getUserId().equals(requestDto.buyerId())) {
+                    if (participant.getUserId().equals(requestDto.sellerId())) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
                     }
 
