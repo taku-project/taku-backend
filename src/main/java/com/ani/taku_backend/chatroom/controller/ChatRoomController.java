@@ -40,6 +40,7 @@ public class ChatRoomController {
 
 
 
+    @Operation(summary = "특정 채팅방 조회")
     @GetMapping("/{roomId}")
     public CommonResponse<ChatRoomResponseDTO> getChatRoom(
             @PathVariable String roomId,

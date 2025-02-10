@@ -142,15 +142,22 @@ public class ChatRoomService {
 
         Participants participants = chatRoomMetaInfo.getParticipants();
 
-        Long buyllerId = participantInfoRepository.findByRole(ParticipantRole.BUYER).getUserId();
-        Long sellerId = participantInfoRepository.findByRole(ParticipantRole.SELLER).getUserId();
+        Long buyerId = Long.valueOf(0);
+        Long sellerId = Long.valueOf(0);
+        for(Long key: participants.getInfo().keySet()){
 
-
-        if (!participants.containsUser(userId)) {
-            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+            if(participants.getInfo().get(key).getRole()==ParticipantRole.BUYER){
+                buyerId = participants.getInfo().get(key).getUserId();
+            }else{
+                sellerId = participants.getInfo().get(key).getUserId();
+            }
         }
 
-        return ChatRoomResponseDTO.of(chatRoom, buyllerId, sellerId);
+        if (!participants.containsUser(userId)||buyerId==0||sellerId==0) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+
+        return ChatRoomResponseDTO.of(chatRoom, buyerId, sellerId);
     }
 
     public Integer getChatRoomUnreadCount(String roomId, Long userId) {

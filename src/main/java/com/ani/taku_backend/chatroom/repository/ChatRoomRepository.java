@@ -18,7 +18,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     /**
      * WebSocket 세션 관리를 위한 roomId로 채팅방을 조회합니다.
      */
-    Optional<ChatRoom> findByRoomId(String roomId); //??roomId가 왜 String
+    Optional<ChatRoom> findByRoomId(String roomId);
 
     /**
      * 동일한 상품에 대해 동일한 구매자와 판매자 간의 채팅방 존재 여부를 확인합니다.
