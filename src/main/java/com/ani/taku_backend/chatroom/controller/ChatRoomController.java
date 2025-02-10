@@ -83,6 +83,7 @@ public class ChatRoomController {
         return CommonResponse.ok(null);
     }
 
+    @Operation(summary = "읽은 메세지 처리", description = "마지막으로 읽은 메세지 id 반환")
     @PostMapping("/mark-as-read")
     public CommonResponse<Long> markMessagesAsRead(@RequestParam Long chatRoomId,
                                    @RequestParam Long userId) {
