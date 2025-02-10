@@ -9,20 +9,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Schema(description = "카테고리 생성 form-data 요청 객체")
 @Data
 public class RequestCategoryCreateDTO {
     @NotEmpty
-    @Schema(name = "name", description = "카테고리 이름")
+    @Schema(name = "category_name", description = "카테고리 이름", example = "원피스")
     @JsonProperty("category_name")
     private String name;
 
     @NotEmpty
-    @Schema(name = "aniGenreId", description = "애니 장르 ID")
+    @Schema(name = "ani_genre_id", description = "애니 장르 ID 목록", example = "[1, 2, 3]")
     @JsonProperty("ani_genre_id")
     private List<Long> aniGenreId;
 
     @NotNull
-    @Schema(name = "image", description = "카테고리 썸네일 이미지 파일")
+    @Schema(name = "image", description = "카테고리 썸네일 이미지 파일", type = "string", format = "binary")
     @JsonProperty("image")
     private MultipartFile image;
 }
