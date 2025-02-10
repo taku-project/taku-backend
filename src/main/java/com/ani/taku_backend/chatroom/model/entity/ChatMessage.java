@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class ChatMessage {
 
     @Id
-    private String id;
+    private Long id;
 
     private Long roomId; // (ChatRoom의 Id와 연결)
 
@@ -36,4 +36,5 @@ public class ChatMessage {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
+
 }

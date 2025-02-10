@@ -32,11 +32,6 @@ public class ChatRoom extends BaseTimeEntity {
     @Column(name = "article_id", nullable = false)
     private Long articleId;  //판매글 id
 
-    @Column(name = "buyer_id", nullable = false)
-    private Long buyerId;
-
-    @Column(name = "seller_id", nullable = false)
-    private Long sellerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -46,8 +41,7 @@ public class ChatRoom extends BaseTimeEntity {
     public ChatRoom(Long articleId, Long buyerId, Long sellerId) {
         this.roomId = UUID.randomUUID().toString();
         this.articleId = articleId;
-        this.buyerId = buyerId;
-        this.sellerId = sellerId;
+
     }
 
     public void deactivate() {

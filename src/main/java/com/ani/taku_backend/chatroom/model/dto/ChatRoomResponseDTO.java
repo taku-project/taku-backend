@@ -11,13 +11,13 @@ public record ChatRoomResponseDTO(
         Long sellerId,
         LocalDateTime createdAt
 ) {
-    public static ChatRoomResponseDTO of(ChatRoom chatRoom) {
+    public static ChatRoomResponseDTO of(ChatRoom chatRoom, Long buyerId, Long sellerId) {
         return new ChatRoomResponseDTO(
                 chatRoom.getId(),
                 chatRoom.getRoomId(),
                 chatRoom.getArticleId(),
-                chatRoom.getBuyerId(),
-                chatRoom.getSellerId(),
+                buyerId,
+                sellerId,
                 chatRoom.getCreatedAt()
         );
     }

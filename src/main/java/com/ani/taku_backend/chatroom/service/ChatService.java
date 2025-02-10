@@ -1,8 +1,10 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.model.entity.ChatMessage;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.repository.ChatRoomMetaInfoRepository;
 import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ public class ChatService {
 
     @Autowired
     private ChatMessageRepository chatMessageRepository;
+
+    @Autowired
+    private ChatRoomMetaInfoRepository chatRoomMetaInfoRepository;
 
     // 메시지 전송
     @Transactional
@@ -45,11 +50,21 @@ public class ChatService {
     // 채팅방 나가기
     @Transactional
     public void leaveRoom(Long chatRoomId, Long userId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+
+        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("Chat room not found"));
 
-        chatRoom.deactivate();  // 채팅방 상태를 비활성화
-        chatRoomRepository.save(chatRoom);
+
+        chatRoomMetaInfo.getParticipants().setDisconnected(userId);
+        chatRoomMetaInfo.checkAndDeactivate();
+
+        chatRoomMetaInfoRepository.save(chatRoomMetaInfo);
+        if (!chatRoomMetaInfo.isActive()) {
+            chatRoomRepository.findById(chatRoomId).ifPresent(chatRoom -> {
+                chatRoom.deactivate();
+                chatRoomRepository.save(chatRoom);
+            });
+        }
     }
 
     // 메시지 읽음 상태 업데이트

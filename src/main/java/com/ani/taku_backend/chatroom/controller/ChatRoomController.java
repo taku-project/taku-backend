@@ -77,7 +77,7 @@ public class ChatRoomController {
         return CommonResponse.ok(null);
     }
 
-    // 메시지 읽음 상태 업데이트,
+    // 메시지 읽음 상태 업데이트
     @PostMapping("/mark-as-read")
     public CommonResponse<Long> markMessagesAsRead(@RequestParam Long chatRoomId,
                                    @RequestParam Long userId) {
