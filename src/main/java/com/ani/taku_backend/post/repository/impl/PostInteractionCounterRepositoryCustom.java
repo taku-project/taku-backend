@@ -17,4 +17,6 @@ public interface PostInteractionCounterRepositoryCustom {
     void updateDeletedAt(Post post);
 
     Map<Long, Long> findLikesByPostIds(List<Long> postIds);
+    
+    boolean isPostLikedByUser(Long postId, Long userId);
 }

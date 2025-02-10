@@ -153,33 +153,22 @@ public class PostServiceImpl implements PostService {
      */
     @Transactional
     public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
-        Post post = postRepository.findByIdWithImages(postId)
+        Post findPost = postRepository.findByIdWithImages(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        if (post.getDeletedAt() != null) {
-            throw new DuckwhoException(NOT_FOUND_POST);
-        }
+        checkDeleteProduct(findPost);
 
-        // 조회수 증가 로직을 별도의 트랜잭션으로 처리
         if (canAddView) {
             postRepository.incrementViewCount(postId);
         }
 
-        // 비로그인 사용자는 항상 false
-        boolean isOwner = false;
-        
-        // 로그인한 사용자인 경우에만 소유자 체크
-        if (currentUserId != null && post.getUser() != null) {
-            isOwner = post.getUser().getUserId().equals(currentUserId);
-        }
+        boolean isOwner = currentUserId != null && currentUserId.equals(findPost.getUser().getUserId());
+        long likeCount = getPostLikeCount(postId);
+        boolean isLiked = currentUserId != null && postInteractionCounterRepository.isPostLikedByUser(postId, currentUserId);
 
-        // 댓글 목록 조회
         List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
 
-        // MongoDB에서 좋아요 수 조회
-        long likeCount = getPostLikeCount(postId);
-
-        return new PostDetailResponseDTO(post, isOwner, comments, likeCount);
+        return new PostDetailResponseDTO(findPost, isOwner, comments, likeCount, isLiked);
     }
 
     /**

@@ -49,7 +49,10 @@ public class PostDetailResponseDTO {
     @Schema(description = "좋아요 수")
     private final long likeCount;
 
-    public PostDetailResponseDTO(Post post, boolean owner, List<CommentsResponseDTO> comments, long likeCount) {
+    @Schema(description = "현재 사용자가 좋아요를 눌렀는지 여부")
+    private final boolean isLiked;
+
+    public PostDetailResponseDTO(Post post, boolean owner, List<CommentsResponseDTO> comments, long likeCount, boolean isLiked) {
         this.postId = post.getId();
         this.authorNickname = post.getUser().getNickname();
         this.authorProfileUrl = post.getUser().getProfileImg();
@@ -60,6 +63,7 @@ public class PostDetailResponseDTO {
         this.categoryId = post.getCategory().getId();
         this.owner = owner;
         this.likeCount = likeCount;
+        this.isLiked = isLiked;
 
         this.imageUrls = post.getCommunityImages().stream()
                 .map(communityImage -> communityImage.getImage().getImageUrl())
