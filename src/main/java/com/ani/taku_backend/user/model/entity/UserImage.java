@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
+
 /**
  * 유저 프로필 이미지 엔티티
  */

@@ -18,22 +18,27 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${client.front-url}")
-    private String frontUrl;
+    @Value("${client.prod.front-url}")
+    private String prodFrontUrl;
+
+    @Value("${client.dev.front-url}")
+    private String devFrontUrl;
 
     private final ViewCountCheckerResolver viewCountCheckerResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
-        resolver.setFallbackPageable(PageRequest.of(0, 20, Sort.by("ID").descending()));
-        resolvers.add(resolver);
+        PageableHandlerMethodArgumentResolver pageableResolver = new PageableHandlerMethodArgumentResolver();
+        pageableResolver.setFallbackPageable(PageRequest.of(0, 20, Sort.by("ID").descending()));
+        resolvers.add(pageableResolver);
+        resolvers.add(viewCountCheckerResolver);
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(frontUrl)
+                .allowedOrigins(prodFrontUrl)
+                .allowedOrigins(devFrontUrl)
                 .allowedMethods(
                         HttpMethod.GET.name(),
                         HttpMethod.POST.name(),
@@ -45,7 +50,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
 
         registry.addMapping("/ws/**")
-                .allowedOrigins(frontUrl)
+                .allowedOrigins(prodFrontUrl)
                 .allowedMethods(
                         HttpMethod.GET.name(),
                         HttpMethod.POST.name()

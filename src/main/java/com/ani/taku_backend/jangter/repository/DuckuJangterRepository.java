@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 
 import io.lettuce.core.dynamic.annotation.Param;
@@ -11,6 +12,8 @@ import java.math.BigDecimal;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
 
 
 public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long>, DuckuJangterRepositoryCustom {

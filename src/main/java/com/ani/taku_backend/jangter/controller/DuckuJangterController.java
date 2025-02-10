@@ -6,12 +6,16 @@ import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 
 
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+
+import com.ani.taku_backend.jangter.model.entity.UserInteraction;
+
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
 
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
@@ -24,6 +28,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +37,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
-
-
-import static com.ani.taku_backend.common.enums.SortFilterType.*;
 
 @Slf4j
 @RestController
@@ -74,30 +76,32 @@ public class DuckuJangterController {
      * 덕후 장터 판매 글 전체 목록 조회
      */
 
+    @Operation(summary = "판매글 전체 조회", description = "덕후 장터 판매글 전체 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",description = "성공"),
+
+    })
     @GetMapping("/products")
     public CommonResponse<List<ProductFindListResponseDTO>> findProductItems(@ModelAttribute ProductFindListRequestDTO request){
 
         SortFilterType sortFilterType;
-        if(request.getOrder().equals("desc")){
-            if(request.getSort()=="day"){
-                sortFilterType = OLDEST;
-            }else{
-                sortFilterType = PRICE_DESC;
-            }
-        }else{
 
-            if(request.getSort()=="day"){
-                sortFilterType = LATEST;
-            }else{
-                sortFilterType = PRICE_ASC;
-            }
+        boolean isDesc = "desc".equalsIgnoreCase(request.getOrder());
+        boolean isDaySort = "day".equalsIgnoreCase(request.getSort());
+
+        if (isDesc) {
+            sortFilterType = isDaySort ? SortFilterType.OLDEST : SortFilterType.PRICE_DESC;
+        } else {
+            sortFilterType =  isDaySort ? SortFilterType.LATEST : SortFilterType.PRICE_ASC;
         }
 
-        userInteractionService.saveLog(null, LogType.SEARCH, SearchLogDetail.builder()
+        UserInteraction.LogDetail logDetail = SearchLogDetail.builder()
                 .searchKeyword(request.getSearchKeyword())
                 .searchCategory(Collections.singletonList(request.getCategoryId()))
                 .sortType(sortFilterType)
-                .build());
+                .build();
+
+        userInteractionService.saveLog(null, LogType.SEARCH, logDetail );
 
         List<ProductFindListResponseDTO> products = duckuJangterService.getProducts(request);
 
@@ -177,7 +181,9 @@ public class DuckuJangterController {
 
     @Operation(
             summary = "판매글 추천",
-            description = "판매글 추천 API (로그인/비로그인 모두 가능)")
+            description = "판매글 추천 API (로그인/비로그인 모두 가능)",
+            security = { @SecurityRequirement(name = "Bearer Auth") }
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200",description = "게시글 추천"),
     })
@@ -185,5 +191,16 @@ public class DuckuJangterController {
     public CommonResponse<ProductRecommendResponseDTO> recommendProduct(@PathVariable("productId") Long productId) {
         ProductRecommendResponseDTO recommendProduct = this.duckuJangterService.recommendProduct(productId, null);
         return CommonResponse.ok(recommendProduct);
+    }
+
+
+    @Operation(summary = "장터 랭킹 일괄 조회", description = "장터 랭킹 일괄 조회")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "장터 랭킹 조회 성공")
+    })
+    @GetMapping("/rank")
+    public CommonResponse<ProductRankInfoResponseDTO> getJangterRank() {
+        ProductRankInfoResponseDTO productRankInfoResponseDTO = this.duckuJangterService.getJangterRank();
+        return CommonResponse.ok(productRankInfoResponseDTO);
     }
 }

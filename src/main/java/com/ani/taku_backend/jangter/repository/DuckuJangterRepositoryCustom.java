@@ -1,33 +1,31 @@
 package com.ani.taku_backend.jangter.repository;
 
-import com.ani.taku_backend.common.enums.StatusType;
+
+import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface DuckuJangterRepositoryCustom{
 
     List<ProductFindListResponseDTO> findFilteredProducts(
-            String keyword,
-            Long categoryId,
-            Integer minPrice,
-            Integer maxPrice,
-            String sort,
-            String order,
-            Long lastId,
-            int limit
+            ProductFindListRequestDTO request
     );
 
     List<DuckuJangter> findRecommendFilteredProducts(
-            List<String> keywords,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Long itemCategoryId,
-            StatusType status,
-            Long productId
+            FindRecommendFilteredProductsRequestDTO request
     );
+
+    List<CategoryGroupCountDTO> findCategoryGroupCount();
+
+
+    List<ProductViewAndBookmarkDTO> findProductViewAndBookmark(Long categoryId);
+
+    List<ProductViewAndBookmarkDTO> findProductViewAndBookmarkByProductId(Long productId);
 
 }

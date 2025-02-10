@@ -55,7 +55,6 @@ public class ChatRoomService {
 
         List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatroomMetaRepository
                 .findByParticipantsUserId(userId);  // participants에 userId가 포함된 채팅방 정보만 가져옴
-        System.out.println("info"+ userChatRoomMetaInfos.size());
 
         // isConnected가 true인 채팅방만 필터링
         List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
@@ -69,14 +68,12 @@ public class ChatRoomService {
                 .map(ChatRoomMetaInfo::getChatroomId)
                 .collect(Collectors.toList());
 
-        System.out.println("ss"+ chatRoomIds.size());
 
         // ChatRoom에서 해당 ID들만 조회
         List<ChatRoom> userChatRooms = chatRoomRepository
                 .findByIdInAndStatus(chatRoomIds, ChatRoomStatus.ACTIVE);  // 채팅방 상태가 ACTIVE인 것만 조회
 
 
-        System.out.println("here"+ userChatRooms.size());
         return userChatRooms.stream()
                 .map(chatRoom -> {
                     ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoom.getId()).get();

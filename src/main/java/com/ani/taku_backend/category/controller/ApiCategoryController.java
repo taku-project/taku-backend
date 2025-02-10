@@ -1,5 +1,6 @@
 package com.ani.taku_backend.category.controller;
 
+import com.ani.taku_backend.category.domain.dto.AniGenreListReqDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,15 +70,6 @@ public class ApiCategoryController {
             responseCode = "404",
             description = "존재하지 않은 장르",
             content = @Content(schema = @Schema(implementation = ExceptionDto.class))
-        )
-    })
-    @Parameters({
-        @Parameter(
-            name = "Authorization",
-            in = ParameterIn.HEADER,
-            required = true,
-            description = "JWT 토큰",
-            example = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhZ2VfcmFuZ2..."
         )
     })
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -163,5 +156,13 @@ public class ApiCategoryController {
         ResponseCategoryDTO result = categoryService.findCategoryById(id);
         return CommonResponse.ok(result);
     }
-    
+
+    @Operation(summary = "애니메이션 장르 목록 조회", description = "애니메이션 장르 목록을 조회합니다.")
+    @GetMapping("/genres")
+    public CommonResponse<AniGenreListReqDTO> findAniGenres(
+        @Parameter(description = "검색 키워드", name = "keyword")
+        @RequestParam(name = "keyword", required = false) String keyword) {
+        AniGenreListReqDTO result = categoryService.findAniGenres(keyword);
+        return CommonResponse.ok(result);
+    }
 }

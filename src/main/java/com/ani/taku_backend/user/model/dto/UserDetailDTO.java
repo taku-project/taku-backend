@@ -1,11 +1,12 @@
 package com.ani.taku_backend.user.model.dto;
 
-import lombok.*;
 
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder
-public class UserDetailDto {
+public class UserDetailDTO {
 
     private String nickname;
 

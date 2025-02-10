@@ -28,6 +28,10 @@ public class BlackUserService {
     // 블랙리스트 검증
     public User checkBlackUser(PrincipalUser principalUser) {
         User user = principalUser.getUser();
+        if (user == null) {
+            throw new DuckwhoException(UNAUTHORIZED_ACCESS);
+        }
+
         List<BlackUser> byUserId = findByUserId(user.getUserId());
         if (!byUserId.isEmpty() && byUserId.get(0).getId().equals(user.getUserId())) {
             log.info("블랙유저 {}", user);

@@ -5,20 +5,23 @@ import com.ani.taku_backend.common.annotation.CheckViewCount;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.LogType;
+import com.ani.taku_backend.common.enums.PeriodType;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.model.entity.Bookmark;
+import com.ani.taku_backend.bookmark.domain.Bookmark;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.service.BookmarkService;
+import com.ani.taku_backend.bookmark.service.BookmarkServiceImpl;
 import com.ani.taku_backend.common.service.ExtractKeywordService;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.common.service.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
@@ -27,8 +30,10 @@ import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.ViewLogDetail;
+import com.ani.taku_backend.jangter.model.entity.rank.JangterRankBase;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
+import com.ani.taku_backend.jangter.repository.JangterRankBaseRepository;
 import com.ani.taku_backend.jangter.score.calculator.BookmarkScoreCalculator;
 import com.ani.taku_backend.jangter.score.calculator.PurchaseHistoryScoreCalculator;
 import com.ani.taku_backend.jangter.score.calculator.SearchHistoryScoreCalculator;
@@ -45,8 +50,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,19 +79,24 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final FileService fileService;
     private final ExtractKeywordService extractKeywordService;
     private final UserInteractionService userInteractionService;
-    private final BookmarkService bookmarkService;
+    private final BookmarkServiceImpl bookmarkServiceImpl;
     private final ViewHistoryScoreCalculator viewHistoryScoreCalculator;
     private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
 
+
+    private final JangterRankBaseRepository jangterRankBaseRepository;
+
+
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {
 
-        return duckuJangterRepository.findFilteredProducts(request.getSearchKeyword(), request.getCategoryId(),
-                request.getMinPrice(), request.getMaxPrice(), request.getSort(), request.getOrder(),
-                request.getLastId(), request.getSize());
+        return duckuJangterRepository.findFilteredProducts(request);
     }
+
+
+
 
 
     /**
@@ -251,7 +266,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
-                .findRecommendFilteredProducts(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE , productId);
+                .findRecommendFilteredProducts(new FindRecommendFilteredProductsRequestDTO(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE, productId));
 
         if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
             log.debug("추천 상품 부족으로 랜덤 조회");
@@ -433,7 +448,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
     private UserBookmarkHistory getUserBookmarkHistory(Long userId , List<String> keywords) {
         // 사용자 찜목록 조회
-        List<Bookmark> bookmarkList = this.bookmarkService.findByUserIdWithJangterAndCategories(userId);
+        List<Bookmark> bookmarkList = this.bookmarkServiceImpl.findByUserIdWithJangterAndCategories(userId);
         UserBookmarkHistory userBookmarkHistory = null;
         if(!bookmarkList.isEmpty()){
             List<DuckuJangter> bookmarkedProducts = bookmarkList.stream()
@@ -459,5 +474,64 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         return ProductRecommendResponseDTO.of(randomProducts);
     }
+
+        @Override
+        public ProductRankInfoResponseDTO getJangterRank() {
+            LocalDateTime now = LocalDateTime.now();
+
+            Map<PeriodType, List<ProductRankInfoResponseDTO.ProductRankInfo>> rankInfo = new HashMap<>();
+
+            // 일간
+            List<JangterRankBase> dailyRanks = this.jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
+                PeriodType.DAY, now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            );
+
+            rankInfo.put(PeriodType.DAY, convertToProductRankInfo(dailyRanks));
+
+            // 주간 랭킹 조회 (yyyy-MM-Wxx 형식)
+            WeekFields weekFields = WeekFields.of(Locale.getDefault());
+            int weekNumber = now.get(weekFields.weekOfMonth());
+            String weeklyPeriodKey = String.format("%d-%02d-W%02d",
+                now.getYear(),
+                now.getMonthValue(),
+                weekNumber
+            );
+
+            List<JangterRankBase> weeklyRanks = jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
+                PeriodType.WEEK,
+                weeklyPeriodKey
+            );
+            rankInfo.put(PeriodType.WEEK, convertToProductRankInfo(weeklyRanks));
+
+
+            // 월간 랭킹 조회 (yyyy-MM 형식)
+            String monthlyPeriodKey = String.format("%d-%02d", now.getYear(), now.getMonthValue());
+            List<JangterRankBase> monthlyRanks = jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
+                PeriodType.MONTH,
+                monthlyPeriodKey
+            );
+            rankInfo.put(PeriodType.MONTH, convertToProductRankInfo(monthlyRanks));
+
+            return ProductRankInfoResponseDTO.builder().rankInfo(rankInfo).build();
+        }
+
+        private List<ProductRankInfoResponseDTO.ProductRankInfo> convertToProductRankInfo(List<JangterRankBase> ranks) {
+            return ranks.stream()
+                .map(rank -> {
+                    DuckuJangter jangter = rank.getDuckuJangter();
+                    String imageUrl = jangter.getJangterImages().isEmpty() ? null : 
+                        jangter.getJangterImages().get(0).getImage().getImageUrl();
+                    
+                    return ProductRankInfoResponseDTO.ProductRankInfo.builder()
+                        .rankIdx(rank.getRankIdx())
+                        .productId(jangter.getId())
+                        .productName(jangter.getTitle())
+                        .productImage(imageUrl)
+                        .productPrice(jangter.getPrice())
+                        .authorName(jangter.getUser().getNickname())
+                        .build();
+                })
+                .collect(Collectors.toList());
+        }
 
 }

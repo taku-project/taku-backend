@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChatService {
@@ -31,7 +32,6 @@ public class ChatService {
     // 메시지 전송
     @Transactional
     public void sendMessage(Long roomId, Long senderId, String content) {
-        System.out.println("roomId: " + roomId);
         // ChatRoom 조회
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Chat room not found"));
@@ -47,6 +47,26 @@ public class ChatService {
         message.setStatus(ChatRoomStatus.ACTIVE);
 
         chatMessageRepository.save(message);
+        updateLastMessageId(roomId, message.getId());
+
+    }
+
+    private void updateLastMessageId(Long roomId, String messageId) {
+        // roomId에 해당하는 ChatRoomMetaInfo 엔티티를 조회
+        Optional<ChatRoomMetaInfo> chatRoomMetaInfoOpt = chatRoomMetaInfoRepository.findById(roomId);
+
+        if (chatRoomMetaInfoOpt.isPresent()) {
+            ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoOpt.get();
+
+            // 마지막 메시지 ID를 새로 작성된 메시지의 ID로 업데이트
+            chatRoomMetaInfo.setLastMessageId(messageId);
+
+            // 갱신된 데이터를 DB에 저장
+            chatRoomMetaInfoRepository.save(chatRoomMetaInfo);
+        } else {
+            // 해당 roomId에 해당하는 채팅방이 존재하지 않으면 예외 처리
+            throw new RuntimeException("Chat room meta info not found for roomId: " + roomId);
+        }
     }
 
     // 채팅방 나가기

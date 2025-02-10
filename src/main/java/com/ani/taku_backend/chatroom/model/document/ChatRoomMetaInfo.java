@@ -4,18 +4,20 @@ import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import java.time.Instant;
 
 @Document(collection = "chat_room_meta")
 @Getter
+@Setter
 public class ChatRoomMetaInfo {
     @Id
     private Long chatroomId;
     private Participants participants;
 
-    private String lastMessage;
+    private String lastMessageId;
     private Instant updateAt;
 
     private boolean isActive = true;

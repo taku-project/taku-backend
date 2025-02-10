@@ -1,15 +1,17 @@
 package com.ani.taku_backend.user.controller;
 
 import com.ani.taku_backend.auth.util.JwtUtil;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
-import com.ani.taku_backend.common.exception.JwtException;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
-import com.ani.taku_backend.user.model.dto.UserDetailDto;
-import com.ani.taku_backend.user.model.dto.requestDto.UserEditDto;
+import com.ani.taku_backend.user.model.dto.UserDetailDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UserEditDTO;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
 import com.ani.taku_backend.user.service.UserService;
@@ -41,6 +43,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.ani.taku_backend.common.exception.ErrorCode.INVALID_INPUT_VALUE;
+
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -55,7 +59,7 @@ public class UserController {
 	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 		summary = "유저 등록",
-		description = "유저를 등록합니다.",
+		description = "유저를 등록합니다...",
 		security = { @SecurityRequirement(name = "Bearer Auth") }
 	)
 	@Parameters({
@@ -105,11 +109,11 @@ public class UserController {
 		if(registrationToken.startsWith("Bearer ")) {
 			registrationToken = registrationToken.substring(7);
 		}else{
-			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+			throw new DuckwhoException(ErrorCode.EMPTY_TOKEN);
 		}
 
 		if (!this.jwtUtil.validateToken(registrationToken)) {
-			throw new JwtException.InvalidTokenException("유효하지 않은 토큰입니다.");
+			throw new DuckwhoException(ErrorCode.INVALID_TOKEN);
 		}
 
 		OAuthUserInfo userInfo = OAuthUserInfo.of(requestRegisterUser.getProviderType(), this.jwtUtil.extractAllClaims(registrationToken));
@@ -119,7 +123,7 @@ public class UserController {
 		Optional<User> byDomesticId = this.userService.getUserByDomesticId(userInfo.getDomesticId());
 
 		if (byDomesticId.isPresent()) {
-			throw new UserException.UserAlreadyExistsException("이미 가입된 유저입니다.");
+			throw new DuckwhoException(ErrorCode.USER_ALREADY_EXISTS);
 		}
 
 		// 프로필 이미지 업로드
@@ -127,7 +131,7 @@ public class UserController {
 			try {
 				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
 			} catch (IOException e) {
-				throw new FileException.FileUploadException();
+				throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
 			}
 		}
 
@@ -195,9 +199,9 @@ public class UserController {
 			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
-	public CommonResponse<UserDetailDto>findUserDetail(@PathVariable Long userId){
+	public CommonResponse<UserDetailDTO>findUserDetail(@PathVariable Long userId){
 
-		UserDetailDto userDetail = userService.getUserDetail(userId);
+		UserDetailDTO userDetail = userService.getUserDetail(userId);
 
 		return CommonResponse.ok(userDetail);
 
@@ -211,10 +215,13 @@ public class UserController {
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
 	})
 	public CommonResponse<String>editUserDetail(@PathVariable Long userId
-		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request") @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDto request
+		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request") @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDTO request
 
 	){
 
+		if(request==null){
+			return CommonResponse.fail(INVALID_INPUT_VALUE);
+		}
 		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
 			if(userService.isNicknameDuplication(nickname)){ //이미 존재하는 닉네임일 경우
@@ -234,7 +241,8 @@ public class UserController {
 			System.out.println("multipart"+ multipartFile);
 			try {
 				fileUrl = fileService.uploadImageFile(multipartFile);
-				userService.updateProfileImg(userId, fileUrl, request.getFileSize(), request.getFileType(), request.getOriginalFileName(), fileUrl);
+				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, fileUrl,request.getFileSize(), request.getFileType(), request.getOriginalFileName());
+				userService.updateProfileImg(updateProfileImgRequestDTO);
 
 			}catch (Exception e){
 				System.out.println(e);

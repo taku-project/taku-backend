@@ -50,6 +50,7 @@ public class ChatRoomController {
         return CommonResponse.ok(chatRoom);
     }
 
+    @Operation(summary = "안 읽은 메세지 갯수 반환")
     @GetMapping("/{roomId}/unread")
     public CommonResponse<Integer> getChatRoomUnreadCount(
             @PathVariable String roomId,
@@ -58,6 +59,7 @@ public class ChatRoomController {
         return CommonResponse.ok(unreadCount);
     }
 
+    @Operation(summary = "읽음 메세지 갯수 반환")
     @GetMapping("/unread/total")
     public CommonResponse<Integer> getTotalUnreadCount(
             @RequestParam Long userId) {

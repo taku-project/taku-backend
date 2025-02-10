@@ -77,9 +77,12 @@ public class CommentsController {
             @ApiResponse(responseCode = "403", description = "존재하지 않는 댓글")
     })
     @DeleteMapping("/{commentsId}")
+    @RequireUser
     public CommonResponse<Void> deleteComments(
             @Parameter(description = "댓글 ID", required = true) @PathVariable("commentsId") long commentsId,
             @Parameter(hidden = true) PrincipalUser principalUser) {
+
+        log.info("user {}, {}", principalUser.getUsername(), principalUser.getUserId());
 
         User user = blackUserService.checkBlackUser(principalUser);         // Black 유저 검증
         commentsService.deleteComments(commentsId, user);

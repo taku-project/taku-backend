@@ -2,14 +2,12 @@ package com.ani.taku_backend.user.model.dto.requestDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class UserEditDto {
+public class UserEditDTO {
 
     @Schema(description = "업로드할 닉네임", nullable = true)
     private String nickname;

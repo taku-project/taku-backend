@@ -20,7 +20,6 @@ public class Participants {
             else info.resetMessageStock();
         }
     }
-
     /*
     모든 참가자가 연결되지 않은 상태인지(방을 나간 상태인지) 확인하는 함수
     * */
@@ -45,3 +44,4 @@ public class Participants {
     }
 
 }
+

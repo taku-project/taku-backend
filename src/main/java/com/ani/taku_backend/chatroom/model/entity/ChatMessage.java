@@ -31,7 +31,7 @@ public class ChatMessage {
 
     private LocalDateTime sentAt; // 전송 시간
 
-    private Boolean read; // 읽음 여부
+    private Boolean read = false; // 읽음 여부
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
