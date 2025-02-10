@@ -103,11 +103,6 @@ public class ChatRoomService {
     }
 
 
-    /*
-      [유의]
-    * 기존 buyerId와 sellerId와 articleId를 이용해 찾는 것으로 되어 있었으나, buyerId sellerId 속성이 없어지며 ArticleId만 남겨두었습니다.
-    * 별도로 고려해야 하는 것이라면 수정 부탁드립니다.
-    * */
     private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
 
         List<ChatRoom>  chatRooms = chatRoomRepository.findByArticleId(requestDto.articleId());
