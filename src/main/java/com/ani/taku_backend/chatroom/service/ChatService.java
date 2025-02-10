@@ -7,6 +7,8 @@ import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaInfoRepository;
 import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,8 +54,11 @@ public class ChatService {
     public void leaveRoom(Long chatRoomId, Long userId) {
 
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoRepository.findById(chatRoomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found"));
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
 
+        if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
 
         chatRoomMetaInfo.getParticipants().setDisconnected(userId);
         chatRoomMetaInfo.checkAndDeactivate();

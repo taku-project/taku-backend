@@ -74,6 +74,7 @@ public class ChatRoomController {
     }
 
 
+    @Operation(summary = "채팅방 나가기")
     // 채팅방 나가기, 개발 완료
     @PostMapping("/leave")
     public CommonResponse<Long>  leaveRoom(@RequestParam Long chatRoomId,
