@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class ChatMessage {
 
     @Id
-    private Long id;
+    private String id;
 
     private Long roomId; // (ChatRoom의 Id와 연결)
 

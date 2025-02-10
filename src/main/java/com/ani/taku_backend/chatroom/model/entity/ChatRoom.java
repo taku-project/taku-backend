@@ -38,9 +38,10 @@ public class ChatRoom extends BaseTimeEntity {
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
     @Builder
-    public ChatRoom(Long articleId, Long buyerId, Long sellerId) {
+    public ChatRoom(Long articleId) {
         this.roomId = UUID.randomUUID().toString();
         this.articleId = articleId;
+        this.status = ChatRoomStatus.ACTIVE;
 
     }
 

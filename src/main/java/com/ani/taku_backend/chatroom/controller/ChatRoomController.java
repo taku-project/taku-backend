@@ -5,6 +5,7 @@ import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.service.ChatRoomService;
 import com.ani.taku_backend.chatroom.service.ChatService;
 import com.ani.taku_backend.common.response.CommonResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class ChatRoomController {
     @Autowired
     private ChatService chatService;
 
+    @Operation(summary = "채팅방 생성")
     @PostMapping
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
             @Valid @RequestBody ChatRoomRequestDTO requestDto) {
@@ -35,6 +37,8 @@ public class ChatRoomController {
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(userId);
         return CommonResponse.ok(chatRooms);
     }
+
+
 
     @GetMapping("/{roomId}")
     public CommonResponse<ChatRoomResponseDTO> getChatRoom(
@@ -59,7 +63,7 @@ public class ChatRoomController {
         return CommonResponse.ok(totalUnreadCount);
     }
 
-    // 메시지 전송, 개발 완료
+    @Operation(summary = "채팅 메세지 전송")
     @PostMapping("/send")
     public CommonResponse<Long> sendMessage(@RequestParam Long roomId,
                             @RequestParam Long senderId,

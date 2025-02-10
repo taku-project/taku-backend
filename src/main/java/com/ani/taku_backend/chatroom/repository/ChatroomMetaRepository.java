@@ -15,4 +15,6 @@ public interface ChatroomMetaRepository extends MongoRepository<ChatRoomMetaInfo
 
     @Aggregation("{ $match: { 'participants.info.userId': ?0 } }")
     List<ChatRoomMetaInfo> findByParticipantsUserId(Long userId);
+
+
 }

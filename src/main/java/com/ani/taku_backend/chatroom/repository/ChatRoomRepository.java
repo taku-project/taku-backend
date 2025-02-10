@@ -15,7 +15,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
      */
 
     List<ChatRoom> findByIdInAndStatus(List<Long> id, ChatRoomStatus status);
-
     /**
      * WebSocket 세션 관리를 위한 roomId로 채팅방을 조회합니다.
      */
@@ -32,7 +31,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findById(Long id);
 
     // 판매글 ID와 구매자, 판매자 ID로 채팅방을 찾기
-    Optional<ChatRoom> findByArticleId(Long articleId);
+    List<ChatRoom> findByArticleId(Long articleId);
 
 
 

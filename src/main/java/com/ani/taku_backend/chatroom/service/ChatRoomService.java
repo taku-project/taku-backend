@@ -16,6 +16,7 @@ import com.ani.taku_backend.common.exception.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,8 +37,6 @@ public class ChatRoomService {
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .articleId(requestDto.articleId())
-                .buyerId(requestDto.buyerId())
-                .sellerId(requestDto.sellerId())
                 .build();
 
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
@@ -102,9 +101,36 @@ public class ChatRoomService {
     * 별도로 고려해야 하는 것이라면 수정 부탁드립니다.
     * */
     private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
-        if (chatRoomRepository.existsByArticleId(
-                requestDto.articleId())) {
-            throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
+
+        List<ChatRoom>  chatRooms = chatRoomRepository.findByArticleId(requestDto.articleId());
+
+
+
+        // 기존 채팅방 정보에서 chatRoomId를 가져와 ChatRoomMeta 정보 찾기
+        for (ChatRoom chatRoom : chatRooms) {
+            // ChatRoomMeta 정보 찾기
+            Optional<ChatRoomMetaInfo> chatRoomMetaOpt = chatroomMetaRepository.findById(chatRoom.getId());
+
+            if (chatRoomMetaOpt.isPresent()) {
+                ChatRoomMetaInfo chatRoomMeta = chatRoomMetaOpt.get();
+
+                // ChatRoomMeta 안에 있는 Participants 정보 가져오기
+                Participants participants = chatRoomMeta.getParticipants();
+
+                for(Long key: participants.getInfo().keySet()){
+
+                    ParticipantInfo participant = participants.getInfo().get(key);
+
+                    // sellerId 또는 buyerId와 일치하는 userId가 있는지 확인
+                    if (!participant.getUserId().equals(requestDto.sellerId()) || !participant.getUserId().equals(requestDto.buyerId())) {
+                        throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
+                    }
+
+                }
+                // sellerId와 buyllerId를 포함한 참가자가 있는지 확인
+
+
+            }
         }
     }
 
