@@ -70,6 +70,8 @@ import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_ACCES
 import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_STATUS_UPDATE;
 
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
+import com.ani.taku_backend.marketprice.model.entity.MarketPriceStats;
+import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
 
 @Slf4j
 @Service
@@ -137,8 +139,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
             expireTime = 60)
     @Transactional
     public ProductFindDetailResponseDTO findProductDetail(long productId, boolean isFirstView) {
-        // 판매글 조회
-        DuckuJangter findProductDetail = duckuJangterRepository.findById(productId)
+        // 상품과 연관 데이터를 한 번에 조회
+        DuckuJangter findProductDetail = duckuJangterRepository.findWithDetailsById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkDeleteProduct(findProductDetail);
@@ -547,8 +549,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     @Override
     @Transactional
     public void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO requestDTO, User user) {
-        DuckuJangter product = duckuJangterRepository.findById(productId)
+        // 상품과 최신 시세 정보를 한 번에 조회
+        ProductStatusDTO productStatus = duckuJangterRepository.findProductWithLatestStats(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+        
+        DuckuJangter product = productStatus.getProduct();
                 
         // 삭제된 상품인지 확인
         checkDeleteProduct(product);
@@ -566,7 +571,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // SOLD_OUT 상태로 변경된 경우 시세 정보 업데이트
         if (requestDTO.getStatus() == ProductStatus.SOLD_OUT) {
-            marketPriceStatsService.updateSoldPrice(product, BigDecimal.valueOf(requestDTO.getSoldPrice()));
+            // 이미 조회된 최신 시세 정보를 활용
+            MarketPriceStats latestStats = productStatus.getLatestStats();
+            if (latestStats != null) {
+                latestStats.updateSoldPrice(BigDecimal.valueOf(requestDTO.getSoldPrice()));
+            }
         }
     }
 
