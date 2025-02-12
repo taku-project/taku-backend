@@ -42,6 +42,7 @@ import com.ani.taku_backend.jangter.score.calculator.ViewHistoryScoreCalculator;
 import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
 import com.ani.taku_backend.jangter.vo.UserPurchaseHistory;
 import com.ani.taku_backend.jangter.vo.UserSearchHistory;
+import com.ani.taku_backend.marketprice.service.MarketPriceStatsService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -90,6 +91,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
 
     private final JangterRankBaseRepository jangterRankBaseRepository;
+    private final MarketPriceStatsService marketPriceStatsService;
 
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {
@@ -555,6 +557,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
             requestDTO.getStatus(),
             requestDTO.getSoldPrice() != null ? BigDecimal.valueOf(requestDTO.getSoldPrice()) : null
         );
+
+        // SOLD_OUT 상태로 변경된 경우 시세 정보 업데이트
+        if (requestDTO.getStatus() == ProductStatus.SOLD_OUT) {
+            marketPriceStatsService.updateSoldPrice(product, BigDecimal.valueOf(requestDTO.getSoldPrice()));
+        }
     }
 
 }
