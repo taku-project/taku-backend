@@ -28,7 +28,7 @@ public record CommentsResponseDTO(
         @Schema(description = "대댓글 목록")
         List<CommentsResponseDTO> replies
 ) {
-    public static CommentsResponseDTO of(Comments comment, Long currentUserId) {
+    public static CommentsResponseDTO of(Comments comment, Long currentUserId, List<CommentsResponseDTO> replies) {
         return new CommentsResponseDTO(
                 comment.getId(),
                 comment.getContent(),
@@ -40,7 +40,11 @@ public record CommentsResponseDTO(
                         .ageRange(comment.getUser().getAgeRange())
                         .build(),
                 currentUserId != null && currentUserId.equals(comment.getUser().getUserId()),
-                List.of()
+                replies
         );
+    }
+
+    public static CommentsResponseDTO of(Comments comment, Long currentUserId) {
+        return of(comment, currentUserId, List.of());
     }
 }

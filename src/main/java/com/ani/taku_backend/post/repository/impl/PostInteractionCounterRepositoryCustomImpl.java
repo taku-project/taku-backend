@@ -104,4 +104,18 @@ public class PostInteractionCounterRepositoryCustomImpl implements PostInteracti
                 .collect(Collectors.toMap(PostInteractionCounter::getPostId, PostInteractionCounter::getPostLikes));
     }
 
+    /**
+     * 특정 사용자가 게시글에 좋아요를 눌렀는지 확인
+     * @param postId 게시글 ID
+     * @param userId 사용자 ID
+     * @return 좋아요 여부
+     */
+    @Override
+    public boolean isPostLikedByUser(Long postId, Long userId) {
+        Query query = new Query(Criteria.where(ID.getField()).is(postId)
+                .and("liked_user_ids").in(userId));
+        return mongoTemplate.exists(query, PostInteractionCounter.class);
+    }
+
+
 }
