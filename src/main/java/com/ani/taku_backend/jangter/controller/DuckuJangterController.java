@@ -9,7 +9,7 @@ import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
-
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
@@ -201,5 +201,28 @@ public class DuckuJangterController {
     public CommonResponse<ProductRankInfoResponseDTO> getJangterRank() {
         ProductRankInfoResponseDTO productRankInfoResponseDTO = this.duckuJangterService.getJangterRank();
         return CommonResponse.ok(productRankInfoResponseDTO);
+    }
+
+    @Operation(summary = "상품 상태 변경", 
+            description = "상품의 상태를 변경합니다 (판매중 -> 예약중 -> 판매완료)",
+            security = { @SecurityRequirement(name = "Bearer Auth") })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 상태 변경 요청"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 접근"),
+            @ApiResponse(responseCode = "403", description = "상태 변경 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 상품")
+    })
+    @PatchMapping("/{productId}/status")
+    @RequireUser
+    public CommonResponse<Void> updateProductStatus(
+            @Parameter(description = "상품 ID", required = true) 
+            @PathVariable("productId") Long productId,
+            @Valid @RequestBody ProductStatusUpdateRequestDTO requestDTO,
+            @Parameter(hidden = true) PrincipalUser principalUser) {
+            
+        User user = blackUserService.checkBlackUser(principalUser);
+        duckuJangterService.updateProductStatus(productId, requestDTO, user);
+        return CommonResponse.ok(null);
     }
 }

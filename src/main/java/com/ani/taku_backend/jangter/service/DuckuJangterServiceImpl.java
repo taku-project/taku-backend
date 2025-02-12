@@ -23,6 +23,7 @@ import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
@@ -65,6 +66,7 @@ import java.util.stream.Collectors;
 import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_CATEGORY;
 import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_POST;
 import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_ACCESS;
+import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_STATUS_UPDATE;
 
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 
@@ -533,5 +535,26 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 })
                 .collect(Collectors.toList());
         }
+
+    @Override
+    @Transactional
+    public void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO requestDTO, User user) {
+        DuckuJangter product = duckuJangterRepository.findById(productId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+                
+        // 삭제된 상품인지 확인
+        checkDeleteProduct(product);
+        
+        // 상품 소유자인지 확인
+        if (!product.isOwner(user.getUserId())) {
+            throw new DuckwhoException(UNAUTHORIZED_STATUS_UPDATE);
+        }
+        
+        // 상태 변경 및 판매가 업데이트
+        product.updateStatus(
+            requestDTO.getStatus(),
+            requestDTO.getSoldPrice() != null ? BigDecimal.valueOf(requestDTO.getSoldPrice()) : null
+        );
+    }
 
 }
