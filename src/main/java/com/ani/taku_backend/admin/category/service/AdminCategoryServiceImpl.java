@@ -1,10 +1,13 @@
 package com.ani.taku_backend.admin.category.service;
 
 import com.ani.taku_backend.admin.category.dto.req.AdminCategoryListReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.UpdateCategoryReqDTO;
 import com.ani.taku_backend.admin.category.dto.res.AdminCategoryListResDTO;
 import com.ani.taku_backend.admin.category.dto.res.AdminCategoryResDTO;
 import com.ani.taku_backend.admin.category.repository.AdminCategoryRepository;
 import com.ani.taku_backend.category.domain.entity.Category;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
@@ -35,5 +38,15 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
                     )
                 )
                 .build();
+    }
+
+    @Override
+    public void updateCategoryStatus(User user, UpdateCategoryReqDTO updateCategoryReqDTO) {
+        User findUser = userRepository.findById(user.getUserId())
+                .orElseThrow(UserException.UserNotFoundException::new);
+        Category category = categoryRepository.findById(updateCategoryReqDTO.getCategoryId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
+
+        category.updateCategoryStatus(updateCategoryReqDTO.getStatus());
     }
 }

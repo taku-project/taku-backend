@@ -1,8 +1,10 @@
 package com.ani.taku_backend.admin.category.controller;
 
 import com.ani.taku_backend.admin.category.dto.req.AdminCategoryListReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.UpdateCategoryReqDTO;
 import com.ani.taku_backend.admin.category.dto.res.AdminCategoryListResDTO;
 import com.ani.taku_backend.admin.category.service.AdminCategoryService;
+import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,17 @@ public class AdminCategoryController {
         int num = 300;
         model.addAttribute("d2", str);
         model.addAttribute("d3", num);
+
+        return "category/list";
+    }
+
+    @GetMapping
+    public String updateCategoryStatus(@AuthenticationPrincipal PrincipalUser principalUser,
+        UpdateCategoryReqDTO updateCategoryReqDTO) {
+
+        User user = principalUser.getUser();
+
+        adminCategoryService.updateCategoryStatus(user, updateCategoryReqDTO);
 
         return "category/list";
     }
