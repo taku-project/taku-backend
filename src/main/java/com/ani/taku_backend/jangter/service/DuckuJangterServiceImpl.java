@@ -117,7 +117,13 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         DuckuJangter product = createProduct(productCreateRequestDTO, user, itemCategory);      // 엔티티 생성
         setRelationJangterImages(saveImageList, product);                                       // jangerImages 연관관계 설정
 
-        Long saveProductId = duckuJangterRepository.save(product).getId();
+        // 상품 저장
+        DuckuJangter savedProduct = duckuJangterRepository.save(product);
+        Long saveProductId = savedProduct.getId();
+        
+        // 시세 정보 초기 데이터 저장
+        marketPriceStatsService.saveMarketPriceStats(savedProduct);
+
         log.debug("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
 
         return saveProductId;
