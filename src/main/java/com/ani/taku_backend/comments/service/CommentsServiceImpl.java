@@ -152,21 +152,22 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentsResponseDTO> getPostComments(Long postId, Long currentUserId) {
-        // 부모 댓글만 조회
-        List<Comments> parentComments = commentsRepository.findParentComments(postId);
+        // 모든 댓글을 한 번에 조회
+        List<Comments> allComments = commentsRepository.findAllCommentsWithParent(postId);
         
-        return parentComments.stream()
-                .map(comment -> {
-                    // 각 부모 댓글의 대댓글 조회
-                    List<Comments> replies = commentsRepository.findRepliesByParentCommentId(postId, comment.getId());
-                    
-                    // 대댓글들을 DTO로 변환
-                    List<CommentsResponseDTO> replyDtos = replies.stream()
+        // 부모 댓글만 필터링
+        return allComments.stream()
+                .filter(comment -> comment.getParentComment() == null)  // 부모 댓글만 선택
+                .map(parentComment -> {
+                    // 현재 부모 댓글의 자식 댓글들 찾기
+                    List<CommentsResponseDTO> replyDtos = allComments.stream()
+                            .filter(comment -> comment.getParentComment() != null 
+                                    && comment.getParentComment().getId() == parentComment.getId())
                             .map(reply -> CommentsResponseDTO.of(reply, currentUserId))
                             .toList();
                     
                     // 부모 댓글 DTO 생성 (대댓글 목록 포함)
-                    return CommentsResponseDTO.of(comment, currentUserId, replyDtos);
+                    return CommentsResponseDTO.of(parentComment, currentUserId, replyDtos);
                 })
                 .toList();
     }
