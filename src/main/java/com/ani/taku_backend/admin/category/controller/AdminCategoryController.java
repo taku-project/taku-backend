@@ -1,6 +1,7 @@
 package com.ani.taku_backend.admin.category.controller;
 
 import com.ani.taku_backend.admin.category.dto.req.AdminCategoryListReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.UpdateCategoryReqDTO;
 import com.ani.taku_backend.admin.category.dto.res.AdminCategoryListResDTO;
 import com.ani.taku_backend.admin.category.service.AdminCategoryService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -32,6 +34,16 @@ public class AdminCategoryController {
         int num = 300;
         model.addAttribute("d2", str);
         model.addAttribute("d3", num);
+
+        return "category/list";
+    }
+
+    @PostMapping
+    public String updateCategoryStatus(@AuthenticationPrincipal PrincipalUser principalUser,
+        UpdateCategoryReqDTO updateCategoryReqDTO, Model model) {
+
+        User user = principalUser.getUser();
+        adminCategoryService.updateCategoryStatus(user, updateCategoryReqDTO);
 
         return "category/list";
     }
