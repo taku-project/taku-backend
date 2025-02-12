@@ -66,6 +66,8 @@ import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_CATEGORY
 import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_POST;
 import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_ACCESS;
 
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -210,7 +212,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 .title(productCreateRequestDTO.getTitle())
                 .description(productCreateRequestDTO.getDescription())
                 .price(productCreateRequestDTO.getPrice())
-                .status(StatusType.ACTIVE)
+                .status(ProductStatus.FOR_SALE)
                 .viewCount(0L)
                 .build();
     }
@@ -264,7 +266,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
-                .findRecommendFilteredProducts(new FindRecommendFilteredProductsRequestDTO(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE, productId));
+                .findRecommendFilteredProducts(new FindRecommendFilteredProductsRequestDTO(keywords, minPrice, maxPrice, itemCategoryId, ProductStatus.FOR_SALE, productId));
 
         if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
             log.debug("추천 상품 부족으로 랜덤 조회");
@@ -463,11 +465,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
     private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
         log.debug("랜덤 상품 조회");
-        List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(StatusType.ACTIVE.name(), categoryId, productId);
+        List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(ProductStatus.FOR_SALE.name(), categoryId, productId);
         randomProducts.clear();
         if(randomProducts.size() < 5){
             log.debug("전체 카테고리에서 랜덤조회");
-            randomProducts.addAll(this.duckuJangterRepository.findRandom(StatusType.ACTIVE.name(), productId));
+            randomProducts.addAll(this.duckuJangterRepository.findRandom(ProductStatus.FOR_SALE.name(), productId));
         }
 
         return ProductRecommendResponseDTO.of(randomProducts);

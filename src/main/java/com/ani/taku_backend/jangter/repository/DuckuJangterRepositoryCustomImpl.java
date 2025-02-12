@@ -1,6 +1,5 @@
 package com.ani.taku_backend.jangter.repository;
 
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
@@ -9,6 +8,7 @@ import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredPr
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.*;
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.user.model.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
@@ -17,6 +17,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -26,10 +27,6 @@ import java.util.List;
 
 import static com.ani.taku_backend.common.model.entity.QImage.image;
 import static com.ani.taku_backend.jangter.model.entity.QDuckuJangter.duckuJangter;
-
-
-import lombok.extern.slf4j.Slf4j;
-
 
 @Repository
 @Slf4j
@@ -211,7 +208,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         BigDecimal minPrice = request.getMinPrice();
         BigDecimal maxPrice = request.getMaxPrice();
         Long itemCategoryId = request.getItemCategoryId();
-        StatusType status = request.getStatus();
+        ProductStatus status = request.getStatus();
         Long productId = request.getProductId();
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
@@ -267,7 +264,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                 .from(duckuJangter)
                 .leftJoin(duckuJangterBookmark)
                 .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
-                .where(duckuJangter.status.eq(StatusType.ACTIVE),
+                .where(duckuJangter.status.eq(ProductStatus.FOR_SALE),
                         duckuJangter.itemCategories.id.eq(categoryId))
                 .fetch();
     }
@@ -285,7 +282,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                 .from(duckuJangter)
                 .leftJoin(duckuJangterBookmark)
                 .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
-                .where(duckuJangter.id.eq(productId) , duckuJangter.deletedAt.isNull() , duckuJangter.status.eq(StatusType.ACTIVE))
+                .where(duckuJangter.id.eq(productId) , duckuJangter.deletedAt.isNull() , duckuJangter.status.eq(ProductStatus.FOR_SALE))
                 .fetch();
     }
 
