@@ -145,8 +145,8 @@ public class ChatRoomService {
 
         Participants participants = chatRoomMetaInfo.getParticipants();
 
-        Long buyerId = Long.valueOf(0);
-        Long sellerId = Long.valueOf(0);
+        Long buyerId = 0L;
+        Long sellerId = 0L;
         for(Long key: participants.getInfo().keySet()){
 
             if(participants.getInfo().get(key).getRole()==ParticipantRole.BUYER){
@@ -156,7 +156,7 @@ public class ChatRoomService {
             }
         }
 
-        if (!participants.containsUser(userId)||buyerId==0||sellerId==0) {
+        if (!participants.containsUser(userId)||buyerId==0L||sellerId==0L) {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
 
