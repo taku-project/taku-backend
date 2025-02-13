@@ -550,13 +550,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
     @Override
     @Transactional
-    public void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO requestDTO, User user) {
-        // 상품과 최신 시세 정보를 한 번에 조회
-        ProductStatusDTO productStatus = duckuJangterRepository.findProductWithLatestStats(productId)
+    public void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO request, User user) {
+        request.validateSoldPrice();
+        DuckuJangter product = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
         
-        DuckuJangter product = productStatus.getProduct();
-                
         // 삭제된 상품인지 확인
         checkDeleteProduct(product);
         
@@ -567,16 +565,17 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         
         // 상태 변경 및 판매가 업데이트
         product.updateStatus(
-            requestDTO.getStatus(),
-            requestDTO.getSoldPrice() != null ? BigDecimal.valueOf(requestDTO.getSoldPrice()) : null
+            request.getStatus(),
+            request.getSoldPrice() != null ? BigDecimal.valueOf(request.getSoldPrice()) : null
         );
 
         // SOLD_OUT 상태로 변경된 경우
-        if (requestDTO.getStatus() == ProductStatus.SOLD_OUT) {
+        if (request.getStatus() == ProductStatus.SOLD_OUT) {
             // 시세 정보 업데이트
-            MarketPriceStats latestStats = productStatus.getLatestStats();
+            MarketPriceStats latestStats = duckuJangterRepository.findProductWithLatestStats(productId)
+                    .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST)).getLatestStats();
             if (latestStats != null) {
-                latestStats.updateSoldPrice(BigDecimal.valueOf(requestDTO.getSoldPrice()));
+                latestStats.updateSoldPrice(BigDecimal.valueOf(request.getSoldPrice()));
             }
             
             // 거래 완료 정보 저장
@@ -585,7 +584,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 .marketPriceStats(latestStats)
                 .title(product.getTitle())
                 .purchaseUserId(user.getUserId())
-                .price(BigDecimal.valueOf(requestDTO.getSoldPrice()))
+                .price(BigDecimal.valueOf(request.getSoldPrice()))
                 .categoryName(product.getItemCategories().getName())
                 .searchKeywords(String.join(",", extractKeywordService.extractKeywords(product.getTitle())))
                 .build();

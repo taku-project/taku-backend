@@ -16,6 +16,9 @@ public interface MarketPriceStatsRepository extends JpaRepository<MarketPriceSta
     Optional<MarketPriceStats> findFirstByProductOrderByRegisteredDateDesc(DuckuJangter product);
     List<MarketPriceStats> findByTitleContaining(String keyword);
 
+    @Query("SELECT m FROM MarketPriceStats m WHERE m.product.id = :productId ORDER BY m.registeredDate DESC")
+    Optional<MarketPriceStats> findLatestByProductId(@Param("productId") Long productId);
+
     @Query("""
             SELECT new com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO(
                 AVG(m.registeredPrice),

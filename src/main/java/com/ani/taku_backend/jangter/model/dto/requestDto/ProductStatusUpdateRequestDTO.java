@@ -18,19 +18,22 @@ public class ProductStatusUpdateRequestDTO {
     @Schema(description = "변경할 상품 상태", example = "RESERVED 또는 SOLD_OUT")
     private ProductStatus status;
     
-    @Positive(message = "판매가는 0보다 커야 합니다.")
     @Schema(description = "판매 완료 가격 (SOLD_OUT 상태로 변경 시 필수)", example = "50000")
     private Long soldPrice;
     
     public ProductStatusUpdateRequestDTO(ProductStatus status, Long soldPrice) {
         this.status = status;
         this.soldPrice = soldPrice;
-        validateSoldPrice();
     }
 
-    private void validateSoldPrice() {
-        if (status == ProductStatus.SOLD_OUT && soldPrice == null) {
-            throw new DuckwhoException(ErrorCode.MISSING_SOLD_PRICE);
+    public void validateSoldPrice() {
+        if (status == ProductStatus.SOLD_OUT) {
+            if (soldPrice == null) {
+                throw new DuckwhoException(ErrorCode.MISSING_SOLD_PRICE);
+            }
+            if (soldPrice < 0) {
+                throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
+            }
         }
     }
 } 
