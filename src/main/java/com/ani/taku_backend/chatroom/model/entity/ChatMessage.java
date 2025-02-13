@@ -37,4 +37,17 @@ public class ChatMessage {
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
+
+    public static ChatMessage of(Long roomId, Long articleId, Long senderId, String content) {
+        return new ChatMessage(
+                null, // MongoDB의 경우 ID는 자동 생성
+                roomId,
+                articleId,
+                senderId,
+                content,
+                LocalDateTime.now(), // 전송 시간 자동 설정
+                false, // 기본적으로 읽지 않음
+                ChatRoomStatus.ACTIVE // 기본 상태
+        );
+    }
 }

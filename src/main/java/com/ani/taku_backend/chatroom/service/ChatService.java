@@ -37,14 +37,7 @@ public class ChatService {
                 .orElseThrow(() -> new RuntimeException("Chat room not found"));
 
         // MongoDB에 메시지 저장
-        ChatMessage message = new ChatMessage();
-        message.setRoomId(chatRoom.getId());
-        message.setArticleId(chatRoom.getArticleId());
-        message.setSenderId(senderId);
-        message.setContent(content);
-        message.setSentAt(LocalDateTime.now());
-        message.setRead(false); // 처음에는 읽지 않은 상태
-        message.setStatus(ChatRoomStatus.ACTIVE);
+        ChatMessage message = ChatMessage.of(roomId, chatRoom.getArticleId(), senderId, content);
 
         chatMessageRepository.save(message);
         updateLastMessageId(roomId, message.getId());
