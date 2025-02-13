@@ -20,8 +20,7 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-    @Autowired
-    private ChatService chatService;
+    private final ChatService chatService;
 
     @Operation(summary = "채팅방 생성")
     @PostMapping
