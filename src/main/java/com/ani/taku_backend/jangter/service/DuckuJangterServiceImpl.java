@@ -552,9 +552,13 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     @Transactional
     public void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO request, User user) {
         request.validateSoldPrice();
-        DuckuJangter product = duckuJangterRepository.findById(productId)
+        
+        // 상품과 최신 시세 정보를 한 번에 조회
+        ProductStatusDTO productStatus = duckuJangterRepository.findProductWithLatestStats(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
         
+        DuckuJangter product = productStatus.getProduct();
+                
         // 삭제된 상품인지 확인
         checkDeleteProduct(product);
         
@@ -571,9 +575,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // SOLD_OUT 상태로 변경된 경우
         if (request.getStatus() == ProductStatus.SOLD_OUT) {
-            // 시세 정보 업데이트
-            MarketPriceStats latestStats = duckuJangterRepository.findProductWithLatestStats(productId)
-                    .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST)).getLatestStats();
+            // 시세 정보 업데이트 - 이미 조회된 정보 사용
+            MarketPriceStats latestStats = productStatus.getLatestStats();
             if (latestStats != null) {
                 latestStats.updateSoldPrice(BigDecimal.valueOf(request.getSoldPrice()));
             }
