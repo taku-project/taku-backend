@@ -65,8 +65,12 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
     @Query("SELECT new com.ani.taku_backend.jangter.model.dto.ProductStatusDTO(" +
            "d, m) FROM DuckuJangter d " +
            "LEFT JOIN MarketPriceStats m ON m.product = d " +
-           "WHERE d.id = :productId " +
-           "AND m.id = (SELECT MAX(m2.id) FROM MarketPriceStats m2 WHERE m2.product = d)")
+           "AND m.registeredDate = (" +
+           "    SELECT MAX(m2.registeredDate) " +
+           "    FROM MarketPriceStats m2 " +
+           "    WHERE m2.product = d" +
+           ") " +
+           "WHERE d.id = :productId")
     Optional<ProductStatusDTO> findProductWithLatestStats(@Param("productId") Long productId);
 
     @EntityGraph(attributePaths = {"jangterImages", "jangterImages.image", "user", "itemCategories"})
