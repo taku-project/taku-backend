@@ -4,6 +4,9 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
@@ -15,10 +18,17 @@ import lombok.NoArgsConstructor;
 public class ProductStatusUpdateRequestDTO {
     
     @NotNull(message = "상태는 필수 입력값입니다.")
-    @Schema(description = "변경할 상품 상태", example = "RESERVED 또는 SOLD_OUT")
+    @Schema(type = "string", 
+           description = "변경할 상품 상태", 
+           example = "RESERVED",
+           enumAsRef = true,
+           implementation = ProductStatus.class)
     private ProductStatus status;
     
-    @Schema(description = "판매 완료 가격 (SOLD_OUT 상태로 변경 시 필수)", example = "50000")
+    @Schema(description = "판매 완료 가격 (SOLD_OUT 상태로 변경 시 필수)", 
+           example = "50000",
+           type = "integer",
+           format = "int64")
     private Long soldPrice;
     
     public ProductStatusUpdateRequestDTO(ProductStatus status, Long soldPrice) {

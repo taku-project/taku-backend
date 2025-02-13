@@ -9,8 +9,9 @@ import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
-import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 
+
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
@@ -24,6 +25,9 @@ import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -205,7 +209,7 @@ public class DuckuJangterController {
 
     @Operation(summary = "상품 상태 변경", 
             description = "상품의 상태를 변경합니다 (판매중 -> 예약중 -> 판매완료)",
-            security = { @SecurityRequirement(name = "Bearer Auth") })
+            security = { @SecurityRequirement(name = "bearerAuth") })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 상태 변경 요청"),
@@ -213,6 +217,45 @@ public class DuckuJangterController {
             @ApiResponse(responseCode = "403", description = "상태 변경 권한 없음"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 상품")
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = ProductStatusUpdateRequestDTO.class),
+            examples = {
+                @ExampleObject(
+                    name = "예약중으로 변경",
+                    value = """
+                    {
+                      "status": "RESERVED",
+                      "soldPrice": null
+                    }
+                    """,
+                    summary = "예약중 상태로 변경"
+                ),
+                @ExampleObject(
+                    name = "판매완료로 변경",
+                    value = """
+                    {
+                      "status": "SOLD_OUT",
+                      "soldPrice": 50000
+                    }
+                    """,
+                    summary = "판매완료 상태로 변경 (가격 필수)"
+                ),
+                @ExampleObject(
+                    name = "판매중으로 변경",
+                    value = """
+                    {
+                      "status": "FOR_SALE",
+                      "soldPrice": null
+                    }
+                    """,
+                    summary = "판매중 상태로 변경"
+                )
+            }
+        )
+    )
     @PatchMapping("/{productId}/status")
     @RequireUser
     public CommonResponse<Void> updateProductStatus(
