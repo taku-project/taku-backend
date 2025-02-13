@@ -6,7 +6,6 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.PeriodType;
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
@@ -72,6 +71,8 @@ import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_STATU
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.marketprice.model.entity.MarketPriceStats;
 import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
+import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
+import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
 
 @Slf4j
 @Service
@@ -94,6 +95,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
     private final JangterRankBaseRepository jangterRankBaseRepository;
     private final MarketPriceStatsService marketPriceStatsService;
+    private final CompletedDealRepository completedDealRepository;
 
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {
@@ -569,13 +571,25 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
             requestDTO.getSoldPrice() != null ? BigDecimal.valueOf(requestDTO.getSoldPrice()) : null
         );
 
-        // SOLD_OUT 상태로 변경된 경우 시세 정보 업데이트
+        // SOLD_OUT 상태로 변경된 경우
         if (requestDTO.getStatus() == ProductStatus.SOLD_OUT) {
-            // 이미 조회된 최신 시세 정보를 활용
+            // 시세 정보 업데이트
             MarketPriceStats latestStats = productStatus.getLatestStats();
             if (latestStats != null) {
                 latestStats.updateSoldPrice(BigDecimal.valueOf(requestDTO.getSoldPrice()));
             }
+            
+            // 거래 완료 정보 저장
+            CompletedDeal completedDeal = CompletedDeal.builder()
+                .product(product)
+                .marketPriceStats(latestStats)
+                .title(product.getTitle())
+                .purchaseUserId(user.getUserId())
+                .price(BigDecimal.valueOf(requestDTO.getSoldPrice()))
+                .categoryName(product.getItemCategories().getName())
+                .searchKeywords(String.join(",", extractKeywordService.extractKeywords(product.getTitle())))
+                .build();
+            completedDealRepository.save(completedDeal);
         }
     }
 
