@@ -83,10 +83,11 @@ public class ChatRoomService {
                     Long sellerId=Long.valueOf(0);
 
                     for(Long key : participants.getInfo().keySet()){
+                        Long id = participants.getInfo().get(key).getUserId();
                         if(participants.getInfo().get(key).getRole()==ParticipantRole.BUYER){
-                            buyerId = participants.getInfo().get(key).getUserId();
+                            buyerId = id;
                         }else{
-                            sellerId = participants.getInfo().get(key).getUserId();
+                            sellerId = id;
                         }
                     }
 
