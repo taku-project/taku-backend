@@ -60,7 +60,7 @@ public class ChatRoomService {
         List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
                 .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
                         .anyMatch(participant -> participant.getIsConnected() != null
-                                && (boolean) participant.getIsConnected()))
+                                &&  participant.getIsConnected()))
                 .collect(Collectors.toList());
 
         // userChatRoomMetaInfos에서 각 채팅방의 ID를 추출
