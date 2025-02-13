@@ -29,7 +29,7 @@ public class ParticipantInfo {
         this.messageStock = 0;
     }
 
-    public void setDisconnected() {
+    public void disconnected() {
         this.isConnected = false;
         this.lastDisconnectedAt = Instant.now();
     }

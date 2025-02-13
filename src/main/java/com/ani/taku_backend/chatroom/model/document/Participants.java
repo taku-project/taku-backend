@@ -33,7 +33,7 @@ public class Participants {
     public synchronized void setDisconnected(Long userId) {
         ParticipantInfo participant = info.get(userId);
         if (participant != null) {
-            participant.setDisconnected();
+            participant.disconnected();
         }
 
 
