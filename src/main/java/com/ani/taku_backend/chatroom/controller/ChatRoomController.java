@@ -69,7 +69,7 @@ public class ChatRoomController {
 
     @Operation(summary = "채팅 메세지 전송")
     @PostMapping("/send")
-    public CommonResponse<Long> sendMessage(@RequestParam Long roomId,
+    public CommonResponse<Void> sendMessage(@RequestParam Long roomId,
                             @RequestParam Long senderId,
                             @RequestParam String content) {
         chatService.sendMessage(roomId, senderId, content);
@@ -79,7 +79,7 @@ public class ChatRoomController {
 
     @Operation(summary = "채팅방 나가기")
     @PostMapping("/leave")
-    public CommonResponse<Long>  leaveRoom(@RequestParam Long chatRoomId,
+    public CommonResponse<Void>  leaveRoom(@RequestParam Long chatRoomId,
                           @RequestParam Long userId) {
         chatService.leaveRoom(chatRoomId, userId);
         return CommonResponse.ok(null);
@@ -87,7 +87,7 @@ public class ChatRoomController {
 
     @Operation(summary = "읽은 메세지 처리", description = "마지막으로 읽은 메세지 id 반환")
     @PostMapping("/mark-as-read")
-    public CommonResponse<Long> markMessagesAsRead(@RequestParam Long chatRoomId,
+    public CommonResponse<Vong> markMessagesAsRead(@RequestParam Long chatRoomId,
                                    @RequestParam Long userId) {
         chatService.markMessagesAsRead(chatRoomId, userId);
         return CommonResponse.ok(null);
