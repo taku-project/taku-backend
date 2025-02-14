@@ -1,7 +1,7 @@
 package com.ani.taku_backend.admin.category.repository;
 
-import com.ani.taku_backend.admin.category.dto.CategorySearchType;
-import com.ani.taku_backend.admin.category.dto.req.AdminCategoryListReqDTO;
+import com.ani.taku_backend.admin.category.domain.dto.CategorySearchType;
+import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryListReqDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryOrderType;
 import com.ani.taku_backend.category.domain.entity.CategoryStatus;

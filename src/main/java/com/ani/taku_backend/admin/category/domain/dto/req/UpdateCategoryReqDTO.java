@@ -1,6 +1,7 @@
-package com.ani.taku_backend.admin.category.dto.req;
+package com.ani.taku_backend.admin.category.domain.dto.req;
 
 import com.ani.taku_backend.category.domain.entity.CategoryStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class UpdateCategoryReqDTO {
-    private CategoryStatus status;
+    @NotNull
     private Long categoryId;
+    @NotNull
+    private CategoryStatus categoryStatus;
 }
