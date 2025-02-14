@@ -21,10 +21,13 @@ public class PopularPostItemDTO {
     private Long id;
 
     @Schema(description = "유저 ID")
-    private Long userId;     // User 객체 대신 ID만 포함
+    private Long userId;
+
+    @Schema(description = "유저 이미지 URL")
+    private String userImageUrl;
 
     @Schema(description = "카테고리 ID")
-    private Long categoryId; // Category 객체 대신 ID만 포함
+    private Long categoryId;
 
     @Schema(description = "카테고리 이름")
     private String categoryName;
@@ -36,7 +39,7 @@ public class PopularPostItemDTO {
     private String content;
 
     @Schema(description = "저장된 이미지 URL")
-    private String imageUrl;   // Image 링크를 응답
+    private String imageUrl;
 
     @Schema(description = "저장된 게시글 시간(update되면 update된 시간 반영)", example = "2025-08-37 20:41")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)  // 테스트 해보기
@@ -50,9 +53,6 @@ public class PopularPostItemDTO {
 
     @Schema(description = "유저 닉네임")
     private String userNickname;
-
-    @Schema(description = "유저 이미지")
-    private String userImageUrl;
 
     @QueryProjection
     public PopularPostItemDTO(Long id, Long userId, Long categoryId, String categoryName, String title, String content, String imageUrl, LocalDateTime updatedAt, long views, String userNickname, String userImageUrl) {
