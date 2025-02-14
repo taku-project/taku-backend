@@ -27,7 +27,7 @@ public class ChatRoom extends BaseTimeEntity {
     private Long id;
 
     @Column(name = "room_id", unique = true)
-    private String chatRoomId;  // WebSocket 세션 관리용 ID
+    private String wsRoomId;  // WebSocket 세션 관리용 ID
 
     @Column(name = "article_id", nullable = false)
     private Long articleId;  //판매글 id
@@ -39,7 +39,7 @@ public class ChatRoom extends BaseTimeEntity {
 
     @Builder
     public ChatRoom(Long articleId) {
-        this.chatRoomId = UUID.randomUUID().toString();
+        this.wsRoomId = UUID.randomUUID().toString();
         this.articleId = articleId;
         this.status = ChatRoomStatus.ACTIVE;
 

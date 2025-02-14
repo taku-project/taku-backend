@@ -65,7 +65,7 @@ public class ChatRoomService {
 
         // userChatRoomMetaInfos에서 각 채팅방의 ID를 추출
         List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
-                .map(ChatRoomMetaInfo::getWsRoomId)
+                .map(ChatRoomMetaInfo::getChatroomId)
                 .collect(Collectors.toList());
 
 
@@ -93,7 +93,7 @@ public class ChatRoomService {
 
                     return new ChatRoomResponseDTO(
                             chatRoom.getId(),
-                            chatRoom.getChatRoomId(),
+                            chatRoom.getWsRoomId(),
                             chatRoom.getArticleId(),
                             buyerId,
                             sellerId,
