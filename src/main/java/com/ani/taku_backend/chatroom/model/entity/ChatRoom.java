@@ -26,28 +26,23 @@ public class ChatRoom extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_id", unique = true)
-    private String roomId;  // WebSocket 세션 관리용 ID
+    @Column(name = "ws_room_id", unique = true)
+    private String wsRoomId;  // WebSocket 세션 관리용 ID
 
     @Column(name = "article_id", nullable = false)
     private Long articleId;  //판매글 id
 
-    @Column(name = "buyer_id", nullable = false)
-    private Long buyerId;
-
-    @Column(name = "seller_id", nullable = false)
-    private Long sellerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
     @Builder
-    public ChatRoom(Long articleId, Long buyerId, Long sellerId) {
-        this.roomId = UUID.randomUUID().toString();
+    public ChatRoom(Long articleId) {
+        this.wsRoomId = UUID.randomUUID().toString();
         this.articleId = articleId;
-        this.buyerId = buyerId;
-        this.sellerId = sellerId;
+        this.status = ChatRoomStatus.ACTIVE;
+
     }
 
     public void deactivate() {
