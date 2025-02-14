@@ -14,7 +14,7 @@ public record ChatRoomResponseDTO(
     public static ChatRoomResponseDTO of(ChatRoom chatRoom, Long buyerId, Long sellerId) {
         return new ChatRoomResponseDTO(
                 chatRoom.getId(),
-                chatRoom.getRoomId(),
+                chatRoom.getChatRoomId(),
                 chatRoom.getArticleId(),
                 buyerId,
                 sellerId,

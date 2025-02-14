@@ -1,7 +1,6 @@
 package com.ani.taku_backend.chatroom.model.document;
 
 import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +13,8 @@ import java.time.Instant;
 @Setter
 public class ChatRoomMetaInfo {
     @Id
-    private Long chatroomId;
+    private String id;
+    private Long wsRoomId;
     private Participants participants;
 
     private String lastMessageId;
@@ -24,7 +24,7 @@ public class ChatRoomMetaInfo {
 
     @Builder
     public ChatRoomMetaInfo(Long chatroomId) {
-        this.chatroomId = chatroomId;
+        this.wsRoomId = chatroomId;
         this.participants = new Participants();
         this.updateAt = Instant.now();
     }

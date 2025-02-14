@@ -14,7 +14,7 @@ import com.ani.taku_backend.chatroom.repository.ParticipantInfoRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,7 +65,7 @@ public class ChatRoomService {
 
         // userChatRoomMetaInfos에서 각 채팅방의 ID를 추출
         List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
-                .map(ChatRoomMetaInfo::getChatroomId)
+                .map(ChatRoomMetaInfo::getWsRoomId)
                 .collect(Collectors.toList());
 
 
@@ -93,7 +93,7 @@ public class ChatRoomService {
 
                     return new ChatRoomResponseDTO(
                             chatRoom.getId(),
-                            chatRoom.getRoomId(),
+                            chatRoom.getChatRoomId(),
                             chatRoom.getArticleId(),
                             buyerId,
                             sellerId,

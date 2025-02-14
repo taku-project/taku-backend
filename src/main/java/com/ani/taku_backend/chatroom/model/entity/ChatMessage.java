@@ -21,7 +21,7 @@ public class ChatMessage {
     @Id
     private String id;
 
-    private Long roomId; // (ChatRoom의 Id와 연결)
+    private Long chatRoomId; // (ChatRoom의 Id와 연결)
 
     private Long articleId; // 판매글 ID, ChatRoom에서 참조
 
