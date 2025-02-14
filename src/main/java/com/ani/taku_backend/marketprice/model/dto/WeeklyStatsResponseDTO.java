@@ -23,6 +23,12 @@ public record WeeklyStatsResponseDTO(
     @Schema(description = "거래 건수", example = "42")
     long totalDeals
 ) {
+    public WeeklyStatsResponseDTO {
+        if (averagePrice != null) {
+            averagePrice = averagePrice.setScale(2, java.math.RoundingMode.HALF_UP);
+        }
+    }
+
     public static WeeklyStatsResponseDTO empty() {
         return new WeeklyStatsResponseDTO(
             BigDecimal.ZERO,

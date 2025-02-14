@@ -121,6 +121,6 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                         stats.soldPrice.isNotNull()
                 )
                 .fetchOne();
-        return avg == null ? BigDecimal.ZERO : BigDecimal.valueOf(avg);
+        return avg == null ? BigDecimal.ZERO : BigDecimal.valueOf(avg).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 }
