@@ -21,4 +21,6 @@ public interface PostInteractionCounterRepositoryCustom {
     Map<Long, Long> findLikesByPostIds(List<Long> postIds);
 
     List<PostInteractionCounter> findPopularPost(PopularPeriodType periodType);
+
+    boolean isPostLikedByUser(Long postId, Long userId);
 }

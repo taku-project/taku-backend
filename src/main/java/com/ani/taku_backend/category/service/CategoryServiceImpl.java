@@ -1,5 +1,7 @@
 package com.ani.taku_backend.category.service;
 
+import com.ani.taku_backend.category.domain.dto.AniGenreListReqDTO;
+import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
@@ -50,15 +52,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 카테고리 생성
+     *
      * @param principalUser
      * @param requestCategoryCreateDTO
-     * @param uploadFile
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
     @RequireUser
-    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO, MultipartFile uploadFile) throws DuckwhoException {
-
+    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO) throws DuckwhoException {
+        MultipartFile uploadFile = requestCategoryCreateDTO.getImage();
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
             throw new DuckwhoException(ErrorCode.INVALID_FILE_FORMAT);
@@ -104,6 +106,14 @@ public class CategoryServiceImpl implements CategoryService {
 
 
         return ResponseCategoryDTO.of(categoryOptional.get());
+    }
+
+    @Override
+    public AniGenreListReqDTO findAniGenres(String keyword) {
+        List<AniGenreResDTO> aniGenres = animationGenreRepository.findByGenreName(keyword);
+        return AniGenreListReqDTO.builder()
+                .genres(aniGenres)
+                .build();
     }
 
     /**

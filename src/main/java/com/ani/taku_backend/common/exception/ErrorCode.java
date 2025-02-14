@@ -73,12 +73,16 @@ public enum ErrorCode {
 
     // Interactive
     NOT_FOUND_INTERACTION(40408, HttpStatus.NOT_FOUND, "존재하지 않는 상호작용입니다."),
+
     // Chat
     DUPLICATE_CHAT_ROOM(40903, HttpStatus.CONFLICT, "이미 존재하는 채팅방입니다."),
     CHAT_ROOM_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
 
+
+    INVALID_CHAT_USER(40408, HttpStatus.NOT_FOUND, "채팅방에 존재하지 않는 유저입니다."),
+
     // Category Bookmark
-    NOT_FOUND_CATEGORY_BOOKMARK(40409, HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 북마크입니다."),
+    NOT_FOUND_CATEGORY_BOOKMARK(40409, HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 북마크입니다.");
     ;
 
     // 403 Forbidden

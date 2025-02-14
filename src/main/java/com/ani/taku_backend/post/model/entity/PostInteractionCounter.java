@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Document(collection = "posts_interaction_counter")
 @Getter
@@ -28,6 +30,10 @@ public class PostInteractionCounter {
     @Field(name = "category_id")
     private Long categoryId; // 카테고리 ID 추가
 
+    @Field(name = "liked_user_ids")
+    @Builder.Default
+    private Set<Long> likedUserIds = new HashSet<>(); // 좋아요를 누른 사용자 ID 목록
+
     @Field(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -42,6 +48,7 @@ public class PostInteractionCounter {
                 .categoryId(post.getCategory().getId())
                 .createdAt(LocalDateTime.now())
                 .deletedAt(post.getDeletedAt())
+                .likedUserIds(new HashSet<>())
                 .build();
     }
 
