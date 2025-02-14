@@ -73,9 +73,13 @@ public enum ErrorCode {
 
     // Interactive
     NOT_FOUND_INTERACTION(40408, HttpStatus.NOT_FOUND, "존재하지 않는 상호작용입니다."),
+
     // Chat
     DUPLICATE_CHAT_ROOM(40903, HttpStatus.CONFLICT, "이미 존재하는 채팅방입니다."),
     CHAT_ROOM_NOT_FOUND(40407, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+
+
+    INVALID_CHAT_USER(40408, HttpStatus.NOT_FOUND, "채팅방에 존재하지 않는 유저입니다."),
 
     // Category Bookmark
     NOT_FOUND_CATEGORY_BOOKMARK(40409, HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 북마크입니다."),
@@ -84,6 +88,7 @@ public enum ErrorCode {
     INVALID_STATUS_TRANSITION(40007, HttpStatus.BAD_REQUEST, "허용되지 않는 상태 변경입니다."),
     MISSING_SOLD_PRICE(40008, HttpStatus.BAD_REQUEST, "판매 완료 시 판매가는 필수입니다."),
     UNAUTHORIZED_STATUS_UPDATE(40302, HttpStatus.FORBIDDEN, "상품 상태를 변경할 권한이 없습니다."),
+
     ;
 
     // 403 Forbidden

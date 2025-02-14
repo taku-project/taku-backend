@@ -14,7 +14,9 @@ import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
+
 import com.ani.taku_backend.jangter.model.entity.UserInteraction.SearchLogDetail;
 
 import com.ani.taku_backend.jangter.service.DuckuJangterService;
@@ -102,7 +104,6 @@ public class DuckuJangterController {
                 .searchCategory(Collections.singletonList(request.getCategoryId()))
                 .sortType(sortFilterType)
                 .build();
-
 
         userInteractionService.saveLog(null, LogType.SEARCH, logDetail );
 

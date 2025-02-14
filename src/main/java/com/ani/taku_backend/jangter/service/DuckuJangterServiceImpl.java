@@ -93,9 +93,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
 
+
     private final JangterRankBaseRepository jangterRankBaseRepository;
     private final MarketPriceStatsService marketPriceStatsService;
     private final CompletedDealRepository completedDealRepository;
+
 
     @Transactional(readOnly = true)
     public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {

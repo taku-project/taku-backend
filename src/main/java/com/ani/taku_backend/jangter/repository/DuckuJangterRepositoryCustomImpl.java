@@ -37,9 +37,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
 
 
     @Override
-    public List<ProductFindListResponseDTO> findFilteredProducts(
-            ProductFindListRequestDTO request
-           ) {
+    public List<ProductFindListResponseDTO> findFilteredProducts( ProductFindListRequestDTO request) {
 
         String keyword = request.getSearchKeyword();
         Long categoryId = request.getCategoryId();

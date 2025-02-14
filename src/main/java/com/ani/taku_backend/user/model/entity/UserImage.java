@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
+
 
 
 /**
@@ -26,8 +26,8 @@ import lombok.AccessLevel;
 @Entity
 @Table(name = "user_images")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
