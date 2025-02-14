@@ -26,7 +26,7 @@ public class ChatRoom extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_id", unique = true)
+    @Column(name = "ws_room_id", unique = true)
     private String wsRoomId;  // WebSocket 세션 관리용 ID
 
     @Column(name = "article_id", nullable = false)

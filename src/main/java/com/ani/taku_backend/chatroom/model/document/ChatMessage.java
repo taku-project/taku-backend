@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.model.entity;
+package com.ani.taku_backend.chatroom.model.document;
 
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import jakarta.persistence.Column;
@@ -20,6 +20,7 @@ public class ChatMessage {
 
     @Id
     private String id;
+
 
     private Long chatRoomId; // (ChatRoom의 Id와 연결)
 

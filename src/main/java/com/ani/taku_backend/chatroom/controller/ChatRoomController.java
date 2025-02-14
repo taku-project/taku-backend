@@ -34,7 +34,11 @@ public class ChatRoomController {
     @GetMapping
     public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
             @RequestParam Long userId) {
+        long startTime = System.nanoTime();
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(userId);
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1_000_000;
+        System.out.println("Execution Time: " + duration + " ms");
         return CommonResponse.ok(chatRooms);
     }
 

@@ -1,12 +1,13 @@
 package com.ani.taku_backend.chatroom.model.document;
 
 import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.time.Instant;
 
 @Document(collection = "chat_room_meta")
@@ -15,7 +16,8 @@ import java.time.Instant;
 public class ChatRoomMetaInfo {
     @Id
     private String id;
-    private Long chatroomId;
+    @Field("chatRoomId")
+    private Long chatRoomId;
     private Participants participants;
 
     private String lastMessageId;
@@ -24,8 +26,8 @@ public class ChatRoomMetaInfo {
     private boolean isActive = true;
 
     @Builder
-    public ChatRoomMetaInfo(Long chatroomId) {
-        this.chatroomId = chatroomId;
+    public ChatRoomMetaInfo(Long chatRoomId) {
+        this.chatRoomId = chatRoomId;
         this.participants = new Participants();
         this.updateAt = Instant.now();
     }

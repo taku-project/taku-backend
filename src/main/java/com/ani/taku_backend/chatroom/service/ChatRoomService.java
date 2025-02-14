@@ -16,6 +16,8 @@ import com.ani.taku_backend.common.exception.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +45,7 @@ public class ChatRoomService {
 
         // 채팅방 메타정보 생성
         ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.builder()
-                .chatroomId(savedRoom.getId())
+                .chatRoomId(savedRoom.getId())
                 .build();
         metaInfo.initializeParticipants(requestDto.buyerId(), requestDto.sellerId());
         chatroomMetaRepository.save(metaInfo);
@@ -56,6 +58,12 @@ public class ChatRoomService {
         List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatroomMetaRepository
                 .findByParticipantsUserId(userId);  // participants에 userId가 포함된 채팅방 정보만 가져옴
 
+        if(userChatRoomMetaInfos.isEmpty()){
+            return null;
+        }
+
+        System.out.println(userChatRoomMetaInfos.size());
+
         // isConnected가 true인 채팅방만 필터링
         List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
                 .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
@@ -63,20 +71,32 @@ public class ChatRoomService {
                                 &&  participant.getIsConnected()))
                 .collect(Collectors.toList());
 
+
+
         // userChatRoomMetaInfos에서 각 채팅방의 ID를 추출
         List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
-                .map(ChatRoomMetaInfo::getChatroomId)
+                .map(ChatRoomMetaInfo::getChatRoomId)
                 .collect(Collectors.toList());
+
+        // 모든 채팅방 메타 정보 한 번에 조회 (중복된 DB 조회 방지)
+        Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = chatroomMetaRepository.findByChatRoomIdIn(chatRoomIds).stream()
+                .collect(Collectors.toMap(ChatRoomMetaInfo::getChatRoomId, metaInfo -> metaInfo));
 
 
         // ChatRoom에서 해당 ID들만 조회
         List<ChatRoom> userChatRooms = chatRoomRepository
                 .findByIdInAndStatus(chatRoomIds, ChatRoomStatus.ACTIVE);  // 채팅방 상태가 ACTIVE인 것만 조회
 
+        System.out.println(userChatRooms.size());
 
         return userChatRooms.stream()
                 .map(chatRoom -> {
-                    ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoom.getId()).get();
+                    ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoMap.get(chatRoom.getId());
+                    System.out.println("here"+ chatRoomMetaInfo);
+                    if (chatRoomMetaInfo == null || chatRoomMetaInfo.getParticipants() == null || chatRoomMetaInfo.getParticipants().getInfo() == null) {
+                        return null; // null 반환 -> filter에서 제거됨
+                    }
+
                     Participants participants = chatRoomMetaInfo.getParticipants();
 
                     Long buyerId=Long.valueOf(0);
@@ -100,6 +120,7 @@ public class ChatRoomService {
                             chatRoom.getCreatedAt()
                     );}
                 )
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -139,7 +160,7 @@ public class ChatRoomService {
     }
 
     public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
-        ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
         ChatRoomMetaInfo chatRoomMetaInfo  = chatroomMetaRepository.findById(chatRoom.getId()).get();
@@ -166,7 +187,7 @@ public class ChatRoomService {
 
     public Integer getChatRoomUnreadCount(String roomId, Long userId) {
 
-        ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId).get();
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId).get();
         ChatRoomMetaInfo metaInfo = chatroomMetaRepository.findById(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 

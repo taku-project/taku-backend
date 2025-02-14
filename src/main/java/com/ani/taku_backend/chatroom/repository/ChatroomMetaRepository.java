@@ -16,5 +16,7 @@ public interface ChatroomMetaRepository extends MongoRepository<ChatRoomMetaInfo
     @Query("{ 'participants.info.?0': {$exists: true} }")
     List<ChatRoomMetaInfo> findByParticipantsUserId(Long userId);
 
+    ChatRoomMetaInfo findByChatRoomId(Long chatRoomId);
 
+    List<ChatRoomMetaInfo> findByChatRoomIdIn(List<Long> chatRoomIds);
 }

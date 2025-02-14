@@ -1,8 +1,7 @@
 package com.ani.taku_backend.chatroom.service;
 
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.model.entity.ChatMessage;
+import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaInfoRepository;
 import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,7 +88,7 @@ public class ChatService {
     public void markMessagesAsRead(Long chatRoomId,  Long userId) {
 
         // MongoDB에 저장된 메시지의 읽음 상태를 업데이트
-        List<ChatMessage> messages = chatMessageRepository.findByRoomId(chatRoomId);
+        List<ChatMessage> messages = chatMessageRepository.findByChatRoomId(chatRoomId);
         System.out.println(messages.size());
         for (ChatMessage message : messages) {
             if (!message.getSenderId().equals(userId)) {
