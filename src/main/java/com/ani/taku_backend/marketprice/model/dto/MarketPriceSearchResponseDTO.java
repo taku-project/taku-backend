@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import java.math.BigDecimal;
 import lombok.Builder;
 
 @Builder
@@ -21,5 +22,8 @@ public record MarketPriceSearchResponseDTO(
     WeeklyStatsResponseDTO weeklyStats,
 
     @Schema(description = "유사 상품 목록")
-    List<SimilarProductResponseDTO> similarProducts
+    List<SimilarProductResponseDTO> similarProducts,
+
+    @Schema(description = "판매 완료 상품 평균 판매 가격", example = "45000")
+    BigDecimal averageSoldPrice
 ) {}
