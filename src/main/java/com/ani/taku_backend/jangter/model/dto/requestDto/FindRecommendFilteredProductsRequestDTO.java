@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.model.dto.requestDto;
 
-import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +17,6 @@ public class FindRecommendFilteredProductsRequestDTO {
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private Long itemCategoryId;
-    private StatusType status;
+    private ProductStatus status;
     private Long productId;
 }

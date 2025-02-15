@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,7 +24,11 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "market_price_stats")
+@Table(name = "market_price_stats",
+       indexes = {
+           @Index(name = "idx_market_price_stats_product_date", 
+                  columnList = "product_id,registered_date")
+       })
 public class MarketPriceStats extends BaseTimeEntity {
 
     @Id
