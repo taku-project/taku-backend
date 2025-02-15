@@ -76,8 +76,10 @@ public class PostInteractionService {
         if (requestCount >= 2) {
             redisService.setKeyValue(lockKey, "lock", LOCK_TIME);
             redisService.deleteKeyValue(countKey);  // 카운트 초기화, 한번 락 걸리면 레디스의 countKey 내역은 초기화, lockKey는 10초가 지나면 자동으로 삭제
+            log.debug("2번 연속 입력, 락 상태");
         } else {
             redisService.setKeyValue(countKey, String.valueOf(requestCount + 1), LOCK_TIME);
+            log.debug("1번 연속 입력");
         }
     }
 
