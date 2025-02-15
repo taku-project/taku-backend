@@ -16,4 +16,5 @@ public interface CommentsService {
 
     List<CommentsResponseDTO> getPostComments(Long postId, Long currentUserId);
 
+    long getCommentCount(Long postId);
 }

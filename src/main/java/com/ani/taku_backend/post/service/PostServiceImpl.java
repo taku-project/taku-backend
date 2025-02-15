@@ -167,8 +167,9 @@ public class PostServiceImpl implements PostService {
         boolean isLiked = currentUserId != null && postInteractionCounterRepository.isPostLikedByUser(postId, currentUserId);
 
         List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
+        long commentCount = commentsService.getCommentCount(postId);
 
-        return new PostDetailResponseDTO(findPost, isOwner, comments, likeCount, isLiked);
+        return new PostDetailResponseDTO(findPost, isOwner, comments, likeCount, isLiked, commentCount);
     }
 
     /**
