@@ -39,22 +39,28 @@ public class PostInteractionService {
      */
     @Transactional
     public long togglePostLike(Long postId, User user, InteractionType type) {
+        log.debug("좋아요 토글 시작 - postId: {}, userId: {}, type: {}", postId, user.getUserId(), type);
 
         Post findPost = findPostWithValid(postId);          // 게시글이 없으면 예외
         handleRateLimit(user, findPost);                    // 3번이상 연속 클릭 시 10초 락
 
         // 상호작용 찾기
         Optional<PostInteraction> findInteraction = interactionRepository.findByPostIdAndUserId(findPost.getId(), user.getUserId());
+        log.debug("기존 좋아요 상태 - exists: {}", findInteraction.isPresent());
 
         validCounter(findPost); // 카운터가 없으면 생성
 
         if (findInteraction.isPresent()) {
+            log.debug("좋아요 취소 실행");
             cancelLike(findInteraction.get(), findPost.getId(), type);
         } else {
+            log.debug("좋아요 추가 실행");
             addLike(findPost, user, type);
         }
 
-        return counterRepository.getPostLikes(findPost.getId());       // 좋아요 개수 반환
+        long likes = counterRepository.getPostLikes(findPost.getId());
+        log.debug("최종 좋아요 수: {}", likes);
+        return likes;
     }
 
     /**
@@ -102,7 +108,10 @@ public class PostInteractionService {
      * 좋아요 카운터 조회, 없으면 생성
      */
     private void validCounter(Post post) {
-        if (!counterRepository.existsById(post.getId())) {
+        boolean exists = counterRepository.existsById(post.getId());
+        log.debug("좋아요 카운터 존재 여부: {}", exists);
+        if (!exists) {
+            log.debug("새로운 좋아요 카운터 생성 - postId: {}", post.getId());
             PostInteractionCounter newCounter = PostInteractionCounter.create(post);
             counterRepository.save(newCounter);
         }
@@ -112,16 +121,20 @@ public class PostInteractionService {
      * 좋아요 추가
      */
     private void addLike(Post post, User user, InteractionType type) {
+        log.debug("좋아요 추가 - postId: {}, userId: {}", post.getId(), user.getUserId());
         PostInteraction interaction = PostInteraction.of(post, user, type);
         interactionRepository.save(interaction);
         counterRepository.incrementPostInteractionCounter(post.getId(), type);
+        log.debug("좋아요 추가 완료");
     }
 
     /**
      * 좋아요 취소
      */
     private void cancelLike(PostInteraction interaction, Long postId, InteractionType type) {
+        log.debug("좋아요 취소 - postId: {}, userId: {}", postId, interaction.getUserId());
         interactionRepository.delete(interaction);
         counterRepository.decrementPostInteractionCounter(postId, type);
+        log.debug("좋아요 취소 완료");
     }
 }
