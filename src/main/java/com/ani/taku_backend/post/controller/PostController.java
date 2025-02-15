@@ -1,7 +1,8 @@
 package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.annotation.ViewCountChecker;
+import com.ani.taku_backend.common.annotation.CheckViewCount;
+import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;
 import com.ani.taku_backend.post.service.PostService;
@@ -86,9 +87,9 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 게시글")
     })
     @GetMapping("/{postId}")
+    @CheckViewCount(viewType = ViewType.POST, targetId = "#postId", expireTime = 1440)
     public CommonResponse<PostDetailResponseDTO> findPostDetail(
             @Parameter(description = "게시글 ID") @PathVariable Long postId,
-            @Parameter(description = "조회수 증가 여부") @ViewCountChecker Boolean canAddView,
             @Parameter(description = "로그인한 사용자 정보 (없을 경우 null)", hidden = true) 
             @AuthenticationPrincipal PrincipalUser principalUser) {
             
@@ -97,7 +98,7 @@ public class PostController {
             currentUserId = principalUser.getUser().getUserId();
         }
         
-        PostDetailResponseDTO detail = postService.getPostDetail(postId, canAddView, currentUserId);
+        PostDetailResponseDTO detail = postService.getPostDetail(postId, currentUserId);
         return CommonResponse.ok(detail);
     }
 
