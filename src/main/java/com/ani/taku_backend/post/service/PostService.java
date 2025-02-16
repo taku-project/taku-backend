@@ -18,5 +18,5 @@ public interface PostService {
 
     void deletePost(Long postId, User user);
 
-    PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId);
+    PostDetailResponseDTO getPostDetail(Long postId, Long currentUserId);
 }

@@ -112,9 +112,10 @@ public class PostInteractionCounterRepositoryCustomImpl implements PostInteracti
      */
     @Override
     public boolean isPostLikedByUser(Long postId, Long userId) {
-        Query query = new Query(Criteria.where(ID.getField()).is(postId)
-                .and("liked_user_ids").in(userId));
-        return mongoTemplate.exists(query, PostInteractionCounter.class);
+        Query query = new Query(Criteria.where("postId").is(postId)
+                .and("userId").is(userId)
+                .and("type").is("like"));
+        return mongoTemplate.exists(query, "posts_interaction");
     }
 
 
