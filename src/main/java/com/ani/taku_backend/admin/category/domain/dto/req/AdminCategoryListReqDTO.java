@@ -1,6 +1,6 @@
-package com.ani.taku_backend.admin.category.dto.req;
+package com.ani.taku_backend.admin.category.domain.dto.req;
 
-import com.ani.taku_backend.admin.category.dto.CategorySearchType;
+import com.ani.taku_backend.admin.category.domain.dto.CategorySearchType;
 import com.ani.taku_backend.category.domain.entity.CategoryStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

@@ -158,23 +158,20 @@ public class PostServiceImpl implements PostService {
      * - 좋아요 정보
      */
     @Transactional
-    public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
+    public PostDetailResponseDTO getPostDetail(Long postId, Long currentUserId) {
         Post findPost = postRepository.findByIdWithImages(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkDeleteProduct(findPost);
-
-        if (canAddView) {
-            postRepository.incrementViewCount(postId);
-        }
 
         boolean isOwner = currentUserId != null && currentUserId.equals(findPost.getUser().getUserId());
         long likeCount = getPostLikeCount(postId);
         boolean isLiked = currentUserId != null && postInteractionCounterRepository.isPostLikedByUser(postId, currentUserId);
 
         List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
+        long commentCount = commentsService.getCommentCount(postId);
 
-        return new PostDetailResponseDTO(findPost, isOwner, comments, likeCount, isLiked);
+        return new PostDetailResponseDTO(findPost, isOwner, comments, likeCount, isLiked, commentCount);
     }
 
     /**

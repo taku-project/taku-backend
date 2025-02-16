@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,7 +49,7 @@ public class DuckuJangter extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 100, nullable = false)
-    private StatusType status;  // 글 상태? 판매중? 판매완료? 이런거..?
+    private ProductStatus status;  // 상품 상태 (FOR_SALE, RESERVED, SOLD_OUT)
 
     @Column(name = "tfidf_vector",columnDefinition = "TEXT")
     private String tfidfVector;  // TF-IDF 벡터값을 저장.
@@ -115,6 +116,26 @@ public class DuckuJangter extends BaseTimeEntity {
         DuckuJangter duckuJangter = new DuckuJangter();
         duckuJangter.id = id;
         return duckuJangter;
+    }
+
+    /**
+     * 상품 상태 변경
+     */
+    public void updateStatus(ProductStatus newStatus, BigDecimal soldPrice) {
+        // 상태 전환 가능 여부 검증
+        this.status.validateTransitionTo(newStatus);
+        
+        // 상태 변경
+        this.status = newStatus;
+        
+        // SOLD_OUT인 경우 구매자 정보와 판매가 업데이트
+        if (newStatus == ProductStatus.SOLD_OUT) {
+            this.price = soldPrice;
+        }
+    }
+
+    public boolean isOwner(Long userId) {
+        return this.user != null && this.user.getUserId().equals(userId);
     }
 
 }

@@ -86,6 +86,10 @@ public class Category extends BaseTimeEntity {
     public void setCategoryImage(CategoryImage categoryImage) {
         this.categoryImage = categoryImage;
     }
+
+    public void updateCategoryStatus(CategoryStatus status) {
+        this.status = status;
+    }
 }
 
 

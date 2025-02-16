@@ -109,4 +109,18 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .limit(pageable.getPageSize())
                 .fetch();
     }
+
+    @Override
+    public BigDecimal getAverageSoldPrice(String keyword, LocalDate fromDate, LocalDate toDate) {
+        QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
+        Double avg = queryFactory.select(stats.soldPrice.avg())
+                .from(stats)
+                .where(
+                        stats.title.contains(keyword),
+                        stats.registeredDate.between(fromDate, toDate),
+                        stats.soldPrice.isNotNull()
+                )
+                .fetchOne();
+        return avg == null ? BigDecimal.ZERO : BigDecimal.valueOf(avg).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
 }

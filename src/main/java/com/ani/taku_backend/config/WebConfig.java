@@ -1,6 +1,5 @@
 package com.ani.taku_backend.config;
 
-import com.ani.taku_backend.post.viewcount.resolver.ViewCountCheckerResolver;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,14 +23,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${client.dev.front-url}")
     private String devFrontUrl;
 
-    private final ViewCountCheckerResolver viewCountCheckerResolver;
-
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         PageableHandlerMethodArgumentResolver pageableResolver = new PageableHandlerMethodArgumentResolver();
         pageableResolver.setFallbackPageable(PageRequest.of(0, 20, Sort.by("ID").descending()));
         resolvers.add(pageableResolver);
-        resolvers.add(viewCountCheckerResolver);
     }
 
     @Override

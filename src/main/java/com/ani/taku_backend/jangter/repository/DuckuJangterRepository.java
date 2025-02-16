@@ -3,16 +3,19 @@ package com.ani.taku_backend.jangter.repository;
 import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
 
 import io.lettuce.core.dynamic.annotation.Param;
 
 import java.util.List;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 
 
@@ -58,4 +61,18 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
         @Param("status") String status,
         @Param("excludeProductId") Long excludeProductId
     );
+
+    @Query("SELECT new com.ani.taku_backend.jangter.model.dto.ProductStatusDTO(" +
+           "d, m) FROM DuckuJangter d " +
+           "LEFT JOIN MarketPriceStats m ON m.product = d " +
+           "AND m.registeredDate = (" +
+           "    SELECT MAX(m2.registeredDate) " +
+           "    FROM MarketPriceStats m2 " +
+           "    WHERE m2.product = d" +
+           ") " +
+           "WHERE d.id = :productId")
+    Optional<ProductStatusDTO> findProductWithLatestStats(@Param("productId") Long productId);
+
+    @EntityGraph(attributePaths = {"jangterImages", "jangterImages.image", "user", "itemCategories"})
+    Optional<DuckuJangter> findWithDetailsById(Long id);
 }

@@ -23,4 +23,6 @@ public interface PostService {
     PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId);
 
     PopularPostLiestRequestDTO getPopularityPosts(PopularPeriodType periodType);
+  
+    PostDetailResponseDTO getPostDetail(Long postId, Long currentUserId);
 }

@@ -171,4 +171,10 @@ public class CommentsServiceImpl implements CommentsService {
                 })
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getCommentCount(Long postId) {
+        return commentsRepository.countAllCommentsByPostId(postId);
+    }
 }
