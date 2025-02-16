@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.Builder;
 
 @Builder
@@ -25,7 +26,7 @@ public record WeeklyStatsResponseDTO(
 ) {
     public WeeklyStatsResponseDTO {
         if (averagePrice != null) {
-            averagePrice = averagePrice.setScale(2, java.math.RoundingMode.HALF_UP);
+            averagePrice = averagePrice.setScale(2, RoundingMode.HALF_UP);
         }
     }
 
