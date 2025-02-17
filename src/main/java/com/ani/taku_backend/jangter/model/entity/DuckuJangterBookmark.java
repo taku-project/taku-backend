@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.ani.taku_backend.bookmark.domain.Bookmark;
+import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 
 import jakarta.persistence.*;
 
@@ -20,7 +21,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"bookmark", "jangter"})
-public class DuckuJangterBookmark {
+public class DuckuJangterBookmark extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
