@@ -1,8 +1,7 @@
-package com.ani.taku_backend.bookmark.domain;
+package com.ani.taku_backend.category_bookmark.domain;
 
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.user.model.entity.User;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
