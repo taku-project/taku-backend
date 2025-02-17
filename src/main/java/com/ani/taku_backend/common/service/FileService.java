@@ -83,6 +83,8 @@ public class FileService {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());  // Content-Type 설정
+        log.info("file.getSize(): {}, file.getContentType(): {}", file.getSize(), file.getContentType());
+
         // ACL을 public-read로 설정
         PutObjectRequest putObjectRequest = new PutObjectRequest(
                 imageBucket,
