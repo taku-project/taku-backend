@@ -8,5 +8,5 @@ public interface DuckuJangterBookmarkService {
     void addBookmark(Long userId, Long productId);
     void removeBookmark(Long userId, Long productId);
     Page<DuckuJangterBookmarkResponseDTO> getBookmarks(Long userId, Pageable pageable);
-    Page<DuckuJangterBookmarkResponseDTO> getBookmarksByCategory(Long userId, String category, Pageable pageable);
+    Page<DuckuJangterBookmarkResponseDTO> getBookmarksByCategory(Long userId, Long categoryId, Pageable pageable);
 } 

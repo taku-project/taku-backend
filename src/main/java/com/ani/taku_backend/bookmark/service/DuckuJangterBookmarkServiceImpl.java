@@ -39,10 +39,7 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
         DuckuJangter product = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
 
-        Bookmark bookmark = bookmarkRepository.findByUserId(userId)
-                .stream()
-                .filter(b -> b.getIsActive())
-                .findFirst()
+        Bookmark bookmark = bookmarkRepository.findActiveBookmarkByUserId(userId)
                 .orElseGet(() -> bookmarkRepository.save(Bookmark.builder()
                         .user(user)
                         .isActive(true)
@@ -67,10 +64,7 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
         DuckuJangter product = duckuJangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
 
-        Bookmark bookmark = bookmarkRepository.findByUserId(userId)
-                .stream()
-                .filter(b -> b.getIsActive())
-                .findFirst()
+        Bookmark bookmark = bookmarkRepository.findActiveBookmarkByUserId(userId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK));
 
         duckuJangterBookmarkRepository.deleteByBookmarkAndJangter(bookmark, product);
@@ -79,10 +73,7 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     @Override
     @Transactional(readOnly = true)
     public Page<DuckuJangterBookmarkResponseDTO> getBookmarks(Long userId, Pageable pageable) {
-        Bookmark bookmark = bookmarkRepository.findByUserId(userId)
-                .stream()
-                .filter(b -> b.getIsActive())
-                .findFirst()
+        Bookmark bookmark = bookmarkRepository.findActiveBookmarkByUserId(userId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK));
 
         return duckuJangterBookmarkRepository.findAllByBookmarkWithJangter(bookmark, pageable)
@@ -91,23 +82,15 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
 
     @Override
     @Transactional(readOnly = true)
-    public Page<DuckuJangterBookmarkResponseDTO> getBookmarksByCategory(Long userId, String category, Pageable pageable) {
-        Bookmark bookmark = bookmarkRepository.findByUserId(userId)
-                .stream()
-                .filter(b -> b.getIsActive())
-                .findFirst()
+    public Page<DuckuJangterBookmarkResponseDTO> getBookmarksByCategory(Long userId, Long categoryId, Pageable pageable) {
+        Bookmark bookmark = bookmarkRepository.findActiveBookmarkByUserId(userId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK));
 
-        // 카테고리가 존재하는지 검증
-        List<ItemCategories> itemCategories = itemCategoriesRepository.findAll();
-        boolean categoryExists = itemCategories.stream()
-                .anyMatch(ic -> ic.getName().equals(category));
-        
-        if (!categoryExists) {
-            throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
-        }
+        // ID로 카테고리 조회
+        itemCategoriesRepository.findById(categoryId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
 
-        return duckuJangterBookmarkRepository.findAllByBookmarkAndCategoryWithJangter(bookmark, category, pageable)
+        return duckuJangterBookmarkRepository.findAllByBookmarkAndCategoryWithJangter(bookmark, categoryId, pageable)
                 .map(DuckuJangterBookmarkResponseDTO::from);
     }
 } 

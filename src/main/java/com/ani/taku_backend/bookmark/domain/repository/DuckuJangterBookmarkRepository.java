@@ -25,10 +25,10 @@ public interface DuckuJangterBookmarkRepository extends JpaRepository<DuckuJangt
            "JOIN FETCH db.jangter j " +
            "JOIN FETCH j.itemCategories ic " +
            "WHERE db.bookmark = :bookmark " +
-           "AND ic.name = :category")
+           "AND ic.id = :categoryId")
     Page<DuckuJangterBookmark> findAllByBookmarkAndCategoryWithJangter(
             @Param("bookmark") Bookmark bookmark,
-            @Param("category") String category,
+            @Param("categoryId") Long categoryId,
             Pageable pageable);
 
     void deleteByBookmarkAndJangter(Bookmark bookmark, DuckuJangter jangter);

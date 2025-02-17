@@ -146,13 +146,13 @@ public class DuckuJangterBookmarkController {
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
         @ApiResponse(responseCode = "403", description = "권한 없음")
     })
-    @GetMapping("/category/{category}")
+    @GetMapping("/category/{categoryId}")
     @RequireUser
     public CommonResponse<Page<DuckuJangterBookmarkResponseDTO>> getBookmarksByCategory(
             @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
-            @Parameter(description = "조회할 카테고리명", example = "피규어") @PathVariable String category,
+            @Parameter(description = "조회할 카테고리 ID", example = "1") @PathVariable Long categoryId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return CommonResponse.ok(
-                duckuJangterBookmarkService.getBookmarksByCategory(userId, category, pageable));
+                duckuJangterBookmarkService.getBookmarksByCategory(userId, categoryId, pageable));
     }
 } 
