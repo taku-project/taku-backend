@@ -121,7 +121,7 @@ public class PostInteractionCounterRepositoryCustomImpl implements PostInteracti
     public List<PostInteractionCounter> findPopularPost(PopularPeriodType periodType) {
         LocalDateTime endDate = LocalDateTime.now();
         LocalDateTime startDate = calculateStartDate(periodType);
-
+        int POPULAR_POSTS_LIMIT = 10;
 
         final String POPULARITY_SCORE = "popularityScore";
 
@@ -149,7 +149,8 @@ public class PostInteractionCounterRepositoryCustomImpl implements PostInteracti
         );
 
         SortOperation sort = Aggregation.sort(Sort.Direction.DESC, POPULARITY_SCORE);
-        LimitOperation limit = Aggregation.limit(20);
+
+        LimitOperation limit = Aggregation.limit(POPULAR_POSTS_LIMIT);
 
         TypedAggregation<PostInteractionCounter> aggregation = Aggregation.newAggregation(PostInteractionCounter.class,
                 match, projection, addFields, sort, limit
