@@ -3,6 +3,7 @@ package com.ani.taku_backend.category.domain.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.UserRole;
@@ -81,6 +82,18 @@ public class Category extends BaseTimeEntity {
             .categoryImage(null)
             .categoryGenres(new ArrayList<>())
             .build();
+    }
+
+    public static Category create(User user, AdminCategoryCreateReqDTO createReqDTO, CategoryStatus status) {
+        return Category.builder()
+                .name(createReqDTO.getCategoryName())
+                .createdType(user.getRole())
+                .viewCount(0L)
+                .status(status)
+                .user(user)
+                .categoryImage(null)
+                .categoryGenres(new ArrayList<>())
+                .build();
     }
 
     public void setCategoryImage(CategoryImage categoryImage) {
