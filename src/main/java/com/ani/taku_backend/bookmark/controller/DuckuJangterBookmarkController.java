@@ -3,6 +3,7 @@ package com.ani.taku_backend.bookmark.controller;
 import com.ani.taku_backend.bookmark.domain.dto.DuckuJangterBookmarkResponseDTO;
 import com.ani.taku_backend.bookmark.service.DuckuJangterBookmarkService;
 import com.ani.taku_backend.common.response.CommonResponse;
+import com.ani.taku_backend.common.annotation.RequireUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -35,9 +36,12 @@ public class DuckuJangterBookmarkController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "북마크 추가 성공"),
         @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
-        @ApiResponse(responseCode = "409", description = "이미 북마크된 상품")
+        @ApiResponse(responseCode = "409", description = "이미 북마크된 상품"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @PostMapping("/{productId}")
+    @RequireUser
     public CommonResponse<Void> addBookmark(
             @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
             @Parameter(description = "북마크할 상품 ID", example = "1") @PathVariable Long productId) {
@@ -51,9 +55,12 @@ public class DuckuJangterBookmarkController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "북마크 삭제 성공"),
-        @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @DeleteMapping("/{productId}")
+    @RequireUser
     public CommonResponse<Void> removeBookmark(
             @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
             @Parameter(description = "삭제할 북마크 상품 ID", example = "1") @PathVariable Long productId) {
@@ -91,9 +98,12 @@ public class DuckuJangterBookmarkController {
             description = "북마크 목록 조회 성공",
             content = @Content(schema = @Schema(implementation = DuckuJangterBookmarkResponseDTO.class))
         ),
-        @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping
+    @RequireUser
     public CommonResponse<Page<DuckuJangterBookmarkResponseDTO>> getBookmarks(
             @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -132,9 +142,12 @@ public class DuckuJangterBookmarkController {
             content = @Content(schema = @Schema(implementation = DuckuJangterBookmarkResponseDTO.class))
         ),
         @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음"),
-        @ApiResponse(responseCode = "404", description = "카테고리를 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "카테고리를 찾을 수 없음"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping("/category/{category}")
+    @RequireUser
     public CommonResponse<Page<DuckuJangterBookmarkResponseDTO>> getBookmarksByCategory(
             @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
             @Parameter(description = "조회할 카테고리명", example = "피규어") @PathVariable String category,

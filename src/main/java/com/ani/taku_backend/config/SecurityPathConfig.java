@@ -12,9 +12,12 @@ public class SecurityPathConfig {
             "/api/community/posts",
             "/api/community/posts/**",
 
-            // 장터
-            "/api/jangter/**",
+            // 장터 (북마크 제외)
             "/api/jangter",
+            "/api/jangter/products/**",
+            "/api/jangter/search/**",
+            "/api/jangter/categories/**",
+            // 북마크는 제외 ("/api/jangter/bookmarks/**")
 
             // 시세 조회
             "/api/market-price/**",
