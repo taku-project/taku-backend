@@ -153,7 +153,8 @@ public class PostController {
     })
     @GetMapping("/popular")
     public CommonResponse<PopularPostLiestRequestDTO> getPopularityPosts(
-        @Parameter(description = "인기글 기간. WEEK(이번 주), MONTH(30일)", required = true) PopularPeriodType periodType) {
+        @Parameter(description = "인기글 기간. WEEK(이번 주), MONTH(30일)", required = true)
+        @RequestParam(name = "periodType") PopularPeriodType periodType) {
         PopularPostLiestRequestDTO result = postService.getPopularityPosts(periodType);
         return CommonResponse.ok(result);
     }

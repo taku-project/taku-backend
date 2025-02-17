@@ -89,8 +89,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                     )
                 ).from(post)
                 .innerJoin(post.category, category)
-                .leftJoin(post.communityImages, communityImage).fetchJoin()
-                .leftJoin(communityImage.image, image).fetchJoin()
+                .leftJoin(post.communityImages, communityImage)
+                .leftJoin(communityImage.image, image)
                 .where(post.id.in(postId))
                 .fetch();
         return result;
