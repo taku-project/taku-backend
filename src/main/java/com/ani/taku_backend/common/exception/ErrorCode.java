@@ -89,6 +89,11 @@ public enum ErrorCode {
     MISSING_SOLD_PRICE(40008, HttpStatus.BAD_REQUEST, "판매 완료 시 판매가는 필수입니다."),
     UNAUTHORIZED_STATUS_UPDATE(40302, HttpStatus.FORBIDDEN, "상품 상태를 변경할 권한이 없습니다."),
 
+    // Bookmark
+    NOT_FOUND_BOOKMARK(40410, HttpStatus.NOT_FOUND, "존재하지 않는 북마크입니다."),
+    ALREADY_BOOKMARKED(40904, HttpStatus.CONFLICT, "이미 북마크된 상품입니다."),
+    NOT_FOUND_USER(40411, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+
     ;
 
     // 403 Forbidden
