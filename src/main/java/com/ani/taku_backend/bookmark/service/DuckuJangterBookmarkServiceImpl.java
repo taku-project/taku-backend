@@ -7,7 +7,9 @@ import com.ani.taku_backend.bookmark.domain.repository.DuckuJangterBookmarkRepos
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
+import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,7 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     private final DuckuJangterBookmarkRepository duckuJangterBookmarkRepository;
     private final UserRepository userRepository;
     private final DuckuJangterRepository duckuJangterRepository;
+    private final ItemCategoriesRepository itemCategoriesRepository;
 
     @Override
     @Transactional
@@ -92,6 +97,15 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
                 .filter(b -> b.getIsActive())
                 .findFirst()
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK));
+
+        // 카테고리가 존재하는지 검증
+        List<ItemCategories> itemCategories = itemCategoriesRepository.findAll();
+        boolean categoryExists = itemCategories.stream()
+                .anyMatch(ic -> ic.getName().equals(category));
+        
+        if (!categoryExists) {
+            throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
+        }
 
         return duckuJangterBookmarkRepository.findAllByBookmarkAndCategoryWithJangter(bookmark, category, pageable)
                 .map(DuckuJangterBookmarkResponseDTO::from);

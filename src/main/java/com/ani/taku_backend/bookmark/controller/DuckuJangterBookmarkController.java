@@ -131,7 +131,8 @@ public class DuckuJangterBookmarkController {
             description = "카테고리별 북마크 목록 조회 성공",
             content = @Content(schema = @Schema(implementation = DuckuJangterBookmarkResponseDTO.class))
         ),
-        @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "북마크를 찾을 수 없음"),
+        @ApiResponse(responseCode = "404", description = "카테고리를 찾을 수 없음")
     })
     @GetMapping("/category/{category}")
     public CommonResponse<Page<DuckuJangterBookmarkResponseDTO>> getBookmarksByCategory(
