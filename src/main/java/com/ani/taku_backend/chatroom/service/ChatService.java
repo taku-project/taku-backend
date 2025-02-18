@@ -42,6 +42,20 @@ public class ChatService {
 
     }
 
+    @Transactional
+    public void sendMessageByWsRoomId(String wsRoomId, Long senderId, String content) {
+        // wsRoomId로 ChatRoom 조회
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // MongoDB에 메시지 저장
+        ChatMessage message = ChatMessage.of(chatRoom.getId(), chatRoom.getArticleId(), senderId, content);
+        chatMessageRepository.save(message);
+        
+        // 메타 정보 업데이트
+        updateLastMessageId(chatRoom.getId(), message.getId());
+    }
+
     private void updateLastMessageId(Long roomId, String messageId) {
         // roomId에 해당하는 ChatRoomMetaInfo 엔티티를 조회
         Optional<ChatRoomMetaInfo> chatRoomMetaInfoOpt = chatRoomMetaInfoRepository.findById(roomId);
@@ -83,6 +97,28 @@ public class ChatService {
         }
     }
 
+    @Transactional
+    public void leaveRoomByWsRoomId(String wsRoomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoRepository.findById(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
+
+        if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+
+        chatRoomMetaInfo.getParticipants().setDisconnected(userId);
+        chatRoomMetaInfo.checkAndDeactivate();
+
+        chatRoomMetaInfoRepository.save(chatRoomMetaInfo);
+        if (!chatRoomMetaInfo.isActive()) {
+            chatRoom.deactivate();
+            chatRoomRepository.save(chatRoom);
+        }
+    }
+
     // 메시지 읽음 상태 업데이트
     @Transactional
     public void markMessagesAsRead(Long chatRoomId,  Long userId) {
@@ -98,6 +134,18 @@ public class ChatService {
         }
     }
 
+    @Transactional
+    public void markMessagesAsReadByWsRoomId(String wsRoomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
+        List<ChatMessage> messages = chatMessageRepository.findByChatRoomId(chatRoom.getId());
+        for (ChatMessage message : messages) {
+            if (!message.getSenderId().equals(userId)) {
+                message.setRead(true);
+                chatMessageRepository.save(message);
+            }
+        }
+    }
 
 }

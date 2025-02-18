@@ -42,23 +42,21 @@ public class ChatRoomController {
         return CommonResponse.ok(chatRooms);
     }
 
-
-
     @Operation(summary = "특정 채팅방 조회")
-    @GetMapping("/{roomId}")
+    @GetMapping("/{wsRoomId}")
     public CommonResponse<ChatRoomResponseDTO> getChatRoom(
-            @PathVariable String roomId,
+            @PathVariable String wsRoomId,
             @RequestParam Long userId) {
-        ChatRoomResponseDTO chatRoom = chatRoomService.findChatRoom(roomId, userId);
+        ChatRoomResponseDTO chatRoom = chatRoomService.findChatRoom(wsRoomId, userId);
         return CommonResponse.ok(chatRoom);
     }
 
     @Operation(summary = "채팅방 별 안 읽은 메세지 갯수 반환")
-    @GetMapping("/{roomId}/unread")
+    @GetMapping("/{wsRoomId}/unread")
     public CommonResponse<Integer> getChatRoomUnreadCount(
-            @PathVariable String roomId,
+            @PathVariable String wsRoomId,
             @RequestParam Long userId) {
-        Integer unreadCount = chatRoomService.getChatRoomUnreadCount(roomId, userId);
+        Integer unreadCount = chatRoomService.getChatRoomUnreadCount(wsRoomId, userId);
         return CommonResponse.ok(unreadCount);
     }
 
@@ -72,30 +70,26 @@ public class ChatRoomController {
 
     @Operation(summary = "채팅 메세지 전송")
     @PostMapping("/send")
-    public CommonResponse<Void> sendMessage(@RequestParam Long roomId,
+    public CommonResponse<Void> sendMessage(@RequestParam String wsRoomId,
                             @RequestParam Long senderId,
                             @RequestParam String content) {
-        chatService.sendMessage(roomId, senderId, content);
+        chatService.sendMessageByWsRoomId(wsRoomId, senderId, content);
         return CommonResponse.ok(null);
     }
 
-
     @Operation(summary = "채팅방 나가기")
     @PostMapping("/leave")
-    public CommonResponse<Void>  leaveRoom(@RequestParam Long chatRoomId,
+    public CommonResponse<Void> leaveRoom(@RequestParam String wsRoomId,
                           @RequestParam Long userId) {
-        chatService.leaveRoom(chatRoomId, userId);
+        chatService.leaveRoomByWsRoomId(wsRoomId, userId);
         return CommonResponse.ok(null);
     }
 
     @Operation(summary = "읽은 메세지 처리", description = "마지막으로 읽은 메세지 id 반환")
     @PostMapping("/mark-as-read")
-    public CommonResponse<Void> markMessagesAsRead(@RequestParam Long chatRoomId,
+    public CommonResponse<Void> markMessagesAsRead(@RequestParam String wsRoomId,
                                    @RequestParam Long userId) {
-        chatService.markMessagesAsRead(chatRoomId, userId);
+        chatService.markMessagesAsReadByWsRoomId(wsRoomId, userId);
         return CommonResponse.ok(null);
     }
-
-
-
 }
