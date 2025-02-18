@@ -58,6 +58,10 @@ public class SecurityPathConfig {
 
     // 쇼츠 API 관련 설정
     public static final String SHORTS_API_PATH = "/api/shorts/**";
+
+    // 채팅 API 관련 설정
+    public static final String CHAT_API_PATH = "/api/chat/**";
+    public static final String CHAT_ROOMS_API_PATH = "/api/chat/rooms/**";
     
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
@@ -83,7 +87,15 @@ public class SecurityPathConfig {
                         .anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
+    // 채팅 API 관련 설정
+    public static boolean isChatApiPath(String path) {
+        return pathMatcher.match(CHAT_API_PATH, path);
+    }
+
     public static boolean shouldSkipFilter(String path, String method) {
-        return isPermitAllPath(path) || isUserApiPath(path, method) || isShortsApiPath(path, method) || isPublicGetPath(path, method);
+        return isPermitAllPath(path) || 
+               isUserApiPath(path, method) || 
+               isShortsApiPath(path, method) || 
+               isPublicGetPath(path, method);
     }
 }

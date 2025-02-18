@@ -50,8 +50,8 @@ public class SecurityConfig {
             // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
                 .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
                     .permitAll()
-//                .requestMatchers("/api/shorts/**", "/api/shorts")
-//                    .permitAll()
+                .requestMatchers("/api/shorts/**", "/api/shorts")
+                    .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
+                .requestMatchers(SecurityPathConfig.CHAT_ROOMS_API_PATH).authenticated()           // 채팅방 관련 API는 인증 필요
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
