@@ -12,11 +12,7 @@ public record ChatRoomRequestDTO(
 
         @Schema(description = "구매자 ID", example = "58")
         @NotNull(message = "구매자 ID는 필수입니다.")
-        Long buyerId,
-
-        @Schema(description = "판매자 ID", example = "65")
-        @NotNull(message = "판매자 ID는 필수입니다.")
-        Long sellerId
+        Long buyerId
 ) {
     @Builder
     public ChatRoomRequestDTO {
