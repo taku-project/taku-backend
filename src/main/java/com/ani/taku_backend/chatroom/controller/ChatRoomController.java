@@ -54,10 +54,8 @@ public class ChatRoomController {
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
             @Parameter(description = "상품 ID", required = true, example = "1")
             @RequestParam Long articleId,
-            @Parameter(description = "구매자 ID", required = true, example = "58")
-            @RequestParam Long buyerId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, buyerId);
+        ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, principalUser.getUserId());
         ChatRoomResponseDTO responseDto = chatRoomService.createChatRoom(requestDto);
         return CommonResponse.created(responseDto);
     }
