@@ -9,7 +9,7 @@ import com.ani.taku_backend.chatroom.model.dto.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.repository.ChatroomMetaRepository;
+import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.repository.ParticipantInfoRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatroomMetaRepository chatroomMetaRepository;
+    private final ChatRoomMetaRepository chatroomMetaRepository;
 
     private final ParticipantInfoRepository participantInfoRepository;
 
@@ -126,15 +126,12 @@ public class ChatRoomService {
 
 
     private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
-
-        List<ChatRoom>  chatRooms = chatRoomRepository.findByArticleId(requestDto.articleId());
-
-
+        List<ChatRoom> chatRooms = chatRoomRepository.findByArticleId(requestDto.articleId());
 
         // 기존 채팅방 정보에서 chatRoomId를 가져와 ChatRoomMeta 정보 찾기
         for (ChatRoom chatRoom : chatRooms) {
             // ChatRoomMeta 정보 찾기
-            Optional<ChatRoomMetaInfo> chatRoomMetaOpt = chatroomMetaRepository.findById(chatRoom.getId());
+            Optional<ChatRoomMetaInfo> chatRoomMetaOpt = chatroomMetaRepository.findByChatRoomId(chatRoom.getId());
 
             if (chatRoomMetaOpt.isPresent()) {
                 ChatRoomMetaInfo chatRoomMeta = chatRoomMetaOpt.get();
@@ -143,18 +140,13 @@ public class ChatRoomService {
                 Participants participants = chatRoomMeta.getParticipants();
 
                 for(Long key: participants.getInfo().keySet()){
-
                     ParticipantInfo participant = participants.getInfo().get(key);
 
                     // sellerId 또는 buyerId와 일치하는 userId가 있는지 확인
                     if (participant.getUserId().equals(requestDto.sellerId())) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
                     }
-
                 }
-                // sellerId와 buyllerId를 포함한 참가자가 있는지 확인
-
-
             }
         }
     }
@@ -163,14 +155,14 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        ChatRoomMetaInfo chatRoomMetaInfo  = chatroomMetaRepository.findById(chatRoom.getId()).get();
+        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findByChatRoomId(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
         Participants participants = chatRoomMetaInfo.getParticipants();
 
         Long buyerId = 0L;
         Long sellerId = 0L;
         for(Long key: participants.getInfo().keySet()){
-
             if(participants.getInfo().get(key).getRole()==ParticipantRole.BUYER){
                 buyerId = participants.getInfo().get(key).getUserId();
             }else{
@@ -186,9 +178,10 @@ public class ChatRoomService {
     }
 
     public Integer getChatRoomUnreadCount(String roomId, Long userId) {
-
-        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId).get();
-        ChatRoomMetaInfo metaInfo = chatroomMetaRepository.findById(chatRoom.getId())
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+                
+        ChatRoomMetaInfo metaInfo = chatroomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
         ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId.toString());
