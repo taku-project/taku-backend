@@ -74,61 +74,57 @@ public class ChatRoomService {
         return ChatRoomResponseDTO.of(savedRoom, requestDto.buyerId(), sellerId);
     }
 
+    @Transactional(readOnly = true)
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-
+        // 1회만 조회
         List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatroomMetaRepository
-                .findByParticipantsUserId(userId);  // participants에 userId가 포함된 채팅방 정보만 가져옴
+                .findByParticipantsUserId(userId);
 
-        if(userChatRoomMetaInfos.isEmpty()){
+        if(userChatRoomMetaInfos.isEmpty()) {
             return null;
         }
 
-        System.out.println(userChatRoomMetaInfos.size());
-
-        // isConnected가 true인 채팅방만 필터링
+        // 연결된 채팅방 필터링
         List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
                 .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
                         .anyMatch(participant -> participant.getIsConnected() != null
-                                &&  participant.getIsConnected()))
+                                && participant.getIsConnected()))
                 .collect(Collectors.toList());
 
-
-
-        // userChatRoomMetaInfos에서 각 채팅방의 ID를 추출
+        // chatRoomIds 추출
         List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
                 .map(ChatRoomMetaInfo::getChatRoomId)
                 .collect(Collectors.toList());
 
-        // 모든 채팅방 메타 정보 한 번에 조회 (중복된 DB 조회 방지)
-        Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = chatroomMetaRepository.findByChatRoomIdIn(chatRoomIds).stream()
-                .collect(Collectors.toMap(ChatRoomMetaInfo::getChatRoomId, metaInfo -> metaInfo));
-
-
-        // ChatRoom에서 해당 ID들만 조회
+        // ChatRoom 정보만 한 번 더 조회
         List<ChatRoom> userChatRooms = chatRoomRepository
-                .findByIdInAndStatus(chatRoomIds, ChatRoomStatus.ACTIVE);  // 채팅방 상태가 ACTIVE인 것만 조회
+                .findByIdInAndStatus(chatRoomIds, ChatRoomStatus.ACTIVE);
 
-        System.out.println(userChatRooms.size());
+        // 이미 가지고 있는 메타 정보를 Map으로 변환
+        Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = connectedChatRoomMetaInfos.stream()
+                .collect(Collectors.toMap(
+                    ChatRoomMetaInfo::getChatRoomId,
+                    metaInfo -> metaInfo
+                ));
 
         return userChatRooms.stream()
                 .map(chatRoom -> {
                     ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoMap.get(chatRoom.getId());
-                    System.out.println("here"+ chatRoomMetaInfo);
                     if (chatRoomMetaInfo == null || chatRoomMetaInfo.getParticipants() == null || chatRoomMetaInfo.getParticipants().getInfo() == null) {
-                        return null; // null 반환 -> filter에서 제거됨
+                        return null;
                     }
 
                     Participants participants = chatRoomMetaInfo.getParticipants();
 
-                    Long buyerId=Long.valueOf(0);
-                    Long sellerId=Long.valueOf(0);
+                    Long buyerId = 0L;
+                    Long sellerId = 0L;
 
-                    for(Long key : participants.getInfo().keySet()){
-                        Long id = participants.getInfo().get(key).getUserId();
-                        if(participants.getInfo().get(key).getRole()==ParticipantRole.BUYER){
-                            buyerId = id;
-                        }else{
-                            sellerId = id;
+                    for(Long key : participants.getInfo().keySet()) {
+                        ParticipantInfo participantInfo = participants.getInfo().get(key);
+                        if(participantInfo.getRole() == ParticipantRole.BUYER) {
+                            buyerId = participantInfo.getUserId();
+                        } else {
+                            sellerId = participantInfo.getUserId();
                         }
                     }
 
@@ -139,31 +135,31 @@ public class ChatRoomService {
                             buyerId,
                             sellerId,
                             chatRoom.getCreatedAt()
-                    );}
-                )
+                    );
+                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-
     private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
         List<ChatRoom> chatRooms = chatRoomRepository.findByArticleId(requestDto.articleId());
+        if (chatRooms.isEmpty()) {
+            return;
+        }
 
-        // 기존 채팅방 정보에서 chatRoomId를 가져와 ChatRoomMeta 정보 찾기
-        for (ChatRoom chatRoom : chatRooms) {
-            // ChatRoomMeta 정보 찾기
-            Optional<ChatRoomMetaInfo> chatRoomMetaOpt = chatroomMetaRepository.findByChatRoomId(chatRoom.getId());
+        // 한 번에 모든 메타 정보 조회
+        List<Long> chatRoomIds = chatRooms.stream()
+                .map(ChatRoom::getId)
+                .collect(Collectors.toList());
+        
+        List<ChatRoomMetaInfo> metaInfos = chatroomMetaRepository.findByChatRoomIdIn(chatRoomIds);
 
-            if (chatRoomMetaOpt.isPresent()) {
-                ChatRoomMetaInfo chatRoomMeta = chatRoomMetaOpt.get();
-
-                // ChatRoomMeta 안에 있는 Participants 정보 가져오기
-                Participants participants = chatRoomMeta.getParticipants();
-
-                for(Long key: participants.getInfo().keySet()){
+        // 검증 로직
+        for (ChatRoomMetaInfo metaInfo : metaInfos) {
+            Participants participants = metaInfo.getParticipants();
+            if (participants != null) {
+                for (Long key : participants.getInfo().keySet()) {
                     ParticipantInfo participant = participants.getInfo().get(key);
-
-                    // 동일한 구매자가 이미 채팅방을 만들었는지 확인
                     if (participant.getUserId().equals(requestDto.buyerId()) && 
                         participant.getRole() == ParticipantRole.BUYER) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
