@@ -5,7 +5,13 @@ import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.service.ChatRoomService;
 import com.ani.taku_backend.chatroom.service.ChatService;
 import com.ani.taku_backend.common.response.CommonResponse;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,11 +29,37 @@ public class ChatRoomController {
 
     private final ChatService chatService;
 
-    @Operation(summary = "채팅방 생성")
+    @Operation(
+        summary = "채팅방 생성",
+        description = "새로운 채팅방을 생성합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "201",
+            description = "채팅방 생성 성공",
+            content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청",
+            content = @Content(schema = @Schema(implementation = ErrorCode.class))
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "이미 존재하는 채팅방",
+            content = @Content(schema = @Schema(implementation = ErrorCode.class))
+        )
+    })
     @PostMapping
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
-            @Valid @RequestBody ChatRoomRequestDTO requestDto,
+            @Parameter(description = "상품 ID", required = true, example = "1")
+            @RequestParam Long articleId,
+            @Parameter(description = "구매자 ID", required = true, example = "58")
+            @RequestParam Long buyerId,
+            @Parameter(description = "판매자 ID", required = true, example = "65")
+            @RequestParam Long sellerId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
+        ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, buyerId, sellerId);
         ChatRoomResponseDTO responseDto = chatRoomService.createChatRoom(requestDto);
         return CommonResponse.created(responseDto);
     }
