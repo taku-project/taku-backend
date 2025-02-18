@@ -3,7 +3,8 @@ package com.ani.taku_backend.chatroom.service;
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.repository.ChatRoomMetaInfoRepository;
+import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
+import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
@@ -25,7 +26,7 @@ public class ChatService {
     private ChatMessageRepository chatMessageRepository;
 
     @Autowired
-    private ChatRoomMetaInfoRepository chatRoomMetaInfoRepository;
+    private ChatRoomMetaRepository chatroomMetaRepository;
 
     // 메시지 전송
     @Transactional
@@ -58,7 +59,7 @@ public class ChatService {
 
     private void updateLastMessageId(Long roomId, String messageId) {
         // roomId에 해당하는 ChatRoomMetaInfo 엔티티를 조회
-        Optional<ChatRoomMetaInfo> chatRoomMetaInfoOpt = chatRoomMetaInfoRepository.findById(roomId);
+        Optional<ChatRoomMetaInfo> chatRoomMetaInfoOpt = chatroomMetaRepository.findByChatRoomId(roomId);
 
         if (chatRoomMetaInfoOpt.isPresent()) {
             ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoOpt.get();
@@ -67,10 +68,10 @@ public class ChatService {
             chatRoomMetaInfo.setLastMessageId(messageId);
 
             // 갱신된 데이터를 DB에 저장
-            chatRoomMetaInfoRepository.save(chatRoomMetaInfo);
+            chatroomMetaRepository.save(chatRoomMetaInfo);
         } else {
             // 해당 roomId에 해당하는 채팅방이 존재하지 않으면 예외 처리
-            throw new RuntimeException("Chat room meta info not found for roomId: " + roomId);
+            throw new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND);
         }
     }
 
@@ -78,7 +79,7 @@ public class ChatService {
     @Transactional
     public void leaveRoom(Long chatRoomId, Long userId) {
 
-        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoRepository.findById(chatRoomId)
+        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
 
         if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
@@ -88,7 +89,7 @@ public class ChatService {
         chatRoomMetaInfo.getParticipants().setDisconnected(userId);
         chatRoomMetaInfo.checkAndDeactivate();
 
-        chatRoomMetaInfoRepository.save(chatRoomMetaInfo);
+        chatroomMetaRepository.save(chatRoomMetaInfo);
         if (!chatRoomMetaInfo.isActive()) {
             chatRoomRepository.findById(chatRoomId).ifPresent(chatRoom -> {
                 chatRoom.deactivate();
@@ -102,7 +103,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoRepository.findById(chatRoom.getId())
+        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
 
         if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
@@ -112,7 +113,7 @@ public class ChatService {
         chatRoomMetaInfo.getParticipants().setDisconnected(userId);
         chatRoomMetaInfo.checkAndDeactivate();
 
-        chatRoomMetaInfoRepository.save(chatRoomMetaInfo);
+        chatroomMetaRepository.save(chatRoomMetaInfo);
         if (!chatRoomMetaInfo.isActive()) {
             chatRoom.deactivate();
             chatRoomRepository.save(chatRoom);
