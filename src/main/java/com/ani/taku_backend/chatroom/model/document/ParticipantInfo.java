@@ -19,6 +19,7 @@ public class ParticipantInfo {
         this.role = role;
         this.isConnected = true;
         this.lastDisconnectedAt = Instant.now();
+        this.messageStock = 0;
     }
 
     public void plusMessage() {
