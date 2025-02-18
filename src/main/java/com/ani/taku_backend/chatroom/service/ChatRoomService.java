@@ -22,6 +22,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
+import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,11 +33,25 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatroomMetaRepository;
-
     private final ParticipantInfoRepository participantInfoRepository;
+    private final DuckuJangterRepository duckuJangterRepository;
 
     @Transactional
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
+        // 1. 장터 게시글 존재 여부 확인
+        DuckuJangter product = duckuJangterRepository.findById(requestDto.articleId())
+            .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
+
+        // 2. 판매자 일치 여부 확인
+        if (!product.getUser().getUserId().equals(requestDto.sellerId())) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 3. 게시글 상태 확인 (판매중인 상태인지)
+        if (product.getStatus() != ProductStatus.FOR_SALE) {
+            throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
+        }
+
         validateNewChatRoom(requestDto);
 
         ChatRoom chatRoom = ChatRoom.builder()
