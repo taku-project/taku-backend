@@ -42,12 +42,15 @@ public class ChatRoomService {
         DuckuJangter product = duckuJangterRepository.findById(requestDto.articleId())
             .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
 
-        // 2. 판매자 일치 여부 확인
-        if (!product.getUser().getUserId().equals(requestDto.sellerId())) {
-            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        // 2. 판매자 정보 가져오기
+        Long sellerId = product.getUser().getUserId();
+        
+        // 3. 구매자가 판매자와 동일인물이면 안 됨
+        if (sellerId.equals(requestDto.buyerId())) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
 
-        // 3. 게시글 상태 확인 (판매중인 상태인지)
+        // 4. 게시글 상태 확인 (판매중인 상태인지)
         if (product.getStatus() != ProductStatus.FOR_SALE) {
             throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
         }
@@ -64,10 +67,11 @@ public class ChatRoomService {
         ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.builder()
                 .chatRoomId(savedRoom.getId())
                 .build();
-        metaInfo.initializeParticipants(requestDto.buyerId(), requestDto.sellerId());
+        // 실제 판매자 ID 사용
+        metaInfo.initializeParticipants(requestDto.buyerId(), sellerId);
         chatroomMetaRepository.save(metaInfo);
 
-        return ChatRoomResponseDTO.of(savedRoom, requestDto.buyerId(), requestDto.sellerId());
+        return ChatRoomResponseDTO.of(savedRoom, requestDto.buyerId(), sellerId);
     }
 
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
@@ -159,8 +163,9 @@ public class ChatRoomService {
                 for(Long key: participants.getInfo().keySet()){
                     ParticipantInfo participant = participants.getInfo().get(key);
 
-                    // sellerId 또는 buyerId와 일치하는 userId가 있는지 확인
-                    if (participant.getUserId().equals(requestDto.sellerId())) {
+                    // 동일한 구매자가 이미 채팅방을 만들었는지 확인
+                    if (participant.getUserId().equals(requestDto.buyerId()) && 
+                        participant.getRole() == ParticipantRole.BUYER) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
                     }
                 }

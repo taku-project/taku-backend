@@ -31,7 +31,7 @@ public class ChatRoomController {
 
     @Operation(
         summary = "채팅방 생성",
-        description = "새로운 채팅방을 생성합니다."
+        description = "새로운 채팅방을 생성합니다. 판매자는 상품 정보에서 자동으로 설정됩니다."
     )
     @ApiResponses({
         @ApiResponse(
@@ -56,10 +56,8 @@ public class ChatRoomController {
             @RequestParam Long articleId,
             @Parameter(description = "구매자 ID", required = true, example = "58")
             @RequestParam Long buyerId,
-            @Parameter(description = "판매자 ID", required = true, example = "65")
-            @RequestParam Long sellerId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, buyerId, sellerId);
+        ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, buyerId);
         ChatRoomResponseDTO responseDto = chatRoomService.createChatRoom(requestDto);
         return CommonResponse.created(responseDto);
     }
