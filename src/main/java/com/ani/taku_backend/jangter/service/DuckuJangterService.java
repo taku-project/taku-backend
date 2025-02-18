@@ -1,0 +1,34 @@
+package com.ani.taku_backend.jangter.service;
+
+import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.user.model.entity.User;
+
+import java.util.List;
+
+
+public interface DuckuJangterService {
+
+    Long createProduct(ProductCreateRequestDTO productCreateRequestDTO, User user);
+
+    ProductFindDetailResponseDTO findProductDetail(long productId, boolean isFirstView);
+
+    Long updateProduct(Long productId, ProductUpdateRequestDTO productUpdateRequestDTO, User user);
+
+    void deleteProduct(long productId, User user);
+
+    ProductRecommendResponseDTO recommendProduct(Long productId, PrincipalUser principalUser);
+
+    List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request);
+
+    ProductRankInfoResponseDTO getJangterRank();
+
+    void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO requestDTO, User user);
+}
