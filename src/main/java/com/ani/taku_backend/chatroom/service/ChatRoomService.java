@@ -200,7 +200,7 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId.toString());
+        ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId);
         if (participantInfo == null) {
             // 참여자 정보가 없더라도 채팅방 참여자라면 0을 반환
             return 0;
@@ -215,7 +215,7 @@ public class ChatRoomService {
 
         return userChatrooms.stream()
                 .map(chatroom -> {
-                    ParticipantInfo participantInfo = chatroom.getParticipants().getInfo().get(userId.toString());
+                    ParticipantInfo participantInfo = chatroom.getParticipants().getInfo().get(userId);
                     return participantInfo != null ? participantInfo.getMessageStock() : 0;
                 })
                 .reduce(0, Integer::sum);
