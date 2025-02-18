@@ -9,24 +9,20 @@ import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ChatService {
 
-    @Autowired
-    private ChatRoomRepository chatRoomRepository;
-
-    @Autowired
-    private ChatMessageRepository chatMessageRepository;
-
-    @Autowired
-    private ChatRoomMetaRepository chatroomMetaRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final ChatRoomMetaRepository chatroomMetaRepository;
 
     // 메시지 전송
     @Transactional
@@ -79,7 +75,7 @@ public class ChatService {
     @Transactional
     public void leaveRoom(Long chatRoomId, Long userId) {
 
-        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoomId)
+        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(String.valueOf(chatRoomId))
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
 
         if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
@@ -103,7 +99,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(chatRoom.getId())
+        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findById(String.valueOf(chatRoom.getId()))
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
 
         if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
