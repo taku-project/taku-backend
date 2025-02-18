@@ -51,6 +51,19 @@ public class ChatService {
         
         // 메타 정보 업데이트
         updateLastMessageId(chatRoom.getId(), message.getId());
+
+        // 채팅방 메타 정보 조회
+        ChatRoomMetaInfo chatRoomMetaInfo = chatroomMetaRepository.findByChatRoomId(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 상대방의 메시지 스톡 증가
+        chatRoomMetaInfo.getParticipants().getInfo().forEach((userId, participantInfo) -> {
+            if (!userId.equals(senderId.toString())) {
+                participantInfo.plusMessage();
+            }
+        });
+
+        chatroomMetaRepository.save(chatRoomMetaInfo);
     }
 
     private void updateLastMessageId(Long roomId, String messageId) {
