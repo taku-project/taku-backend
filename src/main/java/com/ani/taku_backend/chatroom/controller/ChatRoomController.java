@@ -8,8 +8,9 @@ import com.ani.taku_backend.common.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 
 import java.util.List;
 
@@ -25,7 +26,8 @@ public class ChatRoomController {
     @Operation(summary = "채팅방 생성")
     @PostMapping
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
-            @Valid @RequestBody ChatRoomRequestDTO requestDto) {
+            @Valid @RequestBody ChatRoomRequestDTO requestDto,
+            @AuthenticationPrincipal PrincipalUser principalUser) {
         ChatRoomResponseDTO responseDto = chatRoomService.createChatRoom(requestDto);
         return CommonResponse.created(responseDto);
     }
@@ -33,9 +35,9 @@ public class ChatRoomController {
     @Operation(summary = "채팅방 목록 가져오기")
     @GetMapping
     public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
-            @RequestParam Long userId) {
+            @AuthenticationPrincipal PrincipalUser principalUser) {
         long startTime = System.nanoTime();
-        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(userId);
+        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(principalUser.getUserId());
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000;
         System.out.println("Execution Time: " + duration + " ms");
@@ -46,8 +48,8 @@ public class ChatRoomController {
     @GetMapping("/{wsRoomId}")
     public CommonResponse<ChatRoomResponseDTO> getChatRoom(
             @PathVariable String wsRoomId,
-            @RequestParam Long userId) {
-        ChatRoomResponseDTO chatRoom = chatRoomService.findChatRoom(wsRoomId, userId);
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        ChatRoomResponseDTO chatRoom = chatRoomService.findChatRoom(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(chatRoom);
     }
 
@@ -55,41 +57,44 @@ public class ChatRoomController {
     @GetMapping("/{wsRoomId}/unread")
     public CommonResponse<Integer> getChatRoomUnreadCount(
             @PathVariable String wsRoomId,
-            @RequestParam Long userId) {
-        Integer unreadCount = chatRoomService.getChatRoomUnreadCount(wsRoomId, userId);
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        Integer unreadCount = chatRoomService.getChatRoomUnreadCount(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(unreadCount);
     }
 
     @Operation(summary = "총 안 읽음 메세지 갯수 반환")
     @GetMapping("/unread/total")
     public CommonResponse<Integer> getTotalUnreadCount(
-            @RequestParam Long userId) {
-        Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(userId);
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(principalUser.getUserId());
         return CommonResponse.ok(totalUnreadCount);
     }
 
     @Operation(summary = "채팅 메세지 전송")
     @PostMapping("/send")
-    public CommonResponse<Void> sendMessage(@RequestParam String wsRoomId,
-                            @RequestParam Long senderId,
-                            @RequestParam String content) {
-        chatService.sendMessageByWsRoomId(wsRoomId, senderId, content);
+    public CommonResponse<Void> sendMessage(
+            @RequestParam String wsRoomId,
+            @AuthenticationPrincipal PrincipalUser principalUser,
+            @RequestParam String content) {
+        chatService.sendMessageByWsRoomId(wsRoomId, principalUser.getUserId(), content);
         return CommonResponse.ok(null);
     }
 
     @Operation(summary = "채팅방 나가기")
     @PostMapping("/leave")
-    public CommonResponse<Void> leaveRoom(@RequestParam String wsRoomId,
-                          @RequestParam Long userId) {
-        chatService.leaveRoomByWsRoomId(wsRoomId, userId);
+    public CommonResponse<Void> leaveRoom(
+            @RequestParam String wsRoomId,
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        chatService.leaveRoomByWsRoomId(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(null);
     }
 
     @Operation(summary = "읽은 메세지 처리", description = "마지막으로 읽은 메세지 id 반환")
     @PostMapping("/mark-as-read")
-    public CommonResponse<Void> markMessagesAsRead(@RequestParam String wsRoomId,
-                                   @RequestParam Long userId) {
-        chatService.markMessagesAsReadByWsRoomId(wsRoomId, userId);
+    public CommonResponse<Void> markMessagesAsRead(
+            @RequestParam String wsRoomId,
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        chatService.markMessagesAsReadByWsRoomId(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(null);
     }
 }
