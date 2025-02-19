@@ -12,6 +12,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+/**
+ * MongoDB에 저장되는 채팅 메세지를 나타냅니다.
+ * 각 메세지는 채팅방, 상품, 발신자 정보와 전송 시간, 읽음 상태 등을 포함합니다.
+ */
+
 @Document(collection = "chat_messages")
 @Data
 @NoArgsConstructor
