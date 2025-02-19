@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -207,15 +208,16 @@ public class UserController {
 
 	}
 
-	@PatchMapping(value= "/{userId}")
+
+	@RequestBody(content = @Content(
+			encoding = @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE)))
+	@PatchMapping(value= "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 			summary = "유저 정보 수정",
 			description = "유저 프로필, 닉네임 정보 수정"
 	)
-	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
-	})
 	public CommonResponse<String>editUserDetail(@PathVariable Long userId
-		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request") @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDTO request
+		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart("request") UserEditDTO request
 
 	){
 
