@@ -15,8 +15,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -62,6 +64,16 @@ public class AdminCategoryController {
         User user = principalUser.getUser();
 
         adminCategoryService.createCategory(user, createReqDTO);
+
+        return "category/list";
+    }
+
+    @DeleteMapping("/{categoryId}")
+    public String deleteCategory(@PathVariable("categoryId") Long categoryId,
+        @AuthenticationPrincipal PrincipalUser principalUser) {
+        User user = principalUser.getUser();
+
+        adminCategoryService.deleteCategory(categoryId, user);
 
         return "category/list";
     }
