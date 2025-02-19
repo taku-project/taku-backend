@@ -2,7 +2,6 @@ package com.ani.taku_backend.chatroom.model.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 
 @Schema(description = "채팅방 생성 요청 DTO")
 public record ChatRoomRequestDTO(
@@ -14,7 +13,4 @@ public record ChatRoomRequestDTO(
         @NotNull(message = "구매자 ID는 필수입니다.")
         Long buyerId
 ) {
-    @Builder
-    public ChatRoomRequestDTO {
-    }
 }
