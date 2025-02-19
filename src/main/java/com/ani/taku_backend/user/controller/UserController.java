@@ -227,10 +227,10 @@ public class UserController {
 		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
 			if(userService.isNicknameDuplication(nickname)){ //이미 존재하는 닉네임일 경우
-				System.out.println("이미 존재하는 닉네임 입니다. ");
+
 				return CommonResponse.created("이미 존재하는 닉네임입니다. ");
 			}else{ // 닉네임 vaildation 통과를 했을 경우
-				System.out.println("이미 존재하는 닉네임이 아님으로, 업데이트를 시작합니다. ");
+
 				userService.updateNickname(userId, nickname);
 
 			}
@@ -238,9 +238,7 @@ public class UserController {
 
 		if(multipartFile!=null){
 			String fileUrl;
-			//1번. martipart
-			System.out.println("hello");
-			System.out.println("multipart"+ multipartFile);
+
 			try {
 				fileUrl = fileService.uploadImageFile(multipartFile);
 				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, fileUrl,request.getFileSize(), request.getFileType(), request.getOriginalFileName());
@@ -252,7 +250,7 @@ public class UserController {
 			}
 
 			return CommonResponse.ok(fileUrl);
-			//2버.
+
 
 		}
 
