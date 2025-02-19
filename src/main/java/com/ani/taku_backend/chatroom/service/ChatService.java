@@ -5,7 +5,6 @@ import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.document.ParticipantInfo;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
-import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;

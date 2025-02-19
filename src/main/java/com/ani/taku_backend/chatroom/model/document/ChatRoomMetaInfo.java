@@ -44,12 +44,6 @@ public class ChatRoomMetaInfo {
         this.updateAt = Instant.now();
     }
 
-    /**
-     * 구매자와 판매자를 참가자로 추가하여 초기화합니다.
-     *
-     * @param buyerId 구매자 ID
-     * @param sellerId 판매자 ID
-     */
 
     public void initializeParticipants(Long buyerId, Long sellerId) {
         this.participants.addParticipant(buyerId, ParticipantRole.BUYER);

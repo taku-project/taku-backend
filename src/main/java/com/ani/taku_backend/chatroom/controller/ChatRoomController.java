@@ -19,9 +19,6 @@ import com.ani.taku_backend.user.model.dto.PrincipalUser;
 
 import java.util.List;
 
-/**
- * REST 컨트롤러로, 채팅방 관련 API 엔드포인트를 제공합니다.
- */
 @RestController
 @RequestMapping("/api/chat/rooms")
 @RequiredArgsConstructor
