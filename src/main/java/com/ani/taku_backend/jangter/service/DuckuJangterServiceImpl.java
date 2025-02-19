@@ -6,7 +6,6 @@ import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.PeriodType;
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
@@ -23,6 +22,7 @@ import com.ani.taku_backend.jangter.model.dto.ProductRecommendResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestDTO;
+import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
@@ -41,6 +41,7 @@ import com.ani.taku_backend.jangter.score.calculator.ViewHistoryScoreCalculator;
 import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
 import com.ani.taku_backend.jangter.vo.UserPurchaseHistory;
 import com.ani.taku_backend.jangter.vo.UserSearchHistory;
+import com.ani.taku_backend.marketprice.service.MarketPriceStatsService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -65,6 +66,13 @@ import java.util.stream.Collectors;
 import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_CATEGORY;
 import static com.ani.taku_backend.common.exception.ErrorCode.NOT_FOUND_POST;
 import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_ACCESS;
+import static com.ani.taku_backend.common.exception.ErrorCode.UNAUTHORIZED_STATUS_UPDATE;
+
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
+import com.ani.taku_backend.marketprice.model.entity.MarketPriceStats;
+import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
+import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
+import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
 
 @Slf4j
 @Service
@@ -87,6 +95,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
 
     private final JangterRankBaseRepository jangterRankBaseRepository;
+    private final MarketPriceStatsService marketPriceStatsService;
+    private final CompletedDealRepository completedDealRepository;
 
 
     @Transactional(readOnly = true)
@@ -113,7 +123,13 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         DuckuJangter product = createProduct(productCreateRequestDTO, user, itemCategory);      // 엔티티 생성
         setRelationJangterImages(saveImageList, product);                                       // jangerImages 연관관계 설정
 
-        Long saveProductId = duckuJangterRepository.save(product).getId();
+        // 상품 저장
+        DuckuJangter savedProduct = duckuJangterRepository.save(product);
+        Long saveProductId = savedProduct.getId();
+        
+        // 시세 정보 초기 데이터 저장
+        marketPriceStatsService.saveMarketPriceStats(savedProduct);
+
         log.debug("장터 판매글 등록 완료, 게시글 Id: {}", saveProductId);
 
         return saveProductId;
@@ -127,8 +143,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
             expireTime = 60)
     @Transactional
     public ProductFindDetailResponseDTO findProductDetail(long productId, boolean isFirstView) {
-        // 판매글 조회
-        DuckuJangter findProductDetail = duckuJangterRepository.findById(productId)
+        // 상품과 연관 데이터를 한 번에 조회
+        DuckuJangter findProductDetail = duckuJangterRepository.findWithDetailsById(productId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
         checkDeleteProduct(findProductDetail);
@@ -212,7 +228,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 .title(productCreateRequestDTO.getTitle())
                 .description(productCreateRequestDTO.getDescription())
                 .price(productCreateRequestDTO.getPrice())
-                .status(StatusType.ACTIVE)
+                .status(ProductStatus.FOR_SALE)
                 .viewCount(0L)
                 .build();
     }
@@ -266,7 +282,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         // 1차 필터링 조회
         List<DuckuJangter> recommendProducts = this.duckuJangterRepository
-                .findRecommendFilteredProducts(new FindRecommendFilteredProductsRequestDTO(keywords, minPrice, maxPrice, itemCategoryId, StatusType.ACTIVE, productId));
+                .findRecommendFilteredProducts(new FindRecommendFilteredProductsRequestDTO(keywords, minPrice, maxPrice, itemCategoryId, ProductStatus.FOR_SALE, productId));
 
         if(recommendProducts.isEmpty() || recommendProducts.size() < 5){
             log.debug("추천 상품 부족으로 랜덤 조회");
@@ -465,11 +481,11 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
     private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
         log.debug("랜덤 상품 조회");
-        List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(StatusType.ACTIVE.name(), categoryId, productId);
+        List<DuckuJangter> randomProducts = this.duckuJangterRepository.findByCategoryIdRandom(ProductStatus.FOR_SALE.name(), categoryId, productId);
         randomProducts.clear();
         if(randomProducts.size() < 5){
             log.debug("전체 카테고리에서 랜덤조회");
-            randomProducts.addAll(this.duckuJangterRepository.findRandom(StatusType.ACTIVE.name(), productId));
+            randomProducts.addAll(this.duckuJangterRepository.findRandom(ProductStatus.FOR_SALE.name(), productId));
         }
 
         return ProductRecommendResponseDTO.of(randomProducts);
@@ -533,5 +549,52 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
                 })
                 .collect(Collectors.toList());
         }
+
+    @Override
+    @Transactional
+    public void updateProductStatus(Long productId, ProductStatusUpdateRequestDTO request, User user) {
+        request.validateSoldPrice();
+        
+        // 상품과 최신 시세 정보를 한 번에 조회
+        ProductStatusDTO productStatus = duckuJangterRepository.findProductWithLatestStats(productId)
+                .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
+        
+        DuckuJangter product = productStatus.getProduct();
+                
+        // 삭제된 상품인지 확인
+        checkDeleteProduct(product);
+        
+        // 상품 소유자인지 확인
+        if (!product.isOwner(user.getUserId())) {
+            throw new DuckwhoException(UNAUTHORIZED_STATUS_UPDATE);
+        }
+        
+        // 상태 변경 및 판매가 업데이트
+        product.updateStatus(
+            request.getStatus(),
+            request.getSoldPrice() != null ? BigDecimal.valueOf(request.getSoldPrice()) : null
+        );
+
+        // SOLD_OUT 상태로 변경된 경우
+        if (request.getStatus() == ProductStatus.SOLD_OUT) {
+            // 시세 정보 업데이트 - 이미 조회된 정보 사용
+            MarketPriceStats latestStats = productStatus.getLatestStats();
+            if (latestStats != null) {
+                latestStats.updateSoldPrice(BigDecimal.valueOf(request.getSoldPrice()));
+            }
+            
+            // 거래 완료 정보 저장
+            CompletedDeal completedDeal = CompletedDeal.builder()
+                .product(product)
+                .marketPriceStats(latestStats)
+                .title(product.getTitle())
+                .purchaseUserId(user.getUserId())
+                .price(BigDecimal.valueOf(request.getSoldPrice()))
+                .categoryName(product.getItemCategories().getName())
+                .searchKeywords(String.join(",", extractKeywordService.extractKeywords(product.getTitle())))
+                .build();
+            completedDealRepository.save(completedDeal);
+        }
+    }
 
 }

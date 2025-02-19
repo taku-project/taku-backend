@@ -4,13 +4,16 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.comments.service.CommentsService;
-import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.service.ImageService;
+import com.ani.taku_backend.common.service.RedisService;
+import com.ani.taku_backend.post.model.dto.PopularPostItemDTO;
+import com.ani.taku_backend.post.model.dto.PopularPostLiestRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostCreateRequestDTO;
 import com.ani.taku_backend.post.model.dto.PostDetailResponseDTO;
 import com.ani.taku_backend.post.model.dto.PostListRequestDTO;
@@ -20,19 +23,22 @@ import com.ani.taku_backend.post.model.entity.CommunityImage;
 import com.ani.taku_backend.post.model.entity.Post;
 
 import com.ani.taku_backend.post.model.entity.PostInteractionCounter;
+import com.ani.taku_backend.post.model.enums.PopularPeriodType;
 import com.ani.taku_backend.post.repository.PostInteractionCounterRepository;
 import com.ani.taku_backend.post.repository.PostRepository;
 import com.ani.taku_backend.post.model.dto.FindPostQueryDTO;
 import com.ani.taku_backend.user.model.entity.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +57,8 @@ public class PostServiceImpl implements PostService {
     private final ImageService imageService;
     private final CommentsService commentsService;
     private final PostInteractionCounterRepository postInteractionCounterRepository;
-
-
+    private final RedisService redisService;
+    private final ObjectMapper objectMapper;
     /**
      * 게시글 전체 조회
      */
@@ -65,7 +71,7 @@ public class PostServiceImpl implements PostService {
         }
 
         Page<FindPostQueryDTO> getPostList = postRepository.findPostListPage(postListRequestDTO, pageable);
-        updateLikesCount(getPostList);
+        updateLikesCount(getPostList.getContent());
 
         return new PostListResponseDTO(getPostList);
     }
@@ -152,33 +158,61 @@ public class PostServiceImpl implements PostService {
      * - 좋아요 정보
      */
     @Transactional
-    public PostDetailResponseDTO getPostDetail(Long postId, boolean canAddView, Long currentUserId) {
-        Post post = postRepository.findById(postId)
+    public PostDetailResponseDTO getPostDetail(Long postId, Long currentUserId) {
+        Post findPost = postRepository.findByIdWithImages(postId)
                 .orElseThrow(() -> new DuckwhoException(NOT_FOUND_POST));
 
-        if (post.getDeletedAt() != null) {
-            throw new DuckwhoException(NOT_FOUND_POST);
-        }
+        checkDeleteProduct(findPost);
 
-        if (canAddView) {
-            post.addViews();
-        }
-
-        // 비로그인 사용자는 항상 false
-        boolean isOwner = false;
-        
-        // 로그인한 사용자인 경우에만 소유자 체크
-        if (currentUserId != null && post.getUser() != null) {
-            isOwner = post.getUser().getUserId().equals(currentUserId);
-        }
-
-        // 댓글 목록 조회
-        List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
-
-        // MongoDB에서 좋아요 수 조회
+        boolean isOwner = currentUserId != null && currentUserId.equals(findPost.getUser().getUserId());
         long likeCount = getPostLikeCount(postId);
+        boolean isLiked = currentUserId != null && postInteractionCounterRepository.isPostLikedByUser(postId, currentUserId);
 
-        return new PostDetailResponseDTO(post, isOwner, comments, likeCount);
+        List<CommentsResponseDTO> comments = commentsService.getPostComments(postId, currentUserId);
+        long commentCount = commentsService.getCommentCount(postId);
+
+        return new PostDetailResponseDTO(findPost, isOwner, comments, likeCount, isLiked, commentCount);
+    }
+
+    /**
+     * 게시글 인기 글 조회
+     * - 현재 20개 씩 가져오는 걸로 되어있음.
+     */
+    @Override
+    public PopularPostLiestRequestDTO getPopularityPosts(PopularPeriodType periodType) {
+        final String POPULAR_POST_KEY = "popular_key";
+        try {
+            List<Object> cachedPopularPosts = redisService.getValues(POPULAR_POST_KEY);
+
+            if(cachedPopularPosts.isEmpty()) {
+                List<PostInteractionCounter> popularPost = counterRepository.findPopularPost(periodType);
+                List<Long> popularPostId = popularPost.stream().map(PostInteractionCounter::getPostId).toList();
+
+                List<PopularPostItemDTO> popularityPosts = postRepository.findPopularityPosts(popularPostId);
+
+                // 레디스에 값 저장
+                redisService.setKeyValue(POPULAR_POST_KEY, popularityPosts, Duration.ofHours(1));
+
+                return PopularPostLiestRequestDTO.builder()
+                        .popularPosts(popularityPosts)
+                        .period(periodType)
+                        .build();
+            } else {
+                List<PopularPostItemDTO> popularityPosts = cachedPopularPosts.stream()
+                        .map(redisPopularPostItem ->
+                            objectMapper.convertValue(redisPopularPostItem, PopularPostItemDTO.class)
+                        ).toList();
+
+                return PopularPostLiestRequestDTO.builder()
+                        .popularPosts(popularityPosts)
+                        .period(periodType)
+                        .build();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DuckwhoException(INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -254,12 +288,10 @@ public class PostServiceImpl implements PostService {
     /**
      * MongoDB에서 좋아요 개수를 가져와 DTO에 반영하는 메서드
      */
-    private void updateLikesCount(Page<FindPostQueryDTO> postList) {
+    private void updateLikesCount(List<FindPostQueryDTO> postList) {
         List<Long> postIds = postList.stream().map(FindPostQueryDTO::getId).toList();
         Map<Long, Long> likesMap = counterRepository.findLikesByPostIds(postIds);
 
         postList.forEach(dto -> dto.updateLikes(likesMap.getOrDefault(dto.getId(), 0L)));
     }
-
-
 }

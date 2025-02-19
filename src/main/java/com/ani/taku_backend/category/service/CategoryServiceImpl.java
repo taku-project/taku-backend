@@ -52,15 +52,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 카테고리 생성
+     *
      * @param principalUser
      * @param requestCategoryCreateDTO
-     * @param uploadFile
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
     @RequireUser
-    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO, MultipartFile uploadFile) throws DuckwhoException {
-
+    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO) throws DuckwhoException {
+        MultipartFile uploadFile = requestCategoryCreateDTO.getImage();
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
             throw new DuckwhoException(ErrorCode.INVALID_FILE_FORMAT);

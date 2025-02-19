@@ -1,9 +1,11 @@
 package com.ani.taku_backend.post.controller;
 
 import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.annotation.ViewCountChecker;
+import com.ani.taku_backend.common.annotation.CheckViewCount;
+import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;
+import com.ani.taku_backend.post.model.enums.PopularPeriodType;
 import com.ani.taku_backend.post.service.PostService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
@@ -21,6 +23,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 
 @RestController
 @Slf4j
@@ -85,15 +89,18 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 게시글")
     })
     @GetMapping("/{postId}")
+    @CheckViewCount(viewType = ViewType.POST, targetId = "#postId", expireTime = 1440)
     public CommonResponse<PostDetailResponseDTO> findPostDetail(
             @Parameter(description = "게시글 ID") @PathVariable Long postId,
-            @Parameter(description = "조회수 증가 여부") @ViewCountChecker Boolean canAddView,
-            @Parameter(description = "로그인한 사용자 정보 (없을 경우 null)", hidden = true) PrincipalUser principalUser) {
+            @Parameter(description = "로그인한 사용자 정보 (없을 경우 null)", hidden = true) 
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+            
         Long currentUserId = null;
         if (principalUser != null && principalUser.getUser() != null) {
             currentUserId = principalUser.getUser().getUserId();
         }
-        PostDetailResponseDTO detail = postService.getPostDetail(postId, canAddView, currentUserId);
+        
+        PostDetailResponseDTO detail = postService.getPostDetail(postId, currentUserId);
         return CommonResponse.ok(detail);
     }
 
@@ -137,5 +144,18 @@ public class PostController {
         User user = blackUserService.checkBlackUser(principalUser);
         postService.deletePost(postId, user);
         return CommonResponse.ok(null);
+    }
+
+    @Operation(summary = "인기 글 조회", description = "모든 카테고리 중 기간 별 인기글을 조회힙니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인기글 조회 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 에러 발생")
+    })
+    @GetMapping("/popular")
+    public CommonResponse<PopularPostLiestRequestDTO> getPopularityPosts(
+        @Parameter(description = "인기글 기간. WEEK(이번 주), MONTH(30일)", required = true)
+        @RequestParam(name = "periodType") PopularPeriodType periodType) {
+        PopularPostLiestRequestDTO result = postService.getPopularityPosts(periodType);
+        return CommonResponse.ok(result);
     }
 }

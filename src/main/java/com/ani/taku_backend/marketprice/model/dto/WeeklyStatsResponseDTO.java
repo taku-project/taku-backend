@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.Builder;
 
 @Builder
@@ -23,6 +24,12 @@ public record WeeklyStatsResponseDTO(
     @Schema(description = "거래 건수", example = "42")
     long totalDeals
 ) {
+    public WeeklyStatsResponseDTO {
+        if (averagePrice != null) {
+            averagePrice = averagePrice.setScale(2, RoundingMode.HALF_UP);
+        }
+    }
+
     public static WeeklyStatsResponseDTO empty() {
         return new WeeklyStatsResponseDTO(
             BigDecimal.ZERO,

@@ -18,7 +18,9 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/category")
@@ -51,52 +56,25 @@ public class ApiCategoryController {
         description = "새로운 카테고리를 생성합니다. 카테고리 정보와 이미지를 함께 업로드해야 합니다."
     )
     @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "201",
-            description = "카테고리 생성 성공",
-            content = @Content(schema = @Schema(implementation = ResponseCategoryDTO.class))
-        ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "잘못된 요청",
-            content = @Content(schema = @Schema(implementation = ExceptionDto.class))
-        ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "인증되지 않은 사용자",
-            content = @Content(schema = @Schema(implementation = ExceptionDto.class))
-        ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "존재하지 않은 장르",
-            content = @Content(schema = @Schema(implementation = ExceptionDto.class))
-        )
+        @ApiResponse(responseCode = "201", description = "카테고리 생성 성공", content = @Content(schema = @Schema(implementation = ResponseCategoryDTO.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = ExceptionDto.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content(schema = @Schema(implementation = ExceptionDto.class))),
+        @ApiResponse(responseCode = "404", description = "존재하지 않은 장르", content = @Content(schema = @Schema(implementation = ExceptionDto.class)))
     })
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-		content = {
-			@Content(
-				mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-				encoding = {
-					@Encoding(
-						name = "category", 
-						contentType = "application/json"
-					),
-					@Encoding(
-						name = "image",
-						contentType = "image/png"
-					)
-				}
-			)
-		}
-	)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
     public CommonResponse<ResponseCategoryDTO> createCategory(
-        @RequestPart("category")@Parameter(description = "카테고리 정보 <code>RequestCategoryCreateDTO</code> 스키마 참고 <code>Content-Type: application/json</code>") RequestCategoryCreateDTO requestCategoryCreateDTO,
-        @RequestPart("image")@Parameter(description = "카테고리 이미지") MultipartFile image,
-        @Parameter(hidden = true) PrincipalUser principalUser
-    ){
-        return CommonResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO, image));
+        @RequestPart("category_name") String categoryName,
+        @RequestParam("ani_genre_id") List<Long> aniGenreIds,
+        @RequestPart("image") MultipartFile image,
+        @Parameter(hidden = true) @AuthenticationPrincipal PrincipalUser principalUser){
+
+        RequestCategoryCreateDTO requestCategoryCreateDTO = RequestCategoryCreateDTO.builder()
+                .name(categoryName)
+                .aniGenreId(aniGenreIds)
+                .image(image)
+                .build();
+        return CommonResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO));
     }
 
     @Operation(
