@@ -26,29 +26,28 @@ import java.util.List;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
-
     private final ChatService chatService;
 
     @Operation(
-        summary = "채팅방 생성",
-        description = "새로운 채팅방을 생성합니다. 판매자는 상품 정보에서 자동으로 설정됩니다."
+            summary = "채팅방 생성",
+            description = "새로운 채팅방을 생성합니다. 판매자는 상품 정보에서 자동으로 설정됩니다."
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "201",
-            description = "채팅방 생성 성공",
-            content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "잘못된 요청",
-            content = @Content(schema = @Schema(implementation = ErrorCode.class))
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "이미 존재하는 채팅방",
-            content = @Content(schema = @Schema(implementation = ErrorCode.class))
-        )
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "채팅방 생성 성공",
+                    content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ErrorCode.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "이미 존재하는 채팅방",
+                    content = @Content(schema = @Schema(implementation = ErrorCode.class))
+            )
     })
     @PostMapping
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
@@ -64,11 +63,7 @@ public class ChatRoomController {
     @GetMapping
     public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        long startTime = System.nanoTime();
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(principalUser.getUserId());
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime) / 1_000_000;
-        System.out.println("Execution Time: " + duration + " ms");
         return CommonResponse.ok(chatRooms);
     }
 
