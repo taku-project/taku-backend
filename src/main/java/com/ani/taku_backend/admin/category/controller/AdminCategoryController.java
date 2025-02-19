@@ -1,5 +1,6 @@
 package com.ani.taku_backend.admin.category.controller;
 
+import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
 import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryListReqDTO;
 import com.ani.taku_backend.admin.category.domain.dto.req.UpdateCategoryReqDTO;
 import com.ani.taku_backend.admin.category.domain.dto.res.AdminCategoryListResDTO;
@@ -9,11 +10,14 @@ import com.ani.taku_backend.user.model.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +51,17 @@ public class AdminCategoryController {
         @Valid @RequestBody UpdateCategoryReqDTO updateCategoryReqDTO) {
         User user = principalUser.getUser();
         adminCategoryService.updateCategoryStatus(user, updateCategoryReqDTO);
+
+        return "category/list";
+    }
+
+
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String createCategory(@AuthenticationPrincipal PrincipalUser principalUser,
+        @ModelAttribute AdminCategoryCreateReqDTO createReqDTO) {
+        User user = principalUser.getUser();
+
+        adminCategoryService.createCategory(user, createReqDTO);
 
         return "category/list";
     }
