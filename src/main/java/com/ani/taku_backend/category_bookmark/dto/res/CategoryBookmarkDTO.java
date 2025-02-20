@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 public class CategoryBookmarkDTO {
     @Schema(description = "카테고리 북마크 ID")
     private Long bookmarkId;
+    @Schema(description = "카테고리 ID")
+    private Long categoryId;
+
     @Schema(description = "카테고리 이름")
     private String categoryName;
     @Schema(description = "카테고리 image URL")

@@ -21,6 +21,7 @@ public class CustomCategoryBookmarkRepositoryImpl implements CustomCategoryBookm
         return queryFactory.select(
                     Projections.constructor(CategoryBookmarkDTO.class,
                         categoryBookmark.id,
+                        category.id,
                         category.name,
                         image.imageUrl
                     )
