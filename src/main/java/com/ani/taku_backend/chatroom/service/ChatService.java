@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -108,28 +106,6 @@ public class ChatService {
         }
     }
 
-    // 채팅방 나가기
-    @Transactional
-    public void leaveRoom(Long chatRoomId, Long userId) {
-
-        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findById(String.valueOf(chatRoomId))
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM));
-
-        if(!chatRoomMetaInfo.getParticipants().containsUser(userId)){
-            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
-        }
-
-        chatRoomMetaInfo.getParticipants().setDisconnected(userId);
-        chatRoomMetaInfo.checkAndDeactivate();
-
-        chatRoomMetaRepository.save(chatRoomMetaInfo);
-        if (!chatRoomMetaInfo.isActive()) {
-            chatRoomRepository.findById(chatRoomId).ifPresent(chatRoom -> {
-                chatRoom.deactivate();
-                chatRoomRepository.save(chatRoom);
-            });
-        }
-    }
 
     @Transactional
     public void leaveRoomByWsRoomId(String wsRoomId, Long userId) {
@@ -153,20 +129,6 @@ public class ChatService {
         }
     }
 
-    // 메시지 읽음 상태 업데이트
-    @Transactional
-    public void markMessagesAsRead(Long chatRoomId,  Long userId) {
-
-        // MongoDB에 저장된 메시지의 읽음 상태를 업데이트
-        List<ChatMessage> messages = chatMessageRepository.findByChatRoomId(chatRoomId);
-        System.out.println(messages.size());
-        for (ChatMessage message : messages) {
-            if (!message.getSenderId().equals(userId)) {
-                message.setRead(true);
-                chatMessageRepository.save(message);
-            }
-        }
-    }
 
     @Transactional
     public void markMessagesAsReadByWsRoomId(String wsRoomId, Long userId) {
