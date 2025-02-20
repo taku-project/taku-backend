@@ -96,6 +96,10 @@ public class Category extends BaseTimeEntity {
                 .build();
     }
 
+    public void delete() {
+        this.status = CategoryStatus.INACTIVE;
+    }
+
     public void setCategoryImage(CategoryImage categoryImage) {
         this.categoryImage = categoryImage;
     }

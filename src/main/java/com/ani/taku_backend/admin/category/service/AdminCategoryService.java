@@ -5,7 +5,6 @@ import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryListReqDT
 import com.ani.taku_backend.admin.category.domain.dto.req.UpdateCategoryReqDTO;
 import com.ani.taku_backend.admin.category.domain.dto.res.AdminCategoryListResDTO;
 import com.ani.taku_backend.user.model.entity.User;
-import jakarta.validation.Valid;
 
 public interface AdminCategoryService {
     AdminCategoryListResDTO findCategoryList(User user, AdminCategoryListReqDTO categoryListReqDTO);
@@ -14,4 +13,5 @@ public interface AdminCategoryService {
 
     void updateCategoryStatus(User user, UpdateCategoryReqDTO updateCategoryReqDTO);
 
+    void deleteCategory(Long categoryId, User user);
 }

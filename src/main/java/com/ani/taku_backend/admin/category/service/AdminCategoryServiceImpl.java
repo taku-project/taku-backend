@@ -92,4 +92,22 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         categoryRepository.save(category);
         categoryLogRepository.save(categoryLog);
     }
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long categoryId, User user) {
+        User findUser = userRepository.findById(user.getUserId())
+                .orElseThrow(UserException.UserNotFoundException::new);
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
+
+        category.delete();
+
+        String content = category.getName() + "를 " + category.getStatus() + "에서 DELETE 로 변경하였습니다.";
+        CategoryLog categoryLog = CategoryLog.create(category, user.getUserId(), user.getNickname(), content, CategoryLogType.DELETE);
+
+        categoryRepository.save(category);
+        categoryLogRepository.save(categoryLog);
+    }
 }
