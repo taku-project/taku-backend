@@ -3,6 +3,7 @@ package com.ani.taku_backend.chatroom.repository;
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -18,4 +19,8 @@ public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo
     Optional<ChatRoomMetaInfo> findByChatRoomId(Long chatRoomId);
 
     List<ChatRoomMetaInfo> findByChatRoomIdIn(List<Long> chatRoomIds);
+
+    @Update("{ '$set': { 'participants.info.?1.messageStock': 0 } }")
+    @Query("{ 'chatRoomId': ?0, 'participants.info.?1': { $exists: true } }")
+    void resetMessageStock(Long chatRoomId, Long userId);
 }
