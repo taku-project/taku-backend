@@ -16,6 +16,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 채팅방 정보를 나타내는 엔티티입니다.
+ * 각 채팅방은 고유의 WebSocket ID와 관련 상품 정보를 가집니다.
+ */
+
 @Entity
 @Getter
 @Table(name = "chat_room")
