@@ -23,6 +23,8 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
 
+
+    //TODO 협의후 삭제 예정
     // 메시지 전송
     @Transactional
     public void sendMessage(Long roomId, Long senderId, String content) {
