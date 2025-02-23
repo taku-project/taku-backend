@@ -7,4 +7,7 @@ import java.util.List;
 public interface BookmarkService {
     List<Bookmark> findByUserIdWithJangterAndCategories(Long userId);
 
+    Bookmark getBookmarkByUserId(Long userId);
+
+
 }
