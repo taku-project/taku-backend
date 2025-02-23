@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -207,15 +208,16 @@ public class UserController {
 
 	}
 
-	@PatchMapping(value= "/{userId}")
+
+	@RequestBody(content = @Content(
+			encoding = @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE)))
+	@PatchMapping(value= "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 			summary = "유저 정보 수정",
 			description = "유저 프로필, 닉네임 정보 수정"
 	)
-	@Parameters({@Parameter(name="userId", description = "유저 개인 id")
-	})
 	public CommonResponse<String>editUserDetail(@PathVariable Long userId
-		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart(value = "request") @Parameter(schema =@Schema(type = "string", format = "binary")) UserEditDTO request
+		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart("request") UserEditDTO request
 
 	){
 
@@ -225,10 +227,10 @@ public class UserController {
 		if(request.getNickname()!=null){
 			String nickname = request.getNickname();
 			if(userService.isNicknameDuplication(nickname)){ //이미 존재하는 닉네임일 경우
-				System.out.println("이미 존재하는 닉네임 입니다. ");
+
 				return CommonResponse.created("이미 존재하는 닉네임입니다. ");
 			}else{ // 닉네임 vaildation 통과를 했을 경우
-				System.out.println("이미 존재하는 닉네임이 아님으로, 업데이트를 시작합니다. ");
+
 				userService.updateNickname(userId, nickname);
 
 			}
@@ -236,9 +238,7 @@ public class UserController {
 
 		if(multipartFile!=null){
 			String fileUrl;
-			//1번. martipart
-			System.out.println("hello");
-			System.out.println("multipart"+ multipartFile);
+
 			try {
 				fileUrl = fileService.uploadImageFile(multipartFile);
 				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, fileUrl,request.getFileSize(), request.getFileType(), request.getOriginalFileName());
@@ -250,7 +250,7 @@ public class UserController {
 			}
 
 			return CommonResponse.ok(fileUrl);
-			//2버.
+
 
 		}
 

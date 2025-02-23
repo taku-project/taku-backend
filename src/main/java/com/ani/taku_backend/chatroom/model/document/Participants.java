@@ -13,7 +13,7 @@ public class Participants {
         info.put(userId, new ParticipantInfo(userId, role));
     }
 
-    public synchronized void updateMessageStock(String userId, boolean increase) {
+    public synchronized void updateMessageStock(Long userId, boolean increase) {
         ParticipantInfo info = this.info.get(userId);
         if (info != null) {
             if (increase) info.plusMessage();
