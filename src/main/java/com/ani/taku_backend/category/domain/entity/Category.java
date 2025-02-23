@@ -1,15 +1,11 @@
 package com.ani.taku_backend.category.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +24,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** 
  * 카테고리 테이블 엔티티
@@ -64,8 +63,6 @@ public class Category extends BaseTimeEntity {
     @JsonManagedReference
     @OneToOne(mappedBy = "category", cascade = CascadeType.ALL)
     private CategoryImage categoryImage;
-
-    // TODO : 카테고리 애니장르
 
     @JsonManagedReference
     @OneToMany(mappedBy = "category" , cascade = CascadeType.ALL)

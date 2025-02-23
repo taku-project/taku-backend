@@ -11,6 +11,7 @@ import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.repository.AnimationGenreRepository;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.category_bookmark.domain.repository.CategoryBookmarkRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -44,6 +45,7 @@ import java.util.Optional;
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final CategoryBookmarkRepository categoryBookmarkRepository;
     private final AnimationGenreRepository animationGenreRepository;
     private final FileService fileService;
     private final ImageService imageService;
@@ -95,17 +97,19 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * 카테고리 상세 조회
      * @param id
+     * @param user
      * @return
      */
-    public ResponseCategoryDTO findCategoryById(Long id) {
-        Optional<Category> categoryOptional = categoryRepository.findById(id);
+    public ResponseCategoryDTO findCategoryById(Long id, User user) {
+        Category category = categoryRepository.findCategoryById(id, user)
+                .orElseThrow(()-> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
 
-        if(!categoryOptional.isPresent()) {
-            throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
-        }
+        boolean hasBookmark = Optional.ofNullable(user)
+                .map(u -> categoryBookmarkRepository.findByCategoryIdAndUserUserId(id, u.getUserId()))
+                .map(Optional::isPresent)
+                .orElse(false);
 
-
-        return ResponseCategoryDTO.of(categoryOptional.get());
+        return ResponseCategoryDTO.of(category, hasBookmark);
     }
 
     @Override

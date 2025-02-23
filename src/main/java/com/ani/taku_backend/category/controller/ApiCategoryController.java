@@ -11,16 +11,15 @@ import com.ani.taku_backend.common.exception.ExceptionDto;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -129,9 +128,11 @@ public class ApiCategoryController {
     )
     @GetMapping("/{id}")
     public CommonResponse<ResponseCategoryDTO> findCategoryById(
-        @PathVariable("id") Long id
+        @PathVariable("id") Long id,
+        @AuthenticationPrincipal PrincipalUser principalUser
     ) {
-        ResponseCategoryDTO result = categoryService.findCategoryById(id);
+        User user = principalUser != null ? principalUser.getUser() : null;
+        ResponseCategoryDTO result = categoryService.findCategoryById(id, user);
         return CommonResponse.ok(result);
     }
 

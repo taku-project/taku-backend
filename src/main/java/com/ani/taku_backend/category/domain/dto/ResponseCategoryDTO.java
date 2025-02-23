@@ -1,6 +1,6 @@
 package com.ani.taku_backend.category.domain.dto;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,25 +27,25 @@ public class ResponseCategoryDTO {
     private String status;
     private String createdType;
     private Long viewCount;
+    private boolean isBookmark;
     private List<CategoryImageDTO> categoryImages;
     private List<CategoryGenreDTO> categoryGenres;
 
 
-    public static ResponseCategoryDTO of(Category category) {
+    public static ResponseCategoryDTO of(Category category, boolean hasBookmark) {
+
         return ResponseCategoryDTO.builder()
             .id(category.getId())
             .name(category.getName())
             .status(category.getStatus().name())
             .createdType(category.getCreatedType().name())
             .viewCount(category.getViewCount())
-            .categoryImages(Arrays.asList(CategoryImageDTO.of(category.getCategoryImage())))
+            .isBookmark(hasBookmark)
+            .categoryImages(Collections.singletonList(CategoryImageDTO.of(category.getCategoryImage())))
             .categoryGenres(category.getCategoryGenres().stream().map(CategoryGenreDTO::of).collect(Collectors.toList()))
             .build();
     }
 
-
-
-    
     @Getter
     @Builder
     @Setter

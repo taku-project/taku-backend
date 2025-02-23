@@ -6,6 +6,7 @@ import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
 import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.user.model.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,7 +15,7 @@ public interface CategoryService {
 
     Page<ResponseCategorySeachDTO> searchCategories(RequestCategorySearch requestCategorySearch, Pageable pageable);
 
-    ResponseCategoryDTO findCategoryById(Long id);
+    ResponseCategoryDTO findCategoryById(Long id, User user);
 
     AniGenreListReqDTO findAniGenres(String keyword);
 }

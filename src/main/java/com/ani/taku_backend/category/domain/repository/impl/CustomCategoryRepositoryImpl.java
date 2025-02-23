@@ -10,6 +10,7 @@ import com.ani.taku_backend.category.domain.entity.QCategory;
 import com.ani.taku_backend.category.domain.entity.QCategoryGenre;
 import com.ani.taku_backend.category.domain.entity.QCategoryImage;
 import com.ani.taku_backend.common.model.entity.QImage;
+import com.ani.taku_backend.user.model.entity.User;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,6 +59,19 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
             pageable,
             getTotalCount(requestCategorySearch)
         );
+    }
+
+    @Override
+    public Optional<Category> findCategoryById(Long id, User user) {
+        QCategory category = QCategory.category;
+
+        Category result = jpaQueryFactory
+                .selectFrom(category)
+                .leftJoin(category.user).fetchJoin()
+                .where(category.id.eq(id))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     /**
