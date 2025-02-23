@@ -32,12 +32,15 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
         QDuckuJangterBookmark bookmark = QDuckuJangterBookmark.duckuJangterBookmark;
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
 
+        // categoryId가 0인 경우 null로 처리하여 전체 조회
+        Long effectiveCategoryId = (categoryId != null && categoryId == 0) ? null : categoryId;
+
         JPAQuery<DuckuJangterBookmark> query = queryFactory
                 .selectFrom(bookmark)
                 .leftJoin(bookmark.jangter, jangter).fetchJoin()
                 .where(
                         bookmark.bookmark.user.userId.eq(userId),
-                        categoryIdEquals(categoryId)
+                        categoryIdEquals(effectiveCategoryId)
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
@@ -60,12 +63,15 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
         QDuckuJangterBookmark bookmark = QDuckuJangterBookmark.duckuJangterBookmark;
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
 
+        // categoryId가 0인 경우 null로 처리하여 전체 조회
+        Long effectiveCategoryId = (categoryId != null && categoryId == 0) ? null : categoryId;
+
         List<DuckuJangterBookmark> bookmarks = queryFactory
                 .selectFrom(bookmark)
                 .leftJoin(bookmark.jangter, jangter).fetchJoin()
                 .where(
                         bookmark.bookmark.user.userId.eq(userId),
-                        categoryIdEquals(categoryId)
+                        categoryIdEquals(effectiveCategoryId)
                 )
                 .orderBy(bookmark.createdAt.desc())
                 .fetch();
@@ -76,7 +82,7 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
     }
 
     private BooleanExpression categoryIdEquals(Long categoryId) {
-        if (categoryId == null || categoryId == 0) {
+        if (categoryId == null) {
             return null;
         }
         return QDuckuJangterBookmark.duckuJangterBookmark.jangter.itemCategories.id.eq(categoryId);

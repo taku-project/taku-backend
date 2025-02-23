@@ -4,26 +4,28 @@ import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface DuckuJangterBookmarkService {
-    /**
-     * 사용자가 상품을 찜 목록에 추가합니다.
-     */
-    void addBookmark(Long userId, Long jangterId);
 
     /**
-     * 사용자가 찜 목록에서 상품을 삭제합니다.
+     * 장터 상품을 북마크에 추가합니다.
+     * @param userId 사용자 ID
+     * @param productId 상품 ID
      */
-    void removeBookmark(Long userId, Long jangterId);
+    void addBookmark(Long userId, Long productId);
 
     /**
-     * 사용자의 찜 목록을 페이징 및 정렬 조건에 맞게 조회합니다.
+     * 장터 상품을 북마크에서 제거합니다.
+     * @param userId 사용자 ID
+     * @param productId 상품 ID
+     */
+    void removeBookmark(Long userId, Long productId);
+
+    /**
+     * 사용자의 장터 북마크 목록을 조회합니다.
+     * @param userId 사용자 ID
+     * @param categoryId 카테고리 ID (0: 전체 조회)
+     * @param pageable 페이징 정보
+     * @return 북마크 목록
      */
     Page<BookmarkListResponseDTO> getBookmarkList(Long userId, Long categoryId, Pageable pageable);
-
-    /**
-     * 사용자의 특정 카테고리 찜 목록을 전체 조회합니다.
-     */
-    List<BookmarkListResponseDTO> getBookmarkListByCategory(Long userId, Long categoryId);
 }

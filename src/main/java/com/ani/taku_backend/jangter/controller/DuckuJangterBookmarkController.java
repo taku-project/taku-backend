@@ -18,8 +18,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Tag(name = "장터 북마크 API", description = "장터 상품 북마크 관련 API")
 @Slf4j
 @RestController
@@ -60,34 +58,20 @@ public class DuckuJangterBookmarkController {
         return CommonResponse.ok(null);
     }
 
-    @Operation(summary = "장터 북마크 목록 조회", description = "사용자의 장터 북마크 목록을 페이징하여 조회합니다.")
+    @Operation(summary = "장터 북마크 목록 조회", description = "사용자의 장터 북마크 목록을 페이징하여 조회합니다. categoryId가 0인 경우 전체 목록을 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "북마크 목록 조회 성공")
+            @ApiResponse(responseCode = "200", description = "북마크 목록 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
     @GetMapping
     public CommonResponse<Page<BookmarkListResponseDTO>> getBookmarkList(
             @AuthenticationPrincipal Long userId,
-            @Parameter(description = "카테고리 ID (선택사항)")
-            @RequestParam(required = false) Long categoryId,
+            @Parameter(description = "카테고리 ID (0: 전체 조회)", required = true)
+            @RequestParam Long categoryId,
             @ParameterObject
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<BookmarkListResponseDTO> bookmarks = bookmarkService.getBookmarkList(userId, categoryId, pageable);
-        return CommonResponse.ok(bookmarks);
-    }
-
-    @Operation(summary = "카테고리별 장터 북마크 목록 조회", description = "특정 카테고리의 장터 북마크 목록을 모두 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "카테고리별 북마크 목록 조회 성공"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
-    })
-    @GetMapping("/categories/{categoryId}")
-    public CommonResponse<List<BookmarkListResponseDTO>> getBookmarkListByCategory(
-            @AuthenticationPrincipal Long userId,
-            @Parameter(description = "카테고리 ID", required = true)
-            @PathVariable Long categoryId
-    ) {
-        List<BookmarkListResponseDTO> bookmarks = bookmarkService.getBookmarkListByCategory(userId, categoryId);
         return CommonResponse.ok(bookmarks);
     }
 }
