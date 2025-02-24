@@ -69,7 +69,16 @@ public class DuckuJangterBookmarkController {
         return CommonResponse.ok(null);
     }
 
-    @Operation(summary = "장터 북마크 목록 조회", description = "사용자의 장터 북마크 목록을 페이징하여 조회합니다. categoryId가 0인 경우 전체 목록을 조회합니다.")
+    @Operation(
+        summary = "장터 북마크 목록 조회", 
+        description = "사용자의 장터 북마크 목록을 페이징하여 조회합니다. categoryId가 0인 경우 전체 목록을 조회합니다.",
+        parameters = {
+            @Parameter(name = "categoryId", description = "카테고리 ID (0: 전체 조회)", required = true, in = ParameterIn.QUERY),
+            @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", in = ParameterIn.QUERY),
+            @Parameter(name = "size", description = "페이지 크기", in = ParameterIn.QUERY),
+            @Parameter(name = "sort", description = "정렬 기준 (예: createdAt,DESC)", in = ParameterIn.QUERY)
+        }
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "북마크 목록 조회 성공"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
@@ -77,8 +86,7 @@ public class DuckuJangterBookmarkController {
     @GetMapping
     public CommonResponse<Page<BookmarkListResponseDTO>> getBookmarkList(
             @AuthenticationPrincipal Long userId,
-            @Parameter(description = "카테고리 ID (0: 전체 조회)", required = true)
-            @RequestParam Long categoryId,
+            @RequestParam(name = "categoryId") Long categoryId,
             @ParameterObject
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
