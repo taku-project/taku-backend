@@ -9,6 +9,7 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.repository.DuckuJangterBookmarkRepository;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
+import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     private final DuckuJangterBookmarkRepository bookmarkRepository;
     private final DuckuJangterRepository jangterRepository;
     private final BookmarkService bookmarkService;
+    private final CategoryRepository CategoryRepository;
 
     @Override
     @Transactional
@@ -56,8 +58,16 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
 
     @Override
     public Page<BookmarkListResponseDTO> getBookmarkList(Long userId, Long categoryId, Pageable pageable) {
-        // categoryId가 0인 경우 전체 조회
-        Long effectiveCategoryId = categoryId == 0 ? null : categoryId;
+        Long effectiveCategoryId = categoryId;
+        
+        // 전체 조회가 아닌 경우, 카테고리 존재 여부 확인
+        if (categoryId != 0) {
+            CategoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
+        } else {
+            effectiveCategoryId = null;
+        }
+        
         return bookmarkRepository.findBookmarksByUserIdWithPaging(userId, effectiveCategoryId, pageable);
     }
 }
