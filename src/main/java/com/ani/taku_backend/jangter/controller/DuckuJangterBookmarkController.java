@@ -5,6 +5,7 @@ import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
 import com.ani.taku_backend.jangter.service.DuckuJangterBookmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +28,13 @@ public class DuckuJangterBookmarkController {
 
     private final DuckuJangterBookmarkService bookmarkService;
 
-    @Operation(summary = "장터 상품 북마크 추가", description = "특정 장터 상품을 북마크에 추가합니다.")
+    @Operation(
+        summary = "장터 상품 북마크 추가",
+        description = "특정 장터 상품을 북마크에 추가합니다.",
+        parameters = {
+            @Parameter(name = "productId", description = "북마크할 상품 ID", required = true, in = ParameterIn.PATH)
+        }
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "북마크 추가 성공"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 상품"),
@@ -36,14 +43,19 @@ public class DuckuJangterBookmarkController {
     @PostMapping("/{productId}")
     public CommonResponse<Void> addBookmark(
             @AuthenticationPrincipal Long userId,
-            @Parameter(description = "북마크할 상품 ID", required = true)
             @PathVariable Long productId
     ) {
         bookmarkService.addBookmark(userId, productId);
         return CommonResponse.ok(null);
     }
 
-    @Operation(summary = "장터 상품 북마크 삭제", description = "특정 장터 상품을 북마크에서 제거합니다.")
+    @Operation(
+        summary = "장터 상품 북마크 삭제",
+        description = "특정 장터 상품을 북마크에서 제거합니다.",
+        parameters = {
+            @Parameter(name = "productId", description = "북마크 해제할 상품 ID", required = true, in = ParameterIn.PATH)
+        }
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "북마크 삭제 성공"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 북마크")
@@ -51,7 +63,6 @@ public class DuckuJangterBookmarkController {
     @DeleteMapping("/{productId}")
     public CommonResponse<Void> removeBookmark(
             @AuthenticationPrincipal Long userId,
-            @Parameter(description = "북마크 해제할 상품 ID", required = true)
             @PathVariable Long productId
     ) {
         bookmarkService.removeBookmark(userId, productId);
