@@ -36,12 +36,10 @@ public class CategoryBookmarkServiceImpl implements CategoryBookmarkService {
     }
 
     @Override
-    public void deleteCategoryBookmark(User user, Long categoryBookmarkId) {
-        CategoryBookmark categoryBookmark = categoryBookmarkRepository
-                .findByIdAndUserUserId(categoryBookmarkId, user.getUserId())
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY_BOOKMARK));
-
-        categoryBookmarkRepository.delete(categoryBookmark);
+    public void deleteCategoryBookmark(User user, Long categoryId) {
+        categoryBookmarkRepository
+            .findByCategoryIdAndUserUserId(categoryId, user.getUserId())
+            .ifPresent(categoryBookmarkRepository::delete);
     }
 
     @Override
