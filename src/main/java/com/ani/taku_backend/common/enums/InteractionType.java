@@ -1,5 +1,9 @@
 package com.ani.taku_backend.common.enums;
 
+import com.ani.taku_backend.common.exception.DuckwhoException;
+
+import static com.ani.taku_backend.common.exception.ErrorCode.INVALID_INPUT_VALUE;
+
 /**
  * 쇼츠 상호작용 유형
  */
@@ -24,10 +28,10 @@ public enum InteractionType implements EnumCode {
 
     public static InteractionType fromValue(String value) {
         for (InteractionType type : InteractionType.values()) {
-            if (type.getValue().equals(value)) {
+            if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown InteractionType value: " + value);
+        throw new DuckwhoException(INVALID_INPUT_VALUE);
     }
 }

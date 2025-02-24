@@ -2,7 +2,9 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,7 +49,7 @@ public class DuckuJangter extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 100, nullable = false)
-    private StatusType status;  // 글 상태? 판매중? 판매완료? 이런거..?
+    private ProductStatus status;  // 상품 상태 (FOR_SALE, RESERVED, SOLD_OUT)
 
     @Column(name = "tfidf_vector",columnDefinition = "TEXT")
     private String tfidfVector;  // TF-IDF 벡터값을 저장.
@@ -87,24 +89,16 @@ public class DuckuJangter extends BaseTimeEntity {
         BigDecimal updatePrice = productUpdateRequestDTO.getPrice();
 
         if (updateTitle != null && !updateTitle.equals(this.title)) {
-            log.debug("게시글 제목 수정 전, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
             this.title = updateTitle;
-            log.debug("게시글 제목 수정 후, 기존 제목: {}, 수정 제목: {}", this.title, updateTitle);
         }
         if (updateDescription != null && !updateDescription.equals(this.description)) {
-            log.debug("게시글 본문 수정 전, 기존 본문: {}, 수정 본문: {}", this.description, updateDescription);
             this.description = updateDescription;
-            log.debug("게시글 본문 수정 후, 기존 본문: {}, 수정 본문: {}", this.description, updateDescription);
         }
         if (updatePrice != null && !updatePrice.equals(this.price)) {
-            log.debug("게시글 가격 수정 전, 기존 가격: {}, 수정 가격: {}", this.description, updateDescription);
             this.price = updatePrice;
-            log.debug("게시글 가격 수정 후, 기존 가격: {}, 수정 가격: {}", this.description, updateDescription);
         }
         if (itemCategories != null && !itemCategories.equals(this.itemCategories)) {
-            log.debug("카테고리 수정 전, 기존 카테고리: {}, 수정 카테고리: {}", this.itemCategories.getId(), itemCategories.getId());
             this.itemCategories = itemCategories;
-            log.debug("카테고리 수정 후, 기존 카테고리: {}, 수정 카테고리: {}", this.itemCategories.getId(), itemCategories.getId());
         }
     }
 
@@ -116,6 +110,32 @@ public class DuckuJangter extends BaseTimeEntity {
     }
     public void updateTfidfVector(String tfidfVector) {
         this.tfidfVector = tfidfVector;
+    }
+
+    public static DuckuJangter reference(Long id) {
+        DuckuJangter duckuJangter = new DuckuJangter();
+        duckuJangter.id = id;
+        return duckuJangter;
+    }
+
+    /**
+     * 상품 상태 변경
+     */
+    public void updateStatus(ProductStatus newStatus, BigDecimal soldPrice) {
+        // 상태 전환 가능 여부 검증
+        this.status.validateTransitionTo(newStatus);
+        
+        // 상태 변경
+        this.status = newStatus;
+        
+        // SOLD_OUT인 경우 구매자 정보와 판매가 업데이트
+        if (newStatus == ProductStatus.SOLD_OUT) {
+            this.price = soldPrice;
+        }
+    }
+
+    public boolean isOwner(Long userId) {
+        return this.user != null && this.user.getUserId().equals(userId);
     }
 
 }

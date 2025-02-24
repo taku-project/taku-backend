@@ -2,34 +2,30 @@ package com.ani.taku_backend.chatroom.model.dto;
 
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-public class ChatRoomResponseDTO {
-    private Long id;
-    private String roomId;
-    private Long articleId;
-    private Long buyerId;
-    private Long sellerId;
-    private Long lastMessageId;
-    private Long unreadCount;
-    private LocalDateTime createdAt;
-
-    public static ChatRoomResponseDTO of(ChatRoom chatRoom, Long userId) {
-        long unreadCount = userId.equals(chatRoom.getBuyerId())
-                ? chatRoom.getLastMessageId() - chatRoom.getBuyerLastReadMessageId()
-                : chatRoom.getLastMessageId() - chatRoom.getSellerLastReadMessageId();
-
+public record ChatRoomResponseDTO(
+        Long id,
+        String roomId,
+        Long articleId,
+        Long buyerId,
+        Long sellerId,
+        LocalDateTime createdAt
+) {
+    /**
+     * ChatRoom 엔티티와 관련 식별자를 기반으로 DTO를 생성
+     *
+     * @param chatRoom 채팅방 엔티티
+     * @param buyerId 구매자 ID
+     * @param sellerId 판매자 ID
+     * @return 생성된 ChatRoomResponseDTO 객체
+     */
+    public static ChatRoomResponseDTO of(ChatRoom chatRoom, Long buyerId, Long sellerId) {
         return new ChatRoomResponseDTO(
                 chatRoom.getId(),
-                chatRoom.getRoomId(),
+                chatRoom.getWsRoomId(),
                 chatRoom.getArticleId(),
-                chatRoom.getBuyerId(),
-                chatRoom.getSellerId(),
-                chatRoom.getLastMessageId(),
-                Math.max(0, unreadCount),
+                buyerId,
+                sellerId,
                 chatRoom.getCreatedAt()
         );
     }

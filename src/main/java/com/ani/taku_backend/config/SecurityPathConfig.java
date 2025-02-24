@@ -17,7 +17,14 @@ public class SecurityPathConfig {
             "/api/jangter",
 
             // 시세 조회
-            "/api/market-price/**"
+            "/api/market-price/**",
+
+            // 아이템 카테고리
+            "/api/itemCategory",
+
+            // 커뮤니티 카테고리
+            "/api/category",
+            "/api/category/**"
     };
 
     // 인증이 필요없는 정적 리소스 경로
@@ -51,6 +58,9 @@ public class SecurityPathConfig {
 
     // 쇼츠 API 관련 설정
     public static final String SHORTS_API_PATH = "/api/shorts/**";
+
+    // 채팅 API 관련 설정
+    public static final String CHAT_API_PATH = "/api/chat/**";
     
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
@@ -77,6 +87,9 @@ public class SecurityPathConfig {
     }
 
     public static boolean shouldSkipFilter(String path, String method) {
-        return isPermitAllPath(path) || isUserApiPath(path, method) || isShortsApiPath(path, method) || isPublicGetPath(path, method);
+        return isPermitAllPath(path) || 
+               isUserApiPath(path, method) || 
+               isShortsApiPath(path, method) || 
+               isPublicGetPath(path, method);
     }
 }

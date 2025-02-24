@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 
 @Data
 @NoArgsConstructor
@@ -25,7 +26,7 @@ public class ProductFindDetailResponseDTO {
     private BigDecimal price;
 
     @Schema(description = "판매 상태", example = "ACTIVE == 판매중")
-    private StatusType status;
+    private ProductStatus status;
 
     @Schema(description = "생성일")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)  // 테스트 해보기
@@ -34,16 +35,25 @@ public class ProductFindDetailResponseDTO {
     @Schema(description = "조회수")
     private long viewCount;
 
+    @Schema(description = "장터 카테고리 ID")
+    private long itemCategoryId;
+
+    @Schema(description = "판매자 Id")
+    private long userId;
+
     @Schema(description = "이미지 리스트")
     private List<String> imageUrlList;
 
-    public ProductFindDetailResponseDTO(DuckuJangter duckuJangter, StatusType status, Long addViewCount) {
+    public ProductFindDetailResponseDTO(DuckuJangter duckuJangter, Long addViewCount) {
         this.title = duckuJangter.getTitle();
         this.description = duckuJangter.getDescription();
         this.price = duckuJangter.getPrice();
-        this.status = status;
+        this.status = duckuJangter.getStatus();
         this.createdAt = duckuJangter.getCreatedAt();
+        this.itemCategoryId = duckuJangter.getItemCategories().getId();
+        this.userId = duckuJangter.getUser().getUserId();
         this.viewCount = addViewCount;
+
 
         // DuckuJangter와 연관된 이미지 URL 추출
         this.imageUrlList = duckuJangter.getJangterImages()

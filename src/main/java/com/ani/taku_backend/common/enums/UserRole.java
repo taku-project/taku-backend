@@ -26,6 +26,7 @@ public enum UserRole implements EnumCode {
    */
   ADMIN("ROLE_ADMIN"),
   BLACKLIST("ROLE_BLACKLIST"),
+  ANONYMOUS("ROLE_ANONYMOUS"),
   ;
 
   private final String value;

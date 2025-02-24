@@ -1,14 +1,11 @@
 package com.ani.taku_backend.category.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,6 +24,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** 
  * 카테고리 테이블 엔티티
@@ -64,8 +64,6 @@ public class Category extends BaseTimeEntity {
     @OneToOne(mappedBy = "category", cascade = CascadeType.ALL)
     private CategoryImage categoryImage;
 
-    // TODO : 카테고리 애니장르
-
     @JsonManagedReference
     @OneToMany(mappedBy = "category" , cascade = CascadeType.ALL)
     private List<CategoryGenre> categoryGenres;
@@ -83,8 +81,28 @@ public class Category extends BaseTimeEntity {
             .build();
     }
 
+    public static Category create(User user, AdminCategoryCreateReqDTO createReqDTO, CategoryStatus status) {
+        return Category.builder()
+                .name(createReqDTO.getCategoryName())
+                .createdType(user.getRole())
+                .viewCount(0L)
+                .status(status)
+                .user(user)
+                .categoryImage(null)
+                .categoryGenres(new ArrayList<>())
+                .build();
+    }
+
+    public void delete() {
+        this.status = CategoryStatus.INACTIVE;
+    }
+
     public void setCategoryImage(CategoryImage categoryImage) {
         this.categoryImage = categoryImage;
+    }
+
+    public void updateCategoryStatus(CategoryStatus status) {
+        this.status = status;
     }
 }
 

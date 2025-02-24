@@ -16,6 +16,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 채팅방 정보를 나타내는 엔티티입니다.
+ * 각 채팅방은 고유의 WebSocket ID와 관련 상품 정보를 가집니다.
+ */
+
 @Entity
 @Getter
 @Table(name = "chat_room")
@@ -26,49 +31,23 @@ public class ChatRoom extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_id", unique = true)
-    private String roomId;  // WebSocket 세션 관리용 ID
+    @Column(name = "ws_room_id", unique = true)
+    private String wsRoomId;  // WebSocket 세션 관리용 ID
 
     @Column(name = "article_id", nullable = false)
     private Long articleId;  //판매글 id
 
-    @Column(name = "buyer_id", nullable = false)
-    private Long buyerId;
-
-    @Column(name = "seller_id", nullable = false)
-    private Long sellerId;
-
-    @Column(name = "last_message_id")
-    private Long lastMessageId = 0L;
-
-    @Column(name = "buyer_last_read_message_id")
-    private Long buyerLastReadMessageId = 0L;
-
-    @Column(name = "seller_last_read_message_id")
-    private Long sellerLastReadMessageId = 0L;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
     @Builder
-    public ChatRoom(Long articleId, Long buyerId, Long sellerId) {
-        this.roomId = UUID.randomUUID().toString();
+    public ChatRoom(Long articleId) {
+        this.wsRoomId = UUID.randomUUID().toString();
         this.articleId = articleId;
-        this.buyerId = buyerId;
-        this.sellerId = sellerId;
-    }
+        this.status = ChatRoomStatus.ACTIVE;
 
-    public void updateLastMessage(Long messageId) {
-        this.lastMessageId = messageId;
-    }
-
-    public void updateBuyerLastRead(Long messageId) {
-        this.buyerLastReadMessageId = messageId;
-    }
-
-    public void updateSellerLastRead(Long messageId) {
-        this.sellerLastReadMessageId = messageId;
     }
 
     public void deactivate() {

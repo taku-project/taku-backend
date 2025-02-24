@@ -15,6 +15,8 @@ jobs:
   build-and-deploy-dev:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3 # buildx 설정
       # (1) 이 레포(repo1) 체크아웃 (백엔드 코드)
       - name: Checkout backend (repo1)
         uses: actions/checkout@v4
@@ -35,8 +37,9 @@ jobs:
       - name: Copy config
         run: |
           cp -r repo2/* repo1/src/main/resources/
+          ls repo1/src/main/resources/
 
-      # (4) Gradle Build
+     # (4) Gradle Build
       - name: Gradle build
         working-directory: repo1
         run: |
@@ -58,13 +61,19 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/duckwho:latest repo1
-          docker push ${{ steps.login-ecr.outputs.registry }}/duckwho:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >> $GITHUB_OUTPUT
-
+        uses: docker/build-push-action@v5
+        with:
+          context: repo1          # Dockerfile이 있는 디렉토리 경로
+          file: repo1/Dockerfile 
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/duckwho:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/arm64
+          
+       # 환경 변수로 이미지 출력 설정
+      - name: Set image output
+        run: echo "IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/duckwho:latest" >> $GITHUB_ENV
           
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -72,7 +81,7 @@ jobs:
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+          image: ${{ env.IMAGE_URI }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
@@ -80,4 +89,4 @@ jobs:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
-      
+          

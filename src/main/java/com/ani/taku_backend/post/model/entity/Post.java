@@ -96,7 +96,7 @@ public class Post extends BaseTimeEntity {
 
     // 조회수 증가
     public void addViews() {
-        this.views++;
+        this.views += 1;
     }
 
 

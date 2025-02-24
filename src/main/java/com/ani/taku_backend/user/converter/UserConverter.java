@@ -6,9 +6,9 @@ import com.ani.taku_backend.user.model.dto.*;
 
 public class UserConverter {
 
-    public static UserDetailDto toUserDetailDto(String nickname, String gender, String ageRange, String profileImg){
+    public static UserDetailDTO toUserDetailDto(String nickname, String gender, String ageRange, String profileImg){
 
-        return UserDetailDto.builder()
+        return UserDetailDTO.builder()
                 .nickname(nickname)
                 .gender(gender)
                 .ageRange(ageRange)

@@ -1,7 +1,7 @@
 package com.ani.taku_backend.common.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * 정렬 기준을 관리
@@ -10,6 +10,16 @@ public enum SortFilterType {
 
     /**
      * 최신순 - 커뮤니티 글, 상품 적용
+     */
+    ID("id"),
+
+    /**
+     * 오래된 순 - 커뮤니티 글, 상품 적용
+     */
+    OLDEST("oldest"),
+
+    /**
+     * 최신순
      */
     LATEST("latest"),
 
@@ -37,8 +47,8 @@ public enum SortFilterType {
 
     /**
      * 생성자
-     * @param value 필터 기준 문자열 값
      *
+     * @param value 필터 기준 문자열 값
      */
     SortFilterType(String value) {
         this.value = value;
@@ -46,9 +56,11 @@ public enum SortFilterType {
 
     /**
      * 기준 반환
+     *
      * @return 필터 기준 문자열
      */
     public String getValue() {
         return value;
     }
+
 }

@@ -8,6 +8,8 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -33,6 +35,10 @@ public class Comments extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comments parentComment;
+
+    @OneToMany(mappedBy = "parentComment")
+    @Builder.Default
+    private List<Comments> replies = new ArrayList<>();
 
     @Column(length = 255, nullable = false)
     private String content;

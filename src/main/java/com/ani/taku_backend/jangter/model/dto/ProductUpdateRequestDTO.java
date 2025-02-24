@@ -38,10 +38,10 @@ public class ProductUpdateRequestDTO {
     @DecimalMax(value = "10000000.00", message = "가격은 10,000,000 이하이어야 합니다.")
     private BigDecimal price;
 
-    @Schema(description = "삭제할 이미지 URL 리스트, DB에서 이미지 URL를 조회해야하므로 번거로울 시 Send empty value 체크 해제 후 테스트 진행")
+//    @Schema(description = "삭제할 이미지 URL 리스트, DB에서 이미지 URL를 조회해야하므로 번거로울 시 Send empty value 체크 해제 후 테스트 진행")
     private List<String> deleteImageUrl;
 
-    @Schema(description = "업데이트할 이미지파일 (여러 파일 업로드 가능), 이미지 파일 업로드 안할 시 Send empty value 체크 해제 후 테스트 진행")
+//    @Schema(description = "업데이트할 이미지파일 (여러 파일 업로드 가능), 이미지 파일 업로드 안할 시 Send empty value 체크 해제 후 테스트 진행")
     private List<MultipartFile> imageList = new ArrayList<>();
 
 }

@@ -1,17 +1,5 @@
 package com.ani.taku_backend.category.domain.repository.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeMap;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
 import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
@@ -22,12 +10,21 @@ import com.ani.taku_backend.category.domain.entity.QCategory;
 import com.ani.taku_backend.category.domain.entity.QCategoryGenre;
 import com.ani.taku_backend.category.domain.entity.QCategoryImage;
 import com.ani.taku_backend.common.model.entity.QImage;
+import com.ani.taku_backend.user.model.entity.User;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -64,6 +61,19 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
         );
     }
 
+    @Override
+    public Optional<Category> findCategoryById(Long id, User user) {
+        QCategory category = QCategory.category;
+
+        Category result = jpaQueryFactory
+                .selectFrom(category)
+                .leftJoin(category.user).fetchJoin()
+                .where(category.id.eq(id))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
     /**
      * 검색 조건에 맞는 카테고리 기본 정보를 조회합니다.
      * 카테고리와 연관된 사용자 정보를 함께 조회합니다 (fetch join 사용).
@@ -94,10 +104,11 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * @return 카테고리 ID를 키로 하고 해당 장르 목록을 값으로 하는 Map
      */
     private Map<Long, List<CategoryGenre>> fetchGenreMap(List<Long> categoryIds) {
+        QCategoryGenre categoryGenre = QCategoryGenre.categoryGenre;
         return jpaQueryFactory
-            .selectFrom(QCategoryGenre.categoryGenre)
-            .join(QCategoryGenre.categoryGenre.genre, QAnimationGenre.animationGenre).fetchJoin()
-            .where(QCategoryGenre.categoryGenre.category.id.in(categoryIds))
+            .selectFrom(categoryGenre)
+            .join(categoryGenre.genre, QAnimationGenre.animationGenre).fetchJoin()
+            .where(categoryGenre.category.id.in(categoryIds))
             .fetch()
             .stream()
             .collect(Collectors.groupingBy(cg -> cg.getCategory().getId()));
@@ -194,7 +205,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * 장르 ID로 검색하는 조건을 생성합니다.
      * 장르 ID가 null인 경우 null을 반환하여 where절에서 무시되도록 합니다.
      *
-     * @param genreId 검색할 장르 ID
+     * @param genreIds 검색할 장르 ID
      * @param categoryGenre 카테고리장르 Q타입
      * @return 장르 ID 검색 조건식
      */

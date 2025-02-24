@@ -1,23 +1,30 @@
 package com.ani.taku_backend.user.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.ani.taku_backend.common.enums.UserRole;
+import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
+import com.ani.taku_backend.user.model.dto.UserDetailDTO;
+import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
+import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.model.entity.UserStatus;
+import com.ani.taku_backend.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ani.taku_backend.common.enums.StatusType;
-import com.ani.taku_backend.common.enums.UserRole;
-import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
-import com.ani.taku_backend.user.model.entity.User;
-import com.ani.taku_backend.user.repository.UserRepository;
-import com.ani.taku_backend.user.model.dto.*;
+import java.util.List;
+import java.util.Optional;
 
-import static com.ani.taku_backend.user.converter.UserConverter.*;
+import com.ani.taku_backend.common.model.entity.Image;
+import com.ani.taku_backend.common.repository.ImageRepository;
+import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.user.model.entity.UserImage;
+import com.ani.taku_backend.user.repository.UserImageRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+
+
+import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
+
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +32,12 @@ import lombok.extern.log4j.Log4j2;
 public class UserService {
 
   private final UserRepository userRepository;
+
+  private final UserImageRepository userImageRepository;
+
+  private final ImageRepository imageRepository;
+
+  private final FileService fileService;
 
   // 유저 등록
   public User registerUser(OAuthUserInfo userInfo) {
@@ -47,29 +60,27 @@ public class UserService {
   }
 
   // 유저 조회
-  public Optional<User>  getUser(String email) {
-    Optional<User> byDomesticId = this.userRepository.findByEmailAndStatus(email, StatusType.ACTIVE.name());
-    return byDomesticId;
+  public Optional<User> getUserByDomesticId(String domesticId) {
+      return this.userRepository.findFirstByDomesticIdAndStatus(domesticId, UserStatus.ACTIVE);
   }
 
   // 닉네임 체크
-  public boolean checkNickname(String nickname) {
+  public boolean isNicknameDuplication(String nickname) {
     List<User> users = this.userRepository.findByNickname(nickname);
-    return users.isEmpty() ? false : true;
+    return !users.isEmpty();
   }
 
-  // 유저 삭제
-  public Optional<User> findByUserIdAndStatus(Long userId, StatusType status) {
-    return this.userRepository.findByUserIdAndStatus(userId, status.name());
+  public Optional<User> findByUserIdAndStatus(Long userId, UserStatus status) {
+    return this.userRepository.findByUserIdAndStatus(userId, status);
   }
 
   // 유저 상태 업데이트
   @Transactional //transactional 붙여주지 않으면 오류 난다.
-  public int updateUserStatus(Long userId, StatusType status) {
-    return this.userRepository.updateUserStatus(userId, status.name());
+  public int updateUserStatus(Long userId, UserStatus status) {
+    return this.userRepository.updateUserStatus(userId, status);
   }
 
-  public UserDetailDto getUserDetail(Long userId){
+  public UserDetailDTO getUserDetail(Long userId){
 
     //Optional로 해야하는 이유
     Optional<User> user = userRepository.findById(userId);
@@ -87,8 +98,58 @@ public class UserService {
   }
 
   @Transactional
-  public void updateProfileImg(Long userId, String profileImg){
+  public void updateProfileImg(UpdateProfileImgRequestDTO request){
+
+
+    Long userId = request.getUserId();
+    String profileImg = request.getProfileImg();
+    Integer fileSize = request.getFileSize();
+    String fileType = request.getFileType();
+    String originalName = request.getOriginalFileName();
+
+
+
+    //기존 image soft delete
+    Optional<UserImage> userImage = userImageRepository.findByUser_UserId(userId);
+
+    if(userImage.isPresent()) { //만약, userImage Repo에 image가 있다면,
+      Long imageId = userImage.get().getImage().getId();
+
+      imageRepository.softDeleteByImageId(imageId);
+
+      //userImage Repository에서 지우기
+      userImageRepository.deleteByUser_UserId(userId);
+
+      //cloudflare r2에서 지우기
+      fileService.deleteImageFile(userImage.get().getImage().getFileName());
+
+
+    }
+
+
+    //새로운 iamge 넣기
+    Optional<User> user = userRepository.findById(userId);
+
+    String fileName =profileImg.substring(profileImg.lastIndexOf("/") + 1);
+
+    Image image = Image.builder()
+            .imageUrl(profileImg)
+            .fileSize(fileSize)
+            .fileName(fileName)
+            .fileType(fileType)
+            .originalName(originalName)
+            .user(user.get())
+            .build();
+
+    imageRepository.save(image);
+
+    UserImage userImage1 = UserImage.builder().user(user.get()).image(image).build();
+
+    userImageRepository.save(userImage1);
+
     userRepository.updateProfileImg(userId, profileImg);
+
+
   }
 
 }

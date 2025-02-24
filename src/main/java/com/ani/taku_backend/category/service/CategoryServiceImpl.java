@@ -1,5 +1,7 @@
 package com.ani.taku_backend.category.service;
 
+import com.ani.taku_backend.category.domain.dto.AniGenreListReqDTO;
+import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
@@ -9,6 +11,7 @@ import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.repository.AnimationGenreRepository;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.category_bookmark.domain.repository.CategoryBookmarkRepository;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -42,6 +45,7 @@ import java.util.Optional;
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final CategoryBookmarkRepository categoryBookmarkRepository;
     private final AnimationGenreRepository animationGenreRepository;
     private final FileService fileService;
     private final ImageService imageService;
@@ -50,15 +54,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 카테고리 생성
+     *
      * @param principalUser
      * @param requestCategoryCreateDTO
-     * @param uploadFile
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
     @RequireUser
-    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO, MultipartFile uploadFile) throws DuckwhoException {
-
+    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO) throws DuckwhoException {
+        MultipartFile uploadFile = requestCategoryCreateDTO.getImage();
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
             throw new DuckwhoException(ErrorCode.INVALID_FILE_FORMAT);
@@ -93,15 +97,27 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * 카테고리 상세 조회
      * @param id
+     * @param user
      * @return
      */
-    public ResponseCategoryDTO findCategoryById(Long id) {
-        Optional<Category> categoryOptional = categoryRepository.findById(id);
+    public ResponseCategoryDTO findCategoryById(Long id, User user) {
+        Category category = categoryRepository.findCategoryById(id, user)
+                .orElseThrow(()-> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
 
-        if(!categoryOptional.isPresent()) {
-            throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
-        }
-        return modelMapper.map(categoryOptional.get(), ResponseCategoryDTO.class);
+        boolean hasBookmark = Optional.ofNullable(user)
+                .map(u -> categoryBookmarkRepository.findByCategoryIdAndUserUserId(id, u.getUserId()))
+                .map(Optional::isPresent)
+                .orElse(false);
+
+        return ResponseCategoryDTO.of(category, hasBookmark);
+    }
+
+    @Override
+    public AniGenreListReqDTO findAniGenres(String keyword) {
+        List<AniGenreResDTO> aniGenres = animationGenreRepository.findByGenreName(keyword);
+        return AniGenreListReqDTO.builder()
+                .genres(aniGenres)
+                .build();
     }
 
     /**
@@ -157,7 +173,7 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             CreateImageDTO imageDTO = CreateImageDTO.builder()
                 .uploadId(user.getUserId())
-                .imageUrl(fileService.uploadVideoFile(uploadFile))
+                .imageUrl(fileService.uploadImageFile(uploadFile))
                 .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
                 .originalFileName(uploadFile.getOriginalFilename())
                 .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))

@@ -83,6 +83,8 @@ public class FileService {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());  // Content-Type 설정
+        log.info("file.getSize(): {}, file.getContentType(): {}", file.getSize(), file.getContentType());
+
         // ACL을 public-read로 설정
         PutObjectRequest putObjectRequest = new PutObjectRequest(
                 imageBucket,
@@ -115,6 +117,7 @@ public class FileService {
             throw new AmazonS3Exception("Failed to retrieve file from S3: " + e.getMessage(), e);
         }
     }
+
 
     public void deleteFolder(String folderPath) {
         try {
@@ -153,3 +156,4 @@ public class FileService {
     }
 
 }
+

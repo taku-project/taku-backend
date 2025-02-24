@@ -1,7 +1,9 @@
 package com.ani.taku_backend.common.service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,15 @@ public class RedisService {
 
     public List<String> getKeyValues(String key) throws Exception {
         return (List<String>) redisTemplate.opsForValue().get(key);
+    }
+
+    public List<Object> getValues(String key) {
+        Object result = redisTemplate.opsForValue().get(key);
+
+        if(result == null) {
+            return Collections.emptyList();
+        }
+        return (List<Object>) result;
     }
 
     public void setKeyValues(String key, List<String> values) {
