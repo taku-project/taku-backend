@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
+    // 단일 북마크 조회
     Optional<Bookmark> findByUser_UserId(Long userId);
 
-    List<Bookmark> findByUserId(Long userId);
-
+    // 모든 북마크 조회 (Fetch join 사용)
     @Query("SELECT DISTINCT b FROM Bookmark b " +
             "LEFT JOIN FETCH b.duckuJangterBookmarks " +
             "WHERE b.user.userId = :userId")

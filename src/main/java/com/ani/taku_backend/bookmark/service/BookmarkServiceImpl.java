@@ -22,13 +22,13 @@ public class BookmarkServiceImpl implements BookmarkService {
     private final UserRepository userRepository;
 
     public List<Bookmark> findByUserId(Long userId) {
-        return bookmarkRepository.findByUserId(userId);
+        return bookmarkRepository.findByUserIdWithJangterAndCategories(userId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Bookmark> findByUserIdWithJangterAndCategories(Long userId) {
-        return bookmarkRepository.findByUserIdWithJangterAndCategories(userId);  // Fetch join 사용
+        return bookmarkRepository.findByUserIdWithJangterAndCategories(userId);
     }
 
     @Override
