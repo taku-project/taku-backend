@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -37,15 +38,15 @@ public class DuckuJangterBookmarkController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "북마크 추가 성공"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 상품"),
+            @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
             @ApiResponse(responseCode = "409", description = "이미 북마크된 상품")
     })
-    @PostMapping("/{productId}")
+    @PostMapping
     public CommonResponse<Void> addBookmark(
-            @AuthenticationPrincipal Long userId,
-            @PathVariable Long productId
+            @RequestParam("productId") Long productId,
+            @AuthenticationPrincipal PrincipalUser principal
     ) {
-        bookmarkService.addBookmark(userId, productId);
+        bookmarkService.addBookmark(principal.getUser().getUserId(), productId);
         return CommonResponse.ok(null);
     }
 
@@ -62,10 +63,10 @@ public class DuckuJangterBookmarkController {
     })
     @DeleteMapping("/{productId}")
     public CommonResponse<Void> removeBookmark(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal PrincipalUser principal,
             @PathVariable Long productId
     ) {
-        bookmarkService.removeBookmark(userId, productId);
+        bookmarkService.removeBookmark(principal.getUser().getUserId(), productId);
         return CommonResponse.ok(null);
     }
 
@@ -85,12 +86,16 @@ public class DuckuJangterBookmarkController {
     })
     @GetMapping
     public CommonResponse<Page<BookmarkListResponseDTO>> getBookmarkList(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal PrincipalUser principal,
             @RequestParam(name = "categoryId") Long categoryId,
             @ParameterObject
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<BookmarkListResponseDTO> bookmarks = bookmarkService.getBookmarkList(userId, categoryId, pageable);
+        Page<BookmarkListResponseDTO> bookmarks = bookmarkService.getBookmarkList(
+            principal.getUser().getUserId(), 
+            categoryId, 
+            pageable
+        );
         return CommonResponse.ok(bookmarks);
     }
 }

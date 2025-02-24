@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.service;
 
 import com.ani.taku_backend.bookmark.domain.Bookmark;
 import com.ani.taku_backend.bookmark.service.BookmarkService;
+import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
@@ -45,6 +46,9 @@ class DuckuJangterBookmarkServiceTest {
 
     @Mock
     private BookmarkService userBookmarkService;
+
+    @Mock
+    private CategoryRepository categoryRepository;
 
     @Test
     @DisplayName("북마크 목록을 페이징하여 조회할 수 있다")
@@ -92,17 +96,16 @@ class DuckuJangterBookmarkServiceTest {
         given(userBookmarkService.getBookmarkByUserId(userId))
                 .willReturn(userBookmark);
 
-        // when
         bookmarkService.addBookmark(userId, productId);
 
-        // then
+
         verify(bookmarkRepository).save(any(DuckuJangterBookmark.class));
     }
 
     @Test
     @DisplayName("북마크를 삭제할 수 있다")
     void removeBookmark_Success() {
-        // given
+
         Long userId = 1L;
         Long productId = 1L;
         DuckuJangterBookmark bookmark = DuckuJangterBookmark.builder()
@@ -112,23 +115,22 @@ class DuckuJangterBookmarkServiceTest {
         given(bookmarkRepository.findByBookmark_User_UserIdAndJangter_Id(userId, productId))
                 .willReturn(Optional.of(bookmark));
 
-        // when
+
         bookmarkService.removeBookmark(userId, productId);
 
-        // then
+
         verify(bookmarkRepository).delete(bookmark);
     }
 
     @Test
     @DisplayName("이미 북마크된 상품을 다시 북마크하면 예외가 발생한다")
     void addBookmark_AlreadyBookmarked() {
-        // given
+
         Long userId = 1L;
         Long productId = 1L;
         given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
                 .willReturn(true);
 
-        // when & then
         assertThatThrownBy(() -> bookmarkService.addBookmark(userId, productId))
                 .isInstanceOf(DuckwhoException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_BOOKMARKED);
@@ -137,7 +139,7 @@ class DuckuJangterBookmarkServiceTest {
     @Test
     @DisplayName("존재하지 않는 상품을 북마크하면 예외가 발생한다")
     void addBookmark_ProductNotFound() {
-        // given
+
         Long userId = 1L;
         Long productId = 999L;
         given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
@@ -145,23 +147,26 @@ class DuckuJangterBookmarkServiceTest {
         given(jangterRepository.findById(productId))
                 .willReturn(Optional.empty());
 
-        // when & then
+
         assertThatThrownBy(() -> bookmarkService.addBookmark(userId, productId))
                 .isInstanceOf(DuckwhoException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PRODUCT_NOT_FOUND);
     }
 
+
     @Test
-    @DisplayName("잘못된 카테고리로 북마크 목록을 조회하면 예외가 발생한다")
-    void getBookmarkList_InvalidCategory() {
-        // given
+    @DisplayName("존재하지 않는 카테고리로 북마크 목록을 조회하면 예외가 발생한다")
+    void getBookmarkList_CategoryNotFound() {
+
         Long userId = 1L;
-        Long invalidCategoryId = -1L;
+        Long invalidCategoryId = 999L;  // 존재하지 않는 카테고리 ID
         Pageable pageable = PageRequest.of(0, 20);
 
-        // when & then
+        given(categoryRepository.findById(invalidCategoryId))
+                .willReturn(Optional.empty());
+
         assertThatThrownBy(() -> bookmarkService.getBookmarkList(userId, invalidCategoryId, pageable))
                 .isInstanceOf(DuckwhoException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode. NOT_FOUND_CATEGORY);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_CATEGORY);
     }
 } 

@@ -62,6 +62,8 @@ public class SecurityPathConfig {
     // 채팅 API 관련 설정
     public static final String CHAT_API_PATH = "/api/chat/**";
     
+    public static final String BOOKMARK_API_PATH = "/api/bookmarks/**";
+    
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
             .anyMatch(pattern -> pathMatcher.match(pattern, path));
