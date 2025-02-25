@@ -2,25 +2,25 @@ package com.ani.taku_backend.jangter.model.dto;
 
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class BookmarkListResponseDTO {
     private Long productId;
     private String title;
     private BigDecimal price;
-    private String imageUrl;
-    private String sellerNickname;
     private Long viewCount;
     private Long categoryId;
-    private String categoryName;
-    private LocalDateTime bookmarkedAt;
-
+    private String imageUrl;
 
     private static String extractImageUrl(DuckuJangter jangter) {
         return jangter.getJangterImages().stream()
@@ -37,11 +37,8 @@ public class BookmarkListResponseDTO {
                 .title(jangter.getTitle())
                 .price(jangter.getPrice())
                 .imageUrl(extractImageUrl(jangter))
-                .sellerNickname(jangter.getUser().getNickname())
                 .viewCount(jangter.getViewCount())
                 .categoryId(jangter.getItemCategories().getId())
-                .categoryName(jangter.getItemCategories().getName())
-                .bookmarkedAt(bookmark.getCreatedAt())
                 .build();
     }
 }

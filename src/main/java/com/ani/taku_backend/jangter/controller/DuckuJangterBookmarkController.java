@@ -64,7 +64,7 @@ public class DuckuJangterBookmarkController {
     @DeleteMapping("/{productId}")
     public CommonResponse<Void> removeBookmark(
             @AuthenticationPrincipal PrincipalUser principal,
-            @PathVariable Long productId
+            @PathVariable("productId") Long productId
     ) {
         bookmarkService.removeBookmark(principal.getUser().getUserId(), productId);
         return CommonResponse.ok(null);
@@ -87,7 +87,7 @@ public class DuckuJangterBookmarkController {
     @GetMapping
     public CommonResponse<Page<BookmarkListResponseDTO>> getBookmarkList(
             @AuthenticationPrincipal PrincipalUser principal,
-            @RequestParam(name = "categoryId") Long categoryId,
+            @RequestParam(name = "categoryId", defaultValue = "0") Long categoryId,
             @ParameterObject
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
