@@ -47,13 +47,11 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     @Override
     @Transactional
     public void removeBookmark(Long userId, Long productId) {
-        bookmarkRepository.findByBookmark_User_UserIdAndJangter_Id(userId, productId)
-                .ifPresentOrElse(
-                        bookmarkRepository::delete,
-                        () -> {
-                            throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY_BOOKMARK);
-                        }
-                );
+        if (!bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId)) {
+            throw new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK);
+        }
+
+        bookmarkRepository.deleteByBookmark_User_UserIdAndJangter_Id(userId, productId);
     }
 
     @Override

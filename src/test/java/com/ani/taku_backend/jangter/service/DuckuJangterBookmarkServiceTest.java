@@ -105,21 +105,31 @@ class DuckuJangterBookmarkServiceTest {
     @Test
     @DisplayName("북마크를 삭제할 수 있다")
     void removeBookmark_Success() {
-
         Long userId = 1L;
         Long productId = 1L;
-        DuckuJangterBookmark bookmark = DuckuJangterBookmark.builder()
-                .id(1L)
-                .build();
 
-        given(bookmarkRepository.findByBookmark_User_UserIdAndJangter_Id(userId, productId))
-                .willReturn(Optional.of(bookmark));
-
+        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
+                .willReturn(true);
 
         bookmarkService.removeBookmark(userId, productId);
 
+        verify(bookmarkRepository).deleteByBookmark_User_UserIdAndJangter_Id(userId, productId);
+    }
 
-        verify(bookmarkRepository).delete(bookmark);
+    @Test
+    @DisplayName("북마크하지 않은 상품을 삭제하려고 하면 예외가 발생한다")
+    void removeBookmark_NotFound() {
+
+        Long userId = 1L;
+        Long productId = 1L;
+
+        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
+                .willReturn(false);
+
+
+        assertThatThrownBy(() -> bookmarkService.removeBookmark(userId, productId))
+                .isInstanceOf(DuckwhoException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_BOOKMARK);
     }
 
     @Test
