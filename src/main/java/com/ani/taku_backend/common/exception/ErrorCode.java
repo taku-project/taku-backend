@@ -44,6 +44,7 @@ public enum ErrorCode {
     FILE_ERROR(50303, HttpStatus.INTERNAL_SERVER_ERROR, "파일 예외가 발생했습니다."),
     FILE_NOT_FOUND(50304, HttpStatus.INTERNAL_SERVER_ERROR, "파일을 찾을 수 없습니다."),
     INVALID_FILE_FORMAT(40005, HttpStatus.BAD_REQUEST, "잘못된 파일 형식입니다."),
+    FILE_DELETE_FAIL(50001, HttpStatus.INTERNAL_SERVER_ERROR, "Remote Storage에서 삭제시 오류가 발생했습니다."),
 
     // Category
     NOT_FOUND_CATEGORY(40403, HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
@@ -87,8 +88,8 @@ public enum ErrorCode {
     MISSING_SOLD_PRICE(40008, HttpStatus.BAD_REQUEST, "판매 완료 시 판매가는 필수입니다."),
     UNAUTHORIZED_STATUS_UPDATE(40302, HttpStatus.FORBIDDEN, "상품 상태를 변경할 권한이 없습니다."),
     INVALID_PRODUCT_STATUS(40009, HttpStatus.BAD_REQUEST, "판매중인 상품만 채팅이 가능합니다."),
-
     ;
+
 
     // 403 Forbidden
     private final Integer code;

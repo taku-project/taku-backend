@@ -12,9 +12,10 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.bookmark.domain.Bookmark;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.bookmark.service.BookmarkServiceImpl;
+import com.ani.taku_backend.common.remote_file.RemoteFileService;
+import com.ani.taku_backend.common.remote_file.RemoteFileServiceFactory;
 import com.ani.taku_backend.common.service.ExtractKeywordService;
-import com.ani.taku_backend.common.service.FileService;
-import com.ani.taku_backend.common.service.ImageService;
+import com.ani.taku_backend.common.remote_file.ImageService;
 import com.ani.taku_backend.jangter.model.dto.ProductCreateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductFindDetailResponseDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductRankInfoResponseDTO;
@@ -84,7 +85,6 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final ItemCategoriesRepository itemCategoriesRepository;
     private final ImageService imageService;
     private final BlackUserService blackUserService;
-    private final FileService fileService;
     private final ExtractKeywordService extractKeywordService;
     private final UserInteractionService userInteractionService;
     private final BookmarkServiceImpl bookmarkServiceImpl;
@@ -92,11 +92,12 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
     private final BookmarkScoreCalculator bookmarkScoreCalculator;
-
+    private final RemoteFileServiceFactory fileServiceFactory;
 
     private final JangterRankBaseRepository jangterRankBaseRepository;
     private final MarketPriceStatsService marketPriceStatsService;
     private final CompletedDealRepository completedDealRepository;
+    private final RemoteFileServiceFactory remoteFileServiceFactory;
 
 
     @Transactional(readOnly = true)
@@ -200,13 +201,18 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         checkDeleteProduct(findProduct);                //  삭제 검증
 
         findProduct.delete();  // 장터 에서 소프트 딜리트
+        if(findProduct.getJangterImages() != null || !findProduct.getJangterImages().isEmpty()) {
+            String fileType = findProduct.getJangterImages().get(0).getImage().getFileType();
+            RemoteFileService remoteFileService = remoteFileServiceFactory.getService(fileType);
 
-        // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
-        findProduct.getJangterImages().forEach(jangterImages -> {
-            jangterImages.getImage().delete();
-            fileService.deleteImageFile(jangterImages.getImage().getFileName());
-        });
-        log.debug("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
+            // 장터 이미지에서 이미지를 조회해서 장터와 연관된 이미지들을 모두 softDelete, 클라우드 플레어에서도 삭제
+            findProduct.getJangterImages().forEach(jangterImages -> {
+                jangterImages.getImage().delete();
+                remoteFileService.deleteFile(jangterImages.getImage().getFileName());
+            });
+            log.debug("장터글 삭제 완료 - 삭제일: {}", findProduct.getDeletedAt());
+        }
+
     }
 
     // 장터이미지 연관관계설정
