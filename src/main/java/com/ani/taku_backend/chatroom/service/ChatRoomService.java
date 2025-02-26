@@ -2,22 +2,28 @@ package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
+import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.model.document.ParticipantInfo;
 import com.ani.taku_backend.chatroom.model.document.Participants;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.chatroom.repository.ParticipantInfoRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,18 +38,21 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatroomMetaRepository;
-    private final ParticipantInfoRepository participantInfoRepository;
     private final DuckuJangterRepository duckuJangterRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final UserRepository userRepository;
+
+    public static final String UNKNOWN_USER = "알 수 없음";
 
     @Transactional
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
         // 1. 장터 게시글 존재 여부 확인
         DuckuJangter product = duckuJangterRepository.findById(requestDto.articleId())
-            .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
 
         // 2. 판매자 정보 가져오기
         Long sellerId = product.getUser().getUserId();
-        
+
         // 3. 구매자가 판매자와 동일인물이면 안 됨
         if (sellerId.equals(requestDto.buyerId())) {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
@@ -70,7 +79,26 @@ public class ChatRoomService {
         metaInfo.initializeParticipants(requestDto.buyerId(), sellerId);
         chatroomMetaRepository.save(metaInfo);
 
-        return ChatRoomResponseDTO.of(savedRoom, requestDto.buyerId(), sellerId);
+        // 사용자 정보 조회
+        User buyer = userRepository.findById(requestDto.buyerId()).orElse(null);
+        User seller = userRepository.findById(sellerId).orElse(null);
+
+        String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
+        String buyerProfileImage = buyer != null ? buyer.getProfileImg() : null;
+        String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
+        String sellerProfileImage = seller != null ? seller.getProfileImg() : null;
+
+        // 새로 생성된 채팅방에는 메시지가 없으므로 null 전달
+        return ChatRoomResponseDTO.of(
+                savedRoom,
+                requestDto.buyerId(),
+                sellerId,
+                buyerNickname,
+                buyerProfileImage,
+                sellerNickname,
+                sellerProfileImage,
+                null
+        );
     }
 
     @Transactional(readOnly = true)
@@ -102,9 +130,29 @@ public class ChatRoomService {
         // 이미 가지고 있는 메타 정보를 Map으로 변환
         Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = connectedChatRoomMetaInfos.stream()
                 .collect(Collectors.toMap(
-                    ChatRoomMetaInfo::getChatRoomId,
-                    metaInfo -> metaInfo
+                        ChatRoomMetaInfo::getChatRoomId,
+                        metaInfo -> metaInfo
                 ));
+
+        // 모든 참여자 ID 수집
+        List<Long> participantIds = connectedChatRoomMetaInfos.stream()
+                .flatMap(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
+                        .map(ParticipantInfo::getUserId))
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 한 번에 사용자 정보 조회
+        List<User> users = userRepository.findByUserIdIn(participantIds);
+        Map<Long, User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getUserId, user -> user));
+
+        // 각 채팅방의 마지막 메시지 조회를 위한 Map 생성
+        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
+        for (Long chatRoomId : chatRoomIds) {
+            Optional<ChatMessage> lastMessage = chatMessageRepository
+                    .findTopByChatRoomIdOrderBySentAtDesc(chatRoomId);
+            lastMessage.ifPresent(message -> lastMessageMap.put(chatRoomId, message));
+        }
 
         return userChatRooms.stream()
                 .map(chatRoom -> {
@@ -127,13 +175,27 @@ public class ChatRoomService {
                         }
                     }
 
-                    return new ChatRoomResponseDTO(
-                            chatRoom.getId(),
-                            chatRoom.getWsRoomId(),
-                            chatRoom.getArticleId(),
+                    // 구매자, 판매자 정보 가져오기
+                    User buyer = userMap.get(buyerId);
+                    User seller = userMap.get(sellerId);
+
+                    String buyerNickname = buyer != null ? buyer.getNickname() : "알 수 없음";
+                    String buyerProfileImage = buyer != null ? buyer.getProfileImg() : null;
+                    String sellerNickname = seller != null ? seller.getNickname() : "알 수 없음";
+                    String sellerProfileImage = seller != null ? seller.getProfileImg() : null;
+
+                    // 마지막 메시지 가져오기
+                    ChatMessage lastMessage = lastMessageMap.get(chatRoom.getId());
+
+                    return ChatRoomResponseDTO.of(
+                            chatRoom,
                             buyerId,
                             sellerId,
-                            chatRoom.getCreatedAt()
+                            buyerNickname,
+                            buyerProfileImage,
+                            sellerNickname,
+                            sellerProfileImage,
+                            lastMessage
                     );
                 })
                 .filter(Objects::nonNull)
@@ -150,7 +212,7 @@ public class ChatRoomService {
         List<Long> chatRoomIds = chatRooms.stream()
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
-        
+
         List<ChatRoomMetaInfo> metaInfos = chatroomMetaRepository.findByChatRoomIdIn(chatRoomIds);
 
         // 검증 로직
@@ -159,8 +221,8 @@ public class ChatRoomService {
             if (participants != null) {
                 for (Long key : participants.getInfo().keySet()) {
                     ParticipantInfo participant = participants.getInfo().get(key);
-                    if (participant.getUserId().equals(requestDto.buyerId()) && 
-                        participant.getRole() == ParticipantRole.BUYER) {
+                    if (participant.getUserId().equals(requestDto.buyerId()) &&
+                            participant.getRole() == ParticipantRole.BUYER) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
                     }
                 }
@@ -191,13 +253,35 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
 
-        return ChatRoomResponseDTO.of(chatRoom, buyerId, sellerId);
+        // 사용자 정보 조회
+        User buyer = userRepository.findById(buyerId).orElse(null);
+        User seller = userRepository.findById(sellerId).orElse(null);
+
+        String buyerNickname = buyer != null ? buyer.getNickname() : "알 수 없음";
+        String buyerProfileImage = buyer != null ? buyer.getProfileImg() : null;
+        String sellerNickname = seller != null ? seller.getNickname() : "알 수 없음";
+        String sellerProfileImage = seller != null ? seller.getProfileImg() : null;
+
+        // 마지막 메시지 조회
+        Optional<ChatMessage> lastMessage = chatMessageRepository
+                .findTopByChatRoomIdOrderBySentAtDesc(chatRoom.getId());
+
+        return ChatRoomResponseDTO.of(
+                chatRoom,
+                buyerId,
+                sellerId,
+                buyerNickname,
+                buyerProfileImage,
+                sellerNickname,
+                sellerProfileImage,
+                lastMessage.orElse(null)
+        );
     }
 
     public Integer getChatRoomUnreadCount(String roomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-                
+
         ChatRoomMetaInfo metaInfo = chatroomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
