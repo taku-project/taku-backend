@@ -88,6 +88,10 @@ public enum ErrorCode {
     UNAUTHORIZED_STATUS_UPDATE(40302, HttpStatus.FORBIDDEN, "상품 상태를 변경할 권한이 없습니다."),
     INVALID_PRODUCT_STATUS(40009, HttpStatus.BAD_REQUEST, "판매중인 상품만 채팅이 가능합니다."),
 
+    // jangter Bookmark
+    ALREADY_BOOKMARKED(40904, HttpStatus.CONFLICT, "이미 북마크된 상품입니다."),
+    PRODUCT_NOT_FOUND(40410, HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),
+    NOT_FOUND_BOOKMARK(40411, HttpStatus.NOT_FOUND, "북마크하지 않은 상품입니다."),
     ;
 
     // 403 Forbidden
