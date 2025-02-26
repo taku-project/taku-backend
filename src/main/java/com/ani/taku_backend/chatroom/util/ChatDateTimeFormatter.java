@@ -2,6 +2,7 @@ package com.ani.taku_backend.chatroom.util;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 날짜 및 시간 포맷팅 유틸리티 클래스
@@ -29,7 +30,7 @@ public class ChatDateTimeFormatter {
         LocalDate messageDate = time.toLocalDate();
 
         // 시간 형식 (오전/오후 시:분)
-        java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("a h:mm");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("a h:mm");
         String timeStr = time.format(timeFormatter)
                 .replace("AM", "오전")
                 .replace("PM", "오후");
