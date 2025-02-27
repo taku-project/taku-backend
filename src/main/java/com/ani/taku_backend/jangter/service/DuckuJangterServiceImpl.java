@@ -74,6 +74,7 @@ import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
 import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
 import com.ani.taku_backend.jangter.repository.DuckuJangterBookmarkRepository;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -97,6 +98,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final MarketPriceStatsService marketPriceStatsService;
     private final CompletedDealRepository completedDealRepository;
     private final DuckuJangterBookmarkRepository duckuJangterBookmarkRepository;
+    private final DuckuJangterBookmarkService duckuJangterBookmarkService;
 
 
     @Transactional(readOnly = true)
@@ -461,20 +463,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     }
 
     private UserBookmarkHistory getUserBookmarkHistory(Long userId, List<String> keywords) {
-
-        List<DuckuJangterBookmark> userBookmarks = duckuJangterBookmarkRepository.findByUserUserIdAndIsActiveTrue(userId);
-        
-        UserBookmarkHistory userBookmarkHistory = null;
-        if (!userBookmarks.isEmpty()) {
-            List<DuckuJangter> bookmarkedProducts = userBookmarks.stream()
-                    .map(bookmark -> bookmark.getJangter())
-                    .toList();
-
-            userBookmarkHistory = UserBookmarkHistory.create(bookmarkedProducts, keywords);
-            log.info("################## >>>>>>>>>>> userBookmarkHistory : {}", userBookmarkHistory);
-        }
-
-        return userBookmarkHistory;
+        return duckuJangterBookmarkService.getUserBookmarkHistory(userId, keywords);
     }
 
     private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {

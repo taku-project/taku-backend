@@ -8,8 +8,10 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.repository.DuckuJangterBookmarkRepository;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,5 +65,20 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
         }
         
         return bookmarkRepository.findBookmarksByUserIdWithPaging(userId, effectiveCategoryId, pageable);
+    }
+
+    @Override
+    public UserBookmarkHistory getUserBookmarkHistory(Long userId, List<String> keywords) {
+        List<DuckuJangterBookmark> userBookmarks = bookmarkRepository.findByUserUserIdAndIsActiveTrue(userId);
+
+        if (userBookmarks.isEmpty()) {
+            return null;
+        }
+
+        List<DuckuJangter> bookmarkedProducts = userBookmarks.stream()
+                .map(DuckuJangterBookmark::getJangter)
+                .toList();
+
+        return UserBookmarkHistory.create(bookmarkedProducts, keywords);
     }
 }
