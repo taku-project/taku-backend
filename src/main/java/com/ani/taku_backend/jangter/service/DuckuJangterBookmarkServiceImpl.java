@@ -10,6 +10,8 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.repository.DuckuJangterBookmarkRepository;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,40 +27,38 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     private final DuckuJangterRepository jangterRepository;
     private final BookmarkService bookmarkService;
     private final CategoryRepository CategoryRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public void addBookmark(Long userId, Long productId) {
-        if (bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId)) {
+        if (bookmarkRepository.existsByUserUserIdAndJangterId(userId, productId)) {
             throw new DuckwhoException(ErrorCode.ALREADY_BOOKMARKED);
         }
 
         DuckuJangter jangter = jangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        Bookmark userBookmark = bookmarkService.getBookmarkByUserId(userId);
-
-        bookmarkRepository.save(DuckuJangterBookmark.builder()
-                .bookmark(userBookmark)
-                .jangter(jangter)
-                .build());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+                
+        bookmarkRepository.save(DuckuJangterBookmark.create(user, jangter));
     }
 
     @Override
     @Transactional
     public void removeBookmark(Long userId, Long productId) {
-        if (!bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId)) {
+        if (!bookmarkRepository.existsByUserUserIdAndJangterId(userId, productId)) {
             throw new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK);
         }
 
-        bookmarkRepository.deleteByBookmark_User_UserIdAndJangter_Id(userId, productId);
+        bookmarkRepository.deleteByUserUserIdAndJangterId(userId, productId);
     }
 
     @Override
     public Page<BookmarkListResponseDTO> getBookmarkList(Long userId, Long categoryId, Pageable pageable) {
         Long effectiveCategoryId = categoryId;
         
-        // 전체 조회가 아닌 경우, 카테고리 존재 여부 확인
         if (categoryId != 0) {
             CategoryRepository.findById(categoryId)
                     .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));

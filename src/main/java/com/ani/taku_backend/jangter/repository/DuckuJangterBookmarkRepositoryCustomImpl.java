@@ -39,7 +39,7 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
         QJangterImages jangterImage = QJangterImages.jangterImages;
 
-        // 메인 쿼리
+        // 메인 쿼리 - user_id 필드 직접 참조
         JPAQuery<BookmarkListResponseDTO> query = queryFactory
             .select(Projections.constructor(BookmarkListResponseDTO.class,
                 jangter.id,
@@ -58,26 +58,28 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
                         )
                         .orderBy(jangterImage.id.asc())
                         .limit(1L)
-                        .groupBy(jangterImage.duckuJangter),  // 상품별로 그룹화
+                        .groupBy(jangterImage.duckuJangter),
                     "imageUrl"
                 )
             ))
             .from(bookmark)
             .join(bookmark.jangter, jangter)
             .where(
-                bookmark.bookmark.user.userId.eq(userId),
+                bookmark.user.userId.eq(userId),
+                bookmark.isActive.isTrue(),
                 categoryIdEq(categoryId),
                 jangter.deletedAt.isNull()
             )
             .orderBy(bookmark.createdAt.desc());
 
-        // 카운트 쿼리
+        // 카운트 쿼리 - 동일하게 user_id 직접 참조
         long total = queryFactory
             .select(bookmark.count())
             .from(bookmark)
             .join(bookmark.jangter, jangter)
             .where(
-                bookmark.bookmark.user.userId.eq(userId),
+                bookmark.user.userId.eq(userId),
+                bookmark.isActive.isTrue(),
                 categoryIdEq(categoryId),
                 jangter.deletedAt.isNull()
             )
