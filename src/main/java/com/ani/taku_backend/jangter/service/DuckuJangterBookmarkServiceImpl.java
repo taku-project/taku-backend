@@ -1,7 +1,5 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.bookmark.domain.Bookmark;
-import com.ani.taku_backend.bookmark.service.BookmarkService;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
@@ -25,7 +23,6 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
 
     private final DuckuJangterBookmarkRepository bookmarkRepository;
     private final DuckuJangterRepository jangterRepository;
-    private final BookmarkService bookmarkService;
     private final CategoryRepository CategoryRepository;
     private final UserRepository userRepository;
 
@@ -48,11 +45,10 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     @Override
     @Transactional
     public void removeBookmark(Long userId, Long productId) {
-        if (!bookmarkRepository.existsByUserUserIdAndJangterId(userId, productId)) {
-            throw new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK);
-        }
-
-        bookmarkRepository.deleteByUserUserIdAndJangterId(userId, productId);
+        DuckuJangterBookmark bookmark = bookmarkRepository.findByUserUserIdAndJangterId(userId, productId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_BOOKMARK));
+        
+        bookmark.deactivate();
     }
 
     @Override

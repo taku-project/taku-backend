@@ -8,13 +8,12 @@ import java.util.List;
 
 @Repository
 public interface DuckuJangterBookmarkRepository extends JpaRepository<DuckuJangterBookmark, Long>, DuckuJangterBookmarkRepositoryCustom {
-    Optional<DuckuJangterBookmark> findByBookmark_User_UserIdAndJangter_Id(Long userId, Long jangterId);
-    void deleteByBookmark_User_UserIdAndJangter_Id(Long userId, Long jangterId);
-    boolean existsByBookmark_User_UserIdAndJangter_Id(Long userId, Long jangterId);
-    
     Optional<DuckuJangterBookmark> findByUserUserIdAndJangterId(Long userId, Long jangterId);
     void deleteByUserUserIdAndJangterId(Long userId, Long jangterId);
     boolean existsByUserUserIdAndJangterId(Long userId, Long jangterId);
     
     List<DuckuJangterBookmark> findByUserUserIdAndIsActiveTrue(Long userId);
+
+    Optional<DuckuJangterBookmark> findByUserUserIdAndJangterIdAndIsActiveTrue(Long userId, Long jangterId);
+    boolean existsByUserUserIdAndJangterIdAndIsActiveTrue(Long userId, Long jangterId);
 }

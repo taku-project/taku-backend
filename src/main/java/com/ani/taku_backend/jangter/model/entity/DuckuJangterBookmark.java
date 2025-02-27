@@ -46,4 +46,8 @@ public class DuckuJangterBookmark extends BaseTimeEntity {
                 .isActive(true)
                 .build();
     }
+
+    public void deactivate() {
+        this.isActive = false;
+    }
 }
