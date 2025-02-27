@@ -12,6 +12,7 @@ import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,10 +32,21 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     @Override
     @Transactional
     public void addBookmark(Long userId, Long productId) {
-        if (bookmarkRepository.existsByUserUserIdAndJangterId(userId, productId)) {
-            throw new DuckwhoException(ErrorCode.ALREADY_BOOKMARKED);
+        // 활성 상태와 관계없이 북마크 존재여부 확인
+        Optional<DuckuJangterBookmark> existingBookmark = bookmarkRepository.findByUserUserIdAndJangterId(userId, productId);
+        
+        if (existingBookmark.isPresent()) {
+            DuckuJangterBookmark bookmark = existingBookmark.get();
+            // 북마크가 이미 활성 상태인 경우
+            if (bookmark.getIsActive()) {
+                throw new DuckwhoException(ErrorCode.ALREADY_BOOKMARKED);
+            }
+            // 북마크가 비활성 상태인 경우 재활성화
+            bookmark.activate();
+            return;
         }
 
+        // 북마크가 없는 경우 새로 생성
         DuckuJangter jangter = jangterRepository.findById(productId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.PRODUCT_NOT_FOUND));
 
