@@ -55,16 +55,20 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
 
     @Override
     public Page<BookmarkListResponseDTO> getBookmarkList(Long userId, Long categoryId, Pageable pageable) {
-        Long effectiveCategoryId = categoryId;
-        
+        Long filteredCategoryId = categoryId;
+
         if (categoryId != 0) {
-            CategoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
+            // categoryId가 0이 아니면 존재 여부 확인
+            if (!CategoryRepository.existsById(categoryId)) {
+                throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
+            }
+            // 카테고리가 존재하면 filteredCategoryId는 그대로 유지
         } else {
-            effectiveCategoryId = null;
+            // categoryId가 0이면 모든 카테고리 조회 (null 설정)
+            filteredCategoryId = null;
         }
-        
-        return bookmarkRepository.findBookmarksByUserIdWithPaging(userId, effectiveCategoryId, pageable);
+
+        return bookmarkRepository.findBookmarksByUserIdWithPaging(userId, filteredCategoryId, pageable);
     }
 
     @Override
