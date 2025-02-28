@@ -5,8 +5,9 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.UserException;
+import com.ani.taku_backend.common.remote_file.RemoteFileService;
+import com.ani.taku_backend.common.remote_file.RemoteFileServiceFactory;
 import com.ani.taku_backend.common.response.CommonResponse;
-import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.RequestRegisterUser;
 import com.ani.taku_backend.user.model.dto.UserDetailDTO;
@@ -41,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import static com.ani.taku_backend.common.exception.ErrorCode.INVALID_INPUT_VALUE;
@@ -55,7 +55,7 @@ public class UserController {
 
 	private final JwtUtil jwtUtil;
 	private final UserService userService;
-	private final FileService fileService;
+	private final RemoteFileServiceFactory fileServiceFactory;
 
 	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
@@ -130,8 +130,12 @@ public class UserController {
 		// 프로필 이미지 업로드
 		if (profileImage != null) {	
 			try {
-				userInfo.setImageUrl(this.fileService.uploadVideoFile(profileImage));
-			} catch (IOException e) {
+				String contentType = profileImage.getContentType();
+				RemoteFileService remoteFileService = fileServiceFactory.getService(contentType);
+				String uploadedUrl = remoteFileService.uploadFile(profileImage);
+
+				userInfo.setImageUrl(uploadedUrl);
+			} catch (Exception e) {
 				throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
 			}
 		}
@@ -237,21 +241,20 @@ public class UserController {
 		}
 
 		if(multipartFile!=null){
-			String fileUrl;
+			String profileUrl;
 
 			try {
-				fileUrl = fileService.uploadImageFile(multipartFile);
-				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, fileUrl,request.getFileSize(), request.getFileType(), request.getOriginalFileName());
+				RemoteFileService remoteFileService = fileServiceFactory.getService(multipartFile.getContentType());
+				profileUrl = remoteFileService.uploadFile(multipartFile);
+
+				UpdateProfileImgRequestDTO updateProfileImgRequestDTO = new UpdateProfileImgRequestDTO(userId, profileUrl, request.getFileSize(), request.getFileType(), request.getOriginalFileName());
 				userService.updateProfileImg(updateProfileImgRequestDTO);
 
 			}catch (Exception e){
 				System.out.println(e);
 				throw new FileException.FileUploadException();
 			}
-
-			return CommonResponse.ok(fileUrl);
-
-
+			return CommonResponse.ok(profileUrl);
 		}
 
 		return CommonResponse.ok(null);

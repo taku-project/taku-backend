@@ -21,8 +21,10 @@ public enum VideoType {
     private final String description;
 
     public static VideoType fromExtension(String extension) {
+        if(extension == null || extension.isEmpty()) return null;
+
         for (VideoType format : values()) {
-            if (format.extension.equalsIgnoreCase(extension)) {
+            if (format.extension.equalsIgnoreCase(extension) || extension.contains(format.extension)) {
                 return format;
             }
         }

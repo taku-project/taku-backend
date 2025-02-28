@@ -56,12 +56,6 @@ public class ShortsController {
     private final ShortsService shortsService;
     private final BlackUserService blackUserService;
 
-    @Operation(summary = "테스트", description = "배포 테스트용 api")
-    @GetMapping
-    public CommonResponse<String> aaa () {
-        return CommonResponse.ok(null);
-    }
-
     @Operation(summary = "쇼츠 업로드", description = "파일을 스토리지에 업로드합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "API 요청 성공"),

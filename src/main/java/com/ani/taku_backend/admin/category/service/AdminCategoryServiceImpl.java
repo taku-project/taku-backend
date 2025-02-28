@@ -16,7 +16,7 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.UserException;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.service.ImageService;
+import com.ani.taku_backend.common.remote_file.ImageService;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

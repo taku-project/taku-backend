@@ -9,7 +9,6 @@ import com.ani.taku_backend.category.service.CategoryService;
 import com.ani.taku_backend.common.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.ExceptionDto;
 import com.ani.taku_backend.common.response.CommonResponse;
-import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,10 +44,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ApiCategoryController {
-
     private final CategoryService categoryService;
-    private final FileService fileService;
-    
 
     @Operation(
         summary = "카테고리 생성",
@@ -68,12 +64,13 @@ public class ApiCategoryController {
         @RequestPart("image") MultipartFile image,
         @Parameter(hidden = true) @AuthenticationPrincipal PrincipalUser principalUser){
 
+        User user = principalUser.getUser();
         RequestCategoryCreateDTO requestCategoryCreateDTO = RequestCategoryCreateDTO.builder()
                 .name(categoryName)
                 .aniGenreId(aniGenreIds)
                 .image(image)
                 .build();
-        return CommonResponse.created(categoryService.createCategory(principalUser, requestCategoryCreateDTO));
+        return CommonResponse.created(categoryService.createCategory(user, requestCategoryCreateDTO));
     }
 
     @Operation(
