@@ -1,6 +1,8 @@
 package com.ani.taku_backend.user.service;
 
 import com.ani.taku_backend.common.enums.UserRole;
+import com.ani.taku_backend.common.remote_file.RemoteFileService;
+import com.ani.taku_backend.common.remote_file.RemoteFileServiceFactory;
 import com.ani.taku_backend.user.model.dto.OAuthUserInfo;
 import com.ani.taku_backend.user.model.dto.UserDetailDTO;
 import com.ani.taku_backend.user.model.dto.requestDto.UpdateProfileImgRequestDTO;
@@ -17,7 +19,6 @@ import java.util.Optional;
 
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.common.repository.ImageRepository;
-import com.ani.taku_backend.common.service.FileService;
 import com.ani.taku_backend.user.model.entity.UserImage;
 import com.ani.taku_backend.user.repository.UserImageRepository;
 
@@ -32,12 +33,9 @@ import static com.ani.taku_backend.user.converter.UserConverter.toUserDetailDto;
 public class UserService {
 
   private final UserRepository userRepository;
-
   private final UserImageRepository userImageRepository;
-
   private final ImageRepository imageRepository;
-
-  private final FileService fileService;
+  private final RemoteFileServiceFactory fileServiceFactory;
 
   // 유저 등록
   public User registerUser(OAuthUserInfo userInfo) {
@@ -107,13 +105,12 @@ public class UserService {
     String fileType = request.getFileType();
     String originalName = request.getOriginalFileName();
 
-
-
     //기존 image soft delete
     Optional<UserImage> userImage = userImageRepository.findByUser_UserId(userId);
 
     if(userImage.isPresent()) { //만약, userImage Repo에 image가 있다면,
-      Long imageId = userImage.get().getImage().getId();
+      Image image = userImage.get().getImage();
+      Long imageId = image.getId();
 
       imageRepository.softDeleteByImageId(imageId);
 
@@ -121,8 +118,8 @@ public class UserService {
       userImageRepository.deleteByUser_UserId(userId);
 
       //cloudflare r2에서 지우기
-      fileService.deleteImageFile(userImage.get().getImage().getFileName());
-
+      RemoteFileService remoteFileService = fileServiceFactory.getService("image/");
+      remoteFileService.deleteFile(image.getFileName());
 
     }
 

@@ -40,9 +40,10 @@ public class ApiCategoryBookmarkController {
     @Parameter(name = "id", description = "카테고리 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
     @DeleteMapping("/{id}")
     public CommonResponse<Void> deleteCategoryBookmark(@AuthenticationPrincipal PrincipalUser userDetails,
-        @PathVariable("id") Long categoryBookmarkId) {
+        @Parameter(description = "카테고리 Id")
+        @PathVariable("id") Long categoryId) {
         User user = userDetails.getUser();
-        categoryBookmarkService.deleteCategoryBookmark(user, categoryBookmarkId);
+        categoryBookmarkService.deleteCategoryBookmark(user, categoryId);
         return CommonResponse.ok(null);
     }
 

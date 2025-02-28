@@ -17,12 +17,12 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.dto.CreateImageDTO;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.service.FileService;
-import com.ani.taku_backend.common.service.ImageService;
+import com.ani.taku_backend.common.remote_file.ImageService;
+import com.ani.taku_backend.common.remote_file.RemoteFileService;
+import com.ani.taku_backend.common.remote_file.RemoteFileServiceFactory;
 import com.ani.taku_backend.common.util.FileUtil;
 import com.ani.taku_backend.common.util.KoreanUtil;
 import com.ani.taku_backend.common.util.StringSimilarity;
-import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,22 +46,23 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryBookmarkRepository categoryBookmarkRepository;
     private final AnimationGenreRepository animationGenreRepository;
-    private final FileService fileService;
     private final ImageService imageService;
     private final BlackUserService blackUserService;
     private final ModelMapper modelMapper;
+    private final RemoteFileServiceFactory remoteFileServiceFactory;
 
     /**
      * 카테고리 생성
      *
-     * @param principalUser
+     * @param user
      * @param requestCategoryCreateDTO
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
     @RequireUser
-    public ResponseCategoryDTO createCategory(PrincipalUser principalUser, RequestCategoryCreateDTO requestCategoryCreateDTO) throws DuckwhoException {
+    public ResponseCategoryDTO createCategory(User user, RequestCategoryCreateDTO requestCategoryCreateDTO) throws DuckwhoException {
         MultipartFile uploadFile = requestCategoryCreateDTO.getImage();
+
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
             throw new DuckwhoException(ErrorCode.INVALID_FILE_FORMAT);
@@ -72,13 +72,25 @@ public class CategoryServiceImpl implements CategoryService {
         validateCategoryName(requestCategoryCreateDTO.getName());
 
         // 블랙리스트 검증을 먼저 수행
-        validateBlackUser(principalUser.getUserId());
+        validateBlackUser(user.getUserId());
         
         // 이미지 처리
-        Image savedImage = processAndSaveImage(uploadFile, principalUser.getUser());
-        
+        String contentType = uploadFile.getContentType();
+        RemoteFileService remoteFileService = remoteFileServiceFactory.getService(contentType);
+        String uploadedFileUrl = remoteFileService.uploadFile(uploadFile);
+
+        CreateImageDTO imageDTO = CreateImageDTO.builder()
+                .uploadId(user.getUserId())
+                .imageUrl(uploadedFileUrl)
+                .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
+                .originalFileName(uploadFile.getOriginalFilename())
+                .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))
+                .fileSize((int)uploadFile.getSize())
+                .build();
+        Image savedImage = imageService.insertImage(Image.of(imageDTO, user));
+
         // 카테고리 생성 및 저장
-        Category category = createCategoryWithRelations(requestCategoryCreateDTO, principalUser.getUser(), savedImage);
+        Category category = createCategoryWithRelations(requestCategoryCreateDTO, user, savedImage);
         Category savedCategory = categoryRepository.save(category);
         
         return modelMapper.map(savedCategory, ResponseCategoryDTO.class);
@@ -160,31 +172,6 @@ public class CategoryServiceImpl implements CategoryService {
         List<BlackUser> blackUser = blackUserService.findByUserId(userId);
         if(!blackUser.isEmpty()) {
             throw new DuckwhoException(ErrorCode.BLACK_USER);
-        }
-    }
-
-    /**
-     * 이미지 처리 및 저장
-     * @param uploadFile
-     * @param user
-     * @return
-     */
-    private Image processAndSaveImage(MultipartFile uploadFile, User user) {
-        try {
-            CreateImageDTO imageDTO = CreateImageDTO.builder()
-                .uploadId(user.getUserId())
-                .imageUrl(fileService.uploadImageFile(uploadFile))
-                .fileName(FileUtil.getUuidFileName(uploadFile.getOriginalFilename()))
-                .originalFileName(uploadFile.getOriginalFilename())
-                .fileType(FileUtil.getExtension(uploadFile.getOriginalFilename()))
-                .fileSize((int)uploadFile.getSize())
-                .build();
-
-            Image savedImage = imageService.insertImage(Image.of(imageDTO, user));
-            return savedImage;
-        } catch (IOException e) {
-            log.error("이미지 업로드 실패 : {}", e.getMessage());
-            throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
         }
     }
 

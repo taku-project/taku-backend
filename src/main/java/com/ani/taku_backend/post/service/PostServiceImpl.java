@@ -9,7 +9,7 @@ import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.common.service.ImageService;
+import com.ani.taku_backend.common.remote_file.ImageService;
 import com.ani.taku_backend.common.service.RedisService;
 import com.ani.taku_backend.post.model.dto.PopularPostItemDTO;
 import com.ani.taku_backend.post.model.dto.PopularPostLiestRequestDTO;

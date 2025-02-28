@@ -1,5 +1,6 @@
 package com.ani.taku_backend.jangter.model.entity;
 
+import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -20,7 +21,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"bookmark", "jangter"})
-public class DuckuJangterBookmark {
+public class DuckuJangterBookmark extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
