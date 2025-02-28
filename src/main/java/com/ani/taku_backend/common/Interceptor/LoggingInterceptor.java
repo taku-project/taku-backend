@@ -30,12 +30,20 @@ public class LoggingInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,Exception ex){
 
-        // 요청 정보 및 응답 상태 코드, 소요 시간 로그 기록
-        String clientIp = request.getRemoteAddr(); // 클라이언트 IP 주소
-        String requestUri = request.getRequestURI(); // 요청 URI
-        String requestParams = request.getQueryString(); // 요청 파라미터
+
+        String clientIp = request.getHeader("X-Forwarded-For");
+
+        if (clientIp == null || clientIp.isEmpty()) {
+            clientIp = request.getRemoteAddr();
+        } else {
+
+            clientIp = clientIp.split(",")[0].trim();
+        }
+
+        String requestUri = request.getRequestURI();
+        String requestParams = request.getQueryString();
         int status = response.getStatus();
-        long duration = System.currentTimeMillis() - startTime; // 소요 시간 계산
+        long duration = System.currentTimeMillis() - startTime;
 
         if (requestParams != null) {
             requestParams = URLDecoder.decode(requestParams, StandardCharsets.UTF_8);
