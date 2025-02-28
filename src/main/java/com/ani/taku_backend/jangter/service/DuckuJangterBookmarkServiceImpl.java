@@ -29,6 +29,8 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     private final CategoryRepository CategoryRepository;
     private final UserRepository userRepository;
 
+    private static final Long ALL_CATEGORIES = 0L;
+
     @Override
     @Transactional
     public void addBookmark(Long userId, Long productId) {
@@ -69,7 +71,7 @@ public class DuckuJangterBookmarkServiceImpl implements DuckuJangterBookmarkServ
     public Page<BookmarkListResponseDTO> getBookmarkList(Long userId, Long categoryId, Pageable pageable) {
         Long filteredCategoryId = categoryId;
 
-        if (categoryId != 0) {
+        if (categoryId != ALL_CATEGORIES ) {
             // categoryId가 0이 아니면 존재 여부 확인
             if (!CategoryRepository.existsById(categoryId)) {
                 throw new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY);
