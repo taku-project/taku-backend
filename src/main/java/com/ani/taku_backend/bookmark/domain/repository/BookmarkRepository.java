@@ -1,21 +1,21 @@
 package com.ani.taku_backend.bookmark.domain.repository;
 
-import java.util.List;
-
+import com.ani.taku_backend.bookmark.domain.Bookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import com.ani.taku_backend.bookmark.domain.Bookmark;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
-    @Query("select b from Bookmark b where b.user.id = :userId")
-    List<Bookmark> findByUserId(@Param("userId") Long userId);
+    // 단일 북마크 조회
+    Optional<Bookmark> findByUser_UserId(Long userId);
 
-    @Query("SELECT b FROM Bookmark b " +
-            "JOIN FETCH b.duckuJangterBookmarks db " +
-            "JOIN FETCH db.jangter j " +
-            "JOIN FETCH j.itemCategories " +
-            "WHERE b.user.id = :userId")
+    // 모든 북마크 조회 (Fetch join 사용)
+    @Query("SELECT DISTINCT b FROM Bookmark b " +
+            "LEFT JOIN FETCH b.duckuJangterBookmarks " +
+            "WHERE b.user.userId = :userId")
     List<Bookmark> findByUserIdWithJangterAndCategories(@Param("userId") Long userId);
 }
