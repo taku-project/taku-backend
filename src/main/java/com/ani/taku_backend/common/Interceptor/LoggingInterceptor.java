@@ -14,7 +14,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
-@Component // Bean으로 클래스를 등록한다.
+@Component
 public class LoggingInterceptor implements HandlerInterceptor {
 
     private long startTime;
