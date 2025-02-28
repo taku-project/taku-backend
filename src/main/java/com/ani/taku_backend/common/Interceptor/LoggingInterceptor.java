@@ -31,14 +31,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,Exception ex){
 
 
-        String clientIp = request.getHeader("X-Forwarded-For");
-
-        if (clientIp == null || clientIp.isEmpty()) {
-            clientIp = request.getRemoteAddr();
-        } else {
-
-            clientIp = clientIp.split(",")[0].trim();
-        }
+        String client = (request.getUserPrincipal() != null) ? request.getUserPrincipal().getName() : "GUEST";
 
         String requestUri = request.getRequestURI();
         String requestParams = request.getQueryString();
@@ -54,7 +47,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
                 .withZone(ZoneId.of("Asia/Seoul"));
         String formattedTime = formatter.format(now);
 
-        log.info("Time: {}, IP: {}, URI: {}, Params: {}, Response: {}, Duration: {}", formattedTime, clientIp, requestUri,requestParams,  status,  duration);
+        log.info("Time: {}, client: {}, URI: {}, Params: {}, Response: {}, Duration: {}", formattedTime, client, requestUri,requestParams,  status,  duration);
 
 
     }
