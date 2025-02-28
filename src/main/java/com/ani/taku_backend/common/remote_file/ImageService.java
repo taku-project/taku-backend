@@ -1,8 +1,6 @@
-package com.ani.taku_backend.common.service;
+package com.ani.taku_backend.common.remote_file;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.user.model.entity.User;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Service;
@@ -26,9 +24,7 @@ import static com.ani.taku_backend.common.exception.ErrorCode.FILE_UPLOAD_ERROR;
 public class ImageService {
 
     private final ImageRepository imageRepository;
-    private final FileService fileService;
-    private final ListableBeanFactory listableBeanFactory;
-
+    private final RemoteFileServiceFactory fileServiceFactory;
 
     public Image insertImage(Image image) {
         return this.imageRepository.save(image);
@@ -82,9 +78,11 @@ public class ImageService {
 
         // 삭제 대상인 이미지 리스트 삭제
         if (deleteImageUrl != null && !deleteImageUrl.isEmpty()) {
+            String contentType = newImageList.get(0).getContentType();
+            RemoteFileService remoteFileService = fileServiceFactory.getService(contentType);
             deleteImageUrl.forEach(imageUrl -> {
                 String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-                fileService.deleteImageFile(filename);  // s3 에서 삭제(클라우드 플레어)
+                remoteFileService.deleteFile(filename);  // s3 에서 삭제(클라우드 플레어)
             });
             List<Image> deleteImageList = imageRepository.findByImageUrlIn(deleteImageUrl);
             log.debug("삭제할 이미지 조회 성공: {}", Arrays.toString(deleteImageList.toArray()));
@@ -109,13 +107,17 @@ public class ImageService {
     @Transactional
     protected List<String> uploadProductImageList(List<MultipartFile> imageList) {
         List<String> imageUrlList = new ArrayList<>();
+        String contentType = imageList.get(0).getContentType();
+        RemoteFileService remoteFileService = fileServiceFactory.getService(contentType);
+
         for (MultipartFile image : imageList) {
             try {
                 validateImageCount(imageList);    // 5개 이상이면 예외 발생
-                String imageUrl = fileService.uploadImageFile(image);
+
+                String imageUrl = remoteFileService.uploadFile(image);
                 log.debug("r2 이미지 파일 업로드 성공 {}", imageUrl);
                 imageUrlList.add(imageUrl);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new DuckwhoException(FILE_UPLOAD_ERROR);
             }
         }

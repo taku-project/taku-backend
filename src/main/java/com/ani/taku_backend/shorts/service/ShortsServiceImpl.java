@@ -6,7 +6,8 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.exception.FileException;
 import com.ani.taku_backend.common.exception.UserException;
-import com.ani.taku_backend.common.service.FileService;
+import com.ani.taku_backend.common.remote_file.RemoteFileService;
+import com.ani.taku_backend.common.remote_file.RemoteFileServiceFactory;
 import com.ani.taku_backend.common.util.ObjectIdUtil;
 import com.ani.taku_backend.common.util.VideoConversionService;
 import com.ani.taku_backend.shorts.domain.dto.ShortsCommentCreateReqDTO;
@@ -47,6 +48,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 
@@ -70,8 +72,8 @@ public class ShortsServiceImpl implements  ShortsService {
     private final ShortsRepository shortsRepository;
     private final InteractionRepository interactionRepository;
     private final MongoTemplate mongoTemplate;
-    private final FileService fileService;
     private final RestTemplate restTemplate;
+    private final RemoteFileServiceFactory fileServiceFactory;
 
     @Value("${flask.recommend-shorts-url}")
     private String recommendShortsUrl;
@@ -92,8 +94,10 @@ public class ShortsServiceImpl implements  ShortsService {
             if(UserStatus.INACTIVE == uploader.getStatus()) {
                 throw new UserException(ErrorCode.USER_NOT_FOUND.getMessage());
             }
+            MultipartFile file = createReqDTO.getFile();
+            RemoteFileService remoteFileService = fileServiceFactory.getService(file.getContentType());
+            String fileUrl = remoteFileService.uploadFile(file, uniqueFilePath);
 
-            String fileUrl = fileService.uploadVideoFile(createReqDTO.getFile(), uniqueFilePath);
             // AWS Lambda 호출해 원본 파일 R2 저장 후 저장된 파일 객체 반환
             ShortsFFmPegUrlResDTO ffmpegUrlDTO = videoConversionService.ffmpegConversion(fileUrl);
 
@@ -101,13 +105,18 @@ public class ShortsServiceImpl implements  ShortsService {
 
             shortsRepository.save(shorts);
         } catch (Exception e) {
+            MultipartFile file = createReqDTO.getFile();
+            RemoteFileService remoteFileService = fileServiceFactory.getService(file.getContentType());
             String rootDirPath = this.getRootDirectoryPath(uniqueFilePath);
-            fileService.deleteFolder(rootDirPath);
+
+            remoteFileService.deleteDirectory(rootDirPath);
 
             if(shorts != null) {
                 shortsRepository.delete(shorts);
             }
             e.printStackTrace();
+
+            throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
         }
     }
 
