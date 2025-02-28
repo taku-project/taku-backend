@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.controller;
 
-import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.response.CommonResponse;

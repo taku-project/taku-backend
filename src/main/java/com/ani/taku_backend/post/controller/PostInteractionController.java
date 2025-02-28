@@ -1,6 +1,6 @@
 package com.ani.taku_backend.post.controller;
 
-import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.service.PostInteractionService;

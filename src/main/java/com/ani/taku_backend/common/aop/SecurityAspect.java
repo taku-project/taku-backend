@@ -3,7 +3,6 @@ package com.ani.taku_backend.common.aop;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -14,8 +13,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import com.ani.taku_backend.admin.service.ProfanityFilterService;
-import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.annotation.ValidateProfanity;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -38,7 +37,7 @@ public class SecurityAspect {
      * @return
      * @throws Throwable
      */
-    @Around("@annotation(com.ani.taku_backend.common.annotation.RequireUser)")
+    @Around("@annotation(com.ani.taku_backend.common.aop.annotation.RequireUser)")
     public Object injectUser(ProceedingJoinPoint joinPoint) throws Throwable {
 
         SecurityContext context = SecurityContextHolder.getContext();
