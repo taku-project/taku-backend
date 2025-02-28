@@ -46,9 +46,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
                 .withZone(ZoneId.of("Asia/Seoul"));
         String formattedTime = formatter.format(now);
 
-        System.out.println("here");
         log.info("Time: {}, IP: {}, URI: {}, Params: {}, Response: {}, Duration: {}", formattedTime, clientIp, requestUri,requestParams,  status,  duration);
-        log.info("hereeeere");
 
 
     }
