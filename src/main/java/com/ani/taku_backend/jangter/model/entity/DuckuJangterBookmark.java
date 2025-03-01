@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import com.ani.taku_backend.bookmark.domain.Bookmark;
+import com.ani.taku_backend.user.model.entity.User;
 
 import jakarta.persistence.*;
 
@@ -20,7 +20,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"bookmark", "jangter"})
+@ToString(exclude = {"jangter", "user"})
 public class DuckuJangterBookmark extends BaseTimeEntity {
 
     @Id
@@ -29,11 +29,29 @@ public class DuckuJangterBookmark extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bookmark_id")
-    private Bookmark bookmark;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private DuckuJangter jangter;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+    
+    @Column(name = "is_active")
+    private Boolean isActive;
 
+    public static DuckuJangterBookmark create(User user, DuckuJangter jangter) {
+        return DuckuJangterBookmark.builder()
+                .user(user)
+                .jangter(jangter)
+                .isActive(true)
+                .build();
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+    }
+
+    public void activate() {
+        this.isActive = true;
+    }
 }

@@ -1,12 +1,9 @@
 package com.ani.taku_backend.jangter.repository;
 
-import static com.ani.taku_backend.category.domain.entity.QCategory.category;
 
-import com.ani.taku_backend.common.model.entity.QImage;
 import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangterBookmark;
-import com.ani.taku_backend.jangter.model.entity.QItemCategories;
 import com.ani.taku_backend.jangter.model.entity.QJangterImages;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -58,14 +55,15 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
                         )
                         .orderBy(jangterImage.id.asc())
                         .limit(1L)
-                        .groupBy(jangterImage.duckuJangter),  // 상품별로 그룹화
+                        .groupBy(jangterImage.duckuJangter),
                     "imageUrl"
                 )
             ))
             .from(bookmark)
             .join(bookmark.jangter, jangter)
             .where(
-                bookmark.bookmark.user.userId.eq(userId),
+                bookmark.user.userId.eq(userId),
+                bookmark.isActive.isTrue(),
                 categoryIdEq(categoryId),
                 jangter.deletedAt.isNull()
             )
@@ -77,7 +75,8 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
             .from(bookmark)
             .join(bookmark.jangter, jangter)
             .where(
-                bookmark.bookmark.user.userId.eq(userId),
+                bookmark.user.userId.eq(userId),
+                bookmark.isActive.isTrue(),
                 categoryIdEq(categoryId),
                 jangter.deletedAt.isNull()
             )
