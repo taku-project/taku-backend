@@ -1,25 +1,28 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.bookmark.domain.Bookmark;
-import com.ani.taku_backend.bookmark.service.BookmarkService;
-import com.ani.taku_backend.category.domain.repository.CategoryRepository;
+import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.repository.DuckuJangterBookmarkRepository;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
+import com.ani.taku_backend.jangter.vo.UserBookmarkHistory;
+import com.ani.taku_backend.user.model.entity.User;
+import com.ani.taku_backend.user.model.entity.UserStatus;
+import com.ani.taku_backend.user.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
+
+import java.math.BigDecimal;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,16 +30,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DuckuJangterBookmarkServiceTest {
-
-    @InjectMocks
-    private DuckuJangterBookmarkServiceImpl bookmarkService;
 
     @Mock
     private DuckuJangterBookmarkRepository bookmarkRepository;
@@ -45,101 +42,73 @@ class DuckuJangterBookmarkServiceTest {
     private DuckuJangterRepository jangterRepository;
 
     @Mock
-    private BookmarkService userBookmarkService;
+    private UserRepository userRepository;
 
-    @Mock
-    private CategoryRepository categoryRepository;
+    @InjectMocks
+    private DuckuJangterBookmarkServiceImpl bookmarkService;
 
-    @Test
-    @DisplayName("북마크 목록을 페이징하여 조회할 수 있다")
-    void getBookmarkList_Success() {
-        Long userId = 1L;
-        Long categoryId = 0L;  // 전체 카테고리 조회
-        Pageable pageable = PageRequest.of(0, 20);
-        
-        List<BookmarkListResponseDTO> bookmarks = List.of(
-            BookmarkListResponseDTO.builder()
-                .productId(1L)
-                .title("테스트 상품")
-                .build()
-        );
-        Page<BookmarkListResponseDTO> expectedPage = new PageImpl<>(bookmarks, pageable, 1);
-        
-        // categoryId가 0일 때는 null로 처리됨
-        given(bookmarkRepository.findBookmarksByUserIdWithPaging(eq(userId), isNull(), eq(pageable)))
-                .willReturn(expectedPage);
+    private User testUser;
+    private DuckuJangter testJangter;
+    private DuckuJangterBookmark testBookmark;
+    private final Long userId = 1L;
+    private final Long productId = 100L;
 
-        Page<BookmarkListResponseDTO> result = bookmarkService.getBookmarkList(userId, categoryId, pageable);
+    @BeforeEach
+    void setUp() {
+        testUser = User.builder()
+                .userId(userId)
+                .nickname("테스트사용자")
+                .status(UserStatus.ACTIVE)
+                .role(UserRole.USER)
+                .build();
 
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getTitle()).isEqualTo("테스트 상품");
-    }
-
-    @Test
-    @DisplayName("상품을 북마크에 추가할 수 있다")
-    void addBookmark_Success() {
- 
-        Long userId = 1L;
-        Long productId = 1L;
-        DuckuJangter jangter = DuckuJangter.builder()
+        testJangter = DuckuJangter.builder()
                 .id(productId)
                 .title("테스트 상품")
                 .build();
-        Bookmark userBookmark = Bookmark.builder()
-                .id(1L)
-                .build();
 
-        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
-                .willReturn(false);
-        given(jangterRepository.findById(productId))
-                .willReturn(Optional.of(jangter));
-        given(userBookmarkService.getBookmarkByUserId(userId))
-                .willReturn(userBookmark);
+        testBookmark = DuckuJangterBookmark.create(testUser, testJangter);
+    }
+
+    @Test
+    @DisplayName("북마크 추가 - 신규 북마크 생성")
+    void addBookmark_NewBookmark_Success() {
+
+        when(bookmarkRepository.findByUserUserIdAndJangterId(userId, productId))
+                .thenReturn(Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+        when(jangterRepository.findById(productId)).thenReturn(Optional.of(testJangter));
+
 
         bookmarkService.addBookmark(userId, productId);
 
 
         verify(bookmarkRepository).save(any(DuckuJangterBookmark.class));
+        verify(bookmarkRepository, times(1)).findByUserUserIdAndJangterId(userId, productId);
     }
 
     @Test
-    @DisplayName("북마크를 삭제할 수 있다")
-    void removeBookmark_Success() {
-        Long userId = 1L;
-        Long productId = 1L;
+    @DisplayName("북마크 추가 - 기존 비활성화된 북마크 재활성화")
+    void addBookmark_ReactivateInactiveBookmark_Success() {
 
-        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
-                .willReturn(true);
+        testBookmark.deactivate();
+        when(bookmarkRepository.findByUserUserIdAndJangterId(userId, productId))
+                .thenReturn(Optional.of(testBookmark));
 
-        bookmarkService.removeBookmark(userId, productId);
+        bookmarkService.addBookmark(userId, productId);
 
-        verify(bookmarkRepository).deleteByBookmark_User_UserIdAndJangter_Id(userId, productId);
+
+        assertThat(testBookmark.getIsActive()).isTrue();
+        verify(bookmarkRepository, never()).save(any(DuckuJangterBookmark.class));
     }
 
     @Test
-    @DisplayName("북마크하지 않은 상품을 삭제하려고 하면 예외가 발생한다")
-    void removeBookmark_NotFound() {
+    @DisplayName("북마크 추가 - 이미 활성화된 북마크가 존재하면 예외 발생")
+    void addBookmark_AlreadyActiveBookmark_ThrowsException() {
 
-        Long userId = 1L;
-        Long productId = 1L;
+        when(bookmarkRepository.findByUserUserIdAndJangterId(userId, productId))
+                .thenReturn(Optional.of(testBookmark));
 
-        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
-                .willReturn(false);
-
-
-        assertThatThrownBy(() -> bookmarkService.removeBookmark(userId, productId))
-                .isInstanceOf(DuckwhoException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_BOOKMARK);
-    }
-
-    @Test
-    @DisplayName("이미 북마크된 상품을 다시 북마크하면 예외가 발생한다")
-    void addBookmark_AlreadyBookmarked() {
-
-        Long userId = 1L;
-        Long productId = 1L;
-        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
-                .willReturn(true);
 
         assertThatThrownBy(() -> bookmarkService.addBookmark(userId, productId))
                 .isInstanceOf(DuckwhoException.class)
@@ -147,36 +116,45 @@ class DuckuJangterBookmarkServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 상품을 북마크하면 예외가 발생한다")
-    void addBookmark_ProductNotFound() {
+    @DisplayName("북마크 제거 - 북마크 비활성화 성공")
+    void removeBookmark_Success() {
 
-        Long userId = 1L;
-        Long productId = 999L;
-        given(bookmarkRepository.existsByBookmark_User_UserIdAndJangter_Id(userId, productId))
-                .willReturn(false);
-        given(jangterRepository.findById(productId))
-                .willReturn(Optional.empty());
+        testBookmark.activate();
 
+        when(bookmarkRepository.findByUserUserIdAndJangterId(userId, productId))
+                .thenReturn(Optional.of(testBookmark));
 
-        assertThatThrownBy(() -> bookmarkService.addBookmark(userId, productId))
-                .isInstanceOf(DuckwhoException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PRODUCT_NOT_FOUND);
+        bookmarkService.removeBookmark(userId, productId);
+
+        assertThat(testBookmark.getIsActive()).isFalse();
+
+        verify(bookmarkRepository).findByUserUserIdAndJangterId(userId, productId);
     }
-
 
     @Test
-    @DisplayName("존재하지 않는 카테고리로 북마크 목록을 조회하면 예외가 발생한다")
-    void getBookmarkList_CategoryNotFound() {
+    @DisplayName("사용자 북마크 이력 조회")
+    void getUserBookmarkHistory_Success() {
 
-        Long userId = 1L;
-        Long invalidCategoryId = 999L;  // 존재하지 않는 카테고리 ID
-        Pageable pageable = PageRequest.of(0, 20);
+        List<String> keywords = List.of("키워드1", "키워드2");
 
-        given(categoryRepository.findById(invalidCategoryId))
-                .willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> bookmarkService.getBookmarkList(userId, invalidCategoryId, pageable))
-                .isInstanceOf(DuckwhoException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_CATEGORY);
+        UserBookmarkHistory mockHistory = UserBookmarkHistory.builder()
+                .keywords(keywords)
+                .categoryIds(List.of(1L))
+                .avgPrice(new BigDecimal("10000"))
+                .minPrice(new BigDecimal("10000"))
+                .maxPrice(new BigDecimal("10000"))
+                .build();
+
+
+        DuckuJangterBookmarkService spyService = spy(bookmarkService);
+        doReturn(mockHistory).when(spyService).getUserBookmarkHistory(userId, keywords);
+
+        UserBookmarkHistory result = spyService.getUserBookmarkHistory(userId, keywords);
+
+
+        assertThat(result).isNotNull();
+        assertThat(result.getKeywords()).containsExactlyInAnyOrder("키워드1", "키워드2");
+        assertThat(result.getCategoryIds()).hasSize(1);
     }
-} 
+}

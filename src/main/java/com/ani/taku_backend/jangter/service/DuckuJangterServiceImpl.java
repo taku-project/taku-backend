@@ -9,9 +9,7 @@ import com.ani.taku_backend.common.enums.PeriodType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.bookmark.domain.Bookmark;
 import com.ani.taku_backend.common.model.entity.Image;
-import com.ani.taku_backend.bookmark.service.BookmarkServiceImpl;
 import com.ani.taku_backend.common.remote_file.RemoteFileService;
 import com.ani.taku_backend.common.remote_file.RemoteFileServiceFactory;
 import com.ani.taku_backend.common.service.ExtractKeywordService;
@@ -26,6 +24,7 @@ import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestD
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
@@ -74,6 +73,8 @@ import com.ani.taku_backend.marketprice.model.entity.MarketPriceStats;
 import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
 import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
 import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
+import com.ani.taku_backend.jangter.repository.DuckuJangterBookmarkRepository;
+
 
 @Slf4j
 @Service
@@ -87,7 +88,6 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final BlackUserService blackUserService;
     private final ExtractKeywordService extractKeywordService;
     private final UserInteractionService userInteractionService;
-    private final BookmarkServiceImpl bookmarkServiceImpl;
     private final ViewHistoryScoreCalculator viewHistoryScoreCalculator;
     private final SearchHistoryScoreCalculator searchHistoryScoreCalculator;
     private final PurchaseHistoryScoreCalculator purchaseHistoryScoreCalculator;
@@ -97,6 +97,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final JangterRankBaseRepository jangterRankBaseRepository;
     private final MarketPriceStatsService marketPriceStatsService;
     private final CompletedDealRepository completedDealRepository;
+    private final DuckuJangterBookmarkRepository duckuJangterBookmarkRepository;
+    private final DuckuJangterBookmarkService duckuJangterBookmarkService;
     private final RemoteFileServiceFactory remoteFileServiceFactory;
 
 
@@ -105,8 +107,6 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
         return duckuJangterRepository.findFilteredProducts(request);
     }
-
-
 
 
 
@@ -307,7 +307,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         // 몽고디비 검색이력 조회
         CompletableFuture<UserSearchHistory> searchHistoryFuture = CompletableFuture.supplyAsync(() -> getUserSearchHistory(userId));
         // 찜목록 조회
-        CompletableFuture<UserBookmarkHistory> bookmarkHistoryFuture = CompletableFuture.supplyAsync(() -> getUserBookmarkHistory(2l, keywords));
+        CompletableFuture<UserBookmarkHistory> bookmarkHistoryFuture = CompletableFuture.supplyAsync(() -> getUserBookmarkHistory(userId, keywords));
 
         CompletableFuture.allOf(purchaseHistoryFuture, viewHistoryFuture, searchHistoryFuture, bookmarkHistoryFuture).join();
 
@@ -468,21 +468,8 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
         return userSearchHistory;
     }
 
-    private UserBookmarkHistory getUserBookmarkHistory(Long userId , List<String> keywords) {
-        // 사용자 찜목록 조회
-        List<Bookmark> bookmarkList = this.bookmarkServiceImpl.findByUserIdWithJangterAndCategories(userId);
-        UserBookmarkHistory userBookmarkHistory = null;
-        if(!bookmarkList.isEmpty()){
-            List<DuckuJangter> bookmarkedProducts = bookmarkList.stream()
-                    .flatMap(bookmark -> bookmark.getDuckuJangterBookmarks().stream())
-                    .map(jangterBookmark -> jangterBookmark.getJangter())
-                    .toList();
-
-            userBookmarkHistory = UserBookmarkHistory.create(bookmarkedProducts, keywords);
-            log.info("################## >>>>>>>>>>> userBookmarkHistory : {}", userBookmarkHistory);
-        }
-
-        return userBookmarkHistory;
+    private UserBookmarkHistory getUserBookmarkHistory(Long userId, List<String> keywords) {
+        return duckuJangterBookmarkService.getUserBookmarkHistory(userId, keywords);
     }
 
     private ProductRecommendResponseDTO getRandomProducts(Long categoryId, Long productId) {
