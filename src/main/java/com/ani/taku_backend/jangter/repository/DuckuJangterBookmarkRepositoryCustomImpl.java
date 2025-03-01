@@ -1,12 +1,9 @@
 package com.ani.taku_backend.jangter.repository;
 
-import static com.ani.taku_backend.category.domain.entity.QCategory.category;
 
-import com.ani.taku_backend.common.model.entity.QImage;
 import com.ani.taku_backend.jangter.model.dto.BookmarkListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.QDuckuJangterBookmark;
-import com.ani.taku_backend.jangter.model.entity.QItemCategories;
 import com.ani.taku_backend.jangter.model.entity.QJangterImages;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -39,7 +36,7 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
         QDuckuJangter jangter = QDuckuJangter.duckuJangter;
         QJangterImages jangterImage = QJangterImages.jangterImages;
 
-        // 메인 쿼리 - user_id 필드 직접 참조
+        // 메인 쿼리
         JPAQuery<BookmarkListResponseDTO> query = queryFactory
             .select(Projections.constructor(BookmarkListResponseDTO.class,
                 jangter.id,
@@ -72,7 +69,7 @@ public class DuckuJangterBookmarkRepositoryCustomImpl implements DuckuJangterBoo
             )
             .orderBy(bookmark.createdAt.desc());
 
-        // 카운트 쿼리 - 동일하게 user_id 직접 참조
+        // 카운트 쿼리
         long total = queryFactory
             .select(bookmark.count())
             .from(bookmark)
