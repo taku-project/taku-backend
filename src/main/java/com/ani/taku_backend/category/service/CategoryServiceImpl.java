@@ -12,7 +12,7 @@ import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.repository.AnimationGenreRepository;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.category_bookmark.domain.repository.CategoryBookmarkRepository;
-import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.dto.CreateImageDTO;

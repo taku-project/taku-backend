@@ -24,27 +24,10 @@ public class ChatService {
     private final ChatRoomMetaRepository chatRoomMetaRepository;
 
 
-    //TODO 협의후 삭제 예정
-    // 메시지 전송
-    @Transactional
-    public void sendMessage(Long roomId, Long senderId, String content) {
-        // ChatRoom 조회
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found"));
-
-        // MongoDB에 메시지 저장
-        ChatMessage message = ChatMessage.of(roomId, chatRoom.getArticleId(), senderId, content);
-
-        chatMessageRepository.save(message);
-        updateLastMessageId(roomId, message.getId());
-
-    }
 
     @Transactional
     public void sendMessageByWsRoomId(String wsRoomId, Long senderId, String content) {
-        if (log.isDebugEnabled()) {
-            log.debug("메시지 전송 시작 - wsRoomId: {}, senderId: {}, content: {}", wsRoomId, senderId, content);
-        }
+
         
         // wsRoomId로 ChatRoom 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
@@ -85,9 +68,7 @@ public class ChatService {
         });
 
         chatRoomMetaRepository.save(chatRoomMetaInfo);
-        if (log.isDebugEnabled()) {
-            log.debug("메시지 전송 완료");
-        }
+
     }
 
     private void updateLastMessageId(Long roomId, String messageId) {
@@ -134,7 +115,6 @@ public class ChatService {
 
     @Transactional
     public void markMessagesAsReadByWsRoomId(String wsRoomId, Long userId) {
-        log.debug("메시지 읽음 처리 시작 - wsRoomId: {}, userId: {}", wsRoomId, userId);
         
         // 1. 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
@@ -145,8 +125,7 @@ public class ChatService {
         
         // 3. 메타 정보 업데이트 (단일 업데이트)
         chatRoomMetaRepository.resetMessageStock(chatRoom.getId(), userId);
-        
-        log.debug("메시지 읽음 처리 완료 - chatRoomId: {}", chatRoom.getId());
+
     }
 
 }

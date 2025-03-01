@@ -1,9 +1,9 @@
 package com.ani.taku_backend.jangter.service;
 
 
-import com.ani.taku_backend.common.annotation.CheckViewCount;
-import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.annotation.ValidateProfanity;
+import com.ani.taku_backend.common.aop.annotation.CheckViewCount;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.common.enums.PeriodType;
 import com.ani.taku_backend.common.enums.UserRole;

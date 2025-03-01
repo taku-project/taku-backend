@@ -1,7 +1,7 @@
 package com.ani.taku_backend.post.controller;
 
-import com.ani.taku_backend.common.annotation.RequireUser;
-import com.ani.taku_backend.common.annotation.CheckViewCount;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.CheckViewCount;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.post.model.dto.*;

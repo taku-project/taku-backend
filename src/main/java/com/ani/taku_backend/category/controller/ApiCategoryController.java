@@ -6,7 +6,7 @@ import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
 import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
 import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
 import com.ani.taku_backend.category.service.CategoryService;
-import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.ExceptionDto;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;

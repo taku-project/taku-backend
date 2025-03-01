@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.enums.LogType;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;

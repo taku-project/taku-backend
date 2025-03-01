@@ -3,7 +3,7 @@ package com.ani.taku_backend.comments.controller;
 import com.ani.taku_backend.comments.model.dto.CommentsCreateRequestDTO;
 import com.ani.taku_backend.comments.model.dto.CommentsUpdateRequestDTO;
 import com.ani.taku_backend.comments.service.CommentsService;
-import com.ani.taku_backend.common.annotation.RequireUser;
+import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;

@@ -4,7 +4,7 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.repository.CategoryRepository;
 import com.ani.taku_backend.comments.model.dto.CommentsResponseDTO;
 import com.ani.taku_backend.comments.service.CommentsService;
-import com.ani.taku_backend.common.annotation.ValidateProfanity;
+import com.ani.taku_backend.common.aop.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.SortFilterType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.common.exception.DuckwhoException;

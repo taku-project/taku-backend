@@ -15,7 +15,7 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import com.ani.taku_backend.common.annotation.CheckViewCount;
+import com.ani.taku_backend.common.aop.annotation.CheckViewCount;
 import com.ani.taku_backend.common.enums.ViewType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -48,7 +48,7 @@ public class ViewCountAspect {
     private final RedisService redisService;
 
 
-    @Around("@annotation(com.ani.taku_backend.common.annotation.CheckViewCount)")
+    @Around("@annotation(com.ani.taku_backend.common.aop.annotation.CheckViewCount)")
     public Object checkAnonymous(ProceedingJoinPoint joinPoint) throws Throwable {
         // 현재 요청 정보 가져오기
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
