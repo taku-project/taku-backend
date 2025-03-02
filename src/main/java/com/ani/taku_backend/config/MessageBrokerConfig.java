@@ -20,17 +20,16 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")  // WebSocket 엔드포인트
-                .setAllowedOrigins(prodFrontUrl)
-                .setAllowedOrigins(devFrontUrl)
+        registry.addEndpoint("/connect")  // WebSocket 엔드포인트
+                .setAllowedOrigins(prodFrontUrl,devFrontUrl)
                 .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // 채팅, 알림 등 실시간 메시지를 위한 브로커 설정
-        registry.enableSimpleBroker("/sub");
-        registry.setApplicationDestinationPrefixes("/pub");
+        registry.setApplicationDestinationPrefixes("/publish");
+        registry.enableSimpleBroker("/topic");
     }
 
     @Override
