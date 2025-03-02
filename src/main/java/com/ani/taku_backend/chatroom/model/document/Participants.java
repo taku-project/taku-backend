@@ -9,6 +9,10 @@ import java.util.Map;
 public class Participants {
     private Map<Long, ParticipantInfo> info = new ConcurrentHashMap<>();
 
+
+    public Participants() {
+    }
+
     public void addParticipant(Long userId, ParticipantRole role) {
         info.put(userId, new ParticipantInfo(userId, role));
     }
@@ -44,4 +48,3 @@ public class Participants {
     }
 
 }
-

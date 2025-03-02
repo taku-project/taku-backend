@@ -2,6 +2,7 @@ package com.ani.taku_backend.chatroom.model.document;
 
 import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
 import lombok.Getter;
+import org.springframework.data.repository.query.Param;
 import java.time.Instant;
 
 /**
@@ -18,7 +19,10 @@ public class ParticipantInfo {
     private Integer messageStock;
     private Instant lastDisconnectedAt;
 
-    public ParticipantInfo(Long userId, ParticipantRole role) {
+    public ParticipantInfo() {
+    }
+
+    public ParticipantInfo(@Param("userId") Long userId, @Param("role") ParticipantRole role) {
         this.userId = userId;
         this.role = role;
         this.isConnected = true;

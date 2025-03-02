@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 
@@ -30,15 +31,20 @@ public class ChatRoomMetaInfo {
 
     private boolean isActive = true;
 
+    /**
+     * 기본 생성자
+     */
+    public ChatRoomMetaInfo() {
+        // 기본 생성자
+    }
 
     /**
      * 지정된 채팅방 ID로 메타 정보를 초기화합니다.
      *
      * @param chatRoomId 채팅방의 고유 ID
      */
-
     @Builder
-    public ChatRoomMetaInfo(Long chatRoomId) {
+    public ChatRoomMetaInfo(@Param("chatRoomId") Long chatRoomId) {
         this.chatRoomId = chatRoomId;
         this.participants = new Participants();
         this.updateAt = Instant.now();
@@ -51,8 +57,8 @@ public class ChatRoomMetaInfo {
     }
 
     /*
-    * 모든 참가자가 방을 나갔다면 방 상태를 비활성화하는 함수
-    * 이때 CharRoom 도 같이 deactivate 해준다.
+     * 모든 참가자가 방을 나갔다면 방 상태를 비활성화하는 함수
+     * 이때 CharRoom 도 같이 deactivate 해준다.
      */
     public void checkAndDeactivate() {
         if (participants.allParticipantsInactive()) {
