@@ -23,8 +23,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
 
-
-
 @Configuration
 @EnableMethodSecurity
 @EnableWebSecurity
@@ -38,6 +36,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RefreshTokenFilter refreshTokenFilter;
     private final PublicEndpointFilter publicEndpointFilter;
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -47,11 +46,11 @@ public class SecurityConfig {
                 .frameOptions(frame -> frame.disable())
             )
             .authorizeHttpRequests(auth -> auth
-            // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
+                // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
                 .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
                     .permitAll()
-         //       .requestMatchers("/api/shorts/**", "/api/shorts")
-         //           .permitAll()
+                // .requestMatchers("/api/shorts/**", "/api/shorts")
+                //     .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
@@ -59,6 +58,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
+                .requestMatchers("/connect/**", "/pub/**", "/sub/**").permitAll()                   // WebSocket 관련 경로 허용
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -68,11 +68,9 @@ public class SecurityConfig {
                 .successHandler(this.oAuth2SuccessHandler)
                 .failureHandler(this.oAuth2FailureHandler)
             )
-
             .addFilterBefore(refreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(publicEndpointFilter, RefreshTokenFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, PublicEndpointFilter.class);
-
 
         return http.build();
     }

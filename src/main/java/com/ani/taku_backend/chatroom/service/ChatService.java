@@ -8,6 +8,7 @@ import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.user.repository.UserRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
 
     /**
      * WebSocket을 통해 받은 메시지를 처리하고 저장합니다.
@@ -182,6 +184,26 @@ public class ChatService {
         // 3. 메타 정보 업데이트 (단일 업데이트)
         chatRoomMetaRepository.resetMessageStock(chatRoom.getId(), userId);
 
+    }
+
+    /**
+     * 사용자가 특정 채팅방의 참여자인지 확인합니다.
+     * @param email 사용자 이메일
+     * @param roomId 채팅방 ID
+     * @return 참여자인 경우 true, 아닌 경우 false
+     */
+    public boolean isRoomParticipant(String email, Long roomId) {
+        // 사용자 이메일로 사용자 ID 조회
+        Long userId = userRepository.findByEmail(email)
+                .map(user -> user.getUserId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+        
+        // 채팅방 메타 정보 조회
+        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(roomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+        
+        // 사용자가 채팅방 참여자인지 확인
+        return chatRoomMetaInfo.getParticipants().containsUser(userId);
     }
 
 }
