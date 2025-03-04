@@ -34,5 +34,4 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findByArticleId(Long articleId);
 
 
-
 }

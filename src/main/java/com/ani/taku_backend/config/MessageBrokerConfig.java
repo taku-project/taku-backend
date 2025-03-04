@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -29,7 +28,7 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/connect")  // WebSocket 엔드포인트
+        registry.addEndpoint("/ws")  // WebSocket 엔드포인트
                 //.setAllowedOrigins(prodFrontUrl,devFrontUrl)
                 .setAllowedOrigins("*")
                 .withSockJS();
@@ -48,6 +47,15 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
                 .setSendTimeLimit(20 * 10000)
                 .setSendBufferSizeLimit(3 * 512 * 1024);
     }
+
+    /**
+     * 클라이언트에서 들어오는 WebSocket 메시지를 처리하는 채널 설정
+     * 
+     * WebSocket 요청(CONNECT, SUBSCRIBE, DISCONNECT 등)은 HTTP 헤더와 같은 메타데이터를 포함할 수 있음
+     * 이 인터셉터를 통해 해당 요청을 가로채서 JWT 토큰 검증 등의 보안 처리를 수행
+     * 
+     * @param registration 채널 등록 객체
+     */
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(stompHandler);

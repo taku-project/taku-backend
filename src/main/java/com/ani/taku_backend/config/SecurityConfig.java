@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
-                .requestMatchers("/connect/**", "/pub/**", "/sub/**").permitAll()                   // WebSocket 관련 경로 허용
+                .requestMatchers("/ws/**", "/pub/**", "/sub/**").permitAll()                   // WebSocket 관련 경로 허용
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
