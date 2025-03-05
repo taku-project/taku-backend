@@ -1,7 +1,6 @@
 package com.ani.taku_backend.chatroom.controller;
 
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.model.dto.ChatMessageRequestDTO;
 import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;

@@ -31,11 +31,7 @@ public class ChatRoomMetaInfo {
 
     private boolean isActive = true;
 
-    /**
-     * 기본 생성자
-     */
     public ChatRoomMetaInfo() {
-        // 기본 생성자
     }
 
     /**
