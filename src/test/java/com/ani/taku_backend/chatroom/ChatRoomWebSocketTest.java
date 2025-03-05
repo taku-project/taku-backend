@@ -262,7 +262,7 @@ public class ChatRoomWebSocketTest {
 
         // 읽음 처리 DTO
         session.send(sendHeaders,
-                new ChatMessageRequestDTO(testRoom.getWsRoomId(), testUser.getUserId(), null));
+                ChatMessageRequestDTO.forReadStatus(testRoom.getWsRoomId(), testUser.getUserId()));
 
         // 읽음 상태 메시지 수신 확인 (5초 타임아웃)
         ChatReadStatusDTO readStatus = receivedReadStatuses.poll(5, TimeUnit.SECONDS);

@@ -39,21 +39,21 @@ public class StompController {
      */
     @MessageMapping("/chat/message")
     public void sendMessage(@Payload ChatMessageRequestDTO messageRequest) {
-        log.info("채팅 메시지 수신: roomId={}, senderId={}", messageRequest.getRoomId(), messageRequest.getSenderId());
+        log.info("채팅 메시지 수신: roomId={}, senderId={}", messageRequest.roomId(), messageRequest.senderId());
         
         if (log.isDebugEnabled()) {
-            log.debug("메시지 내용: {}", messageRequest.getContent());
+            log.debug("메시지 내용: {}", messageRequest.content());
         }
 
         // ChatService를 통해 메시지 저장 및 처리
         ChatMessage savedMessage = chatService.saveAndProcessMessage(
-                messageRequest.getRoomId(),
-                messageRequest.getSenderId(),
-                messageRequest.getContent()
+                messageRequest.roomId(),
+                messageRequest.senderId(),
+                messageRequest.content()
         );
         
         // 해당 채팅방 구독자에게 메시지 발행
-        messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequest.getRoomId(), savedMessage);
+        messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequest.roomId(), savedMessage);
         log.info("메시지 발행 완료: messageId={}", savedMessage.getId());
     }
     
@@ -65,26 +65,26 @@ public class StompController {
      */
     @MessageMapping("/chat/read")
     public void markAsRead(@Payload ChatMessageRequestDTO request) {
-        log.info("메시지 읽음 상태 업데이트 요청: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
+        log.info("메시지 읽음 상태 업데이트 요청: roomId={}, userId={}", request.roomId(), request.senderId());
         
         // 메시지 읽음 상태 비동기 업데이트
-        chatService.markMessagesAsReadAsync(request.getRoomId(), request.getSenderId());
+        chatService.markMessagesAsReadAsync(request.roomId(), request.senderId());
         
         // 채팅방 정보 조회
-        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(request.getRoomId())
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(request.roomId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
         
-        // 읽음 상태 변경 알림 전송
+        // 읽음 상태 변경 알림 전송 (경량화된 DTO 사용)
         ChatReadStatusDTO readStatusDTO = ChatReadStatusDTO.of(
                 chatRoom.getId(), 
-                request.getSenderId()
+                request.senderId()
         );
         
         messagingTemplate.convertAndSend(
-                "/sub/chat/room/" + request.getRoomId() + "/read", 
+                "/sub/chat/room/" + request.roomId() + "/read", 
                 readStatusDTO
         );
         
-        log.info("읽음 상태 알림 전송 완료: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
+        log.info("읽음 상태 알림 전송 완료: roomId={}, userId={}", request.roomId(), request.senderId());
     }
 }
