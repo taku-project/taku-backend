@@ -20,7 +20,6 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 @Slf4j
 public class StompEventListener {
 
-    // 연결된 세션을 추적하기 위한 스레드 안전한 Set
     private final Set<String> sessions = ConcurrentHashMap.newKeySet();
 
     /**
