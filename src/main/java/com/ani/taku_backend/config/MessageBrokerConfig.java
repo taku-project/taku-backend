@@ -11,13 +11,11 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
-import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Lazy
     private final StompHandler stompHandler;
 
     @Value("${client.prod.front-url}")
@@ -26,7 +24,7 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${client.dev.front-url}")
     private String devFrontUrl;
 
-    public MessageBrokerConfig(@Lazy StompHandler stompHandler) {
+    public MessageBrokerConfig(StompHandler stompHandler) {
         this.stompHandler = stompHandler;
     }
 

@@ -1,6 +1,6 @@
 package com.ani.taku_backend.chatroom;
 
-import com.ani.taku_backend.chatroom.service.ChatService;
+import com.ani.taku_backend.chatroom.service.ChatAuthorizationService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -8,7 +8,6 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -18,17 +17,17 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
-@Lazy
 @Component
 @Slf4j
 public class StompHandler implements ChannelInterceptor {
 
     @Value("${jwt.secret}")
     private String secretKey;
-    private final ChatService chatService;
-
-    public StompHandler(ChatService chatService) {
-        this.chatService = chatService;
+    
+    private final ChatAuthorizationService chatAuthorizationService;
+    
+    public StompHandler(ChatAuthorizationService chatAuthorizationService) {
+        this.chatAuthorizationService = chatAuthorizationService;
     }
 
     @Override
@@ -77,7 +76,7 @@ public class StompHandler implements ChannelInterceptor {
                 log.info("채팅방 구독 요청 - 사용자: {}, 채팅방: {}", email, roomId);
                 
                 // 해당 채팅방 참여 권한 확인
-                if (!chatService.isRoomParticipant(email, Long.parseLong(roomId))) {
+                if (!chatAuthorizationService.isRoomParticipant(email, Long.parseLong(roomId))) {
                     log.error("사용자 {}는 채팅방 {}에 접근 권한이 없습니다", email, roomId);
                     throw new AuthenticationServiceException("해당 채팅방에 접근 권한이 없습니다.");
                 }
