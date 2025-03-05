@@ -66,8 +66,8 @@ public class StompController {
     public void markAsRead(@Payload ChatMessageRequestDTO request) {
         log.info("메시지 읽음 상태 업데이트 요청: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
         
-        // 메시지 읽음 상태 업데이트
-        chatService.markMessagesAsReadByWsRoomId(request.getRoomId(), request.getSenderId());
+        // 메시지 읽음 상태 비동기 업데이트
+        chatService.markMessagesAsReadAsync(request.getRoomId(), request.getSenderId());
         
         // 채팅방 정보 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(request.getRoomId())
@@ -85,6 +85,6 @@ public class StompController {
                 readStatusMessage
         );
         
-        log.info("읽음 상태 업데이트 완료 및 알림 전송: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
+        log.info("읽음 상태 알림 전송 완료: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
     }
 }

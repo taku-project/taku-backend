@@ -10,6 +10,7 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.user.repository.UserRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -185,6 +186,18 @@ public class ChatService {
         // 3. 메타 정보 업데이트 (단일 업데이트)
         chatRoomMetaRepository.resetMessageStock(chatRoom.getId(), userId);
 
+    }
+    
+    /**
+     * 채팅 메시지 읽음 상태를 비동기적으로 업데이트합니다.
+     * 데이터베이스 작업을 별도 스레드에서 처리하여 응답 시간을 개선합니다.
+     */
+    @Async
+    @Transactional
+    public void markMessagesAsReadAsync(String wsRoomId, Long userId) {
+        log.debug("비동기 읽음 상태 업데이트 시작: roomId={}, userId={}", wsRoomId, userId);
+        markMessagesAsReadByWsRoomId(wsRoomId, userId);
+        log.debug("비동기 읽음 상태 업데이트 완료: roomId={}, userId={}", wsRoomId, userId);
     }
 
 }
