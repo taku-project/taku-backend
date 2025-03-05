@@ -4,8 +4,8 @@ import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.model.dto.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.enums.ProviderType;
@@ -57,6 +57,7 @@ public class ChatRoomWebSocketTest {
     private int port;
 
     private BlockingQueue<ChatMessage> receivedMessages;
+    private BlockingQueue<ChatReadStatusDTO> receivedReadStatuses;
 
     @Autowired
     private UserRepository userRepository;
@@ -79,6 +80,7 @@ public class ChatRoomWebSocketTest {
     @BeforeEach
     public void setUp() {
         receivedMessages = new LinkedBlockingDeque<>();
+        receivedReadStatuses = new LinkedBlockingDeque<>();
 
         // 테스트 데이터 준비
         setupTestData();
@@ -251,7 +253,7 @@ public class ChatRoomWebSocketTest {
         StompHeaders subscribeHeaders = new StompHeaders();
         subscribeHeaders.add("Authorization", testToken);
         subscribeHeaders.setDestination("/sub/chat/room/" + testRoom.getWsRoomId() + "/read");
-        session.subscribe(subscribeHeaders, new ChatMessageStompFrameHandler());
+        session.subscribe(subscribeHeaders, new ReadStatusStompFrameHandler());
 
         // 읽음 처리 메시지 전송
         StompHeaders sendHeaders = new StompHeaders();
@@ -263,11 +265,12 @@ public class ChatRoomWebSocketTest {
                 new ChatMessageRequestDTO(testRoom.getWsRoomId(), testUser.getUserId(), null));
 
         // 읽음 상태 메시지 수신 확인 (5초 타임아웃)
-        ChatMessage readStatusMessage = receivedMessages.poll(5, TimeUnit.SECONDS);
+        ChatReadStatusDTO readStatus = receivedReadStatuses.poll(5, TimeUnit.SECONDS);
 
         // 읽음 상태 메시지 검증
-        assertThat(readStatusMessage).isNotNull();
-        assertThat(readStatusMessage.getChatRoomId()).isEqualTo(testRoom.getId());
+        assertThat(readStatus).isNotNull();
+        assertThat(readStatus.chatRoomId()).isEqualTo(testRoom.getId());
+        assertThat(readStatus.senderId()).isEqualTo(testUser.getUserId());
 
         // 세션 연결 해제
         session.disconnect();
@@ -289,7 +292,7 @@ public class ChatRoomWebSocketTest {
         return stompClient;
     }
 
-    // STOMP 프레임 핸들러 구현
+    // ChatMessage용 STOMP 프레임 핸들러
     private class ChatMessageStompFrameHandler implements StompFrameHandler {
         @Override
         public Type getPayloadType(StompHeaders headers) {
@@ -300,6 +303,20 @@ public class ChatRoomWebSocketTest {
         public void handleFrame(StompHeaders headers, Object payload) {
             System.out.println("메시지 수신: " + payload);
             receivedMessages.offer((ChatMessage) payload);
+        }
+    }
+    
+    // ReadStatus용 STOMP 프레임 핸들러
+    private class ReadStatusStompFrameHandler implements StompFrameHandler {
+        @Override
+        public Type getPayloadType(StompHeaders headers) {
+            return ChatReadStatusDTO.class;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders headers, Object payload) {
+            System.out.println("읽음 상태 수신: " + payload);
+            receivedReadStatuses.offer((ChatReadStatusDTO) payload);
         }
     }
 }

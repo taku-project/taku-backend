@@ -3,6 +3,7 @@ package com.ani.taku_backend.chatroom.controller;
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.model.dto.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.chatroom.service.ChatService;
@@ -73,16 +74,15 @@ public class StompController {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(request.getRoomId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
         
-        // 읽음 상태 변경 알림 전송 (ChatMessage 형식으로 변환)
-        ChatMessage readStatusMessage = new ChatMessage();
-        readStatusMessage.setChatRoomId(chatRoom.getId());
-        readStatusMessage.setSenderId(request.getSenderId());
-        readStatusMessage.setRead(false);
-        readStatusMessage.setStatus(ChatRoomStatus.ACTIVE);
+        // 읽음 상태 변경 알림 전송
+        ChatReadStatusDTO readStatusDTO = ChatReadStatusDTO.of(
+                chatRoom.getId(), 
+                request.getSenderId()
+        );
         
         messagingTemplate.convertAndSend(
                 "/sub/chat/room/" + request.getRoomId() + "/read", 
-                readStatusMessage
+                readStatusDTO
         );
         
         log.info("읽음 상태 알림 전송 완료: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
