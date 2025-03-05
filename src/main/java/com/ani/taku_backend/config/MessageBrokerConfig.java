@@ -11,11 +11,13 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
+    @Lazy
     private final StompHandler stompHandler;
 
     @Value("${client.prod.front-url}")
@@ -24,12 +26,12 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${client.dev.front-url}")
     private String devFrontUrl;
 
-    public MessageBrokerConfig(StompHandler stompHandler) {
+    public MessageBrokerConfig(@Lazy StompHandler stompHandler) {
         this.stompHandler = stompHandler;
     }
 
     @Bean
-    public ThreadPoolTaskScheduler messageBrokerTaskScheduler() {
+    public ThreadPoolTaskScheduler customMessageBrokerTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1);
         scheduler.setThreadNamePrefix("wss-heartbeat-thread-");
@@ -60,7 +62,7 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
         // 메시지 브로커가 구독 요청을 처리할 목적지 접두사 (/sub/...)
         registry.enableSimpleBroker("/sub")
                 .setHeartbeatValue(new long[]{10000, 10000})  // 서버-클라이언트 하트비트 (10초)
-                .setTaskScheduler(messageBrokerTaskScheduler());
+                .setTaskScheduler(customMessageBrokerTaskScheduler());
     }
 
     @Override
