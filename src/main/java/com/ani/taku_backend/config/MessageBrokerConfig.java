@@ -2,9 +2,11 @@ package com.ani.taku_backend.config;
 
 import com.ani.taku_backend.chatroom.StompHandler;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -26,26 +28,46 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
         this.stompHandler = stompHandler;
     }
 
+    @Bean
+    public ThreadPoolTaskScheduler messageBrokerTaskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1);
+        scheduler.setThreadNamePrefix("wss-heartbeat-thread-");
+        scheduler.initialize();
+        return scheduler;
+    }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")  // WebSocket 엔드포인트
-                //.setAllowedOrigins(prodFrontUrl,devFrontUrl)
-                .setAllowedOrigins("*")
-                .withSockJS();
+        // SockJS를 사용하는 WebSocket 엔드포인트
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*")  // 개발 환경에서는 모든 오리진 허용
+                .withSockJS()
+                .setDisconnectDelay(30 * 1000)  // 연결 해제 후 세션 유지 시간 (30초)
+                .setHeartbeatTime(25 * 1000)    // 하트비트 주기 (25초)
+                .setClientLibraryUrl("https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js");
+        
+        // 순수 WebSocket 엔드포인트 (SockJS 없이 직접 연결)
+        registry.addEndpoint("/ws/raw")
+                .setAllowedOriginPatterns("*");  // 개발 환경에서는 모든 오리진 허용
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // 채팅, 알림 등 실시간 메시지를 위한 브로커 설정
+        // 클라이언트가 메시지를 발행할 수 있는 목적지 접두사 (/pub/...)
         registry.setApplicationDestinationPrefixes("/pub");
-        registry.enableSimpleBroker("/sub");
+        
+        // 메시지 브로커가 구독 요청을 처리할 목적지 접두사 (/sub/...)
+        registry.enableSimpleBroker("/sub")
+                .setHeartbeatValue(new long[]{10000, 10000})  // 서버-클라이언트 하트비트 (10초)
+                .setTaskScheduler(messageBrokerTaskScheduler());
     }
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        registration.setMessageSizeLimit(160 * 64 * 1024)
-                .setSendTimeLimit(20 * 10000)
-                .setSendBufferSizeLimit(3 * 512 * 1024);
+        registration.setMessageSizeLimit(160 * 64 * 1024)       // 메시지 크기 제한: 약 10MB
+                .setSendTimeLimit(20 * 10000)                  // 메시지 전송 시간 제한: 200초
+                .setSendBufferSizeLimit(3 * 512 * 1024);       // 버퍼 크기 제한: 약 1.5MB
     }
 
     /**

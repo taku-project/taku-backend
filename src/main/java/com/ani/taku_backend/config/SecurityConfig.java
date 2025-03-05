@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
-                .requestMatchers("/ws/**", "/pub/**", "/sub/**").permitAll()                   // WebSocket 관련 경로 허용
+                .requestMatchers(SecurityPathConfig.WEBSOCKET_PATHS).permitAll()                    // WebSocket 관련 경로 허용
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -79,7 +79,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(Arrays.asList(
+        // 개발 환경에서는 모든 오리진 허용
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        
+        // 프로덕션 환경에서는 아래 주석을 해제하고 특정 오리진만 허용
+        /*
+        configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:8080",
             "https://localhost:8080",
             "http://localhost:3000",
@@ -87,6 +92,7 @@ public class SecurityConfig {
             "https://api-duckwho.xyz",
             "https://duckwho.vercel.app"
         ));
+        */
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -95,6 +101,12 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        
+        // WebSocket 관련 경로에 대해 동일한 CORS 설정 적용
+        for (String path : SecurityPathConfig.WEBSOCKET_PATHS) {
+            source.registerCorsConfiguration(path, configuration);
+        }
+        
         return source;
     }
 }

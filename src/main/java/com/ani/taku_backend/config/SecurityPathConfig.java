@@ -59,6 +59,13 @@ public class SecurityPathConfig {
     // 쇼츠 API 관련 설정
     public static final String SHORTS_API_PATH = "/api/shorts/**";
     
+    // WebSocket 관련 경로 설정
+    public static final String[] WEBSOCKET_PATHS = {
+        "/ws/**",    // WebSocket 엔드포인트
+        "/pub/**",   // 메시지 발행 경로
+        "/sub/**"    // 메시지 구독 경로
+    };
+    
     public static boolean isPermitAllPath(String path) {
         return Arrays.stream(PUBLIC_STATIC_PATHS)
             .anyMatch(pattern -> pathMatcher.match(pattern, path));
@@ -75,6 +82,12 @@ public class SecurityPathConfig {
         return pathMatcher.match(SHORTS_API_PATH, path) && 
             (method.equals("GET"));
     }
+    
+    // WebSocket 경로 확인
+    public static boolean isWebSocketPath(String path) {
+        return Arrays.stream(WEBSOCKET_PATHS)
+            .anyMatch(pattern -> pathMatcher.match(pattern, path));
+    }
 
     // GET 요청만 인증없이 통과
     public static boolean isPublicGetPath(String path, String method) {
@@ -87,6 +100,7 @@ public class SecurityPathConfig {
         return isPermitAllPath(path) || 
                isUserApiPath(path, method) || 
                isShortsApiPath(path, method) || 
-               isPublicGetPath(path, method);
+               isPublicGetPath(path, method) ||
+               isWebSocketPath(path);
     }
 }

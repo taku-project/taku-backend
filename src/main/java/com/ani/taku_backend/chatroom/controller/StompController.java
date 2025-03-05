@@ -1,33 +1,75 @@
 package com.ani.taku_backend.chatroom.controller;
 
+import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.dto.ChatMessageRequestDTO;
 import com.ani.taku_backend.chatroom.service.ChatService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.util.Map;
+
+/**
+ * WebSocket STOMP 메시지를 처리하는 컨트롤러입니다.
+ * 채팅 메시지 전송 및 읽음 상태 업데이트와 같은 실시간 통신을 처리합니다.
+ */
 @Controller
+@Slf4j
+@RequiredArgsConstructor
 public class StompController {
 
-    private final SimpMessageSendingOperations messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
 
-    public StompController(SimpMessageSendingOperations messagingTemplate, ChatService chatService) {
-        this.messagingTemplate = messagingTemplate;
-        this.chatService = chatService;
-    }
-
-    @MessageMapping("/chat/room/{roomId}")
-    public void sendMessage(@DestinationVariable String roomId, ChatMessageRequestDTO chatMessageReqDto) {
-        System.out.println("메시지 수신: " + chatMessageReqDto.getContent());
+    /**
+     * 클라이언트로부터 채팅 메시지를 수신하고 처리합니다.
+     * /pub/chat/message 경로로 들어오는 메시지를 처리합니다.
+     * 
+     * @param messageRequest 클라이언트가 보낸 채팅 메시지 요청 객체
+     */
+    @MessageMapping("/chat/message")
+    public void sendMessage(@Payload ChatMessageRequestDTO messageRequest) {
+        log.info("채팅 메시지 수신: roomId={}, senderId={}", messageRequest.getRoomId(), messageRequest.getSenderId());
+        
+        if (log.isDebugEnabled()) {
+            log.debug("메시지 내용: {}", messageRequest.getContent());
+        }
 
         // ChatService를 통해 메시지 저장 및 처리
-        // 메시지는 자동으로 구독자에게 전송됨 (/sub/chat/room/{roomId})
-        chatService.saveAndProcessMessage(
-                roomId,
-                chatMessageReqDto.getSenderId(),
-                chatMessageReqDto.getContent()
+        ChatMessage savedMessage = chatService.saveAndProcessMessage(
+                messageRequest.getRoomId(),
+                messageRequest.getSenderId(),
+                messageRequest.getContent()
         );
+        
+        // 해당 채팅방 구독자에게 메시지 발행
+        messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequest.getRoomId(), savedMessage);
+        log.info("메시지 발행 완료: messageId={}", savedMessage.getId());
+    }
+    
+    /**
+     * 채팅방 메시지 읽음 상태 업데이트 요청을 처리합니다.
+     * /pub/chat/read 경로로 들어오는 메시지를 처리합니다.
+     * 
+     * @param request 읽음 상태 업데이트 요청 (roomId와 userId 포함)
+     */
+    @MessageMapping("/chat/read")
+    public void markAsRead(@Payload ChatMessageRequestDTO request) {
+        log.info("메시지 읽음 상태 업데이트 요청: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
+        
+        // 메시지 읽음 상태 업데이트
+        chatService.markMessagesAsReadByWsRoomId(request.getRoomId(), request.getSenderId());
+        
+        // 읽음 상태 변경 알림 전송
+        messagingTemplate.convertAndSend(
+                "/sub/chat/room/" + request.getRoomId() + "/read", 
+                Map.of("roomId", request.getRoomId(), "userId", request.getSenderId(), "timestamp", System.currentTimeMillis())
+        );
+        
+        log.info("읽음 상태 업데이트 완료 및 알림 전송: roomId={}, userId={}", request.getRoomId(), request.getSenderId());
     }
 }
