@@ -97,9 +97,21 @@ public class StompHandler implements ChannelInterceptor {
             return;
         }
 
-        String token = extractToken(accessor);
-        Claims claims = validateToken(token);
-        String email = claims.get("email", String.class); // 수정: sub 대신 email 사용
+        // 세션에서 사용자 정보 가져오기 시도
+        Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+        String email = null;
+        if (sessionAttributes != null && sessionAttributes.containsKey("email")) {
+            email = (String) sessionAttributes.get("email");
+            log.info("세션에서 사용자 정보 가져옴 - 사용자: {}", email);
+        }
+
+        // 세션에 사용자 정보가 없으면 토큰에서 가져오기
+        if (email == null) {
+            log.info("세션에 사용자 정보 없음, 토큰에서 정보 가져오기 시도");
+            String token = extractToken(accessor);
+            Claims claims = validateToken(token);
+            email = claims.get("email", String.class);
+        }
 
         // /sub/chat/room/{wsRoomId} 형식에서 wsRoomId 추출
         String wsRoomId = destination.split("/")[4];
@@ -153,7 +165,12 @@ public class StompHandler implements ChannelInterceptor {
             }
         }
 
-        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+        if (bearerToken == null) {
+            log.error("토큰을 찾을 수 없습니다: 세션 ID = {}", accessor.getSessionId());
+            throw new AuthenticationServiceException("인증 토큰을 찾을 수 없습니다.");
+        }
+
+        if (!bearerToken.startsWith("Bearer ")) {
             log.error("토큰 형식이 올바르지 않습니다: {}", bearerToken);
             throw new AuthenticationServiceException("토큰 형식이 올바르지 않습니다.");
         }
