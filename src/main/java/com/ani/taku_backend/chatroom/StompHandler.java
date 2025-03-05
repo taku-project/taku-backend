@@ -63,48 +63,57 @@ public class StompHandler implements ChannelInterceptor {
 
         return message;
     }
-    
+
+
     /**
      * CONNECT 명령 처리: 연결 시 토큰 검증
      */
     private void handleConnectCommand(StompHeaderAccessor accessor) {
         log.info("STOMP CONNECT 요청 처리 - 토큰 검증 시작");
-        
+
         String token = extractToken(accessor);
         Claims claims = validateToken(token);
-        
-        log.info("WebSocket 연결 토큰 검증 완료 - 사용자: {}", claims.getSubject());
+
+        // 수정: sub 대신 email 클레임 사용 (sub가 없음)
+        String userEmail = claims.get("email", String.class);
+        Long userId = claims.get("userId", Long.class);
+
+        log.info("WebSocket 연결 토큰 검증 완료 - 사용자: {} (ID: {})", userEmail, userId);
+
+        // 세션에 사용자 정보 저장 (향후 메시지 처리 시 사용)
+        accessor.getSessionAttributes().put("email", userEmail);
+        accessor.getSessionAttributes().put("userId", userId);
     }
-    
+
     /**
      * SUBSCRIBE 명령 처리: 채팅방 구독 권한 확인
      */
     private void handleSubscribeCommand(StompHeaderAccessor accessor) {
         log.info("STOMP SUBSCRIBE 요청 처리 - 채팅방 구독 권한 확인");
-        
+
         String destination = accessor.getDestination();
         if (destination == null || !destination.startsWith("/sub/chat/room/")) {
             log.warn("구독 대상이 올바르지 않습니다: {}", destination);
             return;
         }
-        
+
         String token = extractToken(accessor);
         Claims claims = validateToken(token);
-        String email = claims.getSubject();
-        
+        String email = claims.get("email", String.class); // 수정: sub 대신 email 사용
+
         // /sub/chat/room/{wsRoomId} 형식에서 wsRoomId 추출
         String wsRoomId = destination.split("/")[4];
         log.info("채팅방 구독 요청 - 사용자: {}, 채팅방 WS ID: {}", email, wsRoomId);
-        
+
         // wsRoomId를 통해 실제 채팅방 ID 조회
         ChatRoom chatRoom = findChatRoomByWsId(wsRoomId, email);
-        
+
         // 해당 채팅방 참여 권한 확인
         if (!chatAuthorizationService.isRoomParticipant(email, chatRoom.getId())) {
             log.error("사용자 {}는 채팅방 {}에 접근 권한이 없습니다", email, chatRoom.getId());
             throw new AuthenticationServiceException("해당 채팅방에 접근 권한이 없습니다.");
         }
-        
+
         log.info("채팅방 구독 권한 확인 완료 - 사용자: {}, 채팅방: {}", email, chatRoom.getId());
     }
     
