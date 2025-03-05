@@ -82,10 +82,8 @@ public class ChatRoomWebSocketTest {
         receivedMessages = new LinkedBlockingDeque<>();
         receivedReadStatuses = new LinkedBlockingDeque<>();
 
-        // 테스트 데이터 준비
         setupTestData();
 
-        // JWT 토큰 직접 생성
         rawToken = generateTestJwtToken();
         testToken = "Bearer " + rawToken;
 
@@ -102,11 +100,10 @@ public class ChatRoomWebSocketTest {
     private String generateTestJwtToken() {
         Map<String, Object> claims = new HashMap<>();
 
-        // 필수 클레임 설정
         claims.put("userId", testUser.getUserId());
         claims.put("email", testUser.getEmail());
         claims.put("nickname", testUser.getNickname());
-        claims.put("role", "ROLE_USER"); // UserRole.USER.getValue()와 동일
+        claims.put("role", "ROLE_USER");
         claims.put("providerType", ProviderType.KAKAO.name());
         claims.put("profileImg", testUser.getProfileImg());
         claims.put("status", UserStatus.ACTIVE.name());
