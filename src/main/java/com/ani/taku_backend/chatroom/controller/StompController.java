@@ -1,17 +1,21 @@
 package com.ani.taku_backend.chatroom.controller;
 
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
+import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.model.dto.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.chatroom.service.ChatService;
+
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import java.util.Map;
 
 /**
  * WebSocket STOMP 메시지를 처리하는 컨트롤러입니다.
@@ -24,6 +28,7 @@ public class StompController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final ChatRoomRepository chatRoomRepository;
 
     /**
      * 클라이언트로부터 채팅 메시지를 수신하고 처리합니다.
@@ -64,10 +69,20 @@ public class StompController {
         // 메시지 읽음 상태 업데이트
         chatService.markMessagesAsReadByWsRoomId(request.getRoomId(), request.getSenderId());
         
-        // 읽음 상태 변경 알림 전송
+        // 채팅방 정보 조회
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(request.getRoomId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+        
+        // 읽음 상태 변경 알림 전송 (ChatMessage 형식으로 변환)
+        ChatMessage readStatusMessage = new ChatMessage();
+        readStatusMessage.setChatRoomId(chatRoom.getId());
+        readStatusMessage.setSenderId(request.getSenderId());
+        readStatusMessage.setRead(false);
+        readStatusMessage.setStatus(ChatRoomStatus.ACTIVE);
+        
         messagingTemplate.convertAndSend(
                 "/sub/chat/room/" + request.getRoomId() + "/read", 
-                Map.of("roomId", request.getRoomId(), "userId", request.getSenderId(), "timestamp", System.currentTimeMillis())
+                readStatusMessage
         );
         
         log.info("읽음 상태 업데이트 완료 및 알림 전송: roomId={}, userId={}", request.getRoomId(), request.getSenderId());

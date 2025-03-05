@@ -1,10 +1,13 @@
 package com.ani.taku_backend.chatroom;
 
+import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.service.ChatAuthorizationService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +28,11 @@ public class StompHandler implements ChannelInterceptor {
     private String secretKey;
     
     private final ChatAuthorizationService chatAuthorizationService;
+    private final ChatRoomRepository chatRoomRepository;
     
-    public StompHandler(ChatAuthorizationService chatAuthorizationService) {
+    public StompHandler(ChatAuthorizationService chatAuthorizationService, ChatRoomRepository chatRoomRepository) {
         this.chatAuthorizationService = chatAuthorizationService;
+        this.chatRoomRepository = chatRoomRepository;
     }
 
     @Override
@@ -71,17 +76,24 @@ public class StompHandler implements ChannelInterceptor {
                 Claims claims = validateToken(token);
                 String email = claims.getSubject();
                 
-                // /sub/chat/room/{roomId} 형식에서 roomId 추출
-                String roomId = destination.split("/")[4];
-                log.info("채팅방 구독 요청 - 사용자: {}, 채팅방: {}", email, roomId);
+                // /sub/chat/room/{wsRoomId} 형식에서 wsRoomId 추출
+                String wsRoomId = destination.split("/")[4];
+                log.info("채팅방 구독 요청 - 사용자: {}, 채팅방 WS ID: {}", email, wsRoomId);
+                
+                // wsRoomId를 통해 실제 채팅방 ID(Long) 조회
+                ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                        .orElseThrow(() -> {
+                            log.error("사용자 {}의 구독 요청 처리 중 채팅방을 찾을 수 없습니다: {}", email, wsRoomId);
+                            return new AuthenticationServiceException("채팅방을 찾을 수 없습니다");
+                        });
                 
                 // 해당 채팅방 참여 권한 확인
-                if (!chatAuthorizationService.isRoomParticipant(email, Long.parseLong(roomId))) {
-                    log.error("사용자 {}는 채팅방 {}에 접근 권한이 없습니다", email, roomId);
+                if (!chatAuthorizationService.isRoomParticipant(email, chatRoom.getId())) {
+                    log.error("사용자 {}는 채팅방 {}에 접근 권한이 없습니다", email, chatRoom.getId());
                     throw new AuthenticationServiceException("해당 채팅방에 접근 권한이 없습니다.");
                 }
                 
-                log.info("채팅방 구독 권한 확인 완료 - 사용자: {}, 채팅방: {}", email, roomId);
+                log.info("채팅방 구독 권한 확인 완료 - 사용자: {}, 채팅방: {}", email, chatRoom.getId());
             }
             
             // DISCONNECT 요청 처리
@@ -111,7 +123,7 @@ public class StompHandler implements ChannelInterceptor {
      */
     private Claims validateToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

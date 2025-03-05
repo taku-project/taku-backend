@@ -1,22 +1,31 @@
 package com.ani.taku_backend.config;
 
 import com.ani.taku_backend.chatroom.StompHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.converter.DefaultContentTypeResolver;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
+    private final ObjectMapper objectMapper;
 
     @Value("${client.prod.front-url}")
     private String prodFrontUrl;
@@ -24,8 +33,9 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${client.dev.front-url}")
     private String devFrontUrl;
 
-    public MessageBrokerConfig(StompHandler stompHandler) {
+    public MessageBrokerConfig(StompHandler stompHandler, ObjectMapper objectMapper) {
         this.stompHandler = stompHandler;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -68,6 +78,23 @@ public class MessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
         registration.setMessageSizeLimit(160 * 64 * 1024)       // 메시지 크기 제한: 약 10MB
                 .setSendTimeLimit(20 * 10000)                  // 메시지 전송 시간 제한: 200초
                 .setSendBufferSizeLimit(3 * 512 * 1024);       // 버퍼 크기 제한: 약 1.5MB
+    }
+
+    /**
+     * WebSocket 메시지에 대한 사용자 정의 메시지 변환기를 구성합니다.
+     * Jackson을 설정하여 JSR310(Java 8 날짜/시간 타입 - LocalDateTime 등)을 처리할 수 있도록 합니다.
+     */
+    @Override
+    public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
+        DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
+        resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
+        
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setObjectMapper(objectMapper);
+        converter.setContentTypeResolver(resolver);
+        messageConverters.add(converter);
+        
+        return false;
     }
 
     /**
