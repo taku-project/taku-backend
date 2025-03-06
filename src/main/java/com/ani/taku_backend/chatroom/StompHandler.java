@@ -74,7 +74,6 @@ public class StompHandler implements ChannelInterceptor {
         String token = extractToken(accessor);
         Claims claims = validateToken(token);
 
-        // 수정: sub 대신 email 클레임 사용 (sub가 없음)
         String userEmail = claims.get("email", String.class);
         Long userId = claims.get("userId", Long.class);
 
