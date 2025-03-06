@@ -24,7 +24,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 @Slf4j
 @RequiredArgsConstructor
-public class StompController {
+public class ChatMessageController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
