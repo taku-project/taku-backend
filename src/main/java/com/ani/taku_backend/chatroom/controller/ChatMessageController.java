@@ -73,7 +73,7 @@ public class ChatMessageController {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(request.roomId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
         
-        // 읽음 상태 변경 알림 전송 (경량화된 DTO 사용)
+        // 읽음 상태 변경 알림 전송
         ChatReadStatusDTO readStatusDTO = ChatReadStatusDTO.of(
                 chatRoom.getId(), 
                 request.senderId()
