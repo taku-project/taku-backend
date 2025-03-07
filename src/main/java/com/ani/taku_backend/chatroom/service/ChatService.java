@@ -8,6 +8,9 @@ import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.user.repository.UserRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,16 +25,19 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
+    private final ChatAuthorizationService chatAuthorizationService;
 
-
-
+    /**
+     * WebSocket을 통해 받은 메시지를 처리하고 저장합니다.
+     */
     @Transactional
-    public void sendMessageByWsRoomId(String wsRoomId, Long senderId, String content) {
-
-        
+    public ChatMessage saveAndProcessMessage(String wsRoomId, Long senderId, String content) {
         // wsRoomId로 ChatRoom 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+        
         if (log.isDebugEnabled()) {
             log.debug("채팅방 조회 완료 - chatRoomId: {}", chatRoom.getId());
         }
@@ -39,6 +45,7 @@ public class ChatService {
         // MongoDB에 메시지 저장
         ChatMessage message = ChatMessage.of(chatRoom.getId(), chatRoom.getArticleId(), senderId, content);
         chatMessageRepository.save(message);
+        
         if (log.isDebugEnabled()) {
             log.debug("메시지 저장 완료 - messageId: {}, read: {}", message.getId(), message.getRead());
         }
@@ -49,6 +56,7 @@ public class ChatService {
         // 채팅방 메타 정보 조회
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+                
         if (log.isDebugEnabled()) {
             log.debug("채팅방 메타 정보 조회 완료 - participants: {}", chatRoomMetaInfo.getParticipants().getInfo());
         }
@@ -68,8 +76,10 @@ public class ChatService {
         });
 
         chatRoomMetaRepository.save(chatRoomMetaInfo);
-
+        
+        return message;
     }
+
 
     private void updateLastMessageId(Long roomId, String messageId) {
         // roomId에 해당하는 ChatRoomMetaInfo 엔티티를 조회
@@ -120,12 +130,24 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
         
-        // 2. 메시지 일괄 업데이트 (벌크 연산)
+        // 2. 메시지 일괄 업데이트
         chatMessageRepository.updateReadStatusForMessages(chatRoom.getId(), userId);
         
-        // 3. 메타 정보 업데이트 (단일 업데이트)
+        // 3. 메타 정보 업데이트
         chatRoomMetaRepository.resetMessageStock(chatRoom.getId(), userId);
 
+    }
+    
+    /**
+     * 채팅 메시지 읽음 상태를 비동기적으로 업데이트합니다.
+     * 데이터베이스 작업을 별도 스레드에서 처리하여 응답 시간을 개선합니다.
+     */
+    @Async
+    @Transactional
+    public void markMessagesAsReadAsync(String wsRoomId, Long userId) {
+        log.debug("비동기 읽음 상태 업데이트 시작: roomId={}, userId={}", wsRoomId, userId);
+        markMessagesAsReadByWsRoomId(wsRoomId, userId);
+        log.debug("비동기 읽음 상태 업데이트 완료: roomId={}, userId={}", wsRoomId, userId);
     }
 
 }

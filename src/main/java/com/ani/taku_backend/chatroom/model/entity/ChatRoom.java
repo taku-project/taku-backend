@@ -53,4 +53,12 @@ public class ChatRoom extends BaseTimeEntity {
     public void deactivate() {
         this.status = ChatRoomStatus.INACTIVE;
     }
+
+    // 테스트 전용 메서드
+    @Builder(builderMethodName = "testBuilder")
+    public ChatRoom(Long articleId, String wsRoomId) {
+        this.wsRoomId = wsRoomId != null ? wsRoomId : UUID.randomUUID().toString();
+        this.articleId = articleId;
+        this.status = ChatRoomStatus.ACTIVE;
+    }
 }

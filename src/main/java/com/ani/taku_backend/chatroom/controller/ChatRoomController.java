@@ -126,24 +126,6 @@ public class ChatRoomController {
     }
 
     /**
-     * 지정된 채팅방에 메세지를 전송합니다.
-     *
-     * @param wsRoomId 채팅방의 WebSocket ID
-     * @param principalUser 현재 인증된 사용자
-     * @param content 전송할 메세지 내용
-     * @return 결과가 없는 응답
-     */
-    @Operation(summary = "채팅 메세지 전송")
-    @PostMapping("/send")
-    public CommonResponse<Void> sendMessage(
-            @RequestParam String wsRoomId,
-            @AuthenticationPrincipal PrincipalUser principalUser,
-            @RequestParam String content) {
-        chatService.sendMessageByWsRoomId(wsRoomId, principalUser.getUserId(), content);
-        return CommonResponse.ok(null);
-    }
-
-    /**
      * 사용자가 채팅방을 나가도록 처리합니다.
      *
      * @param wsRoomId 채팅방의 WebSocket ID
