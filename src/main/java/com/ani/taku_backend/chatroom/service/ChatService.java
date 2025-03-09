@@ -200,4 +200,34 @@ public class ChatService {
         return ChatMessageListResponseDTO.of(responseDTOs, hasMore, oldestMessageId);
     }
 
+    /**
+     * 사용자가 특정 채팅방에 접근할 수 있는 권한이 있는지 검증합니다.
+     *
+     * @param wsRoomId 채팅방 WebSocket ID
+     * @param userId 사용자 ID
+     * @throws DuckwhoException 채팅방이 존재하지 않거나 사용자가 채팅방에 접근할 권한이 없는 경우
+     */
+    @Transactional(readOnly = true)
+    public void validateChatRoomAccess(String wsRoomId, Long userId) {
+        log.debug("채팅방 접근 권한 검증 시작: roomId={}, userId={}", wsRoomId, userId);
+
+        // 1. wsRoomId로 ChatRoom 조회
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 2. 채팅방 메타 정보 조회
+        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 3. 사용자가 채팅방 참가자인지 확인
+        if (!chatRoomMetaInfo.getParticipants().containsUser(userId)) {
+            log.warn("채팅방 접근 권한 없음: roomId={}, userId={}", wsRoomId, userId);
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+
+        log.debug("채팅방 접근 권한 검증 완료: roomId={}, userId={}", wsRoomId, userId);
+    }
+
 }
+
+
