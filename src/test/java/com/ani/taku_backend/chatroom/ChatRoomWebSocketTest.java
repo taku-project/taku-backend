@@ -3,7 +3,7 @@ package com.ani.taku_backend.chatroom;
 import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.model.dto.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.model.dto.request.ChatMessageRequestDTO;
 import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;

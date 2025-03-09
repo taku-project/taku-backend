@@ -39,8 +39,6 @@ public class Participants {
         if (participant != null) {
             participant.disconnected();
         }
-
-
     }
 
     public boolean containsUser(Long userId) {

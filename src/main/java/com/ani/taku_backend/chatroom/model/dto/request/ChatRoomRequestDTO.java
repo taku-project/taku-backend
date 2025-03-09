@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.model.dto;
+package com.ani.taku_backend.chatroom.model.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
