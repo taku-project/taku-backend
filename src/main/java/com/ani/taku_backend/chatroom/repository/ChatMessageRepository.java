@@ -1,9 +1,10 @@
 package com.ani.taku_backend.chatroom.repository;
 
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
-import io.lettuce.core.Limit;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
