@@ -40,6 +40,19 @@ public class ChatAuthorizationService {
             log.debug("사용자 ID 조회 완료 - email: {}, userId: {}", email, userId);
         }
         
+        // userId를 통해 참여 여부 확인
+        return isRoomParticipant(userId, roomId);
+    }
+    
+    /**
+     * 사용자가 특정 채팅방의 참여자인지 확인합니다.
+     * 이메일 대신 userId를 직접 받아 DB 조회 오버헤드를 줄입니다.
+     * 
+     * @param userId 사용자 ID
+     * @param roomId 채팅방 ID
+     * @return 참여자인 경우 true, 아닌 경우 false
+     */
+    public boolean isRoomParticipant(Long userId, Long roomId) {
         // 채팅방 메타 정보 조회
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
