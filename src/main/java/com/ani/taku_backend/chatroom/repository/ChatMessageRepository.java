@@ -1,6 +1,8 @@
 package com.ani.taku_backend.chatroom.repository;
 
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
+import io.lettuce.core.Limit;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -21,4 +23,15 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
     @Update("{ '$set': { 'read': true } }")
     @Query("{ 'chatRoomId': ?0, 'senderId': { $ne: ?1 }, 'read': false }")
     void updateReadStatusForMessages(Long chatRoomId, Long userId);
+
+    // 무한 스크롤을 위한 메소드
+    // 1. 최신 메시지부터 limit 개수만큼 가져오기 (첫 로드)
+    List<ChatMessage> findByChatRoomIdOrderBySentAtDesc(Long chatRoomId, Limit limit);
+
+    // 2. 특정 시간보다 이전 메시지 limit 개수만큼 가져오기 (스크롤 시)
+    List<ChatMessage> findByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
+            Long chatRoomId,
+            LocalDateTime sentAt,
+            Limit limit
+    );
 }
