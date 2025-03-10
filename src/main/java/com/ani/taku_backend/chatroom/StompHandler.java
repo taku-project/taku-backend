@@ -17,7 +17,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
@@ -79,7 +78,7 @@ public class StompHandler implements ChannelInterceptor {
 
         log.info("WebSocket 연결 토큰 검증 완료 - 사용자: {} (ID: {})", userEmail, userId);
 
-        // 세션에 사용자 정보 저장 (향후 메시지 처리 시 사용)
+        // 세션에 사용자 정보 저장 (메시지 처리 시 사용)
         accessor.getSessionAttributes().put("email", userEmail);
         accessor.getSessionAttributes().put("userId", userId);
     }
@@ -96,36 +95,37 @@ public class StompHandler implements ChannelInterceptor {
             return;
         }
 
-        // 세션에서 사용자 정보 가져오기 시도
+        // 세션에서 사용자 ID 가져오기
         Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
-        String email = null;
-        if (sessionAttributes != null && sessionAttributes.containsKey("email")) {
-            email = (String) sessionAttributes.get("email");
-            log.info("세션에서 사용자 정보 가져옴 - 사용자: {}", email);
+        Long userId = null;
+        
+        if (sessionAttributes != null && sessionAttributes.containsKey("userId")) {
+            userId = (Long) sessionAttributes.get("userId");
+            log.info("세션에서 사용자 ID 가져옴 - 사용자 ID: {}", userId);
         }
 
-        // 세션에 사용자 정보가 없으면 토큰에서 가져오기
-        if (email == null) {
-            log.info("세션에 사용자 정보 없음, 토큰에서 정보 가져오기 시도");
+        // 세션에 사용자 ID가 없으면 토큰에서 가져오기
+        if (userId == null) {
+            log.info("세션에 사용자 ID 없음, 토큰에서 정보 가져오기 시도");
             String token = extractToken(accessor);
             Claims claims = validateToken(token);
-            email = claims.get("email", String.class);
+            userId = claims.get("userId", Long.class);
         }
 
         // /sub/chat/room/{wsRoomId} 형식에서 wsRoomId 추출
         String wsRoomId = destination.split("/")[4];
-        log.info("채팅방 구독 요청 - 사용자: {}, 채팅방 WS ID: {}", email, wsRoomId);
+        log.info("채팅방 구독 요청 - 사용자 ID: {}, 채팅방 WS ID: {}", userId, wsRoomId);
 
         // wsRoomId를 통해 실제 채팅방 ID 조회
-        ChatRoom chatRoom = findChatRoomByWsId(wsRoomId, email);
+        ChatRoom chatRoom = findChatRoomByWsId(wsRoomId, userId);
 
-        // 해당 채팅방 참여 권한 확인
-        if (!chatAuthorizationService.isRoomParticipant(email, chatRoom.getId())) {
-            log.error("사용자 {}는 채팅방 {}에 접근 권한이 없습니다", email, chatRoom.getId());
+        // 해당 채팅방 참여 권한 확인 - userId 직접 사용하여 오버헤드 감소
+        if (!chatAuthorizationService.isRoomParticipant(userId, chatRoom.getId())) {
+            log.error("사용자 ID: {}는 채팅방 {}에 접근 권한이 없습니다", userId, chatRoom.getId());
             throw new AuthenticationServiceException("해당 채팅방에 접근 권한이 없습니다.");
         }
 
-        log.info("채팅방 구독 권한 확인 완료 - 사용자: {}, 채팅방: {}", email, chatRoom.getId());
+        log.info("채팅방 구독 권한 확인 완료 - 사용자 ID: {}, 채팅방: {}", userId, chatRoom.getId());
     }
     
     /**
@@ -138,10 +138,10 @@ public class StompHandler implements ChannelInterceptor {
     /**
      * 채팅방 wsRoomId로 ChatRoom 엔티티 조회
      */
-    private ChatRoom findChatRoomByWsId(String wsRoomId, String email) {
+    private ChatRoom findChatRoomByWsId(String wsRoomId, Long userId) {
         return chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> {
-                    log.error("사용자 {}의 구독 요청 처리 중 채팅방을 찾을 수 없습니다: {}", email, wsRoomId);
+                    log.error("사용자 ID: {}의 구독 요청 처리 중 채팅방을 찾을 수 없습니다: {}", userId, wsRoomId);
                     return new AuthenticationServiceException("채팅방을 찾을 수 없습니다");
                 });
     }

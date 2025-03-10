@@ -2,14 +2,17 @@ package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
+import com.ani.taku_backend.chatroom.model.dto.response.ChatMessageListResponseDTO;
+import com.ani.taku_backend.chatroom.model.dto.response.ChatMessageResponseDTO;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import com.ani.taku_backend.user.repository.UserRepository;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.springframework.data.domain.Limit;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +28,6 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final UserRepository userRepository;
-    private final ChatAuthorizationService chatAuthorizationService;
 
     /**
      * WebSocket을 통해 받은 메시지를 처리하고 저장합니다.
@@ -150,4 +150,84 @@ public class ChatService {
         log.debug("비동기 읽음 상태 업데이트 완료: roomId={}, userId={}", wsRoomId, userId);
     }
 
+
+    /**
+     * 채팅방의 메시지 이력을 조회합니다.
+     * 무한 스크롤을 위해 messageId 이전의 메시지를 조회합니다.
+     *
+     * @param wsRoomId 채팅방 ID
+     * @param messageId 기준 메시지 ID (null인 경우 최신 메시지부터 조회)
+     * @param limit 조회할 메시지 개수
+     * @return 메시지 목록과 무한 스크롤 정보
+     */
+    @Transactional(readOnly = true)
+    public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
+        log.info("채팅 메시지 이력 조회 요청: roomId={}, messageId={}, limit={}", wsRoomId, messageId, limit);
+
+        // wsRoomId로 ChatRoom 조회
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        Long chatRoomId = chatRoom.getId();
+        List<ChatMessage> messages;
+
+        // 메시지 조회
+        if (messageId == null || messageId.isBlank()) {
+            // 첫 로드: 최신 메시지부터 limit 개수만큼 조회
+            messages = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(chatRoomId, Limit.of(limit));
+            log.debug("첫 메시지 로드: {} 개 조회됨", messages.size());
+        } else {
+            // 스크롤: messageId보다 이전 메시지 조회
+            Optional<ChatMessage> referenceMessage = chatMessageRepository.findById(messageId);
+
+            if (referenceMessage.isEmpty()) {
+                throw new DuckwhoException(ErrorCode.CHAT_MESSAGE_NOT_FOUND);
+            }
+
+            LocalDateTime referenceSentAt = referenceMessage.get().getSentAt();
+            messages = chatMessageRepository.findByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
+                    chatRoomId, referenceSentAt, Limit.of(limit));
+            log.debug("스크롤 메시지 로드: {} 개 조회됨", messages.size());
+        }
+
+        // 응답 구성
+        boolean hasMore = messages.size() >= limit;
+        String oldestMessageId = messages.isEmpty() ? null : messages.get(messages.size() - 1).getId();
+
+        List<ChatMessageResponseDTO> responseDTOs = ChatMessageResponseDTO.listFrom(messages);
+
+        log.info("채팅 메시지 이력 조회 완료: count={}, hasMore={}", responseDTOs.size(), hasMore);
+        return ChatMessageListResponseDTO.of(responseDTOs, hasMore, oldestMessageId);
+    }
+
+    /**
+     * 사용자가 특정 채팅방에 접근할 수 있는 권한이 있는지 검증합니다.
+     *
+     * @param wsRoomId 채팅방 WebSocket ID
+     * @param userId 사용자 ID
+     * @throws DuckwhoException 채팅방이 존재하지 않거나 사용자가 채팅방에 접근할 권한이 없는 경우
+     */
+    @Transactional(readOnly = true)
+    public void validateChatRoomAccess(String wsRoomId, Long userId) {
+        log.debug("채팅방 접근 권한 검증 시작: roomId={}, userId={}", wsRoomId, userId);
+
+        // 1. wsRoomId로 ChatRoom 조회
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 2. 채팅방 메타 정보 조회
+        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 3. 사용자가 채팅방 참가자인지 확인
+        if (!chatRoomMetaInfo.getParticipants().containsUser(userId)) {
+            log.warn("채팅방 접근 권한 없음: roomId={}, userId={}", wsRoomId, userId);
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+
+        log.debug("채팅방 접근 권한 검증 완료: roomId={}, userId={}", wsRoomId, userId);
+    }
+
 }
+
+

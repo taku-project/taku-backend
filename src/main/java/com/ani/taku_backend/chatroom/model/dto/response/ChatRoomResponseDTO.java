@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.model.dto;
+package com.ani.taku_backend.chatroom.model.dto.response;
 
 import com.ani.taku_backend.chatroom.model.document.ChatMessage;
 import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
