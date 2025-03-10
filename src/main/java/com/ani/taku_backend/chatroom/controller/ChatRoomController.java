@@ -97,22 +97,6 @@ public class ChatRoomController {
     }
 
     /**
-     * 특정 채팅방의 안 읽은 메세지 개수를 반환합니다.
-     *
-     * @param wsRoomId 채팅방의 WebSocket ID
-     * @param principalUser 현재 인증된 사용자
-     * @return 안 읽은 메세지 개수
-     */
-    @Operation(summary = "채팅방 별 안 읽은 메세지 갯수 반환")
-    @GetMapping("/{wsRoomId}/unread")
-    public CommonResponse<Integer> getChatRoomUnreadCount(
-            @PathVariable String wsRoomId,
-            @AuthenticationPrincipal PrincipalUser principalUser) {
-        Integer unreadCount = chatRoomService.getChatRoomUnreadCount(wsRoomId, principalUser.getUserId());
-        return CommonResponse.ok(unreadCount);
-    }
-
-    /**
      * 모든 채팅방의 총 안 읽은 메세지 개수를 반환합니다.
      *
      * @param principalUser 현재 인증된 사용자
