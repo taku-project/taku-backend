@@ -77,7 +77,7 @@ public class ChatRoomService {
         // 실제 판매자 ID 사용
         metaInfo.initializeParticipants(requestDto.buyerId(), sellerId);
         chatroomMetaRepository.save(metaInfo);
-
+        
         // 사용자 정보 조회
         User buyer = userRepository.findById(requestDto.buyerId()).orElse(null);
         User seller = userRepository.findById(sellerId).orElse(null);
@@ -96,7 +96,8 @@ public class ChatRoomService {
                 buyerProfileImage,
                 sellerNickname,
                 sellerProfileImage,
-                null
+                null,
+                0  // 새로 생성된 채팅방에는 안읽은 메시지가 없음
         );
     }
 
@@ -153,6 +154,18 @@ public class ChatRoomService {
             lastMessage.ifPresent(message -> lastMessageMap.put(chatRoomId, message));
         }
 
+        // 각 채팅방의 안읽은 메시지 개수는 ParticipantInfo의 messageStock을 사용
+        Map<Long, Integer> unreadCountMap = new HashMap<>();
+        for (Long chatRoomId : chatRoomIds) {
+            ChatRoomMetaInfo metaInfo = chatRoomMetaInfoMap.get(chatRoomId);
+            if (metaInfo != null && metaInfo.getParticipants() != null) {
+                ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId);
+                unreadCountMap.put(chatRoomId, participantInfo != null ? participantInfo.getMessageStock() : 0);
+            } else {
+                unreadCountMap.put(chatRoomId, 0);
+            }
+        }
+
         return userChatRooms.stream()
                 .map(chatRoom -> {
                     ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoMap.get(chatRoom.getId());
@@ -186,6 +199,9 @@ public class ChatRoomService {
                     // 마지막 메시지 가져오기
                     ChatMessage lastMessage = lastMessageMap.get(chatRoom.getId());
 
+                    // 안읽은 메시지 개수 가져오기
+                    Integer unreadCount = unreadCountMap.get(chatRoom.getId());
+
                     return ChatRoomResponseDTO.of(
                             chatRoom,
                             buyerId,
@@ -194,7 +210,8 @@ public class ChatRoomService {
                             buyerProfileImage,
                             sellerNickname,
                             sellerProfileImage,
-                            lastMessage
+                            lastMessage,
+                            unreadCount
                     );
                 })
                 .filter(Objects::nonNull)
@@ -265,6 +282,10 @@ public class ChatRoomService {
         Optional<ChatMessage> lastMessage = chatMessageRepository
                 .findTopByChatRoomIdOrderBySentAtDesc(chatRoom.getId());
 
+        // 안읽은 메시지 개수는 ParticipantInfo의 messageStock을 사용
+        ParticipantInfo participantInfo = participants.getInfo().get(userId);
+        Integer unreadCount = participantInfo != null ? participantInfo.getMessageStock() : 0;
+
         return ChatRoomResponseDTO.of(
                 chatRoom,
                 buyerId,
@@ -273,7 +294,8 @@ public class ChatRoomService {
                 buyerProfileImage,
                 sellerNickname,
                 sellerProfileImage,
-                lastMessage.orElse(null)
+                lastMessage.orElse(null),
+                unreadCount
         );
     }
 
@@ -302,7 +324,6 @@ public class ChatRoomService {
 
         ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId);
         if (participantInfo == null) {
-            // 참여자 정보가 없더라도 채팅방 참여자라면 0을 반환
             return 0;
         }
 
