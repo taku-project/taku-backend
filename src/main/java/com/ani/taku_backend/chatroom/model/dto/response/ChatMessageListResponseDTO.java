@@ -4,18 +4,15 @@ import java.util.List;
 
 public record ChatMessageListResponseDTO(
         List<ChatMessageResponseDTO> messages,
-        boolean hasMore,
-        String oldestMessageId
+        boolean hasMore
 ) {
     public static ChatMessageListResponseDTO of(
             List<ChatMessageResponseDTO> messages,
-            boolean hasMore,
-            String oldestMessageId
+            boolean hasMore
     ) {
         return new ChatMessageListResponseDTO(
                 messages,
-                hasMore,
-                oldestMessageId
+                hasMore
         );
     }
 }

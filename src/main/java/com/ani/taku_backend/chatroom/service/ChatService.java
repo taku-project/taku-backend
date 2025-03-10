@@ -35,71 +35,25 @@ public class ChatService {
      */
     @Transactional
     public ChatMessage saveAndProcessMessage(String wsRoomId, Long senderId, String content) {
-        // wsRoomId로 ChatRoom 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-        
-        if (log.isDebugEnabled()) {
-            log.debug("채팅방 조회 완료 - chatRoomId: {}", chatRoom.getId());
-        }
 
-        // MongoDB에 메시지 저장
         ChatMessage message = ChatMessage.of(chatRoom.getId(), chatRoom.getArticleId(), senderId, content);
         chatMessageRepository.save(message);
-        
-        if (log.isDebugEnabled()) {
-            log.debug("메시지 저장 완료 - messageId: {}, read: {}", message.getId(), message.getRead());
-        }
-        
-        // 메타 정보 업데이트
-        updateLastMessageId(chatRoom.getId(), message.getId());
 
-        // 채팅방 메타 정보 조회
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-                
-        if (log.isDebugEnabled()) {
-            log.debug("채팅방 메타 정보 조회 완료 - participants: {}", chatRoomMetaInfo.getParticipants().getInfo());
-        }
 
-        // 상대방의 메시지 스톡 증가
+        chatRoomMetaInfo.setLastMessageId(message.getId());
         chatRoomMetaInfo.getParticipants().getInfo().forEach((userId, participantInfo) -> {
-            if (log.isDebugEnabled()) {
-                log.debug("참가자 정보 처리 - userId: {}, role: {}, currentStock: {}, isConnected: {}", 
-                        userId, participantInfo.getRole(), participantInfo.getMessageStock(), participantInfo.getIsConnected());
-            }
             if (!userId.equals(senderId)) {
                 participantInfo.plusMessage();
-                if (log.isDebugEnabled()) {
-                    log.debug("메시지 스톡 증가 - userId: {}, newStock: {}", userId, participantInfo.getMessageStock());
-                }
             }
         });
 
         chatRoomMetaRepository.save(chatRoomMetaInfo);
-        
         return message;
     }
-
-
-    private void updateLastMessageId(Long roomId, String messageId) {
-        // roomId에 해당하는 ChatRoomMetaInfo 엔티티를 조회
-        Optional<ChatRoomMetaInfo> chatRoomMetaInfoOpt = chatRoomMetaRepository.findByChatRoomId(roomId);
-
-        if (chatRoomMetaInfoOpt.isPresent()) {
-            ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoOpt.get();
-
-            // 마지막 메시지 ID를 새로 작성된 메시지의 ID로 업데이트
-            chatRoomMetaInfo.setLastMessageId(messageId);
-
-            // 갱신된 데이터를 DB에 저장
-            chatRoomMetaRepository.save(chatRoomMetaInfo);
-        } else {
-            // 해당 roomId에 해당하는 채팅방이 존재하지 않으면 예외 처리
-            throw new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND);
-        }
-    }
-
 
     @Transactional
     public void leaveRoomByWsRoomId(String wsRoomId, Long userId) {
@@ -163,7 +117,6 @@ public class ChatService {
      */
     @Transactional(readOnly = true)
     public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
-        log.info("채팅 메시지 이력 조회 요청: roomId={}, messageId={}, limit={}", wsRoomId, messageId, limit);
 
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
@@ -174,11 +127,8 @@ public class ChatService {
         int queryLimit = limit + 1;
 
         if (messageId == null || messageId.isBlank()) {
-
             messages = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(chatRoomId, Limit.of(queryLimit));
-            log.debug("첫 메시지 로드: {} 개 조회됨", messages.size());
         } else {
-
             Optional<ChatMessage> referenceMessage = chatMessageRepository.findById(messageId);
 
             if (referenceMessage.isEmpty()) {
@@ -188,7 +138,6 @@ public class ChatService {
             LocalDateTime referenceSentAt = referenceMessage.get().getSentAt();
             messages = chatMessageRepository.findByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
                     chatRoomId, referenceSentAt, Limit.of(queryLimit));
-            log.debug("스크롤 메시지 로드: {} 개 조회됨", messages.size());
         }
 
         boolean hasMore = messages.size() > limit;
@@ -199,12 +148,9 @@ public class ChatService {
 
         Collections.reverse(messages);
 
-        String oldestMessageId = messages.isEmpty() ? null : messages.get(0).getId();
-
         List<ChatMessageResponseDTO> responseDTOs = ChatMessageResponseDTO.listFrom(messages);
 
-        log.info("채팅 메시지 이력 조회 완료: count={}, hasMore={}", responseDTOs.size(), hasMore);
-        return ChatMessageListResponseDTO.of(responseDTOs, hasMore, oldestMessageId);
+        return ChatMessageListResponseDTO.of(responseDTOs, hasMore);
     }
 
     /**
@@ -216,23 +162,15 @@ public class ChatService {
      */
     @Transactional(readOnly = true)
     public void validateChatRoomAccess(String wsRoomId, Long userId) {
-        log.debug("채팅방 접근 권한 검증 시작: roomId={}, userId={}", wsRoomId, userId);
-
-        // 1. wsRoomId로 ChatRoom 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 2. 채팅방 메타 정보 조회
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 3. 사용자가 채팅방 참가자인지 확인
         if (!chatRoomMetaInfo.getParticipants().containsUser(userId)) {
-            log.warn("채팅방 접근 권한 없음: roomId={}, userId={}", wsRoomId, userId);
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
-
-        log.debug("채팅방 접근 권한 검증 완료: roomId={}, userId={}", wsRoomId, userId);
     }
 
 }
