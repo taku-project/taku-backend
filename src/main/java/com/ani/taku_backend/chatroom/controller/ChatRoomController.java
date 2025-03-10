@@ -97,20 +97,6 @@ public class ChatRoomController {
     }
 
     /**
-     * 모든 채팅방의 총 안 읽은 메세지 개수를 반환합니다.
-     *
-     * @param principalUser 현재 인증된 사용자
-     * @return 총 안 읽은 메세지 개수
-     */
-    @Operation(summary = "총 안 읽음 메세지 갯수 반환")
-    @GetMapping("/unread/total")
-    public CommonResponse<Integer> getTotalUnreadCount(
-            @AuthenticationPrincipal PrincipalUser principalUser) {
-        Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(principalUser.getUserId());
-        return CommonResponse.ok(totalUnreadCount);
-    }
-
-    /**
      * 사용자가 채팅방을 나가도록 처리합니다.
      *
      * @param wsRoomId 채팅방의 WebSocket ID

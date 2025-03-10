@@ -299,37 +299,6 @@ public class ChatRoomService {
         );
     }
 
-    public Integer getChatRoomUnreadCount(String roomId, Long userId) {
-        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        ChatRoomMetaInfo metaInfo = chatroomMetaRepository.findByChatRoomId(chatRoom.getId())
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        Participants participants = metaInfo.getParticipants();
-        boolean isParticipant = false;
-
-        // participants 정보를 통해 사용자가 구매자나 판매자인지 확인
-        for (Long key : participants.getInfo().keySet()) {
-            ParticipantInfo participant = participants.getInfo().get(key);
-            if (participant.getUserId().equals(userId)) {
-                isParticipant = true;
-                break;
-            }
-        }
-
-        if (!isParticipant) {
-            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
-        ParticipantInfo participantInfo = metaInfo.getParticipants().getInfo().get(userId);
-        if (participantInfo == null) {
-            return 0;
-        }
-
-        return participantInfo.getMessageStock();
-    }
-
     public Integer getTotalUnreadCount(Long userId) {
         List<ChatRoomMetaInfo> userChatrooms = chatroomMetaRepository
                 .findByParticipantIdOrderByUpdateAtDesc(userId.toString());

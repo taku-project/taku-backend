@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Optional;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -164,20 +165,20 @@ public class ChatService {
     public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
         log.info("채팅 메시지 이력 조회 요청: roomId={}, messageId={}, limit={}", wsRoomId, messageId, limit);
 
-        // wsRoomId로 ChatRoom 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
         Long chatRoomId = chatRoom.getId();
         List<ChatMessage> messages;
 
-        // 메시지 조회
+        int queryLimit = limit + 1;
+
         if (messageId == null || messageId.isBlank()) {
-            // 첫 로드: 최신 메시지부터 limit 개수만큼 조회
-            messages = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(chatRoomId, Limit.of(limit));
+
+            messages = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(chatRoomId, Limit.of(queryLimit));
             log.debug("첫 메시지 로드: {} 개 조회됨", messages.size());
         } else {
-            // 스크롤: messageId보다 이전 메시지 조회
+
             Optional<ChatMessage> referenceMessage = chatMessageRepository.findById(messageId);
 
             if (referenceMessage.isEmpty()) {
@@ -186,13 +187,19 @@ public class ChatService {
 
             LocalDateTime referenceSentAt = referenceMessage.get().getSentAt();
             messages = chatMessageRepository.findByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
-                    chatRoomId, referenceSentAt, Limit.of(limit));
+                    chatRoomId, referenceSentAt, Limit.of(queryLimit));
             log.debug("스크롤 메시지 로드: {} 개 조회됨", messages.size());
         }
 
-        // 응답 구성
-        boolean hasMore = messages.size() >= limit;
-        String oldestMessageId = messages.isEmpty() ? null : messages.get(messages.size() - 1).getId();
+        boolean hasMore = messages.size() > limit;
+
+        if (hasMore) {
+            messages = messages.subList(0, limit);
+        }
+
+        Collections.reverse(messages);
+
+        String oldestMessageId = messages.isEmpty() ? null : messages.get(0).getId();
 
         List<ChatMessageResponseDTO> responseDTOs = ChatMessageResponseDTO.listFrom(messages);
 
