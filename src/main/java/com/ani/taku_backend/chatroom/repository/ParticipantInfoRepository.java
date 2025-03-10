@@ -8,5 +8,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ParticipantInfoRepository extends MongoRepository<ParticipantInfo, Long> {
     ParticipantInfo findByRole(ParticipantRole role);
-
 }

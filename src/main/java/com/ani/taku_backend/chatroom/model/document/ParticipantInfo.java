@@ -11,6 +11,11 @@ import java.time.Instant;
  */
 @Getter
 public class ParticipantInfo {
+    /**
+     * 메시지 스톡의 초기값 및 리셋 값입니다.
+     */
+    private static final Integer INITIAL_MESSAGE_STOCK = 0;
+    
     private Long userId;
 
     private ParticipantRole role;
@@ -18,6 +23,7 @@ public class ParticipantInfo {
     private Boolean isConnected;
     private Integer messageStock;
     private Instant lastDisconnectedAt;
+
 
     public ParticipantInfo() {
     }
@@ -27,7 +33,7 @@ public class ParticipantInfo {
         this.role = role;
         this.isConnected = true;
         this.lastDisconnectedAt = Instant.now();
-        this.messageStock = 0;
+        this.messageStock = INITIAL_MESSAGE_STOCK;
     }
 
     public void plusMessage() {
@@ -35,7 +41,7 @@ public class ParticipantInfo {
     }
 
     public void resetMessageStock() {
-        this.messageStock = 0;
+        this.messageStock = INITIAL_MESSAGE_STOCK;
     }
 
     public void disconnected() {

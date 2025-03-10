@@ -37,27 +37,55 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        // 모든 경로에 대한 CORS 설정 (WebSocket 포함)
         registry.addMapping("/**")
-                .allowedOrigins(prodFrontUrl)
-                .allowedOrigins(devFrontUrl)
+                .allowedOriginPatterns("*")  // 개발 환경에서는 모든 오리진 허용
                 .allowedMethods(
                         HttpMethod.GET.name(),
                         HttpMethod.POST.name(),
                         HttpMethod.PUT.name(),
-                        HttpMethod.DELETE.name()
+                        HttpMethod.DELETE.name(),
+                        HttpMethod.OPTIONS.name()
                 )
                 .exposedHeaders("location")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
 
+        // WebSocket 경로에 대한 추가 CORS 설정
         registry.addMapping("/ws/**")
-                .allowedOrigins(prodFrontUrl)
+                .allowedOriginPatterns("*")  // 개발 환경에서는 모든 오리진 허용
                 .allowedMethods(
                         HttpMethod.GET.name(),
-                        HttpMethod.POST.name()
+                        HttpMethod.POST.name(),
+                        HttpMethod.OPTIONS.name()
                 )
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
+
+        // STOMP 관련 경로에 대한 CORS 설정
+        registry.addMapping("/pub/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods(
+                        HttpMethod.GET.name(),
+                        HttpMethod.POST.name(),
+                        HttpMethod.OPTIONS.name()
+                )
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+
+        registry.addMapping("/sub/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods(
+                        HttpMethod.GET.name(),
+                        HttpMethod.POST.name(),
+                        HttpMethod.OPTIONS.name()
+                )
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 
     @Override
@@ -65,6 +93,4 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loggingInterceptor)
                 .addPathPatterns("/**"); // 모든 요청에 대해 인터셉터 적용
     }
-
-
 }

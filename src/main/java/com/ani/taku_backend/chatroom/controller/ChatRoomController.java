@@ -1,7 +1,8 @@
 package com.ani.taku_backend.chatroom.controller;
 
-import com.ani.taku_backend.chatroom.model.dto.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.model.dto.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.model.dto.request.ChatRoomRequestDTO;
+import com.ani.taku_backend.chatroom.model.dto.response.ChatMessageListResponseDTO;
+import com.ani.taku_backend.chatroom.model.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.service.ChatRoomService;
 import com.ani.taku_backend.chatroom.service.ChatService;
 import com.ani.taku_backend.common.response.CommonResponse;
@@ -126,24 +127,6 @@ public class ChatRoomController {
     }
 
     /**
-     * 지정된 채팅방에 메세지를 전송합니다.
-     *
-     * @param wsRoomId 채팅방의 WebSocket ID
-     * @param principalUser 현재 인증된 사용자
-     * @param content 전송할 메세지 내용
-     * @return 결과가 없는 응답
-     */
-    @Operation(summary = "채팅 메세지 전송")
-    @PostMapping("/send")
-    public CommonResponse<Void> sendMessage(
-            @RequestParam String wsRoomId,
-            @AuthenticationPrincipal PrincipalUser principalUser,
-            @RequestParam String content) {
-        chatService.sendMessageByWsRoomId(wsRoomId, principalUser.getUserId(), content);
-        return CommonResponse.ok(null);
-    }
-
-    /**
      * 사용자가 채팅방을 나가도록 처리합니다.
      *
      * @param wsRoomId 채팅방의 WebSocket ID
@@ -173,5 +156,44 @@ public class ChatRoomController {
             @AuthenticationPrincipal PrincipalUser principalUser) {
         chatService.markMessagesAsReadByWsRoomId(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(null);
+    }
+
+    /**
+     * 특정 채팅방의 메시지 이력을 조회합니다.
+     * 무한 스크롤을 위한 파라미터를 지원합니다.
+     *
+     * @param wsRoomId 채팅방의 WebSocket ID
+     * @param messageId 이 메시지 ID보다 이전 메시지를 조회 (첫 로드 시 null)
+     * @param limit 조회할 메시지 개수 (기본값: 30)
+     * @param principalUser 현재 인증된 사용자
+     * @return 메시지 목록과 무한 스크롤 정보
+     */
+    @Operation(summary = "채팅방 메시지 이력 조회", description = "무한 스크롤을 위한 API입니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "메시지 조회 성공",
+                    content = @Content(schema = @Schema(implementation = ChatMessageListResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 채팅방",
+                    content = @Content(schema = @Schema(implementation = ErrorCode.class))
+            )
+    })
+    @GetMapping("/{wsRoomId}/messages")
+    public CommonResponse<ChatMessageListResponseDTO> getChatMessages(
+            @PathVariable String wsRoomId,
+            @RequestParam(required = false) String messageId,
+            @RequestParam(defaultValue = "30") int limit,
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+
+        // 권한 검사 (사용자가 해당 채팅방에 접근 권한이 있는지 확인)
+        chatService.validateChatRoomAccess(wsRoomId, principalUser.getUserId());
+
+        // 메시지 이력 조회
+        ChatMessageListResponseDTO messages = chatService.getChatMessages(wsRoomId, messageId, limit);
+
+        return CommonResponse.ok(messages);
     }
 }
