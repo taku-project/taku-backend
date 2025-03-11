@@ -30,6 +30,6 @@ public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo
      * @param userId 사용자 ID
      * @return 활성 상태인 채팅방 메타 정보 목록
      */
-    @Query("{ 'participants.info." + "#{#userId}" + ".isConnected': true }")
+    @Query("{ 'participants.info.?0.isConnected': true }")
     List<ChatRoomMetaInfo> findActiveByParticipantsUserId(String userId);
 }

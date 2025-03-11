@@ -110,30 +110,41 @@ public class ChatRoomService {
         // 성능 로깅 시작
         long startTime = System.currentTimeMillis();
         
-        // [최적화] 활성 상태인 채팅방 메타 정보만 직접 조회
-        List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = chatroomMetaRepository
-                .findActiveByParticipantsUserId(userId.toString());
+        // 사용자가 참여한 채팅방 메타 정보 조회 (원래 로직으로 복원)
+        List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatroomMetaRepository
+                .findByParticipantsUserId(userId);
         
-        log.debug("활성 채팅방 메타 정보 조회 소요 시간: {}ms", System.currentTimeMillis() - startTime);
+        log.debug("채팅방 메타 정보 조회 소요 시간: {}ms", System.currentTimeMillis() - startTime);
         long stepTime = System.currentTimeMillis();
 
-        if (connectedChatRoomMetaInfos.isEmpty()) {
-            return Collections.emptyList();
+        if (userChatRoomMetaInfos.isEmpty()) {
+            return null; // 원래 로직대로 null 반환
         }
+
+        // 연결된 채팅방 필터링 - 메모리 내에서 처리
+        List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
+                .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
+                        .anyMatch(participant -> participant.getIsConnected() != null
+                                && participant.getIsConnected()))
+                .collect(Collectors.toList());
 
         // chatRoomIds 추출
         List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
                 .map(ChatRoomMetaInfo::getChatRoomId)
                 .collect(Collectors.toList());
 
-        // ChatRoom 정보 조회
+        if (chatRoomIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // ChatRoom 정보 조회 (최적화된 메서드 사용)
         List<ChatRoom> userChatRooms = chatRoomRepository
                 .findByIdInAndStatusOptimized(chatRoomIds, ChatRoomStatus.ACTIVE);
         
         log.debug("채팅방 정보 조회 소요 시간: {}ms", System.currentTimeMillis() - stepTime);
         stepTime = System.currentTimeMillis();
 
-        // 메타 정보 Map으로 변환 - 메모리 내 처리
+        // 메타 정보 Map으로 변환
         Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = connectedChatRoomMetaInfos.stream()
                 .collect(Collectors.toMap(
                         ChatRoomMetaInfo::getChatRoomId,
@@ -141,7 +152,7 @@ public class ChatRoomService {
                         (existing, replacement) -> existing  // 중복 키 처리
                 ));
 
-        // 모든 참여자 ID 수집 - 메모리 내 처리
+        // 모든 참여자 ID 수집
         List<Long> participantIds = connectedChatRoomMetaInfos.stream()
                 .flatMap(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
                         .map(ParticipantInfo::getUserId))
@@ -176,7 +187,7 @@ public class ChatRoomService {
             }
         }
 
-        // 안읽은 메시지 개수 맵 생성 - 메모리 내 처리
+        // 안읽은 메시지 개수 맵 생성
         Map<Long, Integer> unreadCountMap = new HashMap<>();
         for (Long chatRoomId : chatRoomIds) {
             ChatRoomMetaInfo metaInfo = chatRoomMetaInfoMap.get(chatRoomId);
@@ -208,7 +219,7 @@ public class ChatRoomService {
             }
         }
 
-        // 채팅방 DTO 매핑 및 반환 - 메모리 내 처리
+        // 채팅방 DTO 매핑 및 반환
         List<ChatRoomResponseDTO> result = userChatRooms.stream()
                 .map(chatRoom -> {
                     ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoMap.get(chatRoom.getId());
