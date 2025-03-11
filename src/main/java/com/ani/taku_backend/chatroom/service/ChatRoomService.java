@@ -254,6 +254,10 @@ public class ChatRoomService {
         String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
         String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
 
+        // 구매자와 판매자의 프로필 이미지 URL 가져오기
+        String buyerProfileImageUrl = buyer != null ? buyer.getProfileImg() : null;
+        String sellerProfileImageUrl = seller != null ? seller.getProfileImg() : null;
+
         // 마지막 메시지 조회
         Optional<ChatMessage> lastMessage = chatMessageRepository
                 .findTopByChatRoomIdOrderBySentAtDesc(chatRoom.getId());
@@ -273,7 +277,9 @@ public class ChatRoomService {
                 sellerNickname,
                 lastMessage.orElse(null),
                 unreadCount,
-                articleThumbnailUrl
+                articleThumbnailUrl,
+                buyerProfileImageUrl,
+                sellerProfileImageUrl
         );
     }
 

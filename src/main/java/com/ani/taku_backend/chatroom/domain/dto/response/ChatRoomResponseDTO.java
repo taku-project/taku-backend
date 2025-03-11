@@ -19,7 +19,9 @@ public record ChatRoomResponseDTO(
         String lastMessageTime,
         Long lastMessageSenderId,
         Integer unreadCount,
-        String articleThumbnailUrl
+        String articleThumbnailUrl,
+        String buyerProfileImageUrl,
+        String sellerProfileImageUrl
 ) {
 
     public static ChatRoomResponseDTO of(
@@ -47,7 +49,42 @@ public record ChatRoomResponseDTO(
                 ChatDateTimeFormatter.formatMessageTime(messageTime),
                 lastMessage != null ? lastMessage.getSenderId() : null,
                 unreadCount,
-                articleThumbnailUrl
+                articleThumbnailUrl,
+                null,  // 구매자 프로필 이미지
+                null   //  판매자 프로필 이미지
+        );
+    }
+    
+    public static ChatRoomResponseDTO of(
+            ChatRoom chatRoom,
+            Long buyerId,
+            Long sellerId,
+            String buyerNickname,
+            String sellerNickname,
+            ChatMessage lastMessage,
+            Integer unreadCount,
+            String articleThumbnailUrl,
+            String buyerProfileImageUrl,
+            String sellerProfileImageUrl
+    ) {
+        LocalDateTime messageTime = lastMessage != null ? lastMessage.getSentAt() : null;
+
+        return new ChatRoomResponseDTO(
+                chatRoom.getId(),
+                chatRoom.getWsRoomId(),
+                chatRoom.getArticleId(),
+                buyerId,
+                sellerId,
+                chatRoom.getCreatedAt(),
+                buyerNickname,
+                sellerNickname,
+                lastMessage != null ? lastMessage.getContent() : null,
+                ChatDateTimeFormatter.formatMessageTime(messageTime),
+                lastMessage != null ? lastMessage.getSenderId() : null,
+                unreadCount,
+                articleThumbnailUrl,
+                buyerProfileImageUrl,
+                sellerProfileImageUrl
         );
     }
 }
