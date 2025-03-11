@@ -125,6 +125,7 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
     }
 
+    //TODO 여기도 매퍼 만든거룰 쓸 수 있을듯
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
         // 1. 활성 채팅방 메타 정보 조회
