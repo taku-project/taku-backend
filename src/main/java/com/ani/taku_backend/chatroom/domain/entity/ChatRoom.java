@@ -1,6 +1,6 @@
-package com.ani.taku_backend.chatroom.model.entity;
+package com.ani.taku_backend.chatroom.domain.entity;
 
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

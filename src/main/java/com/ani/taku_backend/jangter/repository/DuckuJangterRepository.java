@@ -78,13 +78,13 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
     Optional<DuckuJangter> findWithDetailsById(Long id);
 
     /**
-     * 상품 ID 목록을 기반으로 상품 ID와 첫 번째 이미지 URL만 조회
+     * 상품 ID 목록으로 상품 이미지 정보를 조회합니다.
+     * 각 상품의 첫 번째 이미지만 반환합니다.
      * 
      * @param productIds 상품 ID 목록
-     * @return 상품 ID와 이미지 URL 정보를 담은 DTO 목록
+     * @return 상품 ID와 이미지 URL 정보의 목록
      */
-    @Query("SELECT new com.ani.taku_backend.jangter.model.dto.ProductImageDTO(d.id, " +
-           "(SELECT ji.image.imageUrl FROM JangterImages ji WHERE ji.duckuJangter.id = d.id ORDER BY ji.id ASC LIMIT 1)) " +
-           "FROM DuckuJangter d WHERE d.id IN :productIds")
+    @Query("SELECT new com.ani.taku_backend.jangter.model.dto.ProductImageDTO(j.id, COALESCE((SELECT ji.image.imageUrl FROM JangterImage ji WHERE ji.duckuJangter.id = j.id ORDER BY ji.orderIndex ASC LIMIT 1), null)) " +
+           "FROM DuckuJangter j WHERE j.id IN :productIds")
     List<ProductImageDTO> findProductImagesById(@Param("productIds") List<Long> productIds);
 }

@@ -1,6 +1,6 @@
-package com.ani.taku_backend.chatroom.repository;
+package com.ani.taku_backend.chatroom.domain.repository;
 
-import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;

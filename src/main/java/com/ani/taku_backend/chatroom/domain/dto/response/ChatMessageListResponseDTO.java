@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.model.dto.response;
+package com.ani.taku_backend.chatroom.domain.dto.response;
 
 import java.util.List;
 

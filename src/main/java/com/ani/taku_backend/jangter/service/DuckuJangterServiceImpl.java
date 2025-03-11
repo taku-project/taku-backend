@@ -24,7 +24,6 @@ import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestD
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;

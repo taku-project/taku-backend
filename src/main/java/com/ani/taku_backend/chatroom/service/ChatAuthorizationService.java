@@ -1,10 +1,9 @@
 package com.ani.taku_backend.chatroom.service;
 
-import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
+import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,10 +1,10 @@
 package com.ani.taku_backend.chatroom.controller;
 
-import com.ani.taku_backend.chatroom.model.document.ChatMessage;
-import com.ani.taku_backend.chatroom.model.dto.request.ChatMessageRequestDTO;
-import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
+import com.ani.taku_backend.chatroom.domain.dto.request.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.domain.dto.ChatReadStatusDTO;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.chatroom.service.ChatService;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;

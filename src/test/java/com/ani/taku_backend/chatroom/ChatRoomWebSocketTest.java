@@ -1,13 +1,13 @@
 package com.ani.taku_backend.chatroom;
 
-import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
-import com.ani.taku_backend.chatroom.model.document.ChatMessage;
-import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.model.dto.request.ChatMessageRequestDTO;
-import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
-import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.constant.ParticipantRole;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
+import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.domain.dto.request.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.domain.dto.ChatReadStatusDTO;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.enums.ProviderType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.entity.User;

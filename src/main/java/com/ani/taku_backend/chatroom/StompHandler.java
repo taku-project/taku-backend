@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom;
 
-import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.service.ChatAuthorizationService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

@@ -1,7 +1,7 @@
-package com.ani.taku_backend.chatroom.repository;
+package com.ani.taku_backend.chatroom.domain.repository;
 
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

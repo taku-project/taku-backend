@@ -1,6 +1,6 @@
-package com.ani.taku_backend.chatroom.model.document;
+package com.ani.taku_backend.chatroom.domain.document;
 
-import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
+import com.ani.taku_backend.chatroom.domain.constant.ParticipantRole;
 import lombok.Getter;
 import org.springframework.data.repository.query.Param;
 import java.time.Instant;

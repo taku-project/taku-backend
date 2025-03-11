@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.model.constant;
+package com.ani.taku_backend.chatroom.domain.constant;
 
 
 public enum ChatRoomStatus {

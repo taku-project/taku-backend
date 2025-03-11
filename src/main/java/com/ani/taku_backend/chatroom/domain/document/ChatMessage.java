@@ -1,6 +1,6 @@
-package com.ani.taku_backend.chatroom.model.document;
+package com.ani.taku_backend.chatroom.domain.document;
 
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

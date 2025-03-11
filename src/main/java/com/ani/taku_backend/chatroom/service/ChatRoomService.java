@@ -1,19 +1,20 @@
 package com.ani.taku_backend.chatroom.service;
 
-import com.ani.taku_backend.chatroom.model.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
-import com.ani.taku_backend.chatroom.model.document.ChatMessage;
-import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.model.document.ParticipantInfo;
-import com.ani.taku_backend.chatroom.model.document.Participants;
-import com.ani.taku_backend.chatroom.model.dto.request.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.model.dto.response.ChatRoomResponseDTO;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.repository.ChatMessageRepository;
-import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
-import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.domain.constant.ParticipantRole;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
+import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.domain.document.ParticipantInfo;
+import com.ani.taku_backend.chatroom.domain.document.Participants;
+import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
+import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.repository.ChatMessageRepository;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.jangter.service.ProductImageService;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,6 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import lombok.extern.slf4j.Slf4j;
-import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
 
 @Slf4j
 @Service
@@ -44,6 +44,7 @@ public class ChatRoomService {
     private final DuckuJangterRepository duckuJangterRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final ProductImageService productImageService;
 
     public static final String UNKNOWN_USER = "알 수 없음";
 
@@ -89,8 +90,8 @@ public class ChatRoomService {
         String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
         String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
 
-        // 상품 이미지 가져오기
-        String articleThumbnailUrl = extractProductImageUrl(requestDto.articleId());
+        // 상품 이미지 가져오기 - ProductImageService 사용
+        String articleThumbnailUrl = productImageService.getProductImageUrl(requestDto.articleId());
 
         // 새로 생성된 채팅방에는 메시지가 없으므로 null 전달
         return ChatRoomResponseDTO.of(
@@ -105,89 +106,63 @@ public class ChatRoomService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-        // 성능 로깅 시작
-        long startTime = System.currentTimeMillis();
-        
-        // 사용자가 참여한 채팅방 메타 정보 조회 (원래 로직으로 복원)
+    /**
+     * 사용자가 참여한 활성 채팅방 메타 정보를 조회합니다.
+     */
+    private List<ChatRoomMetaInfo> getConnectedChatRoomMetaInfos(Long userId) {
         List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatroomMetaRepository
                 .findByParticipantsUserId(userId);
         
-        log.debug("채팅방 메타 정보 조회 소요 시간: {}ms", System.currentTimeMillis() - startTime);
-        long stepTime = System.currentTimeMillis();
-
         if (userChatRoomMetaInfos.isEmpty()) {
-            return null; // 원래 로직대로 null 반환
+            return Collections.emptyList();
         }
-
-        // 연결된 채팅방 필터링 - 메모리 내에서 처리
-        List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = userChatRoomMetaInfos.stream()
+        
+        return userChatRoomMetaInfos.stream()
                 .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
                         .anyMatch(participant -> participant.getIsConnected() != null
                                 && participant.getIsConnected()))
                 .collect(Collectors.toList());
+    }
 
-        // chatRoomIds 추출
-        List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
+    /**
+     * 채팅방 메타 정보 목록에서 채팅방 ID 목록을 추출합니다.
+     */
+    private List<Long> extractChatRoomIds(List<ChatRoomMetaInfo> chatRoomMetaInfos) {
+        return chatRoomMetaInfos.stream()
                 .map(ChatRoomMetaInfo::getChatRoomId)
                 .collect(Collectors.toList());
+    }
 
-        if (chatRoomIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // ChatRoom 정보 조회 (최적화된 메서드 사용)
-        List<ChatRoom> userChatRooms = chatRoomRepository
-                .findByIdInAndStatusOptimized(chatRoomIds, ChatRoomStatus.ACTIVE);
-        
-        log.debug("채팅방 정보 조회 소요 시간: {}ms", System.currentTimeMillis() - stepTime);
-        stepTime = System.currentTimeMillis();
-
-        // 메타 정보 Map으로 변환
-        Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = connectedChatRoomMetaInfos.stream()
-                .collect(Collectors.toMap(
-                        ChatRoomMetaInfo::getChatRoomId,
-                        metaInfo -> metaInfo,
-                        (existing, replacement) -> existing  // 중복 키 처리
-                ));
-
-        // 모든 참여자 ID 수집
-        List<Long> participantIds = connectedChatRoomMetaInfos.stream()
+    /**
+     * 채팅방 메타 정보 목록에서 참여자 ID 목록을 추출합니다.
+     */
+    private List<Long> extractParticipantIds(List<ChatRoomMetaInfo> chatRoomMetaInfos) {
+        return chatRoomMetaInfos.stream()
                 .flatMap(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
                         .map(ParticipantInfo::getUserId))
                 .distinct()
                 .collect(Collectors.toList());
+    }
 
-        // 사용자 정보 조회
-        List<User> users = userRepository.findByUserIdIn(participantIds);
-        
-        log.debug("사용자 정보 조회 소요 시간: {}ms", System.currentTimeMillis() - stepTime);
-        stepTime = System.currentTimeMillis();
-        
-        Map<Long, User> userMap = users.stream()
-                .collect(Collectors.toMap(
-                        User::getUserId, 
-                        user -> user,
-                        (existing, replacement) -> existing  // 중복 키 처리
-                ));
-
-        // [최적화] 마지막 메시지 한 번에 조회
+    /**
+     * 채팅방 ID 목록에 해당하는 마지막 메시지 맵을 생성합니다.
+     */
+    private Map<Long, ChatMessage> createLastMessageMap(List<Long> chatRoomIds) {
         List<ChatMessage> latestMessages = chatMessageRepository.findLatestMessagesByChatRoomIds(chatRoomIds);
         
-        log.debug("마지막 메시지 조회 소요 시간: {}ms", System.currentTimeMillis() - stepTime);
-        stepTime = System.currentTimeMillis();
-        
-        // 채팅방 ID를 키로 하는 마지막 메시지 맵 생성
         Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
         for (ChatMessage message : latestMessages) {
-            // 아직 해당 채팅방의 메시지가 맵에 없는 경우에만 추가 (첫 번째가 가장 최근 메시지)
             if (!lastMessageMap.containsKey(message.getChatRoomId())) {
                 lastMessageMap.put(message.getChatRoomId(), message);
             }
         }
+        return lastMessageMap;
+    }
 
-        // 안읽은 메시지 개수 맵 생성
+    /**
+     * 채팅방 ID 목록과 사용자 ID에 해당하는 안읽은 메시지 개수 맵을 생성합니다.
+     */
+    private Map<Long, Integer> createUnreadCountMap(List<Long> chatRoomIds, Long userId, Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap) {
         Map<Long, Integer> unreadCountMap = new HashMap<>();
         for (Long chatRoomId : chatRoomIds) {
             ChatRoomMetaInfo metaInfo = chatRoomMetaInfoMap.get(chatRoomId);
@@ -198,83 +173,142 @@ public class ChatRoomService {
                 unreadCountMap.put(chatRoomId, 0);
             }
         }
+        return unreadCountMap;
+    }
 
-        // [최적화] 채팅방에 연결된 상품 ID 목록 추출
-        List<Long> articleIds = userChatRooms.stream()
-                .map(ChatRoom::getArticleId)
-                .filter(Objects::nonNull)
-                .distinct()  // 중복 제거
-                .collect(Collectors.toList());
+    /**
+     * 상품 ID 목록에 해당하는 이미지 URL 맵을 생성합니다.
+     */
+    private Map<Long, String> createArticleImageMap(List<Long> articleIds) {
+        // ProductImageService 사용
+        return productImageService.getProductImageMap(articleIds);
+    }
+
+    /**
+     * 채팅방 정보를 DTO로 변환합니다.
+     */
+    private ChatRoomResponseDTO mapToChatRoomResponseDTO(
+            ChatRoom chatRoom,
+            ChatRoomMetaInfo chatRoomMetaInfo,
+            Map<Long, User> userMap,
+            Map<Long, ChatMessage> lastMessageMap,
+            Map<Long, Integer> unreadCountMap,
+            Map<Long, String> articleImageMap) {
         
-        // [최적화] 상품 이미지 정보 한 번에 조회
-        Map<Long, String> articleImageMap = new HashMap<>();
-        if (!articleIds.isEmpty()) {
-            List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(articleIds);
-            
-            log.debug("상품 이미지 조회 소요 시간: {}ms", System.currentTimeMillis() - stepTime);
-            stepTime = System.currentTimeMillis();
-            
-            for (ProductImageDTO productImage : productImages) {
-                articleImageMap.put(productImage.productId(), productImage.imageUrl());
+        if (chatRoomMetaInfo == null || chatRoomMetaInfo.getParticipants() == null || chatRoomMetaInfo.getParticipants().getInfo() == null) {
+            return null;
+        }
+
+        Participants participants = chatRoomMetaInfo.getParticipants();
+
+        Long buyerId = 0L;
+        Long sellerId = 0L;
+
+        for(Long key : participants.getInfo().keySet()) {
+            ParticipantInfo participantInfo = participants.getInfo().get(key);
+            if(participantInfo.getRole() == ParticipantRole.BUYER) {
+                buyerId = participantInfo.getUserId();
+            } else {
+                sellerId = participantInfo.getUserId();
             }
         }
 
-        // 채팅방 DTO 매핑 및 반환
-        List<ChatRoomResponseDTO> result = userChatRooms.stream()
-                .map(chatRoom -> {
-                    ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaInfoMap.get(chatRoom.getId());
-                    if (chatRoomMetaInfo == null || chatRoomMetaInfo.getParticipants() == null || chatRoomMetaInfo.getParticipants().getInfo() == null) {
-                        return null;
-                    }
+        // 구매자, 판매자 정보 가져오기
+        User buyer = userMap.get(buyerId);
+        User seller = userMap.get(sellerId);
 
-                    Participants participants = chatRoomMetaInfo.getParticipants();
+        String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
+        String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
 
-                    Long buyerId = 0L;
-                    Long sellerId = 0L;
+        // 마지막 메시지 가져오기
+        ChatMessage lastMessage = lastMessageMap.get(chatRoom.getId());
 
-                    for(Long key : participants.getInfo().keySet()) {
-                        ParticipantInfo participantInfo = participants.getInfo().get(key);
-                        if(participantInfo.getRole() == ParticipantRole.BUYER) {
-                            buyerId = participantInfo.getUserId();
-                        } else {
-                            sellerId = participantInfo.getUserId();
-                        }
-                    }
+        // 안읽은 메시지 개수 가져오기
+        Integer unreadCount = unreadCountMap.get(chatRoom.getId());
 
-                    // 구매자, 판매자 정보 가져오기
-                    User buyer = userMap.get(buyerId);
-                    User seller = userMap.get(sellerId);
+        // 상품 이미지 가져오기
+        String articleThumbnailUrl = articleImageMap.get(chatRoom.getArticleId());
 
-                    String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
-                    String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
+        return ChatRoomResponseDTO.of(
+                chatRoom,
+                buyerId,
+                sellerId,
+                buyerNickname,
+                sellerNickname,
+                lastMessage,
+                unreadCount,
+                articleThumbnailUrl
+        );
+    }
 
-                    // 마지막 메시지 가져오기
-                    ChatMessage lastMessage = lastMessageMap.get(chatRoom.getId());
-
-                    // 안읽은 메시지 개수 가져오기
-                    Integer unreadCount = unreadCountMap.get(chatRoom.getId());
-
-                    // 상품 이미지 가져오기
-                    String articleThumbnailUrl = articleImageMap.get(chatRoom.getArticleId());
-
-                    return ChatRoomResponseDTO.of(
-                            chatRoom,
-                            buyerId,
-                            sellerId,
-                            buyerNickname,
-                            sellerNickname,
-                            lastMessage,
-                            unreadCount,
-                            articleThumbnailUrl
-                    );
-                })
+    @Transactional(readOnly = true)
+    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
+        // 1. 활성 채팅방 메타 정보 조회
+        List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = getConnectedChatRoomMetaInfos(userId);
+        
+        if (connectedChatRoomMetaInfos.isEmpty()) {
+            return null;
+        }
+        
+        // 2. 채팅방 ID 목록 추출
+        List<Long> chatRoomIds = extractChatRoomIds(connectedChatRoomMetaInfos);
+        
+        if (chatRoomIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        // 3. 채팅방 정보 조회
+        List<ChatRoom> userChatRooms = chatRoomRepository
+                .findByIdInAndStatusOptimized(chatRoomIds, ChatRoomStatus.ACTIVE);
+        
+        // 4. 메타 정보 맵 생성
+        Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = connectedChatRoomMetaInfos.stream()
+                .collect(Collectors.toMap(
+                        ChatRoomMetaInfo::getChatRoomId,
+                        metaInfo -> metaInfo,
+                        (existing, replacement) -> existing
+                ));
+        
+        // 5. 참여자 ID 목록 추출
+        List<Long> participantIds = extractParticipantIds(connectedChatRoomMetaInfos);
+        
+        // 6. 사용자 정보 조회
+        List<User> users = userRepository.findByUserIdIn(participantIds);
+        Map<Long, User> userMap = users.stream()
+                .collect(Collectors.toMap(
+                        User::getUserId,
+                        user -> user,
+                        (existing, replacement) -> existing
+                ));
+        
+        // 7. 마지막 메시지 맵 생성
+        Map<Long, ChatMessage> lastMessageMap = createLastMessageMap(chatRoomIds);
+        
+        // 8. 안읽은 메시지 개수 맵 생성
+        Map<Long, Integer> unreadCountMap = createUnreadCountMap(chatRoomIds, userId, chatRoomMetaInfoMap);
+        
+        // 9. 상품 ID 목록 추출
+        List<Long> articleIds = userChatRooms.stream()
+                .map(ChatRoom::getArticleId)
                 .filter(Objects::nonNull)
+                .distinct()
                 .collect(Collectors.toList());
         
-        log.debug("DTO 변환 소요 시간: {}ms", System.currentTimeMillis() - stepTime);
-        log.debug("전체 채팅방 목록 조회 소요 시간: {}ms", System.currentTimeMillis() - startTime);
+        // 10. 상품 이미지 맵 생성
+        Map<Long, String> articleImageMap = createArticleImageMap(articleIds);
         
-        return result;
+        // 11. 채팅방 DTO 매핑 및 반환
+        return userChatRooms.stream()
+                .map(chatRoom -> mapToChatRoomResponseDTO(
+                        chatRoom,
+                        chatRoomMetaInfoMap.get(chatRoom.getId()),
+                        userMap,
+                        lastMessageMap,
+                        unreadCountMap,
+                        articleImageMap
+                ))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
@@ -342,8 +376,8 @@ public class ChatRoomService {
         ParticipantInfo participantInfo = participants.getInfo().get(userId);
         Integer unreadCount = participantInfo != null ? participantInfo.getMessageStock() : 0;
 
-        // 상품 이미지 가져오기 - 단일 조회이므로 extractProductImageUrl 사용
-        String articleThumbnailUrl = extractProductImageUrl(chatRoom.getArticleId());
+        // 상품 이미지 가져오기 - ProductImageService 사용
+        String articleThumbnailUrl = productImageService.getProductImageUrl(chatRoom.getArticleId());
 
         return ChatRoomResponseDTO.of(
                 chatRoom,
@@ -368,22 +402,5 @@ public class ChatRoomService {
                     return participantInfo != null ? participantInfo.getMessageStock() : 0;
                 })
                 .reduce(0, Integer::sum);
-    }
-
-    /**
-     * 상품 이미지 URL을 추출하는 메서드
-     * 주의: 단일 조회용으로만 사용하세요. 목록 조회 시에는 findProductImagesById를 사용.
-     */
-    private String extractProductImageUrl(Long articleId) {
-        if (articleId == null) {
-            return null;
-        }
-        
-        return duckuJangterRepository.findWithDetailsById(articleId)
-                .map(product -> product.getJangterImages().stream()
-                        .findFirst()
-                        .map(img -> img.getImage().getImageUrl())
-                        .orElse(null))
-                .orElse(null);
     }
 }

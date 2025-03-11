@@ -1,6 +1,6 @@
-package com.ani.taku_backend.chatroom.repository;
+package com.ani.taku_backend.chatroom.domain.repository;
 
-import com.ani.taku_backend.chatroom.model.document.ChatMessage;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

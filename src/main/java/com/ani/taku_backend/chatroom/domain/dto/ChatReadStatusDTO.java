@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.model.dto;
+package com.ani.taku_backend.chatroom.domain.dto;
 
 import java.time.LocalDateTime;
 
