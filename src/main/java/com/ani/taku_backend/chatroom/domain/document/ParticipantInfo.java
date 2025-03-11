@@ -11,9 +11,8 @@ import java.time.Instant;
  */
 @Getter
 public class ParticipantInfo {
-    /**
-     * 메시지 스톡의 초기값 및 리셋 값입니다.
-     */
+
+    //메세지 스톡의 초기화 값
     private static final Integer INITIAL_MESSAGE_STOCK = 0;
     
     private Long userId;

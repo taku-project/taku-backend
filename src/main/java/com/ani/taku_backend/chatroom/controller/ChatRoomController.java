@@ -129,6 +129,20 @@ public class ChatRoomController {
     }
 
     /**
+     * 사용자의 모든 채팅방에서 안읽은 메시지의 총 개수를 조회합니다.
+     *
+     * @param principalUser 현재 인증된 사용자
+     * @return 안읽은 메시지 총 개수
+     */
+    @Operation(summary = "총 안읽음 메시지 갯수 반환", description = "사용자의 모든 채팅방에서 안읽은 메시지의 총 개수를 반환합니다.")
+    @GetMapping("/unread/total")
+    public CommonResponse<Integer> getTotalUnreadCount(
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        Integer totalUnreadCount = chatRoomService.getTotalUnreadCount(principalUser.getUserId());
+        return CommonResponse.ok(totalUnreadCount);
+    }
+
+    /**
      * 특정 채팅방의 메시지 이력을 조회합니다.
      * 무한 스크롤을 위한 파라미터를 지원합니다.
      *
