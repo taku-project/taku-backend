@@ -4,6 +4,7 @@ import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
+import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
 
 import io.lettuce.core.dynamic.annotation.Param;
 
@@ -75,4 +76,15 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
 
     @EntityGraph(attributePaths = {"jangterImages", "jangterImages.image", "user", "itemCategories"})
     Optional<DuckuJangter> findWithDetailsById(Long id);
+
+    /**
+     * 상품 ID 목록을 기반으로 상품 ID와 첫 번째 이미지 URL만 조회
+     * 
+     * @param productIds 상품 ID 목록
+     * @return 상품 ID와 이미지 URL 정보를 담은 DTO 목록
+     */
+    @Query("SELECT new com.ani.taku_backend.jangter.model.dto.ProductImageDTO(d.id, " +
+           "(SELECT ji.image.imageUrl FROM JangterImages ji WHERE ji.duckuJangter.id = d.id ORDER BY ji.id ASC LIMIT 1)) " +
+           "FROM DuckuJangter d WHERE d.id IN :productIds")
+    List<ProductImageDTO> findProductImagesById(@Param("productIds") List<Long> productIds);
 }

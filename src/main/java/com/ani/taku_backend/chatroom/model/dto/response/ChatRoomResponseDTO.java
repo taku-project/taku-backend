@@ -14,13 +14,12 @@ public record ChatRoomResponseDTO(
         Long sellerId,
         LocalDateTime createdAt,
         String buyerNickname,
-        String buyerProfileImage,
         String sellerNickname,
-        String sellerProfileImage,
         String lastMessage,
         String lastMessageTime,
         Long lastMessageSenderId,
-        Integer unreadCount
+        Integer unreadCount,
+        String articleThumbnailUrl
 ) {
 
     public static ChatRoomResponseDTO of(
@@ -28,11 +27,10 @@ public record ChatRoomResponseDTO(
             Long buyerId,
             Long sellerId,
             String buyerNickname,
-            String buyerProfileImage,
             String sellerNickname,
-            String sellerProfileImage,
             ChatMessage lastMessage,
-            Integer unreadCount
+            Integer unreadCount,
+            String articleThumbnailUrl
     ) {
         LocalDateTime messageTime = lastMessage != null ? lastMessage.getSentAt() : null;
 
@@ -44,13 +42,12 @@ public record ChatRoomResponseDTO(
                 sellerId,
                 chatRoom.getCreatedAt(),
                 buyerNickname,
-                buyerProfileImage,
                 sellerNickname,
-                sellerProfileImage,
                 lastMessage != null ? lastMessage.getContent() : null,
                 ChatDateTimeFormatter.formatMessageTime(messageTime),
                 lastMessage != null ? lastMessage.getSenderId() : null,
-                unreadCount
+                unreadCount,
+                articleThumbnailUrl
         );
     }
 }

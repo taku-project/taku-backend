@@ -35,4 +35,14 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
             LocalDateTime sentAt,
             Limit limit
     );
+
+    /**
+     * 여러 채팅방의 마지막 메시지를 한 번에 조회하는 메서드
+     * 각 채팅방에 대해 가장 최근 메시지를 하나씩 반환합니다.
+     * 
+     * @param chatRoomIds 채팅방 ID 목록
+     * @return 각 채팅방의 마지막 메시지 목록
+     */
+    @Query(value = "{ 'chatRoomId': { $in: ?0 } }", sort = "{ 'sentAt': -1 }")
+    List<ChatMessage> findLatestMessagesByChatRoomIds(List<Long> chatRoomIds);
 }

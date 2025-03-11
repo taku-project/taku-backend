@@ -5,6 +5,7 @@ import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,5 +27,14 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     // 판매글 ID와 구매자, 판매자 ID로 채팅방을 찾기
     List<ChatRoom> findByArticleId(Long articleId);
 
+    /**
+     * 채팅방 ID 목록을 기반으로 필요한 필드만 조회하는 최적화된 메서드
+     * 
+     * @param chatRoomIds 채팅방 ID 목록
+     * @param status 채팅방 상태
+     * @return 필요한 필드만 포함된 채팅방 목록
+     */
+    @Query("SELECT c FROM ChatRoom c WHERE c.id IN :chatRoomIds AND c.status = :status")
+    List<ChatRoom> findByIdInAndStatusOptimized(List<Long> chatRoomIds, ChatRoomStatus status);
 
 }
