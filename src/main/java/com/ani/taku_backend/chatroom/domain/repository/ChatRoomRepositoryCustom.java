@@ -5,6 +5,7 @@ import com.ani.taku_backend.chatroom.domain.dto.ChatRoomDetailDTO;
 
 import java.util.List;
 
+
 public interface ChatRoomRepositoryCustom {
     
     /**

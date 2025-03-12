@@ -20,6 +20,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
     /**
      * 사용자의 채팅방 목록을 상세 정보와 함께 조회합니다.
+     * N+1 문제를 해결하기 위해 최적화된 쿼리를 사용합니다.
      *
      * @param userId 사용자 ID
      * @param status 채팅방 상태
@@ -49,22 +50,13 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         }
 
         return rooms.stream()
-                .map(room -> new ChatRoomDetailDTO(
-                    room.getId(),
-                    room.getWsRoomId(),
-                    room.getArticleId(),
-                    room.getCreatedAt(),
-                    null, // 구매자 ID
-                    null, // 구매자 닉네임
-                    null, // 구매자 프로필 이미지
-                    null, // 판매자 ID
-                    null, // 판매자 닉네임
-                    null, // 판매자 프로필 이미지
-                    null, // 마지막 메시지
-                    null, // 마지막 메시지 시간
-                    null, // 마지막 메시지 발신자 ID
-                    0    // 안읽은 메시지 수
-                ))
+                .map(room -> ChatRoomDetailDTO.builder()
+                    .id(room.getId())
+                    .roomId(room.getWsRoomId())
+                    .articleId(room.getArticleId())
+                    .createdAt(room.getCreatedAt())
+                    .unreadCount(0)
+                    .build())
                 .toList();
     }
 } 
