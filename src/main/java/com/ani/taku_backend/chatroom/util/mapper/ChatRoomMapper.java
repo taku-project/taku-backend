@@ -14,19 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * 채팅방 관련 엔티티와 DTO 간의 매핑을 담당하는 인터페이스
- * MapStruct를 활용하여 반복적인 매핑 코드를 줄입니다.
- */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ChatRoomMapper {
 
     String UNKNOWN_USER = "알 수 없음";
-    
-    /**
-     * 채팅방과 관련 정보를 DTO로 변환합니다.
-     * 복잡한 매핑 로직은 default 메서드에서 처리합니다.
-     */
+
     default ChatRoomResponseDTO toChatRoomResponseDTO(
             ChatRoom chatRoom,
             ChatRoomMetaInfo chatRoomMetaInfo,
@@ -47,8 +39,7 @@ public interface ChatRoomMapper {
         
         if (chatRoomMetaInfo != null && chatRoomMetaInfo.getParticipants() != null) {
             Participants participants = chatRoomMetaInfo.getParticipants();
-            
-            // 도메인 객체의 메서드를 활용
+
             buyerId = participants.getBuyerId() != null ? participants.getBuyerId() : 0L;
             sellerId = participants.getSellerId() != null ? participants.getSellerId() : 0L;
             
@@ -85,15 +76,11 @@ public interface ChatRoomMapper {
             lastMessageSenderId,
             unreadCount,
             articleThumbnailUrl,
-            null, // 구매자 프로필 이미지는 이 메서드에서는 제공하지 않음
-            null  // 판매자 프로필 이미지는 이 메서드에서는 제공하지 않음
+            null,
+            null
         );
     }
 
-    /**
-     * 프로필 이미지를 포함한 채팅방 DTO를 생성합니다.
-     * MapStruct의 멱등성을 위해 메서드 선언과 구현을 분리합니다.
-     */
     default ChatRoomResponseDTO toChatRoomResponseDTOWithProfileImages(
             ChatRoom chatRoom,
             User buyer,
@@ -124,7 +111,7 @@ public interface ChatRoomMapper {
             lastMessageSenderId = message.getSenderId();
         }
         
-        // ChatRoomResponseDTO의 정적 팩토리 메서드 활용
+
         return new ChatRoomResponseDTO(
             chatRoom.getId(),
             chatRoom.getWsRoomId(),
@@ -143,18 +130,11 @@ public interface ChatRoomMapper {
             sellerProfileImageUrl
         );
     }
-    
-    /**
-     * 시간 포맷팅 헬퍼 메서드
-     */
+
     default String formatMessageTime(LocalDateTime time) {
         return ChatDateTimeFormatter.formatMessageTime(time);
     }
-    
-    /**
-     * 채팅방 기본 정보만 매핑하는 메서드
-     * 간단한 필드 매핑에 MapStruct를 활용할 수 있습니다.
-     */
+
     @Mapping(target = "id", source = "id")
     @Mapping(target = "roomId", source = "wsRoomId")
     @Mapping(target = "articleId", source = "articleId")
@@ -171,9 +151,6 @@ public interface ChatRoomMapper {
     @Mapping(target = "buyerProfileImageUrl", ignore = true)
     @Mapping(target = "sellerProfileImageUrl", ignore = true)
     ChatRoomResponseDTO chatRoomToBasicDTO(ChatRoom chatRoom);
-    
-    /**
-     * 채팅방 엔티티 리스트를 기본 DTO 리스트로 변환합니다.
-     */
+
     List<ChatRoomResponseDTO> chatRoomsToBasicDTOs(List<ChatRoom> chatRooms);
 } 

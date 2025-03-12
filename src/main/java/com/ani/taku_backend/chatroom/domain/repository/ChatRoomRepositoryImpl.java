@@ -30,8 +30,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
     @Override
     public List<ChatRoomDetailDTO> findChatRoomsWithDetailsForUser(Long userId, ChatRoomStatus status) {
         QChatRoom chatRoom = QChatRoom.chatRoom;
-        
-        // 1. MongoDB에서 사용자가 참여한 채팅방 메타정보 목록 조회
+
         List<ChatRoomMetaInfo> chatRoomMetaInfos = chatRoomMetaRepository.findChatRoomMetaInfosByParticipantUserId(userId);
         
         // 메타정보에서 채팅방 ID만 추출
@@ -43,7 +42,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
             return List.of();
         }
 
-        // 2. JPA를 통해 채팅방 기본 정보 조회
+
         List<ChatRoom> rooms = queryFactory
                 .selectFrom(chatRoom)
                 .where(chatRoom.id.in(activeChatRoomIds)
@@ -65,8 +64,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
                             break;
                         }
                     }
-                    
-                    // 빌더 패턴으로 DTO 생성
+
                     return ChatRoomDetailDTO.builder()
                         .id(room.getId())
                         .roomId(room.getWsRoomId())
