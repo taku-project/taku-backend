@@ -9,7 +9,7 @@ import com.ani.taku_backend.chatroom.domain.document.Participants;
 import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.util.mapper.ChatRoomMapper;
+import com.ani.taku_backend.chatroom.domain.mapper.ChatRoomMapper;
 import com.ani.taku_backend.chatroom.domain.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
@@ -411,30 +411,5 @@ public class ChatRoomService {
         }
         
         return unreadCountMap;
-    }
-
-    /**
-     * 채팅방 ID로 기본 정보만 포함된 DTO를 조회합니다.
-     * 
-     * @param chatRoomId 채팅방 ID
-     * @return 기본 정보만 포함된 채팅방 응답 DTO
-     */
-    public ChatRoomResponseDTO findChatRoomBasicInfo(Long chatRoomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        return chatRoomMapper.chatRoomToBasicDTO(chatRoom);
-    }
-    
-    /**
-     * 다수의 채팅방 ID로 기본 정보만 포함된 DTO 목록을 조회합니다.
-     * 
-     * @param chatRoomIds 채팅방 ID 목록
-     * @return 기본 정보만 포함된 채팅방 응답 DTO 목록
-     */
-    public List<ChatRoomResponseDTO> findChatRoomsBasicInfo(List<Long> chatRoomIds) {
-        List<ChatRoom> chatRooms = chatRoomRepository.findAllById(chatRoomIds);
-
-        return chatRoomMapper.chatRoomsToBasicDTOs(chatRooms);
     }
 }

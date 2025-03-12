@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.util.mapper;
+package com.ani.taku_backend.chatroom.domain.mapper;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;

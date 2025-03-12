@@ -243,8 +243,7 @@ public class ChatService {
      */
     private ChatMessage convertToMessage(Document doc) {
         ChatMessage message = new ChatMessage();
-        
-        // 기본 필드 설정
+
         message.setId(doc.getString("_id"));
         message.setChatRoomId(doc.getLong("chatRoomId"));
         message.setArticleId(doc.getLong("articleId"));

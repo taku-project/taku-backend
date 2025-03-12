@@ -24,38 +24,10 @@ public record ChatRoomResponseDTO(
         String sellerProfileImageUrl
 ) {
 
-    public static ChatRoomResponseDTO of(
-            ChatRoom chatRoom,
-            Long buyerId,
-            Long sellerId,
-            String buyerNickname,
-            String sellerNickname,
-            ChatMessage lastMessage,
-            Integer unreadCount,
-            String articleThumbnailUrl
-    ) {
-        LocalDateTime messageTime = lastMessage != null ? lastMessage.getSentAt() : null;
-
-        return new ChatRoomResponseDTO(
-                chatRoom.getId(),
-                chatRoom.getWsRoomId(),
-                chatRoom.getArticleId(),
-                buyerId,
-                sellerId,
-                chatRoom.getCreatedAt(),
-                buyerNickname,
-                sellerNickname,
-                lastMessage != null ? lastMessage.getContent() : null,
-                ChatDateTimeFormatter.formatMessageTime(messageTime),
-                lastMessage != null ? lastMessage.getSenderId() : null,
-                unreadCount,
-                articleThumbnailUrl,
-                null,  // 구매자 프로필 이미지
-                null   //  판매자 프로필 이미지
-        );
-    }
-    
-    public static ChatRoomResponseDTO of(
+    /**
+     * 채팅방과 관련 정보로부터 응답 DTO를 생성합니다.
+     */
+    public static ChatRoomResponseDTO from(
             ChatRoom chatRoom,
             Long buyerId,
             Long sellerId,
