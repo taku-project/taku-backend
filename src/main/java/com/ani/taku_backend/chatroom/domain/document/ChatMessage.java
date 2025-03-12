@@ -1,6 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageResponseDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +12,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * MongoDB에 저장되는 채팅 메세지를 나타냅니다.
@@ -54,5 +57,29 @@ public class ChatMessage {
                 false, // 기본적으로 읽지 않음
                 ChatRoomStatus.ACTIVE // 기본 상태
         );
+    }
+
+    /**
+     * 이 메시지가 특정 사용자가 보낸 것인지 확인합니다.
+     *
+     * @param userId 확인할 사용자 ID
+     * @return 해당 사용자가 보낸 메시지인 경우 true
+     */
+    public boolean isSentBy(Long userId) {
+        return this.senderId.equals(userId);
+    }
+
+    /**
+     * 메시지를 읽음 상태로 표시합니다.
+     */
+    public void markAsRead() {
+        this.read = true;
+    }
+
+
+    public static List<ChatMessageResponseDTO> toResponseDTOList(List<ChatMessage> messages) {
+        return messages.stream()
+                .map(message -> ChatMessageResponseDTO.from(message))
+                .collect(Collectors.toList());
     }
 }

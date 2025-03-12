@@ -4,6 +4,8 @@ import com.ani.taku_backend.chatroom.domain.constant.ParticipantRole;
 import lombok.Getter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 @Getter
 public class Participants {
@@ -37,12 +39,87 @@ public class Participants {
     public synchronized void setDisconnected(Long userId) {
         ParticipantInfo participant = info.get(userId);
         if (participant != null) {
-            participant.disconnected();
+            participant.disconnect();
         }
     }
 
     public boolean containsUser(Long userId) {
         return info.containsKey(userId);
+    }
+
+    /**
+     * 모든 참여자를 조회합니다.
+     *
+     * @return 참여자 ID 목록
+     */
+    public List<Long> getAllParticipantIds() {
+        return new ArrayList<>(info.keySet());
+    }
+
+    /**
+     * 판매자 참여자를 찾습니다.
+     *
+     * @return 판매자 ID와 정보
+     */
+    public Map.Entry<Long, ParticipantInfo> findSeller() {
+        return info.entrySet().stream()
+                .filter(entry -> entry.getValue().getRole() == ParticipantRole.SELLER)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 구매자 참여자를 찾습니다.
+     *
+     * @return 구매자 ID와 정보
+     */
+    public Map.Entry<Long, ParticipantInfo> findBuyer() {
+        return info.entrySet().stream()
+                .filter(entry -> entry.getValue().getRole() == ParticipantRole.BUYER)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 판매자 ID를 조회합니다.
+     *
+     * @return 판매자 ID
+     */
+    public Long getSellerId() {
+        Map.Entry<Long, ParticipantInfo> seller = findSeller();
+        return seller != null ? seller.getKey() : null;
+    }
+
+    /**
+     * 구매자 ID를 조회합니다.
+     *
+     * @return 구매자 ID
+     */
+    public Long getBuyerId() {
+        Map.Entry<Long, ParticipantInfo> buyer = findBuyer();
+        return buyer != null ? buyer.getKey() : null;
+    }
+
+    /**
+     * 특정 사용자를 연결 상태로 설정합니다.
+     *
+     * @param userId 사용자 ID
+     */
+    public void setConnected(Long userId) {
+        ParticipantInfo participant = info.get(userId);
+        if (participant != null) {
+            participant.connect();
+        }
+    }
+
+    /**
+     * 모든 참여자가 연결 해제 상태인지 확인합니다.
+     *
+     * @return 모든 참여자가 연결 해제 상태인 경우 true
+     */
+    public boolean isAllDisconnected() {
+        return info.values().stream()
+                .allMatch(participant -> participant.getIsConnected() == null || !participant.getIsConnected());
     }
 
 }

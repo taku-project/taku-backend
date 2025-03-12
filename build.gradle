@@ -1,6 +1,7 @@
 buildscript {
     ext {
         queryDslVersion = "5.0.0"
+        mapstructVersion = "1.5.5.Final"
     }
 }
 
@@ -83,6 +84,9 @@ dependencies {
     // MySQL
     implementation 'mysql:mysql-connector-java:8.0.33'
 
+    // MapStruct
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     // 임베디드 Redis
     testImplementation('it.ozimov:embedded-redis:0.7.3') {

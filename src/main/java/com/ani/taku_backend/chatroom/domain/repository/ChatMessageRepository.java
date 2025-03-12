@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.mongodb.repository.Aggregation;
+import org.bson.Document;
 
 import java.util.List;
 
@@ -45,4 +47,16 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
      */
     @Query(value = "{ 'chatRoomId': { $in: ?0 } }", sort = "{ 'sentAt': -1 }")
     List<ChatMessage> findLatestMessagesByChatRoomIds(List<Long> chatRoomIds);
+
+    /**
+     * 채팅방 ID 목록의 각 채팅방별 마지막 메시지 맵을 반환합니다.
+     * @param chatRoomIds 채팅방 ID 목록
+     * @return 채팅방 ID를 키로 하고 마지막 메시지를 값으로 하는 맵
+     */
+    @Aggregation(pipeline = {
+        "{ $match: { chatRoomId: { $in: ?0 } } }",
+        "{ $sort: { sentAt: -1 } }",
+        "{ $group: { _id: '$chatRoomId', lastMessage: { $first: '$$ROOT' } } }"
+    })
+    List<Document> findLastMessagesByChatRoomIdsGrouped(List<Long> chatRoomIds);
 }
