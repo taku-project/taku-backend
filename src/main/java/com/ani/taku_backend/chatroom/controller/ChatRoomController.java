@@ -72,11 +72,15 @@ public class ChatRoomController {
      * @param principalUser 현재 인증된 사용자
      * @return 사용자의 채팅방 목록
      */
-    @Operation(summary = "채팅방 목록 가져오기")
+    @Operation(
+            summary = "채팅방 목록 가져오기", 
+            description = "사용자가 참여한 채팅방 목록 조회 API입니다."
+    )
     @GetMapping
     public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(principalUser.getUserId());
+        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomListOptimized(
+                principalUser.getUserId());
         return CommonResponse.ok(chatRooms);
     }
 

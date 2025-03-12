@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
+public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatRoomRepositoryCustom {
     /**
      * 특정 구매자의 활성화된 채팅방 목록을 조회합니다.
      * 생성일시 기준 내림차순으로 정렬됩니다.
@@ -35,6 +36,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
      * @return 필요한 필드만 포함된 채팅방 목록
      */
     @Query("SELECT c FROM ChatRoom c WHERE c.id IN :chatRoomIds AND c.status = :status")
-    List<ChatRoom> findByIdInAndStatusOptimized(List<Long> chatRoomIds, ChatRoomStatus status);
+    List<ChatRoom> findByIdInAndStatusOptimized(@Param("chatRoomIds") List<Long> chatRoomIds, @Param("status") ChatRoomStatus status);
 
 }

@@ -21,6 +21,8 @@ import lombok.NoArgsConstructor;
  * 각 채팅방은 고유의 WebSocket ID와 관련 상품 정보를 가집니다.
  */
 
+//TODO USER와 연관관계 매핑
+
 @Entity
 @Getter
 @Table(name = "chat_room")
