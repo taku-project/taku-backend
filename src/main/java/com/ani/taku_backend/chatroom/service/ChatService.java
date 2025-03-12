@@ -12,6 +12,8 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import org.springframework.data.domain.Limit;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Optional;
 import java.util.Collections;
+import org.bson.Document;
 
+/**
+ * 채팅 메시지 및 메시지 통신 관련 기능을 담당하는 서비스
+ * 메시지 송수신, 읽음 처리, 메시지 조회 등의 기능을 제공합니다.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -54,6 +61,9 @@ public class ChatService {
         return message;
     }
 
+    /**
+     * 사용자가 채팅방을 나갈 때 처리하는 메서드입니다.
+     */
     @Transactional
     public void leaveRoomByWsRoomId(String wsRoomId, Long userId) {
         // 채팅방 조회
@@ -82,6 +92,9 @@ public class ChatService {
         }
     }
 
+    /**
+     * 채팅방의 읽지 않은 메시지를 모두 읽음 상태로 표시합니다.
+     */
     @Transactional
     public void markMessagesAsReadByWsRoomId(String wsRoomId, Long userId) {
         // 채팅방 조회
@@ -183,6 +196,86 @@ public class ChatService {
         }
     }
 
+    /**
+     * 채팅방 ID 목록에 해당하는 각 채팅방의 마지막 메시지를 조회합니다.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, ChatMessage> getLastMessageMap(List<Long> chatRoomIds) {
+        if (chatRoomIds == null || chatRoomIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        
+        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
+        
+        try {
+            // 신규 Aggregation 기반 메소드 사용
+            List<Document> results = chatMessageRepository.findLastMessagesByChatRoomIdsGrouped(chatRoomIds);
+            
+            for (Document result : results) {
+                Long chatRoomId = result.get("_id", Long.class);
+                Document messageDoc = result.get("lastMessage", Document.class);
+                if (chatRoomId != null && messageDoc != null) {
+                    // Document를 ChatMessage로 변환
+                    ChatMessage message = convertToMessage(messageDoc);
+                    lastMessageMap.put(chatRoomId, message);
+                }
+            }
+        } catch (Exception e) {
+            log.error("채팅방 마지막 메시지 조회 중 오류 발생", e);
+            
+            // 기존 방식으로 폴백
+            List<ChatMessage> latestMessages = chatMessageRepository.findLatestMessagesByChatRoomIds(chatRoomIds);
+            for (ChatMessage message : latestMessages) {
+                if (!lastMessageMap.containsKey(message.getChatRoomId())) {
+                    lastMessageMap.put(message.getChatRoomId(), message);
+                }
+            }
+        }
+        
+        return lastMessageMap;
+    }
+    
+    /**
+     * MongoDB Document를 ChatMessage 객체로 변환합니다.
+     *
+     * @param doc MongoDB Document 객체
+     * @return 변환된 ChatMessage 객체
+     */
+    private ChatMessage convertToMessage(Document doc) {
+        ChatMessage message = new ChatMessage();
+        
+        // 기본 필드 설정
+        message.setId(doc.getString("_id"));
+        message.setChatRoomId(doc.getLong("chatRoomId"));
+        message.setArticleId(doc.getLong("articleId"));
+        message.setSenderId(doc.getLong("senderId"));
+        message.setContent(doc.getString("content"));
+        
+        // 날짜 필드 처리
+        if (doc.get("sentAt") != null) {
+            message.setSentAt(doc.getDate("sentAt").toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+        }
+        
+        // 불리언 필드 처리
+        if (doc.get("read") != null) {
+            message.setRead(doc.getBoolean("read"));
+        } else {
+            message.setRead(false);
+        }
+        
+        // 상태 필드 처리 (Enum)
+        if (doc.getString("status") != null) {
+            try {
+                message.setStatus(com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus.valueOf(doc.getString("status")));
+            } catch (IllegalArgumentException e) {
+                // 상태 값이 유효하지 않은 경우 기본값 설정
+                message.setStatus(com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus.ACTIVE);
+                log.warn("Invalid status value in message document: {}", doc.getString("status"));
+            }
+        }
+        
+        return message;
+    }
 }
 
 
