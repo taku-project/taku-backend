@@ -12,13 +12,15 @@ import org.mapstruct.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ChatRoomMapper {
 
     String UNKNOWN_USER = "알 수 없음";
 
+    /**
+     * 채팅방 정보와 부가 정보들을 결합하여 응답 DTO로 변환합니다.
+     */
     default ChatRoomResponseDTO toChatRoomResponseDTO(
             ChatRoom chatRoom,
             ChatRoomMetaInfo chatRoomMetaInfo,
@@ -36,6 +38,8 @@ public interface ChatRoomMapper {
         Long sellerId = 0L;
         String buyerNickname = UNKNOWN_USER;
         String sellerNickname = UNKNOWN_USER;
+        String buyerProfileImageUrl = null;
+        String sellerProfileImageUrl = null;
         
         if (chatRoomMetaInfo != null && chatRoomMetaInfo.getParticipants() != null) {
             Participants participants = chatRoomMetaInfo.getParticipants();
@@ -48,6 +52,8 @@ public interface ChatRoomMapper {
             
             buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
             sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
+            buyerProfileImageUrl = buyer != null ? buyer.getProfileImg() : null;
+            sellerProfileImageUrl = seller != null ? seller.getProfileImg() : null;
         }
         
         // 마지막 메시지 정보
@@ -61,56 +67,6 @@ public interface ChatRoomMapper {
         
         // 썸네일 URL
         String articleThumbnailUrl = articleImageMap.get(chatRoom.getArticleId());
-
-        return new ChatRoomResponseDTO(
-            chatRoom.getId(),
-            chatRoom.getWsRoomId(),
-            chatRoom.getArticleId(),
-            buyerId,
-            sellerId,
-            chatRoom.getCreatedAt(),
-            buyerNickname,
-            sellerNickname,
-            lastMessageContent,
-            lastMessageTime,
-            lastMessageSenderId,
-            unreadCount,
-            articleThumbnailUrl,
-            null,
-            null
-        );
-    }
-
-    default ChatRoomResponseDTO toChatRoomResponseDTOWithProfileImages(
-            ChatRoom chatRoom,
-            User buyer,
-            User seller,
-            Optional<ChatMessage> lastMessage,
-            Integer unreadCount,
-            String articleThumbnailUrl) {
-        
-        if (chatRoom == null) {
-            return null;
-        }
-        
-        String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
-        String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
-        Long buyerId = buyer != null ? buyer.getUserId() : 0L;
-        Long sellerId = seller != null ? seller.getUserId() : 0L;
-        String buyerProfileImageUrl = buyer != null ? buyer.getProfileImg() : null;
-        String sellerProfileImageUrl = seller != null ? seller.getProfileImg() : null;
-        
-        String lastMessageContent = null;
-        String lastMessageTime = null;
-        Long lastMessageSenderId = null;
-        
-        if (lastMessage.isPresent()) {
-            ChatMessage message = lastMessage.get();
-            lastMessageContent = message.getContent();
-            lastMessageTime = formatMessageTime(message.getSentAt());
-            lastMessageSenderId = message.getSenderId();
-        }
-        
 
         return new ChatRoomResponseDTO(
             chatRoom.getId(),
@@ -147,9 +103,9 @@ public interface ChatRoomMapper {
     @Mapping(target = "lastMessageTime", ignore = true)
     @Mapping(target = "lastMessageSenderId", ignore = true)
     @Mapping(target = "unreadCount", constant = "0")
-    @Mapping(target = "articleThumbnailUrl", ignore = true)
-    @Mapping(target = "buyerProfileImageUrl", ignore = true)
-    @Mapping(target = "sellerProfileImageUrl", ignore = true)
+    @Mapping(target = "articleThumbnailUrl", constant = "")
+    @Mapping(target = "buyerProfileImageUrl", constant = "")
+    @Mapping(target = "sellerProfileImageUrl", constant = "")
     ChatRoomResponseDTO chatRoomToBasicDTO(ChatRoom chatRoom);
 
     List<ChatRoomResponseDTO> chatRoomsToBasicDTOs(List<ChatRoom> chatRooms);
