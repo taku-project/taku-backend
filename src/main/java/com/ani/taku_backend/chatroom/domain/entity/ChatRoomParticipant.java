@@ -1,6 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.entity;
 
 import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.util.ParticipantUtils;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
@@ -10,6 +11,11 @@ import lombok.*;
  * 채팅방 참여자 정보를 나타내는 엔티티입니다.
  * 한 명의 사용자는 여러 채팅방에 참여할 수 있으며, 각 채팅방에는 여러 사용자가 참여할 수 있습니다.
  * ChatRoom과 User 사이의 다대다 관계를 관리합니다.
+ * 
+ * 주요 책임:
+ * 1. User 엔티티와의 관계 관리 (JPA 연관관계)
+ * 2. 참여자의 기본 정보 및 영구 데이터 저장
+ * 3. 트랜잭션이 필요한 작업 처리
  */
 @Entity
 @Getter
@@ -96,5 +102,23 @@ public class ChatRoomParticipant extends BaseTimeEntity {
      */
     public void setLastReadMessageId(Long messageId) {
         this.lastReadMessageId = messageId;
+    }
+    
+    /**
+     * 참여자가 판매자인지 확인합니다.
+     * 
+     * @return 판매자인 경우 true
+     */
+    public boolean isSeller() {
+        return ParticipantUtils.isSeller(this.role);
+    }
+
+    /**
+     * 참여자가 구매자인지 확인합니다.
+     * 
+     * @return 구매자인 경우 true
+     */
+    public boolean isBuyer() {
+        return ParticipantUtils.isBuyer(this.role);
     }
 } 

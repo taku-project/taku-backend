@@ -9,7 +9,6 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
  * 각 메세지는 채팅방, 상품, 발신자 정보와 전송 시간, 읽음 상태 등을 포함합니다.
  */
 
-@Document(collection = "chat_messages")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

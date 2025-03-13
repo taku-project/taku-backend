@@ -1,6 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.util.ParticipantUtils;
 import lombok.Getter;
 import org.springframework.data.repository.query.Param;
 import java.time.Instant;
@@ -8,6 +9,10 @@ import java.time.Instant;
 /**
  * 채팅방 참가자 정보를 나타냅니다.
  * 사용자 ID, 역할, 연결 상태, 메세지 스톡, 마지막 연결 해제 시간을 관리합니다.
+ * 
+ * 주요 책임:
+ * 1. 실시간 상태 관리 (연결 상태, 메시지 읽음 여부)
+ * 2. 자주 변경되는 데이터 처리
  */
 @Getter
 public class ParticipantInfo {
@@ -47,6 +52,15 @@ public class ParticipantInfo {
     }
 
     /**
+     * 참여자의 안 읽은 메시지 카운터를 설정합니다.
+     * 
+     * @param count 설정할 카운터 값
+     */
+    public void setUnreadCount(int count) {
+        this.messageStock = count;
+    }
+
+    /**
      * 참여자를 연결 상태로 설정합니다.
      */
     public void connect() {
@@ -67,7 +81,7 @@ public class ParticipantInfo {
      * @return 판매자인 경우 true
      */
     public boolean isSeller() {
-        return this.role == MarketRole.SELLER;
+        return ParticipantUtils.isSeller(this.role);
     }
 
     /**
@@ -76,8 +90,6 @@ public class ParticipantInfo {
      * @return 구매자인 경우 true
      */
     public boolean isBuyer() {
-        return this.role == MarketRole.BUYER;
+        return ParticipantUtils.isBuyer(this.role);
     }
-
-
 }

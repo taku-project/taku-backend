@@ -3,7 +3,6 @@ package com.ani.taku_backend.chatroom.domain.repository;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.mongodb.repository.Update;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -11,43 +10,45 @@ import java.util.Optional;
 
 @Repository
 public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo, String> {
+
+    /**
+     * 사용자가 참여한 채팅방 메타정보를 최근 업데이트 순으로 조회
+     */
     @Query("{ 'participants.info.?0': { $exists: true } }")
     List<ChatRoomMetaInfo> findByParticipantIdOrderByUpdateAtDesc(String userId);
 
+    /**
+     * 사용자 ID로 참여한 채팅방 메타정보 조회
+     */
     @Query("{ 'participants.info.?0': {$exists: true} }")
     List<ChatRoomMetaInfo> findByParticipantsUserId(Long userId);
 
+    /**
+     * 채팅방 ID로 메타정보 조회
+     */
     Optional<ChatRoomMetaInfo> findByChatRoomId(Long chatRoomId);
 
+    /**
+     * 채팅방 ID 목록으로 메타정보 조회
+     */
     List<ChatRoomMetaInfo> findByChatRoomIdIn(List<Long> chatRoomIds);
 
-    @Update("{ '$set': { 'participants.info.?1.messageStock': 0 } }")
-    @Query("{ 'chatRoomId': ?0, 'participants.info.?1': { $exists: true } }")
-    void resetMessageStock(Long chatRoomId, Long userId);
-
     /**
-     * 채팅방 메타정보 목록에서 채팅방 ID 목록을 추출합니다.
-     * @param userId 사용자 ID
-     * @return 채팅방 ID 목록
+     * 사용자가 연결된 채팅방 ID 목록 조회
      */
     @Query(value = "{'participants.info.$userId.isConnected': true}", fields = "{'chatRoomId': 1, '_id': 0}")
     List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId);
 
     /**
-     * 참여자 ID로 해당 사용자가 참여한 채팅방 메타정보를 조회합니다.
-     * 연결 상태와 관계없이 모든 채팅방을 조회합니다.
-     * 
-     * @param userId 참여자 ID
-     * @return 채팅방 메타정보 목록
+     * 사용자가 참여한 모든 채팅방 메타정보 조회 (연결 상태 무관)
      */
     @Query(value = "{'participants.info.?0': {$exists: true}}")
     List<ChatRoomMetaInfo> findChatRoomMetaInfosByParticipantUserId(Long userId);
 
     /**
-     * 채팅방 ID 목록에 해당하는 모든 참여자 ID를 추출합니다.
-     * @param chatRoomIds 채팅방 ID 목록
-     * @return 참여자 ID 목록
+     * 채팅방 ID 목록에 해당하는 모든 참여자 ID 추출
      */
     @Query(value = "{'chatRoomId': {$in: ?0}}", fields = "{'participants.info': 1, '_id': 0}")
     List<Long> findAllParticipantIdsByChatRoomIds(List<Long> chatRoomIds);
+
 }

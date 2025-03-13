@@ -11,8 +11,8 @@ import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoomParticipant;
 import com.ani.taku_backend.chatroom.domain.mapper.ChatRoomMapper;
-import com.ani.taku_backend.chatroom.domain.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomParticipantRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -48,13 +48,14 @@ import java.util.stream.Collectors;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomParticipantRepository chatRoomParticipantRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
-    private final ChatMessageRepository chatMessageRepository;
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
     private final ProductImageService productImageService;
     private final ChatRoomMapper chatRoomMapper;
     private final ChatService chatService;
+    private final ParticipantSyncService participantSyncService;
 
     public static final String UNKNOWN_USER = "알 수 없음";
 
@@ -327,8 +328,12 @@ public class ChatRoomService {
         userMap.put(buyer.getUserId(), buyer);
         userMap.put(seller.getUserId(), seller);
 
-        Optional<ChatMessage> lastMessageOpt = chatMessageRepository
-                .findTopByChatRoomIdOrderBySentAtDesc(chatRoom.getId());
+        // 마지막 메시지 조회 (ChatRoomMetaInfo에서 직접 가져옴)
+        Optional<ChatMessage> lastMessageOpt = Optional.empty();
+        List<ChatMessage> messages = chatRoomMetaInfo.getMessages();
+        if (messages != null && !messages.isEmpty()) {
+            lastMessageOpt = Optional.of(messages.get(messages.size() - 1));
+        }
 
         Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
         lastMessageOpt.ifPresent(message -> lastMessageMap.put(chatRoom.getId(), message));
@@ -385,7 +390,7 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
         }
 
-        // MetaInfo 기반 추가 검증 (레거시 데이터 고려)
+        // MetaInfo 기반 추가 검증 (//TODO 레거시 데이터 고려. 추후 삭제 예정)
         List<Long> chatRoomIds = chatRooms.stream()
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
@@ -446,5 +451,54 @@ public class ChatRoomService {
         }
         
         return unreadCountMap;
+    }
+
+    /**
+     * 참여자의 연결 상태를 변경합니다.
+     * MySQL과 MongoDB 양쪽 모두 업데이트하고 동기화합니다.
+     *
+     * @param chatRoomId 채팅방 ID
+     * @param userId 사용자 ID
+     * @param connected 연결 상태 (true: 연결됨, false: 연결 해제)
+     */
+    @Transactional
+    public void updateParticipantConnectionStatus(Long chatRoomId, Long userId, boolean connected) {
+        log.debug("참여자 연결 상태 변경: roomId={}, userId={}, connected={}", chatRoomId, userId, connected);
+        
+        // MySQL 업데이트
+        ChatRoomParticipant participant = chatRoomParticipantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.INVALID_CHAT_USER));
+        
+        participant.setConnected(connected);
+        chatRoomParticipantRepository.save(participant);
+        
+        // MongoDB 동기화
+        participantSyncService.syncToMongoDB(chatRoomId, userId);
+        
+        log.debug("참여자 연결 상태 변경 완료: roomId={}, userId={}, connected={}", chatRoomId, userId, connected);
+    }
+
+    /**
+     * 참여자의 읽지 않은 메시지 수를 초기화합니다.
+     * MySQL과 MongoDB 양쪽 모두 업데이트하고 동기화합니다.
+     *
+     * @param chatRoomId 채팅방 ID
+     * @param userId 사용자 ID
+     */
+    @Transactional
+    public void resetUnreadCount(Long chatRoomId, Long userId) {
+        log.debug("참여자 읽지 않은 메시지 수 초기화: roomId={}, userId={}", chatRoomId, userId);
+        
+        // MySQL 업데이트
+        ChatRoomParticipant participant = chatRoomParticipantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.INVALID_CHAT_USER));
+        
+        participant.resetUnreadCount();
+        chatRoomParticipantRepository.save(participant);
+        
+        // MongoDB 동기화
+        participantSyncService.syncToMongoDB(chatRoomId, userId);
+        
+        log.debug("참여자 읽지 않은 메시지 수 초기화 완료: roomId={}, userId={}", chatRoomId, userId);
     }
 }
