@@ -2,26 +2,30 @@ package com.ani.taku_backend.chatroom.domain.mapper;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.domain.document.Participants;
+import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageResponseDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
 import com.ani.taku_backend.user.model.entity.User;
-import org.mapstruct.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface ChatRoomMapper {
+/**
+ * 채팅방 관련 엔티티와 DTO 간의 변환을 담당하는 매퍼
+ */
+@Component
+@RequiredArgsConstructor
+public class ChatRoomMapper {
 
-    String UNKNOWN_USER = "알 수 없음";
+    public static final String UNKNOWN_USER = "알 수 없음";
 
     /**
      * 채팅방 정보와 부가 정보들을 결합하여 응답 DTO로 변환합니다.
      */
-    default ChatRoomResponseDTO toChatRoomResponseDTO(
+    public ChatRoomResponseDTO toChatRoomResponseDTO(
             ChatRoom chatRoom,
             ChatRoomMetaInfo chatRoomMetaInfo,
             Map<Long, User> userMap,
@@ -29,84 +33,70 @@ public interface ChatRoomMapper {
             Map<Long, Integer> unreadCountMap,
             Map<Long, String> articleImageMap) {
         
-        if (chatRoom == null) {
+        if (chatRoom == null || chatRoomMetaInfo == null) {
             return null;
         }
         
-        // 구매자/판매자 정보 찾기
-        Long buyerId = 0L;
-        Long sellerId = 0L;
-        String buyerNickname = UNKNOWN_USER;
-        String sellerNickname = UNKNOWN_USER;
-        String buyerProfileImageUrl = null;
-        String sellerProfileImageUrl = null;
-        
-        if (chatRoomMetaInfo != null && chatRoomMetaInfo.getParticipants() != null) {
-            Participants participants = chatRoomMetaInfo.getParticipants();
+        Long chatRoomId = chatRoom.getId();
+        User buyer = chatRoom.getBuyer();
+        User seller = chatRoom.getSeller();
 
-            buyerId = participants.getBuyerId() != null ? participants.getBuyerId() : 0L;
-            sellerId = participants.getSellerId() != null ? participants.getSellerId() : 0L;
-            
-            User buyer = userMap.get(buyerId);
-            User seller = userMap.get(sellerId);
-            
-            buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
-            sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
-            buyerProfileImageUrl = buyer != null ? buyer.getProfileImg() : null;
-            sellerProfileImageUrl = seller != null ? seller.getProfileImg() : null;
+        if (buyer == null || seller == null) {
+            return null;
         }
+
+        Long buyerId = buyer.getUserId();
+        Long sellerId = seller.getUserId();
         
-        // 마지막 메시지 정보
-        ChatMessage lastMessage = lastMessageMap.get(chatRoom.getId());
-        String lastMessageContent = lastMessage != null ? lastMessage.getContent() : null;
-        String lastMessageTime = formatMessageTime(lastMessage != null ? lastMessage.getSentAt() : null);
-        Long lastMessageSenderId = lastMessage != null ? lastMessage.getSenderId() : null;
+        // 마지막 메시지 처리
+        ChatMessage lastMessage = lastMessageMap.get(chatRoomId);
+        ChatMessageResponseDTO lastMessageDTO = null;
+        
+        if (lastMessage != null) {
+            // 메시지 발신자 정보 확인
+            User sender = userMap.get(lastMessage.getSenderId());
+            String senderName = sender != null ? sender.getNickname() : UNKNOWN_USER;
+            
+            lastMessageDTO = ChatMessageResponseDTO.builder()
+                    .messageId(lastMessage.getId())
+                    .chatRoomId(lastMessage.getChatRoomId())
+                    .wsRoomId(chatRoom.getWsRoomId())
+                    .senderId(String.valueOf(lastMessage.getSenderId()))
+                    .senderName(senderName)
+                    .content(lastMessage.getContent())
+                    .sentAt(lastMessage.getSentAt())
+                    .read(lastMessage.getRead())
+                    .build();
+        }
+
+        // 아티클 이미지
+        String articleImageUrl = articleImageMap.getOrDefault(chatRoom.getArticleId(), null);
         
         // 안읽은 메시지 수
-        Integer unreadCount = unreadCountMap.getOrDefault(chatRoom.getId(), 0);
-        
-        // 썸네일 URL
-        String articleThumbnailUrl = articleImageMap.get(chatRoom.getArticleId());
+        Integer unreadCount = unreadCountMap.getOrDefault(chatRoomId, 0);
 
-        return new ChatRoomResponseDTO(
-            chatRoom.getId(),
-            chatRoom.getWsRoomId(),
-            chatRoom.getArticleId(),
-            buyerId,
-            sellerId,
-            chatRoom.getCreatedAt(),
-            buyerNickname,
-            sellerNickname,
-            lastMessageContent,
-            lastMessageTime,
-            lastMessageSenderId,
-            unreadCount,
-            articleThumbnailUrl,
-            buyerProfileImageUrl,
-            sellerProfileImageUrl
-        );
+        return ChatRoomResponseDTO.builder()
+                .chatRoomId(chatRoom.getId())
+                .wsRoomId(chatRoom.getWsRoomId())
+                .articleId(chatRoom.getArticleId())
+                .buyerId(buyerId)
+                .sellerId(sellerId)
+                .buyerNickname(buyer.getNickname())
+                .sellerNickname(seller.getNickname())
+                .buyerProfileImageUrl(buyer.getProfileImg())
+                .sellerProfileImageUrl(seller.getProfileImg())
+                .lastMessage(lastMessageDTO)
+                .createdAt(chatRoom.getCreatedAt())
+                .updatedAt(chatRoom.getUpdatedAt())
+                .articleImageUrl(articleImageUrl)
+                .unreadMessageCount(unreadCount)
+                .build();
     }
 
-    default String formatMessageTime(LocalDateTime time) {
+    /**
+     * 시간 형식을 변환합니다.
+     */
+    public String formatMessageTime(LocalDateTime time) {
         return ChatDateTimeFormatter.formatMessageTime(time);
     }
-
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "roomId", source = "wsRoomId")
-    @Mapping(target = "articleId", source = "articleId")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "buyerId", constant = "0L")
-    @Mapping(target = "sellerId", constant = "0L")
-    @Mapping(target = "buyerNickname", constant = "알 수 없음")
-    @Mapping(target = "sellerNickname", constant = "알 수 없음")
-    @Mapping(target = "lastMessage", ignore = true)
-    @Mapping(target = "lastMessageTime", ignore = true)
-    @Mapping(target = "lastMessageSenderId", ignore = true)
-    @Mapping(target = "unreadCount", constant = "0")
-    @Mapping(target = "articleThumbnailUrl", constant = "")
-    @Mapping(target = "buyerProfileImageUrl", constant = "")
-    @Mapping(target = "sellerProfileImageUrl", constant = "")
-    ChatRoomResponseDTO chatRoomToBasicDTO(ChatRoom chatRoom);
-
-    List<ChatRoomResponseDTO> chatRoomsToBasicDTOs(List<ChatRoom> chatRooms);
 } 

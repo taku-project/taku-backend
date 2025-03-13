@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.domain.constant.ParticipantRole;
+import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.document.ParticipantInfo;
@@ -9,6 +9,7 @@ import com.ani.taku_backend.chatroom.domain.document.Participants;
 import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoomParticipant;
 import com.ani.taku_backend.chatroom.domain.mapper.ChatRoomMapper;
 import com.ani.taku_backend.chatroom.domain.repository.ChatMessageRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
@@ -83,10 +84,34 @@ public class ChatRoomService {
 
         validateNewChatRoom(requestDto);
 
+        // User 엔티티 가져오기
+        User buyer = userRepository.findById(requestDto.buyerId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+
+        // ChatRoom 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .articleId(requestDto.articleId())
                 .build();
-
+                
+        // ChatRoomParticipant 생성 및 연결
+        ChatRoomParticipant buyerParticipant = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .user(buyer)
+                .role(MarketRole.BUYER)
+                .build();
+                
+        ChatRoomParticipant sellerParticipant = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .user(seller)
+                .role(MarketRole.SELLER)
+                .build();
+                
+        // 채팅방에 참여자 추가
+        chatRoom.addParticipant(buyerParticipant);
+        chatRoom.addParticipant(sellerParticipant);
+        
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
         ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.builder()
@@ -96,14 +121,11 @@ public class ChatRoomService {
         metaInfo.initializeParticipants(requestDto.buyerId(), sellerId);
         chatRoomMetaRepository.save(metaInfo);
 
-        User buyer = userRepository.findById(requestDto.buyerId()).orElse(null);
-        User seller = userRepository.findById(sellerId).orElse(null);
-
         String articleThumbnailUrl = productImageService.getProductImageUrl(requestDto.articleId());
 
         Map<Long, User> userMap = new HashMap<>();
-        if (buyer != null) userMap.put(buyer.getUserId(), buyer);
-        if (seller != null) userMap.put(seller.getUserId(), seller);
+        userMap.put(buyer.getUserId(), buyer);
+        userMap.put(seller.getUserId(), seller);
         
         Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
         Map<Long, Integer> unreadCountMap = new HashMap<>();
@@ -149,19 +171,25 @@ public class ChatRoomService {
                         (existing, replacement) -> existing
                 ));
 
-        List<Long> participantIds = metaInfos.stream()
-                .filter(meta -> meta.getParticipants() != null)
-                .flatMap(meta -> meta.getParticipants().getAllParticipantIds().stream())
-                .distinct()
-                .collect(Collectors.toList());
-
-        List<User> users = userRepository.findByUserIdIn(participantIds);
-        Map<Long, User> userMap = users.stream()
+        // ChatRoom 객체를 조회하여 매퍼로 변환
+        List<ChatRoom> roomEntities = chatRoomRepository.findAllById(chatRoomIds);
+        Map<Long, ChatRoom> roomMap = roomEntities.stream()
                 .collect(Collectors.toMap(
-                        User::getUserId,
-                        user -> user,
+                        ChatRoom::getId,
+                        room -> room,
                         (existing, replacement) -> existing
                 ));
+
+        // ChatRoom에서 직접 User 정보를 얻음
+        Map<Long, User> userMap = new HashMap<>();
+        for (ChatRoom chatRoom : roomEntities) {
+            if (chatRoom.getBuyer() != null) {
+                userMap.put(chatRoom.getBuyer().getUserId(), chatRoom.getBuyer());
+            }
+            if (chatRoom.getSeller() != null) {
+                userMap.put(chatRoom.getSeller().getUserId(), chatRoom.getSeller());
+            }
+        }
 
         Map<Long, ChatMessage> lastMessageMap = chatService.getLastMessageMap(chatRoomIds);
 
@@ -174,15 +202,6 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
         
         Map<Long, String> articleImageMap = productImageService.getProductImageMap(articleIds);
-        
-        // ChatRoom 객체를 조회하여 매퍼로 변환
-        List<ChatRoom> roomEntities = chatRoomRepository.findAllById(chatRoomIds);
-        Map<Long, ChatRoom> roomMap = roomEntities.stream()
-                .collect(Collectors.toMap(
-                        ChatRoom::getId,
-                        room -> room,
-                        (existing, replacement) -> existing
-                ));
         
         return chatRooms.stream()
                 .map(dto -> {
@@ -216,7 +235,7 @@ public class ChatRoomService {
         List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = getConnectedChatRoomMetaInfos(userId);
         
         if (connectedChatRoomMetaInfos.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
@@ -227,6 +246,7 @@ public class ChatRoomService {
             return Collections.emptyList();
         }
 
+        // ChatRoom 엔티티에는 이미 User 엔티티에 대한 참조가 포함되어 있음
         List<ChatRoom> userChatRooms = chatRoomRepository
                 .findByIdInAndStatusOptimized(chatRoomIds, ChatRoomStatus.ACTIVE);
 
@@ -237,19 +257,17 @@ public class ChatRoomService {
                         (existing, replacement) -> existing
                 ));
 
-        List<Long> participantIds = connectedChatRoomMetaInfos.stream()
-                .flatMap(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
-                        .map(ParticipantInfo::getUserId))
-                .distinct()
-                .collect(Collectors.toList());
-
-        List<User> users = userRepository.findByUserIdIn(participantIds);
-        Map<Long, User> userMap = users.stream()
-                .collect(Collectors.toMap(
-                        User::getUserId,
-                        user -> user,
-                        (existing, replacement) -> existing
-                ));
+        // ChatRoom에서 직접 User 정보를 얻을 수 있지만, 
+        // 다른 메서드와의 일관성을 위해 userMap을 유지
+        Map<Long, User> userMap = new HashMap<>();
+        for (ChatRoom chatRoom : userChatRooms) {
+            if (chatRoom.getBuyer() != null) {
+                userMap.put(chatRoom.getBuyer().getUserId(), chatRoom.getBuyer());
+            }
+            if (chatRoom.getSeller() != null) {
+                userMap.put(chatRoom.getSeller().getUserId(), chatRoom.getSeller());
+            }
+        }
 
         Map<Long, ChatMessage> lastMessageMap = chatService.getLastMessageMap(chatRoomIds);
 
@@ -292,19 +310,22 @@ public class ChatRoomService {
 
         Participants participants = chatRoomMetaInfo.getParticipants();
 
-        Long buyerId = participants.getBuyerId();
-        Long sellerId = participants.getSellerId();
-
-        if (!participants.containsUser(userId) || buyerId == null || sellerId == null) {
+        // 사용자가 이 채팅방에 접근할 권한이 있는지 확인
+        if (!participants.containsUser(userId)) {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
 
-        User buyer = userRepository.findById(buyerId).orElse(null);
-        User seller = userRepository.findById(sellerId).orElse(null);
+        // ChatRoom 엔티티에서 직접 buyer와 seller 정보 사용
+        User buyer = chatRoom.getBuyer();
+        User seller = chatRoom.getSeller();
+
+        if (buyer == null || seller == null) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
 
         Map<Long, User> userMap = new HashMap<>();
-        if (buyer != null) userMap.put(buyer.getUserId(), buyer);
-        if (seller != null) userMap.put(seller.getUserId(), seller);
+        userMap.put(buyer.getUserId(), buyer);
+        userMap.put(seller.getUserId(), seller);
 
         Optional<ChatMessage> lastMessageOpt = chatMessageRepository
                 .findTopByChatRoomIdOrderBySentAtDesc(chatRoom.getId());
@@ -351,6 +372,20 @@ public class ChatRoomService {
             return;
         }
 
+        // participants 컬렉션을 사용하여 중복 체크
+        boolean hasExistingBuyer = chatRooms.stream()
+                .filter(room -> room.getStatus() == ChatRoomStatus.ACTIVE)
+                .flatMap(room -> room.getParticipants().stream())
+                .anyMatch(participant -> 
+                        participant.getUser() != null && 
+                        participant.getUser().getUserId().equals(requestDto.buyerId()) &&
+                        participant.getRole() == MarketRole.BUYER);
+
+        if (hasExistingBuyer) {
+            throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
+        }
+
+        // MetaInfo 기반 추가 검증 (레거시 데이터 고려)
         List<Long> chatRoomIds = chatRooms.stream()
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
@@ -363,7 +398,7 @@ public class ChatRoomService {
                 for (Long key : participants.getInfo().keySet()) {
                     ParticipantInfo participant = participants.getInfo().get(key);
                     if (participant.getUserId().equals(requestDto.buyerId()) &&
-                            participant.getRole() == ParticipantRole.BUYER) {
+                            participant.getRole() == MarketRole.BUYER) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
                     }
                 }

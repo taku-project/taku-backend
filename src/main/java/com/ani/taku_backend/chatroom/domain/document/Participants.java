@@ -1,6 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
-import com.ani.taku_backend.chatroom.domain.constant.ParticipantRole;
+import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
 import lombok.Getter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class Participants {
     public Participants() {
     }
 
-    public void addParticipant(Long userId, ParticipantRole role) {
+    public void addParticipant(Long userId, MarketRole role) {
         info.put(userId, new ParticipantInfo(userId, role));
     }
 
@@ -63,7 +63,7 @@ public class Participants {
      */
     public Map.Entry<Long, ParticipantInfo> findSeller() {
         return info.entrySet().stream()
-                .filter(entry -> entry.getValue().getRole() == ParticipantRole.SELLER)
+                .filter(entry -> entry.getValue().getRole() == MarketRole.SELLER)
                 .findFirst()
                 .orElse(null);
     }
@@ -75,7 +75,7 @@ public class Participants {
      */
     public Map.Entry<Long, ParticipantInfo> findBuyer() {
         return info.entrySet().stream()
-                .filter(entry -> entry.getValue().getRole() == ParticipantRole.BUYER)
+                .filter(entry -> entry.getValue().getRole() == MarketRole.BUYER)
                 .findFirst()
                 .orElse(null);
     }

@@ -45,7 +45,6 @@ public class ChatMessage {
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
-
     public static ChatMessage of(Long roomId, Long articleId, Long senderId, String content) {
         return new ChatMessage(
                 null, // MongoDB의 경우 ID는 자동 생성
@@ -75,7 +74,6 @@ public class ChatMessage {
     public void markAsRead() {
         this.read = true;
     }
-
 
     public static List<ChatMessageResponseDTO> toResponseDTOList(List<ChatMessage> messages) {
         return messages.stream()

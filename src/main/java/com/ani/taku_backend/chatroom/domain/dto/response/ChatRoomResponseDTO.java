@@ -3,23 +3,24 @@ package com.ani.taku_backend.chatroom.domain.dto.response;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+@Builder
 public record ChatRoomResponseDTO(
-        Long id,
-        String roomId,
+        Long chatRoomId,
+        String wsRoomId,
         Long articleId,
         Long buyerId,
         Long sellerId,
-        LocalDateTime createdAt,
         String buyerNickname,
         String sellerNickname,
-        String lastMessage,
-        String lastMessageTime,
-        Long lastMessageSenderId,
-        Integer unreadCount,
-        String articleThumbnailUrl,
+        ChatMessageResponseDTO lastMessage,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        Integer unreadMessageCount,
+        String articleImageUrl,
         String buyerProfileImageUrl,
         String sellerProfileImageUrl
 ) {
@@ -33,30 +34,27 @@ public record ChatRoomResponseDTO(
             Long sellerId,
             String buyerNickname,
             String sellerNickname,
-            ChatMessage lastMessage,
+            ChatMessageResponseDTO lastMessageDTO,
             Integer unreadCount,
-            String articleThumbnailUrl,
+            String articleImageUrl,
             String buyerProfileImageUrl,
             String sellerProfileImageUrl
     ) {
-        LocalDateTime messageTime = lastMessage != null ? lastMessage.getSentAt() : null;
-
-        return new ChatRoomResponseDTO(
-                chatRoom.getId(),
-                chatRoom.getWsRoomId(),
-                chatRoom.getArticleId(),
-                buyerId,
-                sellerId,
-                chatRoom.getCreatedAt(),
-                buyerNickname,
-                sellerNickname,
-                lastMessage != null ? lastMessage.getContent() : null,
-                ChatDateTimeFormatter.formatMessageTime(messageTime),
-                lastMessage != null ? lastMessage.getSenderId() : null,
-                unreadCount,
-                articleThumbnailUrl,
-                buyerProfileImageUrl,
-                sellerProfileImageUrl
-        );
+        return ChatRoomResponseDTO.builder()
+                .chatRoomId(chatRoom.getId())
+                .wsRoomId(chatRoom.getWsRoomId())
+                .articleId(chatRoom.getArticleId())
+                .buyerId(buyerId)
+                .sellerId(sellerId)
+                .buyerNickname(buyerNickname)
+                .sellerNickname(sellerNickname)
+                .lastMessage(lastMessageDTO)
+                .createdAt(chatRoom.getCreatedAt())
+                .updatedAt(chatRoom.getUpdatedAt())
+                .unreadMessageCount(unreadCount)
+                .articleImageUrl(articleImageUrl)
+                .buyerProfileImageUrl(buyerProfileImageUrl)
+                .sellerProfileImageUrl(sellerProfileImageUrl)
+                .build();
     }
 }
