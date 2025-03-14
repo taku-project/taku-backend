@@ -179,11 +179,11 @@ public class ChatService {
      */
     @Transactional(readOnly = true)
     public void validateChatRoomAccess(String wsRoomId, Long userId) {
-        // 채팅방 조회
+
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 메타정보 조회
+
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
@@ -212,7 +212,6 @@ public class ChatService {
         for (ChatRoomMetaInfo meta : metaInfos) {
             List<ChatMessage> messages = meta.getMessages();
             if (messages != null && !messages.isEmpty()) {
-                // 도메인 로직 - 마지막 메시지는 항상 리스트의 마지막 요소
                 result.put(meta.getChatRoomId(), messages.get(messages.size() - 1));
             }
         }
@@ -224,6 +223,24 @@ public class ChatService {
         }
         
         return result;
+    }
+
+    /**
+     * WebSocket 채팅방 ID를 실제 채팅방 ID로 변환합니다.
+     * 
+     * @param wsRoomId WebSocket 채팅방 ID
+     * @return 실제 채팅방 ID 또는 없는 경우 null
+     */
+    public Long getChatRoomIdFromWsRoomId(String wsRoomId) {
+        try {
+            ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+                    .orElse(null);
+            
+            return chatRoom != null ? chatRoom.getId() : null;
+        } catch (Exception e) {
+            log.error("WebSocket 채팅방 ID 변환 중 오류: {}", wsRoomId, e);
+            return null;
+        }
     }
 }
 

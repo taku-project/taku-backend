@@ -40,15 +40,6 @@ public class ChatRoomParticipant extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private MarketRole role;
-    
-    @Column(name = "unread_count")
-    private Integer unreadCount = 0;
-
-    @Column(name = "is_connected")
-    private Boolean isConnected = false;
-    
-    @Column(name = "last_read_message_id")
-    private Long lastReadMessageId;
 
     /**
      * 채팅방 참여자 생성
@@ -58,8 +49,6 @@ public class ChatRoomParticipant extends BaseTimeEntity {
         this.chatRoom = chatRoom;
         this.user = user;
         this.role = role;
-        this.unreadCount = 0;
-        this.isConnected = false;
     }
 
     /**
@@ -69,41 +58,6 @@ public class ChatRoomParticipant extends BaseTimeEntity {
         this.chatRoom = chatRoom;
     }
 
-    /**
-     * 연결 상태를 변경합니다
-     */
-    public void setConnected(boolean connected) {
-        this.isConnected = connected;
-    }
-
-    /**
-     * 읽지 않은 메시지 수를 설정합니다
-     */
-    public void setUnreadCount(int count) {
-        this.unreadCount = count;
-    }
-
-    /**
-     * 읽지 않은 메시지 수를 증가시킵니다
-     */
-    public void incrementUnreadCount() {
-        this.unreadCount++;
-    }
-
-    /**
-     * 읽지 않은 메시지 카운터를 초기화합니다
-     */
-    public void resetUnreadCount() {
-        this.unreadCount = 0;
-    }
-
-    /**
-     * 마지막으로 읽은 메시지 ID를 설정합니다
-     */
-    public void setLastReadMessageId(Long messageId) {
-        this.lastReadMessageId = messageId;
-    }
-    
     /**
      * 참여자가 판매자인지 확인합니다.
      * 

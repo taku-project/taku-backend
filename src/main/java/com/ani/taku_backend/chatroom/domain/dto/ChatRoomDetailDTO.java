@@ -1,6 +1,5 @@
 package com.ani.taku_backend.chatroom.domain.dto;
 
-import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -32,17 +31,4 @@ public class ChatRoomDetailDTO {
     @Builder.Default
     private String articleThumbnailUrl = null;
 
-    /**
-     * 포맷팅된 마지막 메시지 시간을 반환합니다.
-     */
-    public String getLastMessageTime() {
-        return ChatDateTimeFormatter.formatMessageTime(lastMessageSentAt);
-    }
-
-    /**
-     * 상품 썸네일 URL을 설정합니다.
-     */
-    public void setArticleThumbnailUrl(String url) {
-        this.articleThumbnailUrl = url;
-    }
 }

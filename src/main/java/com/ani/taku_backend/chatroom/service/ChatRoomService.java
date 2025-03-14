@@ -55,7 +55,6 @@ public class ChatRoomService {
     private final ProductImageService productImageService;
     private final ChatRoomMapper chatRoomMapper;
     private final ChatService chatService;
-    private final ParticipantSyncService participantSyncService;
 
     public static final String UNKNOWN_USER = "알 수 없음";
 
@@ -151,7 +150,7 @@ public class ChatRoomService {
      * @return 채팅방 응답 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<ChatRoomResponseDTO> findChatRoomListOptimized(Long userId) {
+    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
 
         List<ChatRoomDetailDTO> chatRooms = chatRoomRepository
                 .findChatRoomsWithDetailsForUser(userId, ChatRoomStatus.ACTIVE);
@@ -226,76 +225,6 @@ public class ChatRoomService {
     }
 
     /**
-     * 사용자의 채팅방 목록을 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 채팅방 응답 DTO 목록
-     */
-    @Transactional(readOnly = true)
-    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-        List<ChatRoomMetaInfo> connectedChatRoomMetaInfos = getConnectedChatRoomMetaInfos(userId);
-        
-        if (connectedChatRoomMetaInfos.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<Long> chatRoomIds = connectedChatRoomMetaInfos.stream()
-                .map(ChatRoomMetaInfo::getChatRoomId)
-                .collect(Collectors.toList());
-        
-        if (chatRoomIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // ChatRoom 엔티티에는 이미 User 엔티티에 대한 참조가 포함되어 있음
-        List<ChatRoom> userChatRooms = chatRoomRepository
-                .findByIdInAndStatusOptimized(chatRoomIds, ChatRoomStatus.ACTIVE);
-
-        Map<Long, ChatRoomMetaInfo> chatRoomMetaInfoMap = connectedChatRoomMetaInfos.stream()
-                .collect(Collectors.toMap(
-                        ChatRoomMetaInfo::getChatRoomId,
-                        metaInfo -> metaInfo,
-                        (existing, replacement) -> existing
-                ));
-
-        // ChatRoom에서 직접 User 정보를 얻을 수 있지만, 
-        // 다른 메서드와의 일관성을 위해 userMap을 유지
-        Map<Long, User> userMap = new HashMap<>();
-        for (ChatRoom chatRoom : userChatRooms) {
-            if (chatRoom.getBuyer() != null) {
-                userMap.put(chatRoom.getBuyer().getUserId(), chatRoom.getBuyer());
-            }
-            if (chatRoom.getSeller() != null) {
-                userMap.put(chatRoom.getSeller().getUserId(), chatRoom.getSeller());
-            }
-        }
-
-        Map<Long, ChatMessage> lastMessageMap = chatService.getLastMessageMap(chatRoomIds);
-
-        Map<Long, Integer> unreadCountMap = createUnreadCountMap(chatRoomIds, userId);
-
-        List<Long> articleIds = userChatRooms.stream()
-                .map(ChatRoom::getArticleId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-
-        Map<Long, String> articleImageMap = productImageService.getProductImageMap(articleIds);
-
-        return userChatRooms.stream()
-                .map(chatRoom -> chatRoomMapper.toChatRoomResponseDTO(
-                        chatRoom,
-                        chatRoomMetaInfoMap.get(chatRoom.getId()),
-                        userMap,
-                        lastMessageMap,
-                        unreadCountMap,
-                        articleImageMap
-                ))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * 특정 채팅방의 정보를 조회합니다.
      *
      * @param roomId 채팅방 ID
@@ -328,7 +257,6 @@ public class ChatRoomService {
         userMap.put(buyer.getUserId(), buyer);
         userMap.put(seller.getUserId(), seller);
 
-        // 마지막 메시지 조회 (ChatRoomMetaInfo에서 직접 가져옴)
         Optional<ChatMessage> lastMessageOpt = Optional.empty();
         List<ChatMessage> messages = chatRoomMetaInfo.getMessages();
         if (messages != null && !messages.isEmpty()) {
@@ -390,7 +318,6 @@ public class ChatRoomService {
             throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
         }
 
-        // MetaInfo 기반 추가 검증 (//TODO 레거시 데이터 고려. 추후 삭제 예정)
         List<Long> chatRoomIds = chatRooms.stream()
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
@@ -409,24 +336,6 @@ public class ChatRoomService {
                 }
             }
         }
-    }
-
-    /**
-     * 사용자가 참여한 활성 채팅방 메타 정보를 조회합니다.
-     */
-    public List<ChatRoomMetaInfo> getConnectedChatRoomMetaInfos(Long userId) {
-        List<ChatRoomMetaInfo> userChatRoomMetaInfos = chatRoomMetaRepository
-                .findByParticipantsUserId(userId);
-        
-        if (userChatRoomMetaInfos.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        return userChatRoomMetaInfos.stream()
-                .filter(metaInfo -> metaInfo.getParticipants().getInfo().values().stream()
-                        .anyMatch(participant -> participant.getIsConnected() != null
-                                && participant.getIsConnected()))
-                .collect(Collectors.toList());
     }
 
     /**
@@ -455,7 +364,7 @@ public class ChatRoomService {
 
     /**
      * 참여자의 연결 상태를 변경합니다.
-     * MySQL과 MongoDB 양쪽 모두 업데이트하고 동기화합니다.
+     * MongoDB에서 직접 상태를 업데이트합니다.
      *
      * @param chatRoomId 채팅방 ID
      * @param userId 사용자 ID
@@ -464,41 +373,22 @@ public class ChatRoomService {
     @Transactional
     public void updateParticipantConnectionStatus(Long chatRoomId, Long userId, boolean connected) {
         log.debug("참여자 연결 상태 변경: roomId={}, userId={}, connected={}", chatRoomId, userId, connected);
-        
-        // MySQL 업데이트
-        ChatRoomParticipant participant = chatRoomParticipantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.INVALID_CHAT_USER));
-        
-        participant.setConnected(connected);
-        chatRoomParticipantRepository.save(participant);
-        
-        // MongoDB 동기화
-        participantSyncService.syncToMongoDB(chatRoomId, userId);
+
+        ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        if (!metaInfo.getParticipants().containsUser(userId)) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+        if (connected) {
+            metaInfo.getParticipants().getInfo().get(userId).connect();
+        } else {
+            metaInfo.getParticipants().getInfo().get(userId).disconnect();
+        }
+
+        chatRoomMetaRepository.save(metaInfo);
         
         log.debug("참여자 연결 상태 변경 완료: roomId={}, userId={}, connected={}", chatRoomId, userId, connected);
     }
 
-    /**
-     * 참여자의 읽지 않은 메시지 수를 초기화합니다.
-     * MySQL과 MongoDB 양쪽 모두 업데이트하고 동기화합니다.
-     *
-     * @param chatRoomId 채팅방 ID
-     * @param userId 사용자 ID
-     */
-    @Transactional
-    public void resetUnreadCount(Long chatRoomId, Long userId) {
-        log.debug("참여자 읽지 않은 메시지 수 초기화: roomId={}, userId={}", chatRoomId, userId);
-        
-        // MySQL 업데이트
-        ChatRoomParticipant participant = chatRoomParticipantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.INVALID_CHAT_USER));
-        
-        participant.resetUnreadCount();
-        chatRoomParticipantRepository.save(participant);
-        
-        // MongoDB 동기화
-        participantSyncService.syncToMongoDB(chatRoomId, userId);
-        
-        log.debug("참여자 읽지 않은 메시지 수 초기화 완료: roomId={}, userId={}", chatRoomId, userId);
-    }
 }

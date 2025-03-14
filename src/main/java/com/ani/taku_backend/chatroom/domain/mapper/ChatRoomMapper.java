@@ -65,6 +65,7 @@ public class ChatRoomMapper {
                     .senderName(senderName)
                     .content(lastMessage.getContent())
                     .sentAt(lastMessage.getSentAt())
+                    .formattedTime(ChatDateTimeFormatter.formatMessageTime(lastMessage.getSentAt()))
                     .read(lastMessage.getRead())
                     .build();
         }

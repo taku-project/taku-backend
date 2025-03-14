@@ -1,6 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.dto.response;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
+import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
 import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +16,7 @@ public record ChatMessageResponseDTO(
         String senderName,
         String content,
         LocalDateTime sentAt,
+        String formattedTime,
         Boolean read
 ) {
     public static ChatMessageResponseDTO from(ChatMessage message) {
@@ -24,6 +26,7 @@ public record ChatMessageResponseDTO(
                 .senderId(String.valueOf(message.getSenderId()))
                 .content(message.getContent())
                 .sentAt(message.getSentAt())
+                .formattedTime(ChatDateTimeFormatter.formatMessageTime(message.getSentAt()))
                 .read(message.getRead())
                 .build();
     }

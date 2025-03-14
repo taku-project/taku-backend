@@ -75,7 +75,7 @@ public class ChatMessage {
 
     public static List<ChatMessageResponseDTO> toResponseDTOList(List<ChatMessage> messages) {
         return messages.stream()
-                .map(message -> ChatMessageResponseDTO.from(message))
+                .map(ChatMessageResponseDTO::from)
                 .collect(Collectors.toList());
     }
 }

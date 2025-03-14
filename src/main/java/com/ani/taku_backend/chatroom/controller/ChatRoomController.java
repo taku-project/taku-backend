@@ -79,7 +79,7 @@ public class ChatRoomController {
     @GetMapping
     public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomListOptimized(
+        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomList(
                 principalUser.getUserId());
         return CommonResponse.ok(chatRooms);
     }
