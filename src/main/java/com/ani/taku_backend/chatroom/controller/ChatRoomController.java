@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
+import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
 
 import java.util.List;
 
@@ -183,5 +184,41 @@ public class ChatRoomController {
         ChatMessageListResponseDTO messages = chatService.getChatMessages(wsRoomId, messageId, limit);
 
         return CommonResponse.ok(messages);
+    }
+
+    /**
+     * 사용자가 판매자로 참여한 채팅방 목록을 조회합니다.
+     *
+     * @param principalUser 현재 인증된 사용자
+     * @return 판매자로 참여한 채팅방 목록
+     */
+    @Operation(
+            summary = "판매 중인 채팅방 목록 가져오기", 
+            description = "사용자가 판매자로 참여한 채팅방 목록 조회 API입니다."
+    )
+    @GetMapping("/selling")
+    public CommonResponse<List<ChatRoomResponseDTO>> getSellingChatRooms(
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomListByRole(
+                principalUser.getUserId(), MarketRole.SELLER);
+        return CommonResponse.ok(chatRooms);
+    }
+
+    /**
+     * 사용자가 구매자로 참여한 채팅방 목록을 조회합니다.
+     *
+     * @param principalUser 현재 인증된 사용자
+     * @return 구매자로 참여한 채팅방 목록
+     */
+    @Operation(
+            summary = "구매 중인 채팅방 목록 가져오기", 
+            description = "사용자가 구매자로 참여한 채팅방 목록 조회 API입니다."
+    )
+    @GetMapping("/buying")
+    public CommonResponse<List<ChatRoomResponseDTO>> getBuyingChatRooms(
+            @AuthenticationPrincipal PrincipalUser principalUser) {
+        List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomListByRole(
+                principalUser.getUserId(), MarketRole.BUYER);
+        return CommonResponse.ok(chatRooms);
     }
 }

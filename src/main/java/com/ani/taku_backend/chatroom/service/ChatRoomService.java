@@ -12,7 +12,6 @@ import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoomParticipant;
 import com.ani.taku_backend.chatroom.domain.mapper.ChatRoomMapper;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
-import com.ani.taku_backend.chatroom.domain.repository.ChatRoomParticipantRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -27,6 +26,7 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.chatroom.domain.dto.ChatRoomDetailDTO;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomParticipantRepository;
 
 
 import java.util.Collections;
@@ -48,13 +48,15 @@ import java.util.stream.Collectors;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomParticipantRepository chatRoomParticipantRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
     private final ProductImageService productImageService;
     private final ChatRoomMapper chatRoomMapper;
     private final ChatService chatService;
+    private final ChatRoomParticipantRepository chatRoomParticipantRepository;
+
+
 
     public static final String UNKNOWN_USER = "알 수 없음";
 
@@ -389,6 +391,98 @@ public class ChatRoomService {
         chatRoomMetaRepository.save(metaInfo);
         
         log.debug("참여자 연결 상태 변경 완료: roomId={}, userId={}, connected={}", chatRoomId, userId, connected);
+    }
+
+    /**
+     * 사용자의 역할별 채팅방 목록을 조회합니다.
+     * 
+     * @param userId 사용자 ID
+     * @param role 역할 (BUYER 또는 SELLER)
+     * @return 채팅방 응답 DTO 목록
+     */
+    @Transactional(readOnly = true)
+    public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, MarketRole role) {
+        // 사용자 역할별 참여 채팅방 조회
+        List<ChatRoomParticipant> participants = chatRoomParticipantRepository.findByUserIdAndRole(userId, role);
+        
+        if (participants.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        // 채팅방 ID 목록 추출
+        List<Long> chatRoomIds = participants.stream()
+                .map(participant -> participant.getChatRoom().getId())
+                .collect(Collectors.toList());
+        
+        // 기존 채팅방 조회 로직과 유사하게 처리
+        List<ChatRoomDetailDTO> chatRooms = chatRoomRepository
+                .findChatRoomsWithDetailsForUser(userId, ChatRoomStatus.ACTIVE);
+        
+        // ID 기준으로 필터링
+        chatRooms = chatRooms.stream()
+                .filter(room -> chatRoomIds.contains(room.getId()))
+                .collect(Collectors.toList());
+        
+        if (chatRooms.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findByChatRoomIdIn(chatRoomIds);
+        Map<Long, ChatRoomMetaInfo> metaInfoMap = metaInfos.stream()
+                .collect(Collectors.toMap(
+                        ChatRoomMetaInfo::getChatRoomId,
+                        metaInfo -> metaInfo,
+                        (existing, replacement) -> existing
+                ));
+
+        List<ChatRoom> roomEntities = chatRoomRepository.findAllById(chatRoomIds);
+        Map<Long, ChatRoom> roomMap = roomEntities.stream()
+                .collect(Collectors.toMap(
+                        ChatRoom::getId,
+                        room -> room,
+                        (existing, replacement) -> existing
+                ));
+
+        Map<Long, User> userMap = new HashMap<>();
+        for (ChatRoom chatRoom : roomEntities) {
+            if (chatRoom.getBuyer() != null) {
+                userMap.put(chatRoom.getBuyer().getUserId(), chatRoom.getBuyer());
+            }
+            if (chatRoom.getSeller() != null) {
+                userMap.put(chatRoom.getSeller().getUserId(), chatRoom.getSeller());
+            }
+        }
+
+        Map<Long, ChatMessage> lastMessageMap = chatService.getLastMessageMap(chatRoomIds);
+        Map<Long, Integer> unreadCountMap = createUnreadCountMap(chatRoomIds, userId);
+
+        List<Long> articleIds = chatRooms.stream()
+                .map(ChatRoomDetailDTO::getArticleId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        
+        Map<Long, String> articleImageMap = productImageService.getProductImageMap(articleIds);
+        
+        return chatRooms.stream()
+                .map(dto -> {
+                    ChatRoomMetaInfo metaInfo = metaInfoMap.get(dto.getId());
+                    ChatRoom room = roomMap.get(dto.getId());
+                    if (metaInfo == null || metaInfo.getParticipants() == null || room == null) {
+                        return null;
+                    }
+                    
+                    return chatRoomMapper.toChatRoomResponseDTO(
+                            room,
+                            metaInfo,
+                            userMap,
+                            lastMessageMap,
+                            unreadCountMap,
+                            articleImageMap
+                    );
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
 }
