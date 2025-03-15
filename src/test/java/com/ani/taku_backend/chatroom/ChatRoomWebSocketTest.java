@@ -66,7 +66,7 @@ public class ChatRoomWebSocketTest {
     private ChatRoomRepository chatRoomRepository;
 
     @Autowired
-    private ChatRoomMetaRepository  chatRoomMetaRepository;
+    private ChatRoomMetaRepository chatRoomMetaRepository;
 
     @Value("${jwt.secret}")
     private String secretKeyBase64; // JWT 시크릿 키(base64 인코딩)
@@ -94,8 +94,7 @@ public class ChatRoomWebSocketTest {
 
 
     /**
-     * 테스트용 JWT 액세스 토큰 생성 메서드
-     * JwtUtil의 createAccessToken() 메서드와 유사한 형태로 구현
+     * 테스트용 JWT 액세스 토큰 생성 메서드 JwtUtil의 createAccessToken() 메서드와 유사한 형태로 구현
      */
     private String generateTestJwtToken() {
         Map<String, Object> claims = new HashMap<>();
@@ -114,7 +113,6 @@ public class ChatRoomWebSocketTest {
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + 3600000); // 1시간
-
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -136,10 +134,13 @@ public class ChatRoomWebSocketTest {
                         .providerType(ProviderType.KAKAO.name())
                         .build()));
 
+        // 고유한 wsRoomId 생성 (UUID 활용)
+        String uniqueRoomId = "test-room-id-" + java.util.UUID.randomUUID().toString();
+
         // 테스트 채팅방 생성
-        testRoom = chatRoomRepository.save(ChatRoom.testBuilder()
+        testRoom = chatRoomRepository.save(ChatRoom.builder()
                 .articleId(1L)
-                .wsRoomId("test-room-id")
+                .wsRoomId(uniqueRoomId)
                 .build());
     }
 
@@ -280,12 +281,11 @@ public class ChatRoomWebSocketTest {
         SockJsClient sockJsClient = new SockJsClient(transports);
 
         WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
-        
 
         MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
         messageConverter.getObjectMapper().registerModule(new JavaTimeModule());
         stompClient.setMessageConverter(messageConverter);
-        
+
         return stompClient;
     }
 
@@ -302,7 +302,7 @@ public class ChatRoomWebSocketTest {
             receivedMessages.offer((ChatMessage) payload);
         }
     }
-    
+
     // ReadStatus용 STOMP 프레임 핸들러
     private class ReadStatusStompFrameHandler implements StompFrameHandler {
         @Override
