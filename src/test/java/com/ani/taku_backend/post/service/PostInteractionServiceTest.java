@@ -28,7 +28,7 @@ class PostInteractionServiceTest {
     @Autowired UserRepository userRepository;
 
     private static final int THREAD_COUNT = 10;  // 동시에 실행할 스레드 개수
-    private static final int LIKES_PER_USER = 10; // 한 유저당 좋아요를 누를 게시글 수
+    private static final int LIKES_PER_USER = 10; //4를 게시글 수
 
     @Test
     void postLikesTest() throws InterruptedException {

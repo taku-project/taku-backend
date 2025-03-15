@@ -41,7 +41,7 @@ public class PostInit {
     void init() throws InterruptedException {
 
         int batchSize = 500;
-        int totalPosts = 10000;
+        int totalPosts = 1000;
         int threadCount = 4;
 
         List<User> allUser = userRepository.findAll();
