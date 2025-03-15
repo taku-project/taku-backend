@@ -12,7 +12,7 @@ public class ItemCategoriesInit {
     @Autowired
     ItemCategoriesRepository itemCategoriesRepository;
 
-    @Test
+//    @Test
     void init() {
         ItemCategories[] itemCategoryList = {
                 new ItemCategories(null, "디지털기기"),

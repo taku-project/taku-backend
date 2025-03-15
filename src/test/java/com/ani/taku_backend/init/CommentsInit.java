@@ -41,7 +41,7 @@ public class CommentsInit {
     @Autowired
     EntityManager entityManager;
 
-    @Test
+//    @Test
     void init() throws InterruptedException {
 
         int batchSize = 500;
