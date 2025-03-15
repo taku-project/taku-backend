@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * 채팅방 참여자 정보 모음을 관리하는 클래스
@@ -15,21 +16,35 @@ import java.util.ArrayList;
 public class Participants {
     private Map<Long, ParticipantInfo> info = new ConcurrentHashMap<>();
 
-
+    /**
+     * 새로운 참여자 정보 컬렉션을 생성합니다.
+     */
     public Participants() {
     }
 
+    /**
+     * 새로운 참여자를 추가합니다.
+     *
+     * @param userId 사용자 ID
+     * @param role 사용자 역할
+     */
     public void addParticipant(Long userId, JangterChatRole role) {
         info.put(userId, new ParticipantInfo(userId, role));
     }
 
+    /**
+     * 특정 사용자의 메시지 스톡을 업데이트합니다.
+     *
+     * @param userId 사용자 ID
+     * @param increase true면 증가, false면 초기화
+     */
     public synchronized void updateMessageStock(Long userId, boolean increase) {
-        ParticipantInfo info = this.info.get(userId);
-        if (info != null) {
+        ParticipantInfo participant = this.info.get(userId);
+        if (participant != null) {
             if (increase) {
-                info.plusMessage();
+                participant.plusMessage();
             } else {
-                info.resetMessageStock();
+                participant.resetMessageStock();
             }
         }
     }
@@ -45,29 +60,51 @@ public class Participants {
         return participant != null ? participant.getMessageStock().longValue() : null;
     }
 
-    /*
-    모든 참가자가 연결되지 않은 상태인지(방을 나간 상태인지) 확인하는 함수
-    * */
+    /**
+     * 모든 참가자가 연결되지 않은 상태인지(방을 나간 상태인지) 확인합니다.
+     *
+     * @return 모든 참가자가 연결 해제되었으면 true
+     */
     public boolean allParticipantsInactive() {
         return info.values().stream().allMatch(p -> !p.getIsConnected());
     }
 
-    /*
-     * 참가자 참여 정보를 false로 만드는 비활성화 함수
-     * */
-    public synchronized void setDisconnected(Long userId) {
+    /**
+     * 특정 참가자의 연결 상태를 해제합니다.
+     *
+     * @param userId 사용자 ID
+     */
+    public synchronized void disconnectUser(Long userId) {
         ParticipantInfo participant = info.get(userId);
         if (participant != null) {
             participant.disconnect();
         }
     }
 
+    /**
+     * 특정 참가자의 연결 상태를 활성화합니다.
+     *
+     * @param userId 사용자 ID
+     */
+    public synchronized void connectUser(Long userId) {
+        ParticipantInfo participant = info.get(userId);
+        if (participant != null) {
+            participant.connect();
+        }
+    }
+
+    /**
+     * 특정 사용자가 참가자 목록에 포함되어 있는지 확인합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 포함되어 있으면 true
+     */
     public boolean containsUser(Long userId) {
         return info.containsKey(userId);
     }
 
     /**
-     * 모든 참여자를 조회합니다.
+     * 모든 참여자 ID 목록을 반환합니다.
      *
      * @return 참여자 ID 목록
      */
@@ -78,63 +115,45 @@ public class Participants {
     /**
      * 판매자 참여자를 찾습니다.
      *
-     * @return 판매자 ID와 정보
+     * @return 판매자 ID와 정보가 담긴 Optional
      */
-    public Map.Entry<Long, ParticipantInfo> findSeller() {
+    public Optional<Map.Entry<Long, ParticipantInfo>> findSeller() {
         return info.entrySet().stream()
                 .filter(entry -> entry.getValue().isSeller())
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     /**
      * 구매자 참여자를 찾습니다.
      *
-     * @return 구매자 ID와 정보
+     * @return 구매자 ID와 정보가 담긴 Optional
      */
-    public Map.Entry<Long, ParticipantInfo> findBuyer() {
+    public Optional<Map.Entry<Long, ParticipantInfo>> findBuyer() {
         return info.entrySet().stream()
                 .filter(entry -> entry.getValue().isBuyer())
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     /**
      * 판매자 ID를 조회합니다.
-     * 
-     * @deprecated 현재 사용되지 않음, 필요한 경우 findSeller() 사용 권장
-     * @return 판매자 ID
+     *
+     * @return 판매자 ID (없는 경우 null)
      */
-    @Deprecated
     public Long getSellerId() {
-        Map.Entry<Long, ParticipantInfo> seller = findSeller();
-        return seller != null ? seller.getKey() : null;
+        return findSeller()
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 
     /**
      * 구매자 ID를 조회합니다.
-     * 
-     * @deprecated 현재 사용되지 않음, 필요한 경우 findBuyer() 사용 권장
-     * @return 구매자 ID
+     *
+     * @return 구매자 ID (없는 경우 null)
      */
-    @Deprecated
     public Long getBuyerId() {
-        Map.Entry<Long, ParticipantInfo> buyer = findBuyer();
-        return buyer != null ? buyer.getKey() : null;
-    }
-
-    /**
-     * 특정 사용자를 연결 상태로 설정합니다.
-     * 
-     * @deprecated 향후 ParticipantSyncService 사용 권장
-     * @param userId 사용자 ID
-     */
-    @Deprecated
-    public void setConnected(Long userId) {
-        ParticipantInfo participant = info.get(userId);
-        if (participant != null) {
-            participant.connect();
-        }
+        return findBuyer()
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 
     /**
@@ -145,5 +164,22 @@ public class Participants {
     public boolean isAllDisconnected() {
         return info.values().stream()
                 .allMatch(participant -> participant.getIsConnected() == null || !participant.getIsConnected());
+    }
+
+    /**
+     * 특정 사용자가 특정 역할을 가지고 있는지 확인합니다.
+     *
+     * @param userId 확인할 사용자 ID
+     * @param role 확인할 역할
+     * @return 사용자가 해당 역할을 가지고 있으면 true, 그렇지 않으면 false
+     */
+    public boolean hasUserWithRole(Long userId, JangterChatRole role) {
+        ParticipantInfo participant = info.get(userId);
+        if (participant == null) {
+            return false;
+        }
+        
+        return (role == JangterChatRole.BUYER && participant.isBuyer()) ||
+               (role == JangterChatRole.SELLER && participant.isSeller());
     }
 }

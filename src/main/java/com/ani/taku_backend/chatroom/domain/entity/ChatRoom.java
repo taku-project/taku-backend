@@ -6,22 +6,26 @@ import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 /**
  * 채팅방 정보를 나타내는 엔티티입니다.
  * 각 채팅방은 고유의 WebSocket ID와 관련 상품 정보를 가집니다.
- * 채팅방은 여러 참여자를 가질 수 있습니다.
  */
 @Entity
-@Getter
 @Table(name = "chat_room")
+@Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoom extends BaseTimeEntity {
 
@@ -29,60 +33,100 @@ public class ChatRoom extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ws_room_id", unique = true)
-    private String wsRoomId;  // WebSocket 세션 관리용 ID
+    @Column(unique = true)
+    private String wsRoomId;
 
-    @Column(name = "article_id", nullable = false)
-    private Long articleId;  // 판매글 id
+    @Column
+    private Long articleId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(nullable = false)
+    @Builder.Default
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
-    // 채팅방 참여자 (양방향 매핑)
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatRoomParticipant> participants = new ArrayList<>();
+    @Builder.Default
+    private Set<ChatRoomParticipant> participants = new LinkedHashSet<>();
 
-    @Builder
-    public ChatRoom(Long articleId) {
-        this.wsRoomId = UUID.randomUUID().toString();
-        this.articleId = articleId;
-        this.status = ChatRoomStatus.ACTIVE;
+    /**
+     * 채팅방에 참여자를 추가합니다.
+     * 
+     * @param participant 추가할 참여자
+     * @return 추가된 참여자
+     */
+    public ChatRoomParticipant addParticipant(ChatRoomParticipant participant) {
+        this.participants.add(participant);
+        return participant;
     }
 
     /**
-     * 채팅방 상태를 비활성화합니다
+     * 채팅방에서 참여자를 제거합니다.
+     * 
+     * @param participant 제거할 참여자
+     */
+    public void removeParticipant(ChatRoomParticipant participant) {
+        this.participants.remove(participant);
+    }
+
+    /**
+     * 채팅방 ID를 생성합니다.
+     * 신규 채팅방 생성 시 UUID 기반의 고유 ID를 생성합니다.
+     */
+    @PrePersist
+    public void generateWsRoomId() {
+        if (this.wsRoomId == null) {
+            this.wsRoomId = UUID.randomUUID().toString();
+        }
+    }
+
+    /**
+     * 채팅방을 비활성화합니다.
      */
     public void deactivate() {
         this.status = ChatRoomStatus.INACTIVE;
     }
 
     /**
-     * 채팅방에 참여자를 추가합니다
+     * 채팅방에서 특정 사용자를 찾습니다.
+     * 
+     * @param userId 찾을 사용자 ID
+     * @return 찾은 참여자, 없으면 Optional.empty()
      */
-    public void addParticipant(ChatRoomParticipant participant) {
-        participants.add(participant);
-        participant.setChatRoom(this);
+    public Optional<ChatRoomParticipant> findParticipantByUserId(Long userId) {
+        return this.participants.stream()
+                .filter(p -> p.getUser() != null && p.getUser().getUserId().equals(userId))
+                .findFirst();
     }
 
     /**
-     * 채팅방에서 참여자를 제거합니다
+     * 특정 사용자가 채팅방에 참여하고 있는지 확인합니다.
+     * 
+     * @param userId 확인할 사용자 ID
+     * @return 참여 여부
      */
-    public void removeParticipant(ChatRoomParticipant participant) {
-        participants.remove(participant);
-        participant.setChatRoom(null);
+    public boolean hasParticipant(Long userId) {
+        return findParticipantByUserId(userId).isPresent();
+    }
+
+    /**
+     * 해당 역할을 가진 참여자를 찾습니다.
+     * 
+     * @param role 찾을 역할
+     * @return 해당 역할을 가진 참여자 목록
+     */
+    public List<ChatRoomParticipant> findParticipantsByRole(JangterChatRole role) {
+        return this.participants.stream()
+                .filter(p -> p.getRole() == role)
+                .collect(Collectors.toList());
     }
 
     /**
      * 채팅방의 구매자를 찾습니다.
-     * @return 구매자 User 또는 null
+     * 
+     * @return 구매자의 User 객체, 없으면 null
      */
     public User getBuyer() {
-        if (participants == null || participants.isEmpty()) {
-            return null;
-        }
-        return participants.stream()
-                .filter(p -> p.getRole() == JangterChatRole.BUYER)
+        return findParticipantsByRole(JangterChatRole.BUYER).stream()
                 .findFirst()
                 .map(ChatRoomParticipant::getUser)
                 .orElse(null);
@@ -90,17 +134,44 @@ public class ChatRoom extends BaseTimeEntity {
 
     /**
      * 채팅방의 판매자를 찾습니다.
-     * @return 판매자 User 또는 null
+     * 
+     * @return 판매자의 User 객체, 없으면 null
      */
     public User getSeller() {
-        if (participants == null || participants.isEmpty()) {
-            return null;
-        }
-        return participants.stream()
-                .filter(p -> p.getRole() == JangterChatRole.SELLER)
+        return findParticipantsByRole(JangterChatRole.SELLER).stream()
                 .findFirst()
                 .map(ChatRoomParticipant::getUser)
                 .orElse(null);
     }
 
+    /**
+     * 사용자 ID와 역할로 새로운 채팅방을 생성합니다.
+     * 
+     * @param articleId 상품 ID
+     * @param buyer 구매자
+     * @param seller 판매자
+     * @return 생성된 채팅방 인스턴스
+     */
+    public static ChatRoom createChatRoom(Long articleId, User buyer, User seller) {
+        ChatRoom chatRoom = ChatRoom.builder()
+                .articleId(articleId)
+                .build();
+
+        ChatRoomParticipant buyerParticipant = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .user(buyer)
+                .role(JangterChatRole.BUYER)
+                .build();
+
+        ChatRoomParticipant sellerParticipant = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .user(seller)
+                .role(JangterChatRole.SELLER)
+                .build();
+
+        chatRoom.addParticipant(buyerParticipant);
+        chatRoom.addParticipant(sellerParticipant);
+
+        return chatRoom;
+    }
 }

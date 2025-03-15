@@ -1,6 +1,8 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -184,6 +186,50 @@ public class ChatRoomMetaInfo {
                 message.markAsRead();
             }
         });
+    }
+
+    /**
+     * 사용자가 채팅방을 나갈 때 처리하는 메서드입니다.
+     * 참여자 검증, 상태 변경, 비활성화 처리를 캡슐화합니다.
+     *
+     * @param userId 나가려는 사용자 ID
+     * @return 모든 참여자가 나갔는지 여부
+     * @throws DuckwhoException 유효하지 않은 사용자인 경우 발생
+     */
+    public boolean leaveRoom(Long userId) {
+        if (!this.participants.containsUser(userId)) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+
+        this.participants.disconnectUser(userId);
+        this.checkAndDeactivate();
+
+        return this.participants.isAllDisconnected();
+    }
+
+    /**
+     * 사용자의 채팅방 접근 권한을 검증합니다.
+     *
+     * @param userId 검증할 사용자 ID
+     * @throws DuckwhoException 유효하지 않은 사용자인 경우 발생
+     */
+    public void validateUserAccess(Long userId) {
+        if (!this.participants.containsUser(userId)) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+    }
+
+    /**
+     * 사용자의 모든 메시지를 읽음 처리합니다.
+     * 참여자 검증 및 읽음 처리, 카운터 초기화를 캡슐화합니다.
+     *
+     * @param userId 읽음 처리할 사용자 ID
+     * @throws DuckwhoException 유효하지 않은 사용자인 경우 발생
+     */
+    public void readAllMessages(Long userId) {
+        validateUserAccess(userId);
+        markMessagesAsRead(userId);
+        resetUnreadCount(userId);
     }
 
 }

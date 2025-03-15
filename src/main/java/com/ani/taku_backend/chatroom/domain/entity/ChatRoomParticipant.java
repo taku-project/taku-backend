@@ -8,18 +8,12 @@ import lombok.*;
 
 /**
  * 채팅방 참여자 정보를 나타내는 엔티티입니다.
- * 한 명의 사용자는 여러 채팅방에 참여할 수 있으며, 각 채팅방에는 여러 사용자가 참여할 수 있습니다.
  * ChatRoom과 User 사이의 다대다 관계를 관리합니다.
- * 
- * 주요 책임:
- * 1. User 엔티티와의 관계 관리 (JPA 연관관계)
- * 2. 참여자의 기본 정보 및 영구 데이터 저장
- * 3. 트랜잭션이 필요한 작업 처리
  */
 @Entity
 @Getter
-@Table(name = "chat_room_participant", 
-       uniqueConstraints = @UniqueConstraint(columnNames = {"chat_room_id", "user_id"}))
+@Table(name = "chat_room_participant",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"chat_room_id", "user_id"}))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoomParticipant extends BaseTimeEntity {
 
@@ -34,8 +28,7 @@ public class ChatRoomParticipant extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    
-    // 참여자 역할 (BUYER 또는 SELLER)
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private JangterChatRole role;
@@ -50,16 +43,10 @@ public class ChatRoomParticipant extends BaseTimeEntity {
         this.role = role;
     }
 
-    /**
-     * 채팅방 엔티티를 설정합니다 (양방향 관계 관리용)
-     */
-    void setChatRoom(ChatRoom chatRoom) {
-        this.chatRoom = chatRoom;
-    }
 
     /**
      * 참여자가 판매자인지 확인합니다.
-     * 
+     *
      * @return 판매자인 경우 true
      */
     public boolean isSeller() {
@@ -68,10 +55,42 @@ public class ChatRoomParticipant extends BaseTimeEntity {
 
     /**
      * 참여자가 구매자인지 확인합니다.
-     * 
+     *
      * @return 구매자인 경우 true
      */
     public boolean isBuyer() {
         return role.isBuyer();
     }
-} 
+
+    /**
+     * 특정 사용자의 참여자인지 확인합니다.
+     *
+     * @param userId 확인할 사용자 ID
+     * @return 일치하면 true, 아니면 false
+     */
+    public boolean isUser(Long userId) {
+        return this.user != null && this.user.getUserId().equals(userId);
+    }
+
+    /**
+     * 채팅방 정보와 사용자 정보로 참여자 객체를 생성합니다.
+     *
+     * @param chatRoom 채팅방
+     * @param user 사용자
+     * @param role 역할
+     * @return 생성된 참여자 객체
+     */
+    public static ChatRoomParticipant createParticipant(ChatRoom chatRoom, User user, JangterChatRole role) {
+        ChatRoomParticipant participant = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .user(user)
+                .role(role)
+                .build();
+
+        if (chatRoom != null) {
+            chatRoom.addParticipant(participant);
+        }
+
+        return participant;
+    }
+}
