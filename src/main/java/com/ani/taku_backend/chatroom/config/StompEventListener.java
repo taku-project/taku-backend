@@ -77,7 +77,7 @@ public class StompEventListener {
             try {
                 // 채팅방 ID 추출
                 String roomIdStr = destination.substring("/sub/chat/room/".length());
-                // roomIdStr에서 추가 경로가 있는 경우 제거 (예: /read)
+                // roomIdStr에서 추가 경로가 있는 경우 제거
                 if (roomIdStr.contains("/")) {
                     roomIdStr = roomIdStr.substring(0, roomIdStr.indexOf("/"));
                 }

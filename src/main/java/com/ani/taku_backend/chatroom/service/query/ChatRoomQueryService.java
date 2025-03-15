@@ -114,23 +114,21 @@ public class ChatRoomQueryService {
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 사용자가 채팅방에 참여하고 있는지 확인
+
         if (!chatRoomMetaInfo.getParticipants().containsUser(userId)) {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
 
-        // 참여자 정보 구성
+
         Map<Long, User> userMap = buildUserMap(chatRoom);
 
-        // 마지막 메시지 정보 조회
+
         Map<Long, ChatMessage> lastMessageMap = chatMessageQueryService.findLastMessageMap(List.of(chatRoom.getId()));
 
-        // 안 읽은 메시지 수 구성
         Map<Long, Integer> unreadCountMap = new HashMap<>();
         int unreadCount = chatRoomMetaInfo.getUnreadCount(userId);
         unreadCountMap.put(chatRoom.getId(), unreadCount);
 
-        // 상품 이미지 정보 조회
         Map<Long, String> articleImageMap = getArticleImageMap(chatRoom.getArticleId());
 
         return chatRoomMapper.toChatRoomResponseDTO(

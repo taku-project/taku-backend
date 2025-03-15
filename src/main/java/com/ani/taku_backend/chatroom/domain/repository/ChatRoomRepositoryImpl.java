@@ -39,8 +39,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        // 수정된 쿼리: fetch join 설정 변경
-        // 1. 먼저 사용자가 참여한 채팅방 ID 목록을 조회
         List<Long> chatRoomIds = queryFactory
                 .select(participant.chatRoom.id)
                 .from(participant)
@@ -55,7 +53,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
             return Collections.emptyList();
         }
 
-        // 2. 채팅방 ID 목록으로 채팅방 정보와 연관 정보를 한 번에 조회
         List<ChatRoom> results = queryFactory
                 .selectFrom(chatRoom)
                 .distinct()
@@ -77,8 +74,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        // 수정된 쿼리: fetch join 설정 변경
-        // 1. 먼저 사용자의 특정 역할에 해당하는 채팅방 ID 목록을 조회
+
         List<Long> chatRoomIds = queryFactory
                 .select(participant.chatRoom.id)
                 .from(participant)
@@ -94,7 +90,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
             return Collections.emptyList();
         }
 
-        // 2. 채팅방 ID 목록으로 채팅방 정보와 연관 정보를 한 번에 조회
         List<ChatRoom> results = queryFactory
                 .selectFrom(chatRoom)
                 .distinct()

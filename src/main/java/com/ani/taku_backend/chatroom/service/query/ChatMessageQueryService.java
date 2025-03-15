@@ -70,15 +70,12 @@ public class ChatMessageQueryService {
     public void validateChatRoomAccess(String wsRoomId, Long userId) {
         log.debug("채팅방 접근 권한 검증: wsRoomId={}, userId={}", wsRoomId, userId);
 
-        // 1. 채팅방 엔티티 조회
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 2. 채팅방 메타 정보 조회
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 3. 도메인 객체에 로직 위임
         metaInfo.validateUserAccess(userId);
     }
 
@@ -96,7 +93,6 @@ public class ChatMessageQueryService {
         for (ChatRoomMetaInfo metaInfo : metaInfos) {
             List<ChatMessage> messages = metaInfo.getMessages();
             if (messages != null && !messages.isEmpty()) {
-                // 마지막 메시지 가져오기
                 ChatMessage lastMessage = messages.get(messages.size() - 1);
                 lastMessageMap.put(metaInfo.getChatRoomId(), lastMessage);
             }
