@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.repository;
 
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoomParticipant;
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +21,6 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
      * @return 참여자 정보 목록
      */
     @Query("SELECT p FROM ChatRoomParticipant p WHERE p.user.userId = :userId AND p.role = :role")
-    List<ChatRoomParticipant> findByUserIdAndRole(@Param("userId") Long userId, @Param("role") MarketRole role);
+    List<ChatRoomParticipant> findByUserIdAndRole(@Param("userId") Long userId, @Param("role") JangterChatRole role);
 
 }

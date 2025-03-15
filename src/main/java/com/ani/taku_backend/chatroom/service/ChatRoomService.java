@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.document.ParticipantInfo;
@@ -97,13 +97,13 @@ public class ChatRoomService {
         ChatRoomParticipant buyerParticipant = ChatRoomParticipant.builder()
                 .chatRoom(chatRoom)
                 .user(buyer)
-                .role(MarketRole.BUYER)
+                .role(JangterChatRole.BUYER)
                 .build();
 
         ChatRoomParticipant sellerParticipant = ChatRoomParticipant.builder()
                 .chatRoom(chatRoom)
                 .user(seller)
-                .role(MarketRole.SELLER)
+                .role(JangterChatRole.SELLER)
                 .build();
 
         chatRoom.addParticipant(buyerParticipant);
@@ -304,7 +304,7 @@ public class ChatRoomService {
                 .anyMatch(participant ->
                         participant.getUser() != null &&
                         participant.getUser().getUserId().equals(requestDto.buyerId()) &&
-                        participant.getRole() == MarketRole.BUYER);
+                        participant.getRole() == JangterChatRole.BUYER);
 
         if (hasExistingBuyer) {
             throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
@@ -322,7 +322,7 @@ public class ChatRoomService {
                 for (Long key : participants.getInfo().keySet()) {
                     ParticipantInfo participant = participants.getInfo().get(key);
                     if (participant.getUserId().equals(requestDto.buyerId()) &&
-                            participant.getRole() == MarketRole.BUYER) {
+                            participant.getRole() == JangterChatRole.BUYER) {
                         throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
                     }
                 }
@@ -365,7 +365,7 @@ public class ChatRoomService {
      * @return 채팅방 응답 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, MarketRole role) {
+    public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
 
 
         List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserIdAndRole(

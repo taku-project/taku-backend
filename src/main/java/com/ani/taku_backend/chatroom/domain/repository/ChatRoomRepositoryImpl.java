@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.repository;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.dto.ChatRoomDetailDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.entity.QChatRoom;
@@ -57,7 +57,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
     }
 
     @Override
-    public List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, MarketRole role, ChatRoomStatus status) {
+    public List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, JangterChatRole role, ChatRoomStatus status) {
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
@@ -117,9 +117,9 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
                 ))
                 .from(chatRoom)
                 .join(chatRoom.participants, participant).on(participant.user.userId.eq(userId))
-                .join(chatRoom.participants, buyerParticipant).on(buyerParticipant.role.eq(MarketRole.BUYER))
+                .join(chatRoom.participants, buyerParticipant).on(buyerParticipant.role.eq(JangterChatRole.BUYER))
                 .join(buyerParticipant.user, buyer)
-                .join(chatRoom.participants, sellerParticipant).on(sellerParticipant.role.eq(MarketRole.SELLER))
+                .join(chatRoom.participants, sellerParticipant).on(sellerParticipant.role.eq(JangterChatRole.SELLER))
                 .join(sellerParticipant.user, seller)
                 .where(
                     chatRoom.status.eq(status)

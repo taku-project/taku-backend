@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 
 import java.util.List;
 
@@ -200,7 +200,7 @@ public class ChatRoomController {
     public CommonResponse<List<ChatRoomResponseDTO>> getSellingChatRooms(
             @AuthenticationPrincipal PrincipalUser principalUser) {
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomListByRole(
-                principalUser.getUserId(), MarketRole.SELLER);
+                principalUser.getUserId(), JangterChatRole.SELLER);
         return CommonResponse.ok(chatRooms);
     }
 
@@ -218,7 +218,7 @@ public class ChatRoomController {
     public CommonResponse<List<ChatRoomResponseDTO>> getBuyingChatRooms(
             @AuthenticationPrincipal PrincipalUser principalUser) {
         List<ChatRoomResponseDTO> chatRooms = chatRoomService.findChatRoomListByRole(
-                principalUser.getUserId(), MarketRole.BUYER);
+                principalUser.getUserId(), JangterChatRole.BUYER);
         return CommonResponse.ok(chatRooms);
     }
 }

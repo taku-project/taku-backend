@@ -1,7 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
-import com.ani.taku_backend.chatroom.util.ParticipantUtils;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import lombok.Getter;
 import org.springframework.data.repository.query.Param;
 import java.time.Instant;
@@ -22,7 +21,7 @@ public class ParticipantInfo {
     
     private Long userId;
 
-    private MarketRole role;
+    private JangterChatRole role;
 
     private Boolean isConnected;
     private Integer messageStock;
@@ -32,7 +31,7 @@ public class ParticipantInfo {
     public ParticipantInfo() {
     }
 
-    public ParticipantInfo(@Param("userId") Long userId, @Param("role") MarketRole role) {
+    public ParticipantInfo(@Param("userId") Long userId, @Param("role") JangterChatRole role) {
         this.userId = userId;
         this.role = role;
         this.isConnected = true;
@@ -81,7 +80,7 @@ public class ParticipantInfo {
      * @return 판매자인 경우 true
      */
     public boolean isSeller() {
-        return ParticipantUtils.isSeller(this.role);
+        return role.isSeller();
     }
 
     /**
@@ -90,6 +89,6 @@ public class ParticipantInfo {
      * @return 구매자인 경우 true
      */
     public boolean isBuyer() {
-        return ParticipantUtils.isBuyer(this.role);
+        return role.isBuyer();
     }
 }

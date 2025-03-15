@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.entity;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
@@ -82,7 +82,7 @@ public class ChatRoom extends BaseTimeEntity {
             return null;
         }
         return participants.stream()
-                .filter(p -> p.getRole() == MarketRole.BUYER)
+                .filter(p -> p.getRole() == JangterChatRole.BUYER)
                 .findFirst()
                 .map(ChatRoomParticipant::getUser)
                 .orElse(null);
@@ -97,7 +97,7 @@ public class ChatRoom extends BaseTimeEntity {
             return null;
         }
         return participants.stream()
-                .filter(p -> p.getRole() == MarketRole.SELLER)
+                .filter(p -> p.getRole() == JangterChatRole.SELLER)
                 .findFirst()
                 .map(ChatRoomParticipant::getUser)
                 .orElse(null);

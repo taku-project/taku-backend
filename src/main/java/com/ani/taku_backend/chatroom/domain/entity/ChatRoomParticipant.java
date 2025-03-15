@@ -1,7 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.entity;
 
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
-import com.ani.taku_backend.chatroom.util.ParticipantUtils;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.user.model.entity.User;
 import jakarta.persistence.*;
@@ -39,13 +38,13 @@ public class ChatRoomParticipant extends BaseTimeEntity {
     // 참여자 역할 (BUYER 또는 SELLER)
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private MarketRole role;
+    private JangterChatRole role;
 
     /**
      * 채팅방 참여자 생성
      */
     @Builder
-    public ChatRoomParticipant(ChatRoom chatRoom, User user, MarketRole role) {
+    public ChatRoomParticipant(ChatRoom chatRoom, User user, JangterChatRole role) {
         this.chatRoom = chatRoom;
         this.user = user;
         this.role = role;
@@ -64,7 +63,7 @@ public class ChatRoomParticipant extends BaseTimeEntity {
      * @return 판매자인 경우 true
      */
     public boolean isSeller() {
-        return ParticipantUtils.isSeller(this.role);
+        return role.isSeller();
     }
 
     /**
@@ -73,6 +72,6 @@ public class ChatRoomParticipant extends BaseTimeEntity {
      * @return 구매자인 경우 true
      */
     public boolean isBuyer() {
-        return ParticipantUtils.isBuyer(this.role);
+        return role.isBuyer();
     }
 } 

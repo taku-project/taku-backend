@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.repository;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.dto.ChatRoomDetailDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 
@@ -18,7 +18,7 @@ public interface ChatRoomRepositoryCustom {
     /**
      * 사용자의 특정 역할 채팅방 목록을 모든 연관 엔티티와 함께 한 번에 조회합니다.
      */
-    List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, MarketRole role, ChatRoomStatus status);
+    List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, JangterChatRole role, ChatRoomStatus status);
     
     /**
      * 채팅방 목록에 필요한 모든 정보를 한 번의 쿼리로 조회합니다.

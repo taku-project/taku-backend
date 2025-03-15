@@ -1,6 +1,6 @@
 package com.ani.taku_backend.chatroom;
 
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.dto.request.ChatMessageRequestDTO;
@@ -88,7 +88,7 @@ public class ChatRoomWebSocketTest {
         testToken = "Bearer " + rawToken;
 
         ChatRoomMetaInfo metaInfo = new ChatRoomMetaInfo(testRoom.getId());
-        metaInfo.getParticipants().addParticipant(testUser.getUserId(), MarketRole.BUYER);
+        metaInfo.getParticipants().addParticipant(testUser.getUserId(), JangterChatRole.BUYER);
         chatRoomMetaRepository.save(metaInfo);
     }
 

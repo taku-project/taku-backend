@@ -1,6 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import lombok.Getter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
@@ -19,7 +19,7 @@ public class Participants {
     public Participants() {
     }
 
-    public void addParticipant(Long userId, MarketRole role) {
+    public void addParticipant(Long userId, JangterChatRole role) {
         info.put(userId, new ParticipantInfo(userId, role));
     }
 

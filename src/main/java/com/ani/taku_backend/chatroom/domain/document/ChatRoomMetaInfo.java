@@ -1,6 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
-import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,8 +55,8 @@ public class ChatRoomMetaInfo {
     }
 
     public void initializeParticipants(Long buyerId, Long sellerId) {
-        this.participants.addParticipant(buyerId, MarketRole.BUYER);
-        this.participants.addParticipant(sellerId, MarketRole.SELLER);
+        this.participants.addParticipant(buyerId, JangterChatRole.BUYER);
+        this.participants.addParticipant(sellerId, JangterChatRole.SELLER);
     }
 
     /*
