@@ -142,28 +142,81 @@ public class ChatRoomService {
     }
 
     /**
-     * 사용자의 채팅방 목록을 조회합니다.
-     * @param userId 사용자 ID
-     * @return 채팅방 응답 DTO 목록
+     * 여러 채팅방 관련 데이터를 한 번에 조회하는 최적화 메서드
+     * MongoDB 접근을 최소화하기 위해 여러 조회를 하나로 합침
      */
-    @Transactional(readOnly = true)
+    private Map<String, Object> getChatRoomData(List<Long> chatRoomIds, Long userId) {
+        log.info("채팅방 관련 데이터 일괄 조회 시작: 채팅방 {}개, 사용자 ID {}", chatRoomIds.size(), userId);
+        Map<String, Object> result = new HashMap<>();
+        
+        if (chatRoomIds == null || chatRoomIds.isEmpty()) {
+            log.warn("채팅방 ID 목록이 비어있어 빈 데이터 반환");
+            result.put("metaInfos", List.of());
+            result.put("lastMessageMap", Map.of());
+            result.put("unreadCountMap", Map.of());
+            return result;
+        }
+
+        // 1. MongoDB에서 메타 정보 한 번에 조회
+        List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
+        log.info("메타 정보 조회 완료: {}개 채팅방", metaInfos.size());
+        
+        // 2. 조회된 정보에서 필요한 데이터 추출
+        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
+        Map<Long, Integer> unreadCountMap = new HashMap<>();
+        
+        for (ChatRoomMetaInfo metaInfo : metaInfos) {
+            Long chatRoomId = metaInfo.getChatRoomId();
+            
+            // 마지막 메시지 추출
+            List<ChatMessage> messages = metaInfo.getMessages();
+            if (messages != null && !messages.isEmpty()) {
+                lastMessageMap.put(chatRoomId, messages.get(messages.size() - 1));
+            }
+            
+            // 안 읽은 메시지 수 추출
+            int unreadCount = metaInfo.getUnreadCount(userId);
+            unreadCountMap.put(chatRoomId, unreadCount);
+        }
+        
+        // 모든 채팅방에 대해 데이터가 있는지 확인
+        for (Long chatRoomId : chatRoomIds) {
+            unreadCountMap.putIfAbsent(chatRoomId, 0);
+        }
+        
+        // 결과 맵에 저장
+        result.put("metaInfos", metaInfos);
+        result.put("lastMessageMap", lastMessageMap);
+        result.put("unreadCountMap", unreadCountMap);
+        
+        log.info("채팅방 데이터 일괄 조회 완료: 메타정보 {}개, 메시지 {}개, 안읽은 메시지 맵 {}개", 
+                 metaInfos.size(), lastMessageMap.size(), unreadCountMap.size());
+        
+        return result;
+    }
+
+    /**
+     * 사용자의 채팅방 목록을 조회합니다. (최적화 버전)
+     * 채팅방 목록, 마지막 메시지, 안 읽은 메시지 수 등을 효율적으로 조회합니다.
+     */
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-
-
-        List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithParticipantsAndUsers(
-                userId, ChatRoomStatus.ACTIVE);
-
+        log.info("채팅방 목록 조회 시작: userId={}", userId);
+        List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithParticipantsAndUsers(userId, ChatRoomStatus.ACTIVE);
 
         if (chatRooms.isEmpty()) {
-            return Collections.emptyList();
+            log.info("채팅방이 없습니다: userId={}", userId);
+            return List.of();
         }
 
         List<Long> chatRoomIds = chatRooms.stream()
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
 
-
-        List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
+        // 최적화: 여러 MongoDB 조회를 하나로 통합
+        Map<String, Object> chatRoomData = getChatRoomData(chatRoomIds, userId);
+        List<ChatRoomMetaInfo> metaInfos = (List<ChatRoomMetaInfo>) chatRoomData.get("metaInfos");
+        Map<Long, ChatMessage> lastMessageMap = (Map<Long, ChatMessage>) chatRoomData.get("lastMessageMap");
+        Map<Long, Integer> unreadCountMap = (Map<Long, Integer>) chatRoomData.get("unreadCountMap");
 
         Map<Long, ChatRoomMetaInfo> metaInfoMap = metaInfos.stream()
                 .collect(Collectors.toMap(
@@ -171,7 +224,6 @@ public class ChatRoomService {
                         Function.identity(),
                         (existing, replacement) -> existing
                 ));
-
 
         Map<Long, User> userMap = new HashMap<>();
         for (ChatRoom chatRoom : chatRooms) {
@@ -181,12 +233,6 @@ public class ChatRoomService {
             if (buyer != null) userMap.put(buyer.getUserId(), buyer);
             if (seller != null) userMap.put(seller.getUserId(), seller);
         }
-
-
-        Map<Long, ChatMessage> lastMessageMap = chatService.getLastMessageMap(chatRoomIds);
-
-
-        Map<Long, Integer> unreadCountMap = chatRoomMetaRepository.getUnreadCountMap(chatRoomIds, userId);
 
         List<Long> articleIds = chatRooms.stream()
                 .map(ChatRoom::getArticleId)
