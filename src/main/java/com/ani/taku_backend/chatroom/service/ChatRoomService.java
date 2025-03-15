@@ -142,15 +142,12 @@ public class ChatRoomService {
     }
 
     /**
-     * 여러 채팅방 관련 데이터를 한 번에 조회하는 최적화 메서드
-     * MongoDB 접근을 최소화하기 위해 여러 조회를 하나로 합침
+     * 채팅방 관련 데이터를 MongoDB에서 한 번에 조회하는 메서드
      */
     private Map<String, Object> getChatRoomData(List<Long> chatRoomIds, Long userId) {
-        log.info("채팅방 관련 데이터 일괄 조회 시작: 채팅방 {}개, 사용자 ID {}", chatRoomIds.size(), userId);
         Map<String, Object> result = new HashMap<>();
         
         if (chatRoomIds == null || chatRoomIds.isEmpty()) {
-            log.warn("채팅방 ID 목록이 비어있어 빈 데이터 반환");
             result.put("metaInfos", List.of());
             result.put("lastMessageMap", Map.of());
             result.put("unreadCountMap", Map.of());
@@ -159,7 +156,6 @@ public class ChatRoomService {
 
         // 1. MongoDB에서 메타 정보 한 번에 조회
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
-        log.info("메타 정보 조회 완료: {}개 채팅방", metaInfos.size());
         
         // 2. 조회된 정보에서 필요한 데이터 추출
         Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
@@ -189,22 +185,16 @@ public class ChatRoomService {
         result.put("lastMessageMap", lastMessageMap);
         result.put("unreadCountMap", unreadCountMap);
         
-        log.info("채팅방 데이터 일괄 조회 완료: 메타정보 {}개, 메시지 {}개, 안읽은 메시지 맵 {}개", 
-                 metaInfos.size(), lastMessageMap.size(), unreadCountMap.size());
-        
         return result;
     }
 
     /**
-     * 사용자의 채팅방 목록을 조회합니다. (최적화 버전)
-     * 채팅방 목록, 마지막 메시지, 안 읽은 메시지 수 등을 효율적으로 조회합니다.
+     * 사용자의 채팅방 목록을 조회합니다.
      */
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-        log.info("채팅방 목록 조회 시작: userId={}", userId);
         List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithParticipantsAndUsers(userId, ChatRoomStatus.ACTIVE);
 
         if (chatRooms.isEmpty()) {
-            log.info("채팅방이 없습니다: userId={}", userId);
             return List.of();
         }
 
@@ -212,7 +202,6 @@ public class ChatRoomService {
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
 
-        // 최적화: 여러 MongoDB 조회를 하나로 통합
         Map<String, Object> chatRoomData = getChatRoomData(chatRoomIds, userId);
         List<ChatRoomMetaInfo> metaInfos = (List<ChatRoomMetaInfo>) chatRoomData.get("metaInfos");
         Map<Long, ChatMessage> lastMessageMap = (Map<Long, ChatMessage>) chatRoomData.get("lastMessageMap");
@@ -260,7 +249,6 @@ public class ChatRoomService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        log.info("최종 반환 채팅방 DTO 수: {}", result.size());
         return result;
     }
 
@@ -412,8 +400,6 @@ public class ChatRoomService {
      */
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
-
-
         List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserIdAndRole(
                 userId, role, ChatRoomStatus.ACTIVE);
 
@@ -421,10 +407,7 @@ public class ChatRoomService {
             return Collections.emptyList();
         }
 
-
         List<ChatRoomResponseDTO> result = buildChatRoomResponseDTOs(chatRooms, userId);
-
-
         return result;
     }
 
@@ -433,11 +416,9 @@ public class ChatRoomService {
      * 공통 로직을 추출하여 코드 중복을 방지합니다.
      */
     private List<ChatRoomResponseDTO> buildChatRoomResponseDTOs(List<ChatRoom> chatRooms, Long userId) {
-
         List<Long> chatRoomIds = chatRooms.stream()
                 .map(ChatRoom::getId)
                 .collect(Collectors.toList());
-
 
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
 
@@ -468,7 +449,6 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
 
         Map<Long, String> articleImageMap = productImageService.getProductImageMap(articleIds);
-
 
         List<ChatRoomResponseDTO> result = chatRooms.stream()
                 .map(room -> {
