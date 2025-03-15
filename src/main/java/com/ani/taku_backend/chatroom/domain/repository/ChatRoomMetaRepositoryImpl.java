@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
-
-
 @Slf4j
 public class ChatRoomMetaRepositoryImpl implements ChatRoomMetaRepositoryCustom {
 
@@ -35,54 +33,14 @@ public class ChatRoomMetaRepositoryImpl implements ChatRoomMetaRepositoryCustom 
         return results;
     }
 
-    @Override
-    public Map<Long, Integer> getUnreadCountMap(List<Long> chatRoomIds, Long userId) {
-        if (chatRoomIds == null || chatRoomIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        Map<Long, Integer> unreadCountMap = new HashMap<>();
-
-        List<ChatRoomMetaInfo> metaInfos = mongoTemplate.find(
-                Query.query(Criteria.where("chatRoomId").in(chatRoomIds)),
-                ChatRoomMetaInfo.class
-        );
-        
-        int totalUnreadMessages = 0;
-
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            int unreadCount = metaInfo.getUnreadCount(userId);
-            unreadCountMap.put(metaInfo.getChatRoomId(), unreadCount);
-            totalUnreadMessages += unreadCount;
-        }
-
-        for (Long chatRoomId : chatRoomIds) {
-            unreadCountMap.putIfAbsent(chatRoomId, 0);
-        }
-        
-        return unreadCountMap;
-    }
 
     @Override
-    public Map<Long, ChatMessage> getLastMessageMap(List<Long> chatRoomIds) {
+    public List<ChatRoomMetaInfo> findMetaInfosByChatRoomIds(List<Long> chatRoomIds) {
         if (chatRoomIds == null || chatRoomIds.isEmpty()) {
-            return new HashMap<>();
+            return List.of();
         }
 
         Query query = new Query(Criteria.where("chatRoomId").in(chatRoomIds));
-        List<ChatRoomMetaInfo> metaInfos = mongoTemplate.find(query, ChatRoomMetaInfo.class);
-
-        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
-
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            List<ChatMessage> messages = metaInfo.getMessages();
-            if (messages != null && !messages.isEmpty()) {
-                // 마지막 메시지 가져오기
-                ChatMessage lastMessage = messages.get(messages.size() - 1);
-                lastMessageMap.put(metaInfo.getChatRoomId(), lastMessage);
-            }
-        }
-
-        return lastMessageMap;
+        return mongoTemplate.find(query, ChatRoomMetaInfo.class);
     }
 }

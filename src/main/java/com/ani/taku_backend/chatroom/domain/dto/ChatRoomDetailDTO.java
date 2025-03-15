@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 /**
  * 채팅방 상세 정보를 담는 DTO 클래스입니다.
- * QueryDSL을 통해 최적화된 쿼리로 조회되는 결과를 담습니다.
  */
 @Getter
 @ToString

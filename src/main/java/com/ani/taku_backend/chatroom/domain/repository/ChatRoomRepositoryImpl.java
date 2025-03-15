@@ -12,7 +12,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -33,67 +32,54 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
     @Override
     public List<ChatRoom> findChatRoomsWithParticipantsAndUsers(Long userId, ChatRoomStatus status) {
+        
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        List<Long> chatRoomIds = queryFactory
-                .select(participant.chatRoom.id)
-                .from(participant)
-                .where(
-                    participant.user.userId.eq(userId),
-                    participant.chatRoom.status.eq(status)
-                )
-                .fetch();
-
-        if (chatRoomIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
         List<ChatRoom> results = queryFactory
                 .selectDistinct(chatRoom)
                 .from(chatRoom)
-                .leftJoin(chatRoom.participants, participant).fetchJoin()
-                .leftJoin(participant.user, user).fetchJoin()
-                .where(chatRoom.id.in(chatRoomIds))
+                .join(chatRoom.participants, participant)
+                .join(participant.user, user).fetchJoin()
+                .leftJoin(chatRoom.participants).fetchJoin()
+                .where(
+                    participant.user.userId.eq(userId),
+                    chatRoom.status.eq(status)
+                )
                 .fetch();
 
+        
         return results;
     }
 
     @Override
     public List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, JangterChatRole role, ChatRoomStatus status) {
+        
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        List<Long> chatRoomIds = queryFactory
-                .select(participant.chatRoom.id)
-                .from(participant)
-                .where(
-                    participant.user.userId.eq(userId),
-                    participant.role.eq(role),
-                    participant.chatRoom.status.eq(status)
-                )
-                .fetch();
-
-        if (chatRoomIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
         List<ChatRoom> results = queryFactory
                 .selectDistinct(chatRoom)
                 .from(chatRoom)
-                .leftJoin(chatRoom.participants, participant).fetchJoin()
-                .leftJoin(participant.user, user).fetchJoin()
-                .where(chatRoom.id.in(chatRoomIds))
+                .join(chatRoom.participants, participant)
+                .join(participant.user, user).fetchJoin()
+                .leftJoin(chatRoom.participants).fetchJoin()
+                .where(
+                    participant.user.userId.eq(userId),
+                    participant.role.eq(role),
+                    chatRoom.status.eq(status)
+                )
                 .fetch();
 
+        
         return results;
     }
 
     @Override
     public List<ChatRoomDetailDTO> findChatRoomsWithAllDetails(Long userId, ChatRoomStatus status) {
+        
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QChatRoomParticipant buyerParticipant = new QChatRoomParticipant("buyerParticipant");
@@ -101,7 +87,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         QUser buyer = new QUser("buyer");
         QUser seller = new QUser("seller");
 
-        return queryFactory
+        List<ChatRoomDetailDTO> results = queryFactory
                 .select(Projections.constructor(ChatRoomDetailDTO.class,
                         chatRoom.id,
                         chatRoom.wsRoomId,
@@ -128,10 +114,14 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
                     chatRoom.status.eq(status)
                 )
                 .fetch();
+
+        
+        return results;
     }
 
     @Override
     public Optional<ChatRoom> findByWsRoomIdWithParticipantsAndUsers(String wsRoomId) {
+        
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
@@ -139,8 +129,8 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         ChatRoom result = queryFactory
                 .selectDistinct(chatRoom)
                 .from(chatRoom)
-                .join(chatRoom.participants, participant).fetchJoin()
-                .join(participant.user, user).fetchJoin()
+                .leftJoin(chatRoom.participants, participant).fetchJoin()
+                .leftJoin(participant.user, user).fetchJoin()
                 .where(chatRoom.wsRoomId.eq(wsRoomId))
                 .fetchOne();
 

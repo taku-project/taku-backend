@@ -64,10 +64,10 @@ public class ChatMessageFacadeService {
     }
 
     /**
-     * 여러 채팅방의 마지막 메시지를 한 번에 가져옵니다.
+     * 여러 채팅방의 마지막 메시지를 찾습니다.
      */
-    public Map<Long, ChatMessage> getLastMessageMap(List<Long> chatRoomIds) {
-        return queryService.getLastMessageMap(chatRoomIds);
+    public Map<Long, ChatMessage> findLastMessageMap(List<Long> chatRoomIds) {
+        return queryService.findLastMessageMap(chatRoomIds);
     }
 
     /**

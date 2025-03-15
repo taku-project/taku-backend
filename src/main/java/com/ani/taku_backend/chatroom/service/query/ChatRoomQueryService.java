@@ -54,7 +54,7 @@ public class ChatRoomQueryService {
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
 
         Map<Long, ChatMessage> lastMessageMap = getLastMessagesFromMetaInfos(metaInfos);
-        Map<Long, Integer> unreadCountMap = getUnreadCountMapFromMetaInfos(metaInfos, userId, chatRoomIds);
+        Map<Long, Integer> unreadCountMap = findUnreadCountMapFromMetaInfos(metaInfos, userId, chatRoomIds);
 
         result.put("metaInfos", metaInfos);
         result.put("lastMessageMap", lastMessageMap);
@@ -78,7 +78,7 @@ public class ChatRoomQueryService {
         return lastMessageMap;
     }
 
-    private Map<Long, Integer> getUnreadCountMapFromMetaInfos(
+    private Map<Long, Integer> findUnreadCountMapFromMetaInfos(
             List<ChatRoomMetaInfo> metaInfos, Long userId, List<Long> chatRoomIds) {
 
         Map<Long, Integer> unreadCountMap = new HashMap<>();
@@ -123,11 +123,12 @@ public class ChatRoomQueryService {
         Map<Long, User> userMap = buildUserMap(chatRoom);
 
         // 마지막 메시지 정보 조회
-        Map<Long, ChatMessage> lastMessageMap = chatMessageQueryService.getLastMessageMap(List.of(chatRoom.getId()));
+        Map<Long, ChatMessage> lastMessageMap = chatMessageQueryService.findLastMessageMap(List.of(chatRoom.getId()));
 
-        // 안 읽은 메시지 수 조회
-        Map<Long, Integer> unreadCountMap = chatRoomMetaRepository.getUnreadCountMap(
-                List.of(chatRoom.getId()), userId);
+        // 안 읽은 메시지 수 구성
+        Map<Long, Integer> unreadCountMap = new HashMap<>();
+        int unreadCount = chatRoomMetaInfo.getUnreadCount(userId);
+        unreadCountMap.put(chatRoom.getId(), unreadCount);
 
         // 상품 이미지 정보 조회
         Map<Long, String> articleImageMap = getArticleImageMap(chatRoom.getArticleId());

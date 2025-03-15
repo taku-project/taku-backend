@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Collections;
+import java.util.HashMap;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -84,19 +85,29 @@ public class ChatMessageQueryService {
     /**
      * 여러 채팅방의 마지막 메시지를 한 번에 가져옵니다.
      */
-    public Map<Long, ChatMessage> getLastMessageMap(List<Long> chatRoomIds) {
+    public Map<Long, ChatMessage> findLastMessageMap(List<Long> chatRoomIds) {
         if (chatRoomIds == null || chatRoomIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        Map<Long, ChatMessage> result = chatRoomMetaRepository.getLastMessageMap(chatRoomIds);
+        List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfosByChatRoomIds(chatRoomIds);
+        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
         
-        int missingRooms = chatRoomIds.size() - result.size();
+        for (ChatRoomMetaInfo metaInfo : metaInfos) {
+            List<ChatMessage> messages = metaInfo.getMessages();
+            if (messages != null && !messages.isEmpty()) {
+                // 마지막 메시지 가져오기
+                ChatMessage lastMessage = messages.get(messages.size() - 1);
+                lastMessageMap.put(metaInfo.getChatRoomId(), lastMessage);
+            }
+        }
+        
+        int missingRooms = chatRoomIds.size() - lastMessageMap.size();
         if (missingRooms > 0) {
             log.debug("일부 채팅방({})의 마지막 메시지를 찾을 수 없습니다", missingRooms);
         }
         
-        return result;
+        return lastMessageMap;
     }
 
     /**

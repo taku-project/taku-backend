@@ -29,11 +29,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatR
     List<ChatRoom> findByArticleId(Long articleId);
 
     /**
-     * 채팅방 ID 목록을 기반으로 필요한 필드만 조회하는 최적화된 메서드
-     * 
-     * @param chatRoomIds 채팅방 ID 목록
-     * @param status 채팅방 상태
-     * @return 필요한 필드만 포함된 채팅방 목록
+     * 채팅방 ID 목록을 기반으로 필요한 필드만 조회는 메서드.
      */
     @Query("SELECT c FROM ChatRoom c WHERE c.id IN :chatRoomIds AND c.status = :status")
     List<ChatRoom> findByIdInAndStatusOptimized(@Param("chatRoomIds") List<Long> chatRoomIds, @Param("status") ChatRoomStatus status);
