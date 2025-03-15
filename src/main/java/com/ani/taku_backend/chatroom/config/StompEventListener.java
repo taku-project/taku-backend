@@ -1,11 +1,11 @@
 package com.ani.taku_backend.chatroom.config;
 
 import com.ani.taku_backend.chatroom.service.facade.ChatRoomFacadeService;
+import com.ani.taku_backend.chatroom.service.facade.ChatMessageFacadeService;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.ani.taku_backend.chatroom.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -35,7 +35,7 @@ public class StompEventListener {
     // 세션 ID와 채팅방 ID 매핑을 저장 (하나의 세션이 여러 채팅방 구독 가능)
     private final Map<String, Set<Long>> sessionToChatRooms = new ConcurrentHashMap<>();
     private final ChatRoomFacadeService chatRoomFacadeService;
-    private final ChatService chatService;
+    private final ChatMessageFacadeService chatMessageFacadeService;
     
     /**
      * 클라이언트가 WebSocket에 연결되었을 때 호출되는 이벤트 핸들러.
@@ -86,7 +86,7 @@ public class StompEventListener {
                 
                 if (userId != null && StringUtils.hasText(roomIdStr)) {
                     // WebSocket roomId를 실제 채팅방 ID로 변환
-                    Long chatRoomId = chatService.getChatRoomIdFromWsRoomId(roomIdStr);
+                    Long chatRoomId = chatMessageFacadeService.getChatRoomIdFromWsRoomId(roomIdStr);
                     
                     if (chatRoomId != null) {
                         // 세션과 채팅방 매핑 저장

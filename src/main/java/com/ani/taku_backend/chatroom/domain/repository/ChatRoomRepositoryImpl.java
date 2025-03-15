@@ -12,6 +12,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -32,47 +33,77 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
     @Override
     public List<ChatRoom> findChatRoomsWithParticipantsAndUsers(Long userId, ChatRoomStatus status) {
+        log.debug("사용자 ID: {}, 상태: {}로 채팅방 조회 시작", userId, status);
         
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        List<ChatRoom> results = queryFactory
-                .selectDistinct(chatRoom)
-                .from(chatRoom)
-                .join(chatRoom.participants, participant)
-                .join(participant.user, user).fetchJoin()
-                .leftJoin(chatRoom.participants).fetchJoin()
+        // 수정된 쿼리: fetch join 설정 변경
+        // 1. 먼저 사용자가 참여한 채팅방 ID 목록을 조회
+        List<Long> chatRoomIds = queryFactory
+                .select(participant.chatRoom.id)
+                .from(participant)
                 .where(
                     participant.user.userId.eq(userId),
-                    chatRoom.status.eq(status)
+                    participant.chatRoom.status.eq(status)
                 )
                 .fetch();
 
+        if (chatRoomIds.isEmpty()) {
+            log.debug("사용자가 참여한 채팅방이 없습니다: userId={}", userId);
+            return Collections.emptyList();
+        }
+
+        // 2. 채팅방 ID 목록으로 채팅방 정보와 연관 정보를 한 번에 조회
+        List<ChatRoom> results = queryFactory
+                .selectFrom(chatRoom)
+                .distinct()
+                .leftJoin(chatRoom.participants, participant).fetchJoin()
+                .leftJoin(participant.user, user).fetchJoin()
+                .where(chatRoom.id.in(chatRoomIds))
+                .fetch();
+
+        log.debug("조회된 채팅방 수: {}", results.size());
         
         return results;
     }
 
     @Override
     public List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, JangterChatRole role, ChatRoomStatus status) {
+        log.debug("사용자 ID: {}, 역할: {}, 상태: {}로 채팅방 조회 시작", userId, role, status);
         
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        List<ChatRoom> results = queryFactory
-                .selectDistinct(chatRoom)
-                .from(chatRoom)
-                .join(chatRoom.participants, participant)
-                .join(participant.user, user).fetchJoin()
-                .leftJoin(chatRoom.participants).fetchJoin()
+        // 수정된 쿼리: fetch join 설정 변경
+        // 1. 먼저 사용자의 특정 역할에 해당하는 채팅방 ID 목록을 조회
+        List<Long> chatRoomIds = queryFactory
+                .select(participant.chatRoom.id)
+                .from(participant)
                 .where(
                     participant.user.userId.eq(userId),
                     participant.role.eq(role),
-                    chatRoom.status.eq(status)
+                    participant.chatRoom.status.eq(status)
                 )
                 .fetch();
 
+        if (chatRoomIds.isEmpty()) {
+            log.debug("사용자의 역할에 해당하는 채팅방이 없습니다: userId={}, role={}", userId, role);
+            return Collections.emptyList();
+        }
+
+        // 2. 채팅방 ID 목록으로 채팅방 정보와 연관 정보를 한 번에 조회
+        List<ChatRoom> results = queryFactory
+                .selectFrom(chatRoom)
+                .distinct()
+                .leftJoin(chatRoom.participants, participant).fetchJoin()
+                .leftJoin(participant.user, user).fetchJoin()
+                .where(chatRoom.id.in(chatRoomIds))
+                .fetch();
+
+        log.debug("조회된 채팅방 수: {}", results.size());
         
         return results;
     }
@@ -121,19 +152,23 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
     @Override
     public Optional<ChatRoom> findByWsRoomIdWithParticipantsAndUsers(String wsRoomId) {
+        log.debug("WebSocket 채팅방 ID: {}로 채팅방 조회 시작", wsRoomId);
         
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
+        // 수정된 쿼리: 안전한 fetch join 사용
         ChatRoom result = queryFactory
-                .selectDistinct(chatRoom)
-                .from(chatRoom)
+                .selectFrom(chatRoom)
+                .distinct()
                 .leftJoin(chatRoom.participants, participant).fetchJoin()
                 .leftJoin(participant.user, user).fetchJoin()
                 .where(chatRoom.wsRoomId.eq(wsRoomId))
                 .fetchOne();
 
+        log.debug("채팅방 조회 결과: {}", result != null ? "성공" : "실패");
+        
         return Optional.ofNullable(result);
     }
 }

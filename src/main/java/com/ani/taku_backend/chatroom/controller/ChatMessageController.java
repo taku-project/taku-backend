@@ -5,7 +5,7 @@ import com.ani.taku_backend.chatroom.domain.dto.request.ChatMessageRequestDTO;
 import com.ani.taku_backend.chatroom.domain.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.service.ChatService;
+import com.ani.taku_backend.chatroom.service.facade.ChatMessageFacadeService;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Controller;
 public class ChatMessageController {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final ChatService chatService;
+    private final ChatMessageFacadeService chatMessageFacadeService;
     private final ChatRoomRepository chatRoomRepository;
 
     /**
@@ -43,21 +43,18 @@ public class ChatMessageController {
         log.info("[채팅] 메시지 수신: roomId={}, senderId={}", roomId, senderId);
         
         try {
-            // 채팅방 접근 권한 검증
-            chatService.validateChatRoomAccess(roomId, senderId);
+            chatMessageFacadeService.validateChatRoomAccess(roomId, senderId);
             
             if (log.isDebugEnabled()) {
                 log.debug("[채팅] 메시지 내용: {}", messageRequest.content());
             }
 
-            // ChatService를 통해 메시지 저장 및 처리
-            ChatMessage savedMessage = chatService.saveAndProcessMessage(
+            ChatMessage savedMessage = chatMessageFacadeService.saveAndProcessMessage(
                     roomId,
                     senderId,
                     messageRequest.content()
             );
-            
-            // 해당 채팅방 구독자에게 메시지 발행
+
             String destination = "/sub/chat/room/" + roomId;
             messagingTemplate.convertAndSend(destination, savedMessage);
             
@@ -65,8 +62,7 @@ public class ChatMessageController {
         } catch (DuckwhoException e) {
             log.error("[채팅] 메시지 처리 중 오류 발생: roomId={}, senderId={}, error={}", 
                     roomId, senderId, e.getMessage());
-                    
-            // 오류 메시지를 사용자에게 개인적으로 전달 
+
             messagingTemplate.convertAndSendToUser(
                 senderId.toString(), 
                 "/queue/errors",
@@ -75,7 +71,7 @@ public class ChatMessageController {
         } catch (Exception e) {
             log.error("[채팅] 예상치 못한 오류 발생: roomId={}, senderId={}", roomId, senderId, e);
             
-            // 일반 오류 메시지 전송
+
             messagingTemplate.convertAndSendToUser(
                 senderId.toString(), 
                 "/queue/errors", 
@@ -99,10 +95,10 @@ public class ChatMessageController {
         
         try {
             // 채팅방 접근 권한 검증
-            chatService.validateChatRoomAccess(roomId, userId);
+            chatMessageFacadeService.validateChatRoomAccess(roomId, userId);
             
             // 메시지 읽음 상태 비동기 업데이트
-            chatService.markMessagesAsReadAsync(roomId, userId);
+            chatMessageFacadeService.markMessagesAsReadAsync(roomId, userId);
             
             // 채팅방 정보 조회
             ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
@@ -121,8 +117,7 @@ public class ChatMessageController {
         } catch (DuckwhoException e) {
             log.error("[채팅] 읽음 상태 업데이트 중 오류 발생: roomId={}, userId={}, error={}", 
                     roomId, userId, e.getMessage());
-                    
-            // 오류 메시지를 사용자에게 전달
+
             messagingTemplate.convertAndSendToUser(
                 userId.toString(), 
                 "/queue/errors",
@@ -130,8 +125,7 @@ public class ChatMessageController {
             );
         } catch (Exception e) {
             log.error("[채팅] 예상치 못한 오류 발생: roomId={}, userId={}", roomId, userId, e);
-            
-            // 일반 오류 메시지 전송
+
             messagingTemplate.convertAndSendToUser(
                 userId.toString(), 
                 "/queue/errors", 
