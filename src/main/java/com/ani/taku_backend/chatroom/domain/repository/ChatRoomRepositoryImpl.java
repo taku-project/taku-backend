@@ -1,78 +1,146 @@
 package com.ani.taku_backend.chatroom.domain.repository;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
+import com.ani.taku_backend.chatroom.domain.constant.MarketRole;
 import com.ani.taku_backend.chatroom.domain.dto.ChatRoomDetailDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.entity.QChatRoom;
-import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.domain.entity.QChatRoomParticipant;
+import com.ani.taku_backend.user.model.entity.QUser;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
-@Repository
-@RequiredArgsConstructor
+@Slf4j
 public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
-    private final JPAQueryFactory queryFactory;
-    private final ChatRoomMetaRepository chatRoomMetaRepository;
-
-    /**
-     * 사용자의 채팅방 목록을 상세 정보와 함께 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @param status 채팅방 상태
-     * @return 채팅방 상세 정보 DTO 리스트
-     */
-    @Override
-    public List<ChatRoomDetailDTO> findChatRoomsWithDetailsForUser(Long userId, ChatRoomStatus status) {
-        QChatRoom chatRoom = QChatRoom.chatRoom;
-
-        List<ChatRoomMetaInfo> chatRoomMetaInfos = chatRoomMetaRepository.findChatRoomMetaInfosByParticipantUserId(userId);
-        
-        // 메타정보에서 채팅방 ID만 추출
-        List<Long> activeChatRoomIds = chatRoomMetaInfos.stream()
-            .map(ChatRoomMetaInfo::getChatRoomId)
-            .collect(Collectors.toList());
-        
-        if (activeChatRoomIds.isEmpty()) {
-            return List.of();
-        }
-
-
-        List<ChatRoom> rooms = queryFactory
-                .selectFrom(chatRoom)
-                .where(chatRoom.id.in(activeChatRoomIds)
-                        .and(chatRoom.status.eq(status)))
-                .orderBy(chatRoom.createdAt.desc())
-                .fetch();
-        
-        if (rooms.isEmpty()) {
-            return List.of();
-        }
-
-        return rooms.stream()
-                .map(room -> {
-                    // 메타정보에서 해당 채팅방의 안 읽은 메시지 수 조회
-                    int unreadCount = 0;
-                    for (ChatRoomMetaInfo meta : chatRoomMetaInfos) {
-                        if (meta.getChatRoomId().equals(room.getId())) {
-                            unreadCount = meta.getUnreadCount(userId);
-                            break;
-                        }
-                    }
-
-                    return ChatRoomDetailDTO.builder()
-                        .id(room.getId())
-                        .roomId(room.getWsRoomId())
-                        .articleId(room.getArticleId())
-                        .createdAt(room.getCreatedAt())
-                        .unreadCount(unreadCount)
-                        .build();
-                })
-                .collect(Collectors.toList());
+    @PersistenceContext
+    private EntityManager entityManager;
+    
+    private JPAQueryFactory queryFactory;
+    
+    public ChatRoomRepositoryImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+        this.queryFactory = new JPAQueryFactory(entityManager);
     }
-} 
+
+    @Override
+    public List<ChatRoom> findChatRoomsWithParticipantsAndUsers(Long userId, ChatRoomStatus status) {
+        QChatRoom chatRoom = QChatRoom.chatRoom;
+        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
+        QUser user = QUser.user;
+
+        List<ChatRoom> results = queryFactory
+                .selectDistinct(chatRoom)
+                .from(chatRoom)
+                .join(chatRoom.participants, participant).fetchJoin()
+                .join(participant.user, user).fetchJoin()
+                .where(
+                    chatRoom.status.eq(status),
+                    chatRoom.id.in(
+                        queryFactory
+                            .select(participant.chatRoom.id)
+                            .from(participant)
+                            .where(participant.user.userId.eq(userId))
+                    )
+                )
+                .fetch();
+
+        return results;
+    }
+
+    @Override
+    public List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, MarketRole role, ChatRoomStatus status) {
+        QChatRoom chatRoom = QChatRoom.chatRoom;
+        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
+        QUser user = QUser.user;
+
+        List<Long> chatRoomIds = queryFactory
+                .select(participant.chatRoom.id)
+                .from(participant)
+                .where(
+                    participant.user.userId.eq(userId),
+                    participant.role.eq(role),
+                    participant.chatRoom.status.eq(status)
+                )
+                .fetch();
+
+        if (chatRoomIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ChatRoom> results = queryFactory
+                .selectDistinct(chatRoom)
+                .from(chatRoom)
+                .leftJoin(chatRoom.participants, participant).fetchJoin()
+                .leftJoin(participant.user, user).fetchJoin()
+                .where(
+                    chatRoom.id.in(chatRoomIds)
+                )
+                .fetch();
+
+        return results;
+    }
+
+    @Override
+    public List<ChatRoomDetailDTO> findChatRoomsWithAllDetails(Long userId, ChatRoomStatus status) {
+        QChatRoom chatRoom = QChatRoom.chatRoom;
+        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
+        QChatRoomParticipant buyerParticipant = new QChatRoomParticipant("buyerParticipant");
+        QChatRoomParticipant sellerParticipant = new QChatRoomParticipant("sellerParticipant");
+        QUser buyer = new QUser("buyer");
+        QUser seller = new QUser("seller");
+
+        return queryFactory
+                .select(Projections.constructor(ChatRoomDetailDTO.class,
+                        chatRoom.id,
+                        chatRoom.wsRoomId,
+                        chatRoom.articleId,
+                        chatRoom.createdAt,
+                        buyer.userId,
+                        buyer.nickname,
+                        buyer.profileImg,
+                        seller.userId,
+                        seller.nickname,
+                        seller.profileImg,
+                        null, // lastMessage는 MongoDB에서 가져와야 함
+                        null, // lastMessageSentAt
+                        null, // lastMessageSenderId
+                        null  // unreadCount
+                ))
+                .from(chatRoom)
+                .join(chatRoom.participants, participant).on(participant.user.userId.eq(userId))
+                .join(chatRoom.participants, buyerParticipant).on(buyerParticipant.role.eq(MarketRole.BUYER))
+                .join(buyerParticipant.user, buyer)
+                .join(chatRoom.participants, sellerParticipant).on(sellerParticipant.role.eq(MarketRole.SELLER))
+                .join(sellerParticipant.user, seller)
+                .where(
+                    chatRoom.status.eq(status)
+                )
+                .fetch();
+    }
+
+    @Override
+    public Optional<ChatRoom> findByWsRoomIdWithParticipantsAndUsers(String wsRoomId) {
+        QChatRoom chatRoom = QChatRoom.chatRoom;
+        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
+        QUser user = QUser.user;
+
+        ChatRoom result = queryFactory
+                .selectDistinct(chatRoom)
+                .from(chatRoom)
+                .join(chatRoom.participants, participant).fetchJoin()
+                .join(participant.user, user).fetchJoin()
+                .where(chatRoom.wsRoomId.eq(wsRoomId))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+}

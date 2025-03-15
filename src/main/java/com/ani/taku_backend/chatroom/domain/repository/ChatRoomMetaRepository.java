@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo, String> {
+public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo, String>, ChatRoomMetaRepositoryCustom {
 
     /**
      * 사용자가 참여한 채팅방 메타정보를 최근 업데이트 순으로 조회

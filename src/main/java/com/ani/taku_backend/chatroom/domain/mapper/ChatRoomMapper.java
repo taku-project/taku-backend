@@ -9,6 +9,8 @@ import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
 import com.ani.taku_backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -19,6 +21,8 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class ChatRoomMapper {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatRoomMapper.class);
 
     public static final String UNKNOWN_USER = "알 수 없음";
 
@@ -41,12 +45,18 @@ public class ChatRoomMapper {
         User buyer = chatRoom.getBuyer();
         User seller = chatRoom.getSeller();
 
-        if (buyer == null || seller == null) {
+        if (buyer == null && seller == null) {
             return null;
         }
 
-        Long buyerId = buyer.getUserId();
-        Long sellerId = seller.getUserId();
+        Long buyerId = buyer != null ? buyer.getUserId() : null;
+        Long sellerId = seller != null ? seller.getUserId() : null;
+        
+        String buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
+        String sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
+        
+        String buyerProfileImg = buyer != null ? buyer.getProfileImg() : null;
+        String sellerProfileImg = seller != null ? seller.getProfileImg() : null;
         
         // 마지막 메시지 처리
         ChatMessage lastMessage = lastMessageMap.get(chatRoomId);
@@ -82,10 +92,10 @@ public class ChatRoomMapper {
                 .articleId(chatRoom.getArticleId())
                 .buyerId(buyerId)
                 .sellerId(sellerId)
-                .buyerNickname(buyer.getNickname())
-                .sellerNickname(seller.getNickname())
-                .buyerProfileImageUrl(buyer.getProfileImg())
-                .sellerProfileImageUrl(seller.getProfileImg())
+                .buyerNickname(buyerNickname)
+                .sellerNickname(sellerNickname)
+                .buyerProfileImageUrl(buyerProfileImg)
+                .sellerProfileImageUrl(sellerProfileImg)
                 .lastMessage(lastMessageDTO)
                 .createdAt(chatRoom.getCreatedAt())
                 .updatedAt(chatRoom.getUpdatedAt())
