@@ -116,7 +116,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             log.error("유저 정보 추출 실패", e);
             throw new OAuth2AuthenticationException("유저 정보 추출 실패");
         }
-        log.info("OAuth2 attributes: {}", attributes);
+
         // 유저가 있으면 유저 정보 반환
         DefaultOAuth2User getOAuth2User = null;
         switch (providerType) {
