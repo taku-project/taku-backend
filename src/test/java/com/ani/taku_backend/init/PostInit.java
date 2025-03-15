@@ -37,7 +37,7 @@ public class PostInit {
     @Autowired
     CategoryRepository categoryRepository;
 
-    @Test
+//    @Test
     void init() throws InterruptedException {
 
         int batchSize = 500;

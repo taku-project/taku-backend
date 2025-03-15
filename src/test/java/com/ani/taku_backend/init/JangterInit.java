@@ -41,7 +41,7 @@ public class JangterInit {
     @Autowired
     ItemCategoriesRepository itemCategoriesRepository;
 
-    @Test
+//    @Test
     void init() throws InterruptedException {
         int minPrice = 1000;
         int maxPrice = 100000;
