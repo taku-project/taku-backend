@@ -7,10 +7,10 @@ import java.time.Instant;
 
 /**
  * 채팅방 참가자 정보를 나타냅니다.
- * 사용자 ID, 역할, 연결 상태, 메세지 스톡, 마지막 연결 해제 시간을 관리합니다.
+ * 사용자 ID, 역할, 활성화 상태, 메세지 스톡, 마지막 비활성화 시간을 관리합니다.
  * 
  * 주요 책임:
- * 1. 실시간 상태 관리 (연결 상태, 메시지 읽음 여부)
+ * 1. 실시간 상태 관리 (활성화 상태, 메시지 읽음 여부)
  * 2. 자주 변경되는 데이터 처리
  */
 @Getter
@@ -23,9 +23,9 @@ public class ParticipantInfo {
 
     private JangterChatRole role;
 
-    private Boolean isConnected;
+    private Boolean isActive;
     private Integer messageStock;
-    private Instant lastDisconnectedAt;
+    private Instant lastDeactivatedAt;
 
 
     public ParticipantInfo() {
@@ -34,8 +34,8 @@ public class ParticipantInfo {
     public ParticipantInfo(@Param("userId") Long userId, @Param("role") JangterChatRole role) {
         this.userId = userId;
         this.role = role;
-        this.isConnected = true;
-        this.lastDisconnectedAt = Instant.now();
+        this.isActive = true;
+        this.lastDeactivatedAt = null;
         this.messageStock = INITIAL_MESSAGE_STOCK;
     }
 
@@ -60,18 +60,18 @@ public class ParticipantInfo {
     }
 
     /**
-     * 참여자를 연결 상태로 설정합니다.
+     * 참여자를 활성화 상태로 설정합니다.
      */
-    public void connect() {
-        this.isConnected = true;
+    public void activate() {
+        this.isActive = true;
     }
 
     /**
-     * 참여자를 연결 해제 상태로 설정하고 마지막 연결 해제 시간을 현재로 업데이트합니다.
+     * 참여자를 비활성화 상태로 설정하고 마지막 비활성화 시간을 현재로 업데이트합니다.
      */
-    public void disconnect() {
-        this.isConnected = false;
-        this.lastDisconnectedAt = Instant.now();
+    public void deactivate() {
+        this.isActive = false;
+        this.lastDeactivatedAt = Instant.now();
     }
 
     /**

@@ -66,11 +66,11 @@ public class ChatRoomFacadeService {
     }
 
     /**
-     * 참여자의 연결 상태를 변경합니다.
+     * 참여자의 활성화 상태를 변경합니다.
      */
     @Transactional
-    public void updateParticipantConnectionStatus(Long chatRoomId, Long userId, boolean connected) {
-        applicationService.updateParticipantConnectionStatus(chatRoomId, userId, connected);
+    public void updateParticipantActiveStatus(Long chatRoomId, Long userId, boolean active) {
+        applicationService.updateParticipantActiveStatus(chatRoomId, userId, active);
     }
 
     /**

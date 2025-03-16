@@ -93,7 +93,7 @@ public class StompEventListener {
                         sessionToChatRooms.get(sessionId).add(chatRoomId);
                         
                         // 참여자 상태를 "온라인"으로 변경
-                        chatRoomFacadeService.updateParticipantConnectionStatus(chatRoomId, userId, true);
+                        chatRoomFacadeService.updateParticipantActiveStatus(chatRoomId, userId, true);
                         log.info("사용자 온라인 상태 업데이트: 세션={}, 사용자={}, 채팅방={}", sessionId, userId, chatRoomId);
                     }
                 }
@@ -129,7 +129,7 @@ public class StompEventListener {
                 for (Long chatRoomId : chatRoomIds) {
                     try {
                         // 참여자 상태를 "오프라인"으로 변경
-                        chatRoomFacadeService.updateParticipantConnectionStatus(chatRoomId, userId, false);
+                        chatRoomFacadeService.updateParticipantActiveStatus(chatRoomId, userId, false);
                         log.info("사용자 오프라인 상태 업데이트: 세션={}, 사용자={}, 채팅방={}", sessionId, userId, chatRoomId);
                     } catch (Exception e) {
                         log.error("사용자 오프라인 상태 업데이트 중 오류: 채팅방={}, 사용자={}", chatRoomId, userId, e);

@@ -61,35 +61,35 @@ public class Participants {
     }
 
     /**
-     * 모든 참가자가 연결되지 않은 상태인지(방을 나간 상태인지) 확인합니다.
+     * 모든 참가자가 비활성화 상태인지 확인합니다.
      *
-     * @return 모든 참가자가 연결 해제되었으면 true
+     * @return 모든 참가자가 비활성화 상태이면 true
      */
-    public boolean allParticipantsInactive() {
-        return info.values().stream().allMatch(p -> !p.getIsConnected());
+    public boolean areAllParticipantsInactive() {
+        return info.values().stream().allMatch(p -> !p.getIsActive());
     }
 
     /**
-     * 특정 참가자의 연결 상태를 해제합니다.
+     * 특정 참가자를 비활성화 상태로 설정합니다.
      *
      * @param userId 사용자 ID
      */
-    public synchronized void disconnectUser(Long userId) {
+    public synchronized void deactivateUser(Long userId) {
         ParticipantInfo participant = info.get(userId);
         if (participant != null) {
-            participant.disconnect();
+            participant.deactivate();
         }
     }
 
     /**
-     * 특정 참가자의 연결 상태를 활성화합니다.
+     * 특정 참가자를 활성화 상태로 설정합니다.
      *
      * @param userId 사용자 ID
      */
-    public synchronized void connectUser(Long userId) {
+    public synchronized void activateUser(Long userId) {
         ParticipantInfo participant = info.get(userId);
         if (participant != null) {
-            participant.connect();
+            participant.activate();
         }
     }
 
@@ -157,13 +157,13 @@ public class Participants {
     }
 
     /**
-     * 모든 참여자가 연결 해제 상태인지 확인합니다.
+     * 모든 참여자가 비활성화 상태인지 확인합니다.
      *
-     * @return 모든 참여자가 연결 해제 상태인 경우 true
+     * @return 모든 참여자가 비활성화 상태인 경우 true
      */
-    public boolean isAllDisconnected() {
+    public boolean isAllInactive() {
         return info.values().stream()
-                .allMatch(participant -> participant.getIsConnected() == null || !participant.getIsConnected());
+                .allMatch(participant -> participant.getIsActive() == null || !participant.getIsActive());
     }
 
     /**

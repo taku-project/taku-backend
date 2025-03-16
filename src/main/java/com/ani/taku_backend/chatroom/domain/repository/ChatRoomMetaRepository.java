@@ -12,10 +12,10 @@ import java.util.Optional;
 public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo, String>, ChatRoomMetaRepositoryCustom {
 
     /**
-     * 사용자가 참여한 채팅방 메타정보를 최근 업데이트 순으로 조회
+     * 사용자가 참여한 채팅방 메타정보를 최근 메시지 시간 순으로 조회
      */
     @Query("{ 'participants.info.?0': { $exists: true } }")
-    List<ChatRoomMetaInfo> findByParticipantIdOrderByUpdateAtDesc(String userId);
+    List<ChatRoomMetaInfo> findByParticipantIdOrderByLastMessageAtDesc(String userId);
 
     /**
      * 사용자 ID로 참여한 채팅방 메타정보 조회
@@ -34,9 +34,9 @@ public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo
     List<ChatRoomMetaInfo> findByChatRoomIdIn(List<Long> chatRoomIds);
 
     /**
-     * 사용자가 연결된 채팅방 ID 목록 조회
+     * 사용자가 활성화된 채팅방 ID 목록 조회
      */
-    @Query(value = "{'participants.info.$userId.isConnected': true}", fields = "{'chatRoomId': 1, '_id': 0}")
+    @Query(value = "{'participants.info.$userId.isActive': true}", fields = "{'chatRoomId': 1, '_id': 0}")
     List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId);
 
     /**

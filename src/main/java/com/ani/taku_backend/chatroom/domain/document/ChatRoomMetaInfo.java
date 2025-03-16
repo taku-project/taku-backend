@@ -33,11 +33,15 @@ public class ChatRoomMetaInfo {
     private Participants participants;
 
     private String lastMessageId;
-    private Instant updateAt;
+    private Instant lastMessageAt;
 
     private boolean isActive = true;
     
-
+    /**
+     * 채팅방 메시지 목록
+     * 각 메시지는 간소화된 형태로 저장되며, 메시지 자체 정보만 포함합니다.
+     * 채팅방 관련 정보(articleId 등)는 문서 최상위 레벨에 저장됩니다.
+     */
     private List<ChatMessage> messages = new ArrayList<>();
     private int messageCount = 0;
 
@@ -53,7 +57,7 @@ public class ChatRoomMetaInfo {
     public ChatRoomMetaInfo(@Param("chatRoomId") Long chatRoomId) {
         this.chatRoomId = chatRoomId;
         this.participants = new Participants();
-        this.updateAt = Instant.now();
+        this.lastMessageAt = Instant.now();
     }
 
     public void initializeParticipants(Long buyerId, Long sellerId) {
@@ -66,7 +70,7 @@ public class ChatRoomMetaInfo {
      * 이때 CharRoom 도 같이 deactivate 해준다.
      */
     public void checkAndDeactivate() {
-        if (participants.allParticipantsInactive()) {
+        if (participants.areAllParticipantsInactive()) {
             this.isActive = false;
         }
     }
@@ -93,7 +97,7 @@ public class ChatRoomMetaInfo {
                 participantInfo.plusMessage();
             }
         });
-        this.updateAt = Instant.now();
+        this.lastMessageAt = Instant.now();
     }
 
     /**
@@ -123,7 +127,7 @@ public class ChatRoomMetaInfo {
         messageCount++;
         lastMessageId = message.getId();
         handleNewMessage(message.getId(), message.getSenderId());
-        this.updateAt = Instant.now();
+        this.lastMessageAt = Instant.now();
     }
     
     /**
@@ -201,10 +205,10 @@ public class ChatRoomMetaInfo {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
 
-        this.participants.disconnectUser(userId);
+        this.participants.deactivateUser(userId);
         this.checkAndDeactivate();
 
-        return this.participants.isAllDisconnected();
+        return this.participants.isAllInactive();
     }
 
     /**

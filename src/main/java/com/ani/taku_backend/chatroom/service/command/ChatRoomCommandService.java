@@ -74,9 +74,9 @@ public class ChatRoomCommandService {
     }
 
     /**
-     * 참여자의 연결 상태를 변경합니다.
+     * 참여자의 활성화 상태를 변경합니다.
      */
-    public void updateParticipantConnectionStatus(Long chatRoomId, Long userId, boolean connected) {
+    public void updateParticipantActiveStatus(Long chatRoomId, Long userId, boolean active) {
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
@@ -84,10 +84,10 @@ public class ChatRoomCommandService {
             throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
         }
         
-        if (connected) {
-            metaInfo.getParticipants().getInfo().get(userId).connect();
+        if (active) {
+            metaInfo.getParticipants().getInfo().get(userId).activate();
         } else {
-            metaInfo.getParticipants().getInfo().get(userId).disconnect();
+            metaInfo.getParticipants().getInfo().get(userId).deactivate();
         }
 
         chatRoomMetaRepository.save(metaInfo);
