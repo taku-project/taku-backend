@@ -153,7 +153,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        // 수정된 쿼리: 안전한 fetch join 사용
         ChatRoom result = queryFactory
                 .selectFrom(chatRoom)
                 .distinct()
