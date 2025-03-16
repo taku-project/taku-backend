@@ -40,15 +40,9 @@ public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo
     List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId);
 
     /**
-     * 사용자가 참여한 모든 채팅방 메타정보 조회 (연결 상태 무관)
+     * 사용자가 참여한 모든 채팅방 메타정보 조회
      */
     @Query(value = "{'participants.info.?0': {$exists: true}}")
     List<ChatRoomMetaInfo> findChatRoomMetaInfosByParticipantUserId(Long userId);
-
-    /**
-     * 채팅방 ID 목록에 해당하는 모든 참여자 ID 추출
-     */
-    @Query(value = "{'chatRoomId': {$in: ?0}}", fields = "{'participants.info': 1, '_id': 0}")
-    List<Long> findAllParticipantIdsByChatRoomIds(List<Long> chatRoomIds);
 
 }

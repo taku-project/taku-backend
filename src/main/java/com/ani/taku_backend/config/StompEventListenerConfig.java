@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.config;
+package com.ani.taku_backend.config;
 
 import com.ani.taku_backend.chatroom.service.facade.ChatRoomFacadeService;
 import com.ani.taku_backend.chatroom.service.facade.ChatMessageFacadeService;
@@ -29,7 +29,7 @@ import com.ani.taku_backend.user.model.dto.PrincipalUser;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class StompEventListener {
+public class StompEventListenerConfig {
 
     private final Set<String> sessions = ConcurrentHashMap.newKeySet();
     // 세션 ID와 채팅방 ID 매핑을 저장 (하나의 세션이 여러 채팅방 구독 가능)

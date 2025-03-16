@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
+//TODO 삭제 예정
 @Repository
 public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomParticipant, Long> {
 
