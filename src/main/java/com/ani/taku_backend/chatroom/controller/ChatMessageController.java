@@ -94,17 +94,14 @@ public class ChatMessageController {
         log.info("[채팅] 읽음 상태 업데이트 요청: roomId={}, userId={}", roomId, userId);
         
         try {
-            // 채팅방 접근 권한 검증
+
             chatMessageFacadeService.validateChatRoomAccess(roomId, userId);
-            
-            // 메시지 읽음 상태 비동기 업데이트
+
             chatMessageFacadeService.markMessagesAsReadAsync(roomId, userId);
-            
-            // 채팅방 정보 조회
+
             ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(roomId)
                     .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-            
-            // 읽음 상태 변경 알림 전송
+
             ChatReadStatusDTO readStatusDTO = ChatReadStatusDTO.of(
                     chatRoom.getId(), 
                     userId

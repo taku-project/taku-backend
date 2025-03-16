@@ -2,12 +2,10 @@ package com.ani.taku_backend.chatroom.domain.repository;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
-import com.ani.taku_backend.chatroom.domain.dto.ChatRoomDetailDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.entity.QChatRoom;
 import com.ani.taku_backend.chatroom.domain.entity.QChatRoomParticipant;
 import com.ani.taku_backend.user.model.entity.QUser;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
@@ -99,48 +97,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
                 .fetch();
 
         log.debug("조회된 채팅방 수: {}", results.size());
-        
-        return results;
-    }
-
-    @Override
-    public List<ChatRoomDetailDTO> findChatRoomsWithAllDetails(Long userId, ChatRoomStatus status) {
-        
-        QChatRoom chatRoom = QChatRoom.chatRoom;
-        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
-        QChatRoomParticipant buyerParticipant = new QChatRoomParticipant("buyerParticipant");
-        QChatRoomParticipant sellerParticipant = new QChatRoomParticipant("sellerParticipant");
-        QUser buyer = new QUser("buyer");
-        QUser seller = new QUser("seller");
-
-        List<ChatRoomDetailDTO> results = queryFactory
-                .select(Projections.constructor(ChatRoomDetailDTO.class,
-                        chatRoom.id,
-                        chatRoom.wsRoomId,
-                        chatRoom.articleId,
-                        chatRoom.createdAt,
-                        buyer.userId,
-                        buyer.nickname,
-                        buyer.profileImg,
-                        seller.userId,
-                        seller.nickname,
-                        seller.profileImg,
-                        null, // lastMessage는 MongoDB에서 가져와야 함
-                        null, // lastMessageSentAt
-                        null, // lastMessageSenderId
-                        null  // unreadCount
-                ))
-                .from(chatRoom)
-                .join(chatRoom.participants, participant).on(participant.user.userId.eq(userId))
-                .join(chatRoom.participants, buyerParticipant).on(buyerParticipant.role.eq(JangterChatRole.BUYER))
-                .join(buyerParticipant.user, buyer)
-                .join(chatRoom.participants, sellerParticipant).on(sellerParticipant.role.eq(JangterChatRole.SELLER))
-                .join(sellerParticipant.user, seller)
-                .where(
-                    chatRoom.status.eq(status)
-                )
-                .fetch();
-
         
         return results;
     }

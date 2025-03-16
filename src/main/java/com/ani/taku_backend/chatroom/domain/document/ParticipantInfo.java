@@ -51,15 +51,6 @@ public class ParticipantInfo {
     }
 
     /**
-     * 참여자의 안 읽은 메시지 카운터를 설정합니다.
-     * 
-     * @param count 설정할 카운터 값
-     */
-    public void setUnreadCount(int count) {
-        this.messageStock = count;
-    }
-
-    /**
      * 참여자를 활성화 상태로 설정합니다.
      */
     public void activate() {

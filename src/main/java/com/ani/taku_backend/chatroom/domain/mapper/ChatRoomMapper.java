@@ -104,10 +104,5 @@ public class ChatRoomMapper {
                 .build();
     }
 
-    /**
-     * 시간 형식을 변환합니다.
-     */
-    public String formatMessageTime(LocalDateTime time) {
-        return ChatDateTimeFormatter.formatMessageTime(time);
-    }
+
 } 

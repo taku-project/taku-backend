@@ -94,18 +94,6 @@ public class ChatRoomCommandService {
     }
 
     /**
-     * 채팅방을 비활성화합니다.
-     */
-    public void deactivateChatRoom(Long chatRoomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-        
-        chatRoom.deactivate();
-        chatRoomRepository.save(chatRoom);
-    }
-
-
-    /**
      * 상품을 조회하고 유효성을 검증합니다.
      */
     private DuckuJangter findAndValidateProduct(Long articleId) {
@@ -149,9 +137,6 @@ public class ChatRoomCommandService {
         return chatRoomMetaRepository.save(metaInfo);
     }
 
-    /**
-     * 채팅방 응답 DTO를 생성합니다.
-     */
     private ChatRoomResponseDTO createChatRoomResponseDTO(
             ChatRoom savedRoom, ChatRoomMetaInfo metaInfo, User buyer, User seller, Long articleId) {
             

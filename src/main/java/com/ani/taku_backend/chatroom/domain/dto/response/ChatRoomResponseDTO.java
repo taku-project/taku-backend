@@ -1,8 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.dto.response;
 
-import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
 import lombok.Builder;
 
 import java.time.LocalDateTime;

@@ -56,15 +56,6 @@ public class ChatMessage {
         );
     }
 
-    /**
-     * 이 메시지가 특정 사용자가 보낸 것인지 확인합니다.
-     *
-     * @param userId 확인할 사용자 ID
-     * @return 해당 사용자가 보낸 메시지인 경우 true
-     */
-    public boolean isSentBy(Long userId) {
-        return this.senderId.equals(userId);
-    }
 
     /**
      * 메시지를 읽음 상태로 표시합니다.

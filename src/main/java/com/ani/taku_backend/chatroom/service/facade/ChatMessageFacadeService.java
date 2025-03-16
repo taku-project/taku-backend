@@ -63,12 +63,6 @@ public class ChatMessageFacadeService {
         queryService.validateChatRoomAccess(wsRoomId, userId);
     }
 
-    /**
-     * 여러 채팅방의 마지막 메시지를 찾습니다.
-     */
-    public Map<Long, ChatMessage> findLastMessageMap(List<Long> chatRoomIds) {
-        return queryService.findLastMessageMap(chatRoomIds);
-    }
 
     /**
      * WebSocket 채팅방 ID를 실제 채팅방 ID로 변환합니다.

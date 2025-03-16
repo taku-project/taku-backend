@@ -60,15 +60,6 @@ public class ChatRoom extends BaseTimeEntity {
     }
 
     /**
-     * 채팅방에서 참여자를 제거합니다.
-     * 
-     * @param participant 제거할 참여자
-     */
-    public void removeParticipant(ChatRoomParticipant participant) {
-        this.participants.remove(participant);
-    }
-
-    /**
      * 채팅방 ID를 생성합니다.
      * 신규 채팅방 생성 시 UUID 기반의 고유 ID를 생성합니다.
      */
@@ -84,28 +75,6 @@ public class ChatRoom extends BaseTimeEntity {
      */
     public void deactivate() {
         this.status = ChatRoomStatus.INACTIVE;
-    }
-
-    /**
-     * 채팅방에서 특정 사용자를 찾습니다.
-     * 
-     * @param userId 찾을 사용자 ID
-     * @return 찾은 참여자, 없으면 Optional.empty()
-     */
-    public Optional<ChatRoomParticipant> findParticipantByUserId(Long userId) {
-        return this.participants.stream()
-                .filter(p -> p.getUser() != null && p.getUser().getUserId().equals(userId))
-                .findFirst();
-    }
-
-    /**
-     * 특정 사용자가 채팅방에 참여하고 있는지 확인합니다.
-     * 
-     * @param userId 확인할 사용자 ID
-     * @return 참여 여부
-     */
-    public boolean hasParticipant(Long userId) {
-        return findParticipantByUserId(userId).isPresent();
     }
 
     /**
