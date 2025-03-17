@@ -5,7 +5,7 @@ import com.ani.taku_backend.chatroom.domain.dto.request.ChatMessageRequestDTO;
 import com.ani.taku_backend.chatroom.domain.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.service.facade.ChatMessageFacadeService;
+import com.ani.taku_backend.chatroom.service.ChatMessageService;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Controller;
 public class ChatMessageController {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final ChatMessageFacadeService chatMessageFacadeService;
+    private final ChatMessageService chatMessageFacadeService;
     private final ChatRoomRepository chatRoomRepository;
 
     /**

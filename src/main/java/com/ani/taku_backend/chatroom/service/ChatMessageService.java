@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.service.facade;
+package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageListResponseDTO;
@@ -7,8 +7,6 @@ import com.ani.taku_backend.chatroom.service.query.ChatMessageQueryService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 채팅 메시지 관련 기능을 통합해서 제공하는 파사드 서비스
@@ -16,7 +14,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatMessageFacadeService {
+public class ChatMessageService {
 
     private final ChatMessageCommandService commandService;
     private final ChatMessageQueryService queryService;

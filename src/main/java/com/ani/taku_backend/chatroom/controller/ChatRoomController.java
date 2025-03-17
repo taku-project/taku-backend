@@ -3,8 +3,8 @@ package com.ani.taku_backend.chatroom.controller;
 import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageListResponseDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
-import com.ani.taku_backend.chatroom.service.facade.ChatRoomFacadeService;
-import com.ani.taku_backend.chatroom.service.facade.ChatMessageFacadeService;
+import com.ani.taku_backend.chatroom.service.ChatRoomService;
+import com.ani.taku_backend.chatroom.service.ChatMessageService;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,8 +34,8 @@ import java.util.List;
 @Tag(name = "채팅방 API", description = "채팅방 생성, 조회, 관리 API")
 public class ChatRoomController {
 
-    private final ChatRoomFacadeService chatRoomFacadeService;
-    private final ChatMessageFacadeService chatMessageFacadeService;
+    private final ChatRoomService chatRoomFacadeService;
+    private final ChatMessageService chatMessageFacadeService;
 
     /**
      * 채팅방을 생성합니다.

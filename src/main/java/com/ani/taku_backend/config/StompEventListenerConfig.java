@@ -1,7 +1,7 @@
 package com.ani.taku_backend.config;
 
-import com.ani.taku_backend.chatroom.service.facade.ChatRoomFacadeService;
-import com.ani.taku_backend.chatroom.service.facade.ChatMessageFacadeService;
+import com.ani.taku_backend.chatroom.service.ChatMessageService;
+import com.ani.taku_backend.chatroom.service.ChatRoomService;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,8 +34,8 @@ public class StompEventListenerConfig {
     private final Set<String> sessions = ConcurrentHashMap.newKeySet();
     // 세션 ID와 채팅방 ID 매핑을 저장 (하나의 세션이 여러 채팅방 구독 가능)
     private final Map<String, Set<Long>> sessionToChatRooms = new ConcurrentHashMap<>();
-    private final ChatRoomFacadeService chatRoomFacadeService;
-    private final ChatMessageFacadeService chatMessageFacadeService;
+    private final ChatRoomService chatRoomService;
+    private final ChatMessageService chatMessageFacadeService;
     
     /**
      * 클라이언트가 WebSocket에 연결되었을 때 호출되는 이벤트 핸들러.
@@ -93,7 +93,7 @@ public class StompEventListenerConfig {
                         sessionToChatRooms.get(sessionId).add(chatRoomId);
                         
                         // 참여자 상태를 "온라인"으로 변경
-                        chatRoomFacadeService.updateParticipantActiveStatus(chatRoomId, userId, true);
+                        chatRoomService.updateParticipantActiveStatus(chatRoomId, userId, true);
                         log.info("사용자 온라인 상태 업데이트: 세션={}, 사용자={}, 채팅방={}", sessionId, userId, chatRoomId);
                     }
                 }
@@ -129,7 +129,7 @@ public class StompEventListenerConfig {
                 for (Long chatRoomId : chatRoomIds) {
                     try {
                         // 참여자 상태를 "오프라인"으로 변경
-                        chatRoomFacadeService.updateParticipantActiveStatus(chatRoomId, userId, false);
+                        chatRoomService.updateParticipantActiveStatus(chatRoomId, userId, false);
                         log.info("사용자 오프라인 상태 업데이트: 세션={}, 사용자={}, 채팅방={}", sessionId, userId, chatRoomId);
                     } catch (Exception e) {
                         log.error("사용자 오프라인 상태 업데이트 중 오류: 채팅방={}, 사용자={}", chatRoomId, userId, e);

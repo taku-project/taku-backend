@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.service.facade;
+package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatRoomFacadeService {
+public class ChatRoomService {
 
     private final ChatRoomCommandService applicationService;
     private final ChatRoomQueryService queryService;
