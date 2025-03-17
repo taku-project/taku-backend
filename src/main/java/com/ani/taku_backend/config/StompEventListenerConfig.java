@@ -56,7 +56,7 @@ public class StompEventListenerConfig {
 
             sessionToChatRooms.putIfAbsent(sessionId, ConcurrentHashMap.newKeySet());
         } else {
-            log.warn("STOMP 세션 연결 이벤트 발생했지만 세션 ID가 null입니다");
+            log.error("STOMP 세션 연결 이벤트 발생했지만 세션 ID가 null입니다");
         }
     }
     
