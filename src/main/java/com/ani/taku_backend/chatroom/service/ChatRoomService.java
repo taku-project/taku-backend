@@ -16,14 +16,14 @@ import java.util.List;
  * 채팅방 서비스 파사드 (Facade)
  * 
  * 이 클래스는 외부 컨트롤러와 내부 서비스 사이의 파사드 역할을 합니다.
- * 실제 비즈니스 로직은 각각 ChatRoomApplicationService와 ChatRoomQueryService로 위임합니다.
+ * 실제 비즈니스 로직은 각각 ChatRoomCommandService와 ChatRoomQueryService로 위임합니다.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatRoomService {
 
-    private final ChatRoomCommandService applicationService;
+    private final ChatRoomCommandService commandService;
     private final ChatRoomQueryService queryService;
 
     /**
@@ -34,7 +34,7 @@ public class ChatRoomService {
      */
     @Transactional
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
-        return applicationService.createChatRoom(requestDto);
+        return  commandService.createChatRoom(requestDto);
     }
 
     /**
@@ -70,7 +70,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void updateParticipantActiveStatus(Long chatRoomId, Long userId, boolean active) {
-        applicationService.updateParticipantActiveStatus(chatRoomId, userId, active);
+        commandService.updateParticipantActiveStatus(chatRoomId, userId, active);
     }
 
     /**
