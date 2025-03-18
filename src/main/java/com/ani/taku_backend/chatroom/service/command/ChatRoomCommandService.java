@@ -129,11 +129,10 @@ public class ChatRoomCommandService {
      * 채팅방 메타 정보를 생성하고 저장합니다.
      */
     private ChatRoomMetaInfo createAndSaveChatRoomMetaInfo(Long chatRoomId, Long buyerId, Long sellerId) {
-        ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.builder()
-                .chatRoomId(chatRoomId)
-                .build();
-
-        metaInfo.initializeParticipants(buyerId, sellerId);
+        // 팩토리 메서드를 사용하여 완전히 초기화된 객체 생성
+        ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.createWithParticipants(
+                chatRoomId, buyerId, sellerId);
+        
         return chatRoomMetaRepository.save(metaInfo);
     }
 

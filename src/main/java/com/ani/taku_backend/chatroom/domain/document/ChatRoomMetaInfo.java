@@ -37,32 +37,32 @@ public class ChatRoomMetaInfo {
 
     private boolean isActive = true;
     
-    /**
-     * 채팅방 메시지 목록
-     * 각 메시지는 간소화된 형태로 저장되며, 메시지 자체 정보만 포함합니다.
-     * 채팅방 관련 정보(articleId 등)는 문서 최상위 레벨에 저장됩니다.
-     */
+
     private List<ChatMessage> messages = new ArrayList<>();
     private int messageCount = 0;
 
     public ChatRoomMetaInfo() {
     }
 
-    /**
-     * 지정된 채팅방 ID로 메타 정보를 초기화합니다.
-     *
-     * @param chatRoomId 채팅방의 고유 ID
-     */
     @Builder
-    public ChatRoomMetaInfo(@Param("chatRoomId") Long chatRoomId) {
+    public ChatRoomMetaInfo(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("participants") Participants participants) {
         this.chatRoomId = chatRoomId;
-        this.participants = new Participants();
+        this.participants = participants != null ? participants : new Participants();
         this.lastMessageAt = Instant.now();
     }
 
-    public void initializeParticipants(Long buyerId, Long sellerId) {
-        this.participants.addParticipant(buyerId, JangterChatRole.BUYER);
-        this.participants.addParticipant(sellerId, JangterChatRole.SELLER);
+    public static ChatRoomMetaInfo createWithParticipants(
+            Long chatRoomId, Long buyerId, Long sellerId) {
+        Participants participants = new Participants();
+        participants.addParticipant(buyerId, JangterChatRole.BUYER);
+        participants.addParticipant(sellerId, JangterChatRole.SELLER);
+
+        return ChatRoomMetaInfo.builder()
+                .chatRoomId(chatRoomId)
+                .participants(participants)
+                .build();
     }
 
     /*
