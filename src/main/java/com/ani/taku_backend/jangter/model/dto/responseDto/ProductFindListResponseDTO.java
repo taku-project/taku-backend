@@ -1,7 +1,11 @@
 package com.ani.taku_backend.jangter.model.dto.responseDto;
 
+import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.mongodb.lang.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,15 +30,21 @@ public class ProductFindListResponseDTO {
 
     @Schema(description = "올린이 유저 이름")
     private String userNickname;
-
     private Long viewCount;
 
-    public ProductFindListResponseDTO(Long id, String title, BigDecimal price, String imageUrl, String userNickname, Long viewCount) {
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;  // 상품 상태 (FOR_SALE, RESERVED, SOLD_OUT)
+
+
+    public ProductFindListResponseDTO(Long id, String title, BigDecimal price, String imageUrl, String userNickname, Long viewCount,  ProductStatus status) {
         this.id = id;
         this.title = title;
         this.price = price;
         this.imageUrl = imageUrl != null ? imageUrl : "defaultImageUrl";
         this.userNickname = userNickname;
         this.viewCount = viewCount;
+        this.status = status;
     }
+
+
 }

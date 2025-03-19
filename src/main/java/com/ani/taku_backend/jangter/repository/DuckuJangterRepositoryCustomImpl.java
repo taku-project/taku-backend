@@ -60,7 +60,8 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                         duckuJangter.price,
                         jangterImages.image.imageUrl, // 이미지 컬렉션을 조인한 후 첫 번째 이미지 URL을 가져옴
                         duckuJangter.user.nickname,
-                        duckuJangter.viewCount
+                        duckuJangter.viewCount,
+                        duckuJangter.status
                 ))
                 .from(duckuJangter)
                 .leftJoin(duckuJangter.jangterImages, jangterImages)
@@ -72,6 +73,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                         duckuJangter.deletedAt.isNull(),
                         applyFilters(keyword, categoryId, minPrice, maxPrice),
                         applyPaginationCondition(sort, order, lastId))
+                .groupBy(duckuJangter.id)
                 .orderBy(buildOrder(sort,order))
                 .limit(limit)
                 .fetch();
