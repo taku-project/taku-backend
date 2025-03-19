@@ -1,4 +1,4 @@
-package com.ani.taku_backend.admin.profanity.domain.repository;
+package com.ani.taku_backend.admin.profanity.repository;
 
 import java.util.Optional;
 

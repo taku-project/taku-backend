@@ -20,7 +20,7 @@ import com.ani.taku_backend.admin.profanity.dto.req.SearchProfanityReqDTO;
 import com.ani.taku_backend.admin.profanity.dto.req.UpdateProfanityReqDTO;
 import com.ani.taku_backend.admin.profanity.dto.res.CreateProfanityResDTO;
 import com.ani.taku_backend.admin.profanity.domain.ProfanityFilter;
-import com.ani.taku_backend.admin.profanity.domain.repository.ProfanityFilterRepository;
+import com.ani.taku_backend.admin.profanity.repository.ProfanityFilterRepository;
 import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.aop.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
