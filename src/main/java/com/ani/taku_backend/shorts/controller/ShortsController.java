@@ -79,7 +79,6 @@ public class ShortsController {
             throw new FileException(ErrorCode.INVALID_FILE_FORMAT);
         }
         User user = userDetails.getUser();
-        validateBlackUser(user.getUserId());
 
         shortsService.createShort(shortsCreateReqDTO, user);
 
@@ -272,12 +271,5 @@ public class ShortsController {
         this.shortsService.updateShortsReply(null, shortsCommentUpdateReqDTO, commentId, replyId);
         List<ShortsCommentDTO> shortsComment = this.shortsService.findShortsComment(shortsId);
         return CommonResponse.ok(shortsComment);
-    }
-
-    private void validateBlackUser(Long userId) {
-        List<BlackUser> blackUser = blackUserService.findByUserId(userId);
-        if(!blackUser.isEmpty()) {
-            throw new DuckwhoException(ErrorCode.BLACK_USER);
-        }
     }
 }

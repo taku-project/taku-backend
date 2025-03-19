@@ -1,5 +1,7 @@
 package com.ani.taku_backend.config;
 
+import com.ani.taku_backend.common.enums.UserRole;
+import org.apache.http.protocol.HTTP;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -56,7 +59,7 @@ public class SecurityConfig {
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()                   // GET - post,jangter
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
-                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
+                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).not().hasRole(UserRole.BLACKLIST.getValue())
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
                 .requestMatchers(SecurityPathConfig.WEBSOCKET_PATHS).permitAll()                    // WebSocket 관련 경로 허용
                 .anyRequest().authenticated()
@@ -94,8 +97,10 @@ public class SecurityConfig {
         ));
         */
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        List<String> allowedMethods = Arrays.asList(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name(), HttpMethod.OPTIONS.name(), HttpMethod.PATCH.name());
+
+        configuration.setAllowedMethods(allowedMethods);
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

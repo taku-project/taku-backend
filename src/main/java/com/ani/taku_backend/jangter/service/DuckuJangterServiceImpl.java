@@ -85,7 +85,6 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     private final DuckuJangterRepository duckuJangterRepository;
     private final ItemCategoriesRepository itemCategoriesRepository;
     private final ImageService imageService;
-    private final BlackUserService blackUserService;
     private final ExtractKeywordService extractKeywordService;
     private final UserInteractionService userInteractionService;
     private final ViewHistoryScoreCalculator viewHistoryScoreCalculator;
