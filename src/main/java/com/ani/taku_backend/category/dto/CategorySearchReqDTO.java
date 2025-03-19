@@ -1,11 +1,11 @@
-package com.ani.taku_backend.category.domain.dto;
+package com.ani.taku_backend.category.dto;
 
 import java.util.List;
 
 import lombok.Data;
 
 @Data
-public class RequestCategorySearch {
+public class CategorySearchReqDTO {
     
     private String name;
     private List<Long> genreIds;

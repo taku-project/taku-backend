@@ -1,7 +1,7 @@
 package com.ani.taku_backend.category.domain.entity;
 
 import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
-import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
+import com.ani.taku_backend.category.dto.CreateCategoryReqDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.entity.User;
@@ -69,9 +69,9 @@ public class Category extends BaseTimeEntity {
     private List<CategoryGenre> categoryGenres;
 
     // 카테고리 첫 생성
-    public static Category from(RequestCategoryCreateDTO requestCategoryCreateDTO, User user){
+    public static Category from(CreateCategoryReqDTO createCategoryReqDTO, User user){
         return Category.builder()
-            .name(requestCategoryCreateDTO.getName())
+            .name(createCategoryReqDTO.getName())
             .createdType(user.getRole())
             .viewCount(0L)
             .status(CategoryStatus.INACTIVE)
