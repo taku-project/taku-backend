@@ -1,11 +1,15 @@
-package com.ani.taku_backend.admin.controller;
+package com.ani.taku_backend.admin.profanity.controller;
 
-import com.ani.taku_backend.admin.domain.dto.*;
+import com.ani.taku_backend.admin.profanity.dto.res.ProfannityResDTO;
+import com.ani.taku_backend.admin.profanity.dto.req.CreateProfanityReqDTO;
+import com.ani.taku_backend.admin.profanity.dto.req.SearchProfanityReqDTO;
+import com.ani.taku_backend.admin.profanity.dto.req.UpdateProfanityReqDTO;
+import com.ani.taku_backend.admin.profanity.dto.res.CreateProfanityResDTO;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
-import com.ani.taku_backend.admin.service.ProfanityFilterService;
+import com.ani.taku_backend.admin.profanity.service.ProfanityFilterService;
 import com.ani.taku_backend.common.response.CommonResponse;
 
 import org.springframework.data.domain.Page;
@@ -31,29 +35,29 @@ public class ProfanityController {
 
     /**
      * 금칙어 필터 생성
-     * @param requestCreateProfanityDTO
+     * @param createProfanityReqDTO
      * @return
      */
     @PostMapping("")
-    public CommonResponse<ResponseCreateProfanityDTO> createProfanityFilter(@RequestBody @Valid RequestCreateProfanityDTO requestCreateProfanityDTO) {
+    public CommonResponse<CreateProfanityResDTO> createProfanityFilter(@RequestBody @Valid CreateProfanityReqDTO createProfanityReqDTO) {
 
-        ResponseCreateProfanityDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, requestCreateProfanityDTO);
+        CreateProfanityResDTO profanityFilter = this.profanityFilterService.createProfanityFilter(null, createProfanityReqDTO);
         return CommonResponse.created(profanityFilter);
     }
 
     /**
      * 금칙어 필터 목록 조회
-     * @param requestSearchProfanityDTO
+     * @param searchProfanityReqDTO
      * @param pageable
      * @return
      */
     @GetMapping("")
-    public CommonResponse<Page<ProfannityResponseDTO>> getProfanityFilters(
-        @ModelAttribute RequestSearchProfanityDTO requestSearchProfanityDTO,
+    public CommonResponse<Page<ProfannityResDTO>> getProfanityFilters(
+        @ModelAttribute SearchProfanityReqDTO searchProfanityReqDTO,
         @PageableDefault(size = 20, sort = "keyword", direction = Sort.Direction.ASC) Pageable pageable
 
     ) {
-        Page<ProfannityResponseDTO> profanityFilters = this.profanityFilterService.findProfanityFilterList(requestSearchProfanityDTO, pageable);
+        Page<ProfannityResDTO> profanityFilters = this.profanityFilterService.findProfanityFilterList(searchProfanityReqDTO, pageable);
         return CommonResponse.ok(profanityFilters);
     }
 
@@ -71,12 +75,12 @@ public class ProfanityController {
     /**
      * 금칙어 필터 수정
      * @param id
-     * @param requestUpdateProfanityDTO
+     * @param updateProfanityReqDTO
      * @return
      */
     @PutMapping("/{id}")
-    public CommonResponse<Void> updateProfanityFilter(@PathVariable("id") Long id, @RequestBody @Valid RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
-        this.profanityFilterService.updateProfanityFilter(id, requestUpdateProfanityDTO);
+    public CommonResponse<Void> updateProfanityFilter(@PathVariable("id") Long id, @RequestBody @Valid UpdateProfanityReqDTO updateProfanityReqDTO) {
+        this.profanityFilterService.updateProfanityFilter(id, updateProfanityReqDTO);
         return CommonResponse.ok(null);
     }
 

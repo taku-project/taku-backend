@@ -1,4 +1,4 @@
-package com.ani.taku_backend.admin.service;
+package com.ani.taku_backend.admin.profanity.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,13 +14,13 @@ import jakarta.persistence.criteria.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;
 
-import com.ani.taku_backend.admin.domain.dto.ProfannityResponseDTO;
-import com.ani.taku_backend.admin.domain.dto.RequestCreateProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.RequestSearchProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.RequestUpdateProfanityDTO;
-import com.ani.taku_backend.admin.domain.dto.ResponseCreateProfanityDTO;
-import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
-import com.ani.taku_backend.admin.domain.repository.ProfanityFilterRepository;
+import com.ani.taku_backend.admin.profanity.dto.res.ProfannityResDTO;
+import com.ani.taku_backend.admin.profanity.dto.req.CreateProfanityReqDTO;
+import com.ani.taku_backend.admin.profanity.dto.req.SearchProfanityReqDTO;
+import com.ani.taku_backend.admin.profanity.dto.req.UpdateProfanityReqDTO;
+import com.ani.taku_backend.admin.profanity.dto.res.CreateProfanityResDTO;
+import com.ani.taku_backend.admin.profanity.domain.ProfanityFilter;
+import com.ani.taku_backend.admin.profanity.domain.repository.ProfanityFilterRepository;
 import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.aop.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.StatusType;
@@ -68,15 +68,15 @@ public class ProfanityFilterService {
     /**
      * 금칙어 필터 생성
      * @param principalUser
-     * @param requestCreateProfanityDTO
+     * @param createProfanityReqDTO
      * @return
      */
     @RequireUser(isAdmin = true)
     // @ValidateProfanity(fields = {"keyword"})
-    public ResponseCreateProfanityDTO createProfanityFilter(PrincipalUser principalUser, RequestCreateProfanityDTO requestCreateProfanityDTO) {
+    public CreateProfanityResDTO createProfanityFilter(PrincipalUser principalUser, CreateProfanityReqDTO createProfanityReqDTO) {
 
         // 이미 존재하는 금칙어 필터인지 확인 
-        Optional<ProfanityFilter> existingProfanityFilter = this.profanityFilterRepository.findByKeyword(requestCreateProfanityDTO.getKeyword());
+        Optional<ProfanityFilter> existingProfanityFilter = this.profanityFilterRepository.findByKeyword(createProfanityReqDTO.getKeyword());
         if (existingProfanityFilter.isPresent()) {
             throw new DuckwhoException(ErrorCode.DUPLICATE_PROFANITY_FILTER);
         }
@@ -84,8 +84,8 @@ public class ProfanityFilterService {
         ProfanityFilter save = this.profanityFilterRepository.save(
             ProfanityFilter.builder()
                 .admin(principalUser.getUser())
-                .keyword(requestCreateProfanityDTO.getKeyword())
-                .explaination(requestCreateProfanityDTO.getExplaination())
+                .keyword(createProfanityReqDTO.getKeyword())
+                .explaination(createProfanityReqDTO.getExplaination())
                 .status(StatusType.ACTIVE)
                 .build()
         );
@@ -93,40 +93,40 @@ public class ProfanityFilterService {
         // 레디스에 저장된 금칙어 필터 키 목록 갱신
         this.refreshProfanityFilterKeywords();
 
-        return ResponseCreateProfanityDTO.of(save);
+        return CreateProfanityResDTO.of(save);
     }
 
     /**
      * 금칙어 필터 목록 조회
-     * @param requestSearchProfanityDTO
+     * @param searchProfanityReqDTO
      * @param pageable
      * @return
      */
     @RequireUser(isAdmin = true)
-    public Page<ProfannityResponseDTO> findProfanityFilterList(RequestSearchProfanityDTO requestSearchProfanityDTO,
-            Pageable pageable) {
+    public Page<ProfannityResDTO> findProfanityFilterList(SearchProfanityReqDTO searchProfanityReqDTO,
+                                                          Pageable pageable) {
 
         Specification<ProfanityFilter> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (requestSearchProfanityDTO.getUserName() != null) {
+            if (searchProfanityReqDTO.getUserName() != null) {
                 predicates.add(criteriaBuilder.like(root.get("admin").get("nickname"), 
-                    "%" + requestSearchProfanityDTO.getUserName() + "%"));
+                    "%" + searchProfanityReqDTO.getUserName() + "%"));
             }
-            if (requestSearchProfanityDTO.getKeyword() != null) {
+            if (searchProfanityReqDTO.getKeyword() != null) {
                 predicates.add(criteriaBuilder.like(root.get("keyword"), 
-                    "%" + requestSearchProfanityDTO.getKeyword() + "%"));
+                    "%" + searchProfanityReqDTO.getKeyword() + "%"));
             }
-            if (requestSearchProfanityDTO.getExplaination() != null) {
+            if (searchProfanityReqDTO.getExplaination() != null) {
                 predicates.add(criteriaBuilder.like(root.get("explaination"), 
-                    "%" + requestSearchProfanityDTO.getExplaination() + "%"));
+                    "%" + searchProfanityReqDTO.getExplaination() + "%"));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
         return profanityFilterRepository.findAll(specification, pageable)
-                .map(ProfannityResponseDTO::of);
+                .map(ProfannityResDTO::of);
     }
 
     /**
@@ -147,16 +147,16 @@ public class ProfanityFilterService {
     /**
      * 금칙어 필터 수정
      * @param id
-     * @param requestUpdateProfanityDTO
+     * @param updateProfanityReqDTO
      */
     @RequireUser(isAdmin = true)
     @Transactional
     @ValidateProfanity(fields = {"keyword"})
-    public void updateProfanityFilter(Long id, RequestUpdateProfanityDTO requestUpdateProfanityDTO) {
+    public void updateProfanityFilter(Long id, UpdateProfanityReqDTO updateProfanityReqDTO) {
 
         ProfanityFilter profanityEntity = this.profanityFilterRepository.findById(id).orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_PROFANITY_FILTER));
 
-        profanityEntity.update(requestUpdateProfanityDTO);
+        profanityEntity.update(updateProfanityReqDTO);
 
         // 레디스에 저장된 금칙어 필터 키 목록 갱신
         this.refreshProfanityFilterKeywords();

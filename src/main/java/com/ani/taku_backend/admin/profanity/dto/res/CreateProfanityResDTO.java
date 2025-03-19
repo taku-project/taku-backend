@@ -1,8 +1,8 @@
-package com.ani.taku_backend.admin.domain.dto;
+package com.ani.taku_backend.admin.profanity.dto.res;
 
 import java.time.LocalDateTime;
 
-import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
+import com.ani.taku_backend.admin.profanity.domain.ProfanityFilter;
 import com.ani.taku_backend.common.enums.StatusType;
 
 import lombok.Builder;
@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ResponseCreateProfanityDTO {
+public class CreateProfanityResDTO {
     private Long id;
     private Long userId;
     private String keyword;
@@ -18,8 +18,8 @@ public class ResponseCreateProfanityDTO {
     private StatusType status;
     private LocalDateTime createdAt;
 
-    public static ResponseCreateProfanityDTO of(ProfanityFilter profanityFilter) {
-        return ResponseCreateProfanityDTO.builder()
+    public static CreateProfanityResDTO of(ProfanityFilter profanityFilter) {
+        return CreateProfanityResDTO.builder()
             .id(profanityFilter.getId())
             .userId(profanityFilter.getAdmin().getUserId())
             .keyword(profanityFilter.getKeyword())

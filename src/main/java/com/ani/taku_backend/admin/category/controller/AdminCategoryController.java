@@ -1,9 +1,9 @@
 package com.ani.taku_backend.admin.category.controller;
 
-import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
-import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryListReqDTO;
-import com.ani.taku_backend.admin.category.domain.dto.req.UpdateCategoryReqDTO;
-import com.ani.taku_backend.admin.category.domain.dto.res.AdminCategoryListResDTO;
+import com.ani.taku_backend.admin.category.dto.req.AdminCategoryCreateReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.AdminCategoryListReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.UpdateCategoryReqDTO;
+import com.ani.taku_backend.admin.category.dto.res.AdminCategoryListResDTO;
 import com.ani.taku_backend.admin.category.service.AdminCategoryService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.user.model.entity.User;

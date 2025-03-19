@@ -1,10 +1,10 @@
-package com.ani.taku_backend.admin.domain.dto;
+package com.ani.taku_backend.admin.profanity.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class RequestCreateProfanityDTO {
+public class CreateProfanityReqDTO {
 
     @NotBlank
     private String keyword;

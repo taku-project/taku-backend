@@ -1,4 +1,4 @@
-package com.ani.taku_backend.admin.domain.dto;
+package com.ani.taku_backend.admin.profanity.dto.req;
 
 import com.ani.taku_backend.common.enums.StatusType;
 
@@ -7,7 +7,7 @@ import lombok.Data;
 import jakarta.validation.constraints.Pattern;
 
 @Data
-public class RequestUpdateProfanityDTO {
+public class UpdateProfanityReqDTO {
 
     @Pattern(regexp = "^(?!\\s*$).+", message = "키워드는 빈 값일 수 없습니다")
     private String keyword;

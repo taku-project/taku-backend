@@ -1,8 +1,8 @@
-package com.ani.taku_backend.admin.domain.dto;
+package com.ani.taku_backend.admin.profanity.dto.res;
 
 import java.time.LocalDateTime;
 
-import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
+import com.ani.taku_backend.admin.profanity.domain.ProfanityFilter;
 import com.ani.taku_backend.common.enums.StatusType;
 
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfannityResponseDTO {
+public class ProfannityResDTO {
 
     private Long id;
     private Long userId;
@@ -29,8 +29,8 @@ public class ProfannityResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ProfannityResponseDTO of(ProfanityFilter profanityFilter) {
-        return ProfannityResponseDTO.builder()
+    public static ProfannityResDTO of(ProfanityFilter profanityFilter) {
+        return ProfannityResDTO.builder()
                 .id(profanityFilter.getId())
                 .userId(profanityFilter.getAdmin().getUserId())
                 .nickname(profanityFilter.getAdmin().getNickname())

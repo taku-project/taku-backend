@@ -1,6 +1,6 @@
 package com.ani.taku_backend.category.domain.entity;
 
-import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.AdminCategoryCreateReqDTO;
 import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.UserRole;
