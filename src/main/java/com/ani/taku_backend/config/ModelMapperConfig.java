@@ -5,13 +5,13 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
+import com.ani.taku_backend.category.dto.CategoryResDTO;
 import com.ani.taku_backend.category.domain.entity.AnimationGenre;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
-import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
-import org.modelmapper.Converter;
+import com.ani.taku_backend.category.dto.CategorySeachResDTO;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -48,25 +48,25 @@ public class ModelMapperConfig {
 
     // Category, CategoryGenre, CategoryImage -> ResponseCategoryDTO 매핑
     private void mapResponseCategoryDTO(ModelMapper modelMapper) {
-        modelMapper.createTypeMap(Category.class, ResponseCategoryDTO.class)
+        modelMapper.createTypeMap(Category.class, CategoryResDTO.class)
             .addMappings(mapper -> {
-                mapper.map(Category::getId, ResponseCategoryDTO::setId);
-                mapper.map(Category::getName, ResponseCategoryDTO::setName);
-                mapper.map(Category::getStatus, ResponseCategoryDTO::setStatus);
-                mapper.map(Category::getCreatedType, ResponseCategoryDTO::setCreatedType);
-                mapper.map(Category::getViewCount, ResponseCategoryDTO::setViewCount);
+                mapper.map(Category::getId, CategoryResDTO::setId);
+                mapper.map(Category::getName, CategoryResDTO::setName);
+                mapper.map(Category::getStatus, CategoryResDTO::setStatus);
+                mapper.map(Category::getCreatedType, CategoryResDTO::setCreatedType);
+                mapper.map(Category::getViewCount, CategoryResDTO::setViewCount);
             });
 
         // CategoryImage -> CategoryImageDTO 매핑
-        modelMapper.createTypeMap(CategoryImage.class, ResponseCategoryDTO.CategoryImageDTO.class)
-            .addMapping(CategoryImage::getId, ResponseCategoryDTO.CategoryImageDTO::setId)
-            .addMapping(src -> src.getImage().getImageUrl(), ResponseCategoryDTO.CategoryImageDTO::setImageUrl)
-            .addMapping(src -> src.getImage().getFileName(), ResponseCategoryDTO.CategoryImageDTO::setFileName)
-            .addMapping(src -> src.getImage().getOriginalName(), ResponseCategoryDTO.CategoryImageDTO::setOriginalFileName);
+        modelMapper.createTypeMap(CategoryImage.class, CategoryResDTO.CategoryImageDTO.class)
+            .addMapping(CategoryImage::getId, CategoryResDTO.CategoryImageDTO::setId)
+            .addMapping(src -> src.getImage().getImageUrl(), CategoryResDTO.CategoryImageDTO::setImageUrl)
+            .addMapping(src -> src.getImage().getFileName(), CategoryResDTO.CategoryImageDTO::setFileName)
+            .addMapping(src -> src.getImage().getOriginalName(), CategoryResDTO.CategoryImageDTO::setOriginalFileName);
 
         // CategoryGenre -> CategoryGenreDTO 매핑
-        modelMapper.createTypeMap(CategoryGenre.class, ResponseCategoryDTO.CategoryGenreDTO.class)
-            .addMapping(CategoryGenre::getId, ResponseCategoryDTO.CategoryGenreDTO::setId)
+        modelMapper.createTypeMap(CategoryGenre.class, CategoryResDTO.CategoryGenreDTO.class)
+            .addMapping(CategoryGenre::getId, CategoryResDTO.CategoryGenreDTO::setId)
             .addMappings(mapper -> {
                 mapper.<String>map(
                     src -> src.getGenre().getGenreName(),
@@ -77,37 +77,37 @@ public class ModelMapperConfig {
 
     // Category, CategoryGenre, CategoryImage -> ResponseCategorySeachDTO 매핑
     private void mapResponseCategorySeachDTO(ModelMapper modelMapper) {
-        modelMapper.createTypeMap(Category.class, ResponseCategorySeachDTO.class)
-        .setProvider(req -> ResponseCategorySeachDTO.builder().build())
+        modelMapper.createTypeMap(Category.class, CategorySeachResDTO.class)
+        .setProvider(req -> CategorySeachResDTO.builder().build())
         .addMappings(mapper -> {
-            mapper.map(Category::getId, ResponseCategorySeachDTO::setId);
-            mapper.map(Category::getName, ResponseCategorySeachDTO::setName);
-            mapper.map(Category::getCreatedAt, ResponseCategorySeachDTO::setCreatedAt);
-            mapper.map(Category::getUpdatedAt, ResponseCategorySeachDTO::setUpdatedAt);
-            mapper.map(Category::getStatus, ResponseCategorySeachDTO::setStatus);
-            mapper.map(Category::getViewCount, ResponseCategorySeachDTO::setViewCount);
+            mapper.map(Category::getId, CategorySeachResDTO::setId);
+            mapper.map(Category::getName, CategorySeachResDTO::setName);
+            mapper.map(Category::getCreatedAt, CategorySeachResDTO::setCreatedAt);
+            mapper.map(Category::getUpdatedAt, CategorySeachResDTO::setUpdatedAt);
+            mapper.map(Category::getStatus, CategorySeachResDTO::setStatus);
+            mapper.map(Category::getViewCount, CategorySeachResDTO::setViewCount);
             
             // User 관련 매핑
             mapper.<Long>map(
                 src -> src.getUser().getUserId(),
-                ResponseCategorySeachDTO::setCategoryCreateUserId
+                CategorySeachResDTO::setCategoryCreateUserId
             );
             mapper.<String>map(
                 src -> src.getUser().getNickname(),
-                ResponseCategorySeachDTO::setCategoryCreateNickname
+                CategorySeachResDTO::setCategoryCreateNickname
             );
             mapper.<String>map(
                 src -> src.getUser().getProfileImg(),
-                ResponseCategorySeachDTO::setCategoryCreateUserProfileImageUrl
+                CategorySeachResDTO::setCategoryCreateUserProfileImageUrl
             );
         });
 
     // CategoryGenre 리스트에 대한 TypeMap
-    modelMapper.typeMap(ArrayList.class, ResponseCategorySeachDTO.class, "genreMapping")
+    modelMapper.typeMap(ArrayList.class, CategorySeachResDTO.class, "genreMapping")
         .setConverter(context -> {
             @SuppressWarnings("unchecked")
             List<CategoryGenre> genres = (List<CategoryGenre>) context.getSource();
-            ResponseCategorySeachDTO dto = context.getDestination();
+            CategorySeachResDTO dto = context.getDestination();
             if (genres != null && !genres.isEmpty()) {
                 dto.setGenreId(genres.stream().map(CategoryGenre::getGenre).map(AnimationGenre::getId).toArray(Long[]::new));
                 dto.setGenreName(genres.stream().map(CategoryGenre::getGenre).map(AnimationGenre::getGenreName).toArray(String[]::new));
@@ -116,11 +116,11 @@ public class ModelMapperConfig {
         });
 
     // CategoryImage 리스트에 대한 TypeMap
-    modelMapper.typeMap(ArrayList.class, ResponseCategorySeachDTO.class, "imageMapping")
+    modelMapper.typeMap(ArrayList.class, CategorySeachResDTO.class, "imageMapping")
         .setConverter(context -> {
             @SuppressWarnings("unchecked")
             List<CategoryImage> images = (List<CategoryImage>) context.getSource();
-            ResponseCategorySeachDTO dto = context.getDestination();
+            CategorySeachResDTO dto = context.getDestination();
             if (images != null && !images.isEmpty()) {
                 CategoryImage firstImage = images.get(0);
                 dto.setImageId(firstImage.getImage().getId());

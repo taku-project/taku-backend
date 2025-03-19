@@ -1,6 +1,6 @@
 package com.ani.taku_backend.category.domain.repository.impl;
 
-import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
+import com.ani.taku_backend.category.dto.AniGenreResDTO;
 import com.ani.taku_backend.category.domain.dto.QAniGenreResDTO;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;

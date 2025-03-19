@@ -1,4 +1,4 @@
-package com.ani.taku_backend.category.domain.dto;
+package com.ani.taku_backend.category.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

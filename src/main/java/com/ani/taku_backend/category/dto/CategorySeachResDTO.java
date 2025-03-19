@@ -1,11 +1,7 @@
-package com.ani.taku_backend.category.domain.dto;
+package com.ani.taku_backend.category.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import com.ani.taku_backend.category.domain.entity.Category;
-import com.ani.taku_backend.category.domain.entity.CategoryGenre;
-import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Builder;
@@ -15,7 +11,7 @@ import lombok.ToString;
 @Data
 @Builder
 @ToString
-public class ResponseCategorySeachDTO {
+public class CategorySeachResDTO {
     private Long id;    // 카테고리 아이디
     private String name;    // 카테고리 이름
 

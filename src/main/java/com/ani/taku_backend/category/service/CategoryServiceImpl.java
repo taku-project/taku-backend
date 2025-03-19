@@ -1,11 +1,11 @@
 package com.ani.taku_backend.category.service;
 
-import com.ani.taku_backend.category.domain.dto.AniGenreListReqDTO;
-import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
-import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
-import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
-import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
-import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
+import com.ani.taku_backend.category.dto.AniGenreListReqDTO;
+import com.ani.taku_backend.category.dto.AniGenreResDTO;
+import com.ani.taku_backend.category.dto.CreateCategoryReqDTO;
+import com.ani.taku_backend.category.dto.CategorySearchReqDTO;
+import com.ani.taku_backend.category.dto.CategoryResDTO;
+import com.ani.taku_backend.category.dto.CategorySeachResDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
@@ -55,13 +55,13 @@ public class CategoryServiceImpl implements CategoryService {
      * 카테고리 생성
      *
      * @param user
-     * @param requestCategoryCreateDTO
+     * @param createCategoryReqDTO
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
     @RequireUser
-    public ResponseCategoryDTO createCategory(User user, RequestCategoryCreateDTO requestCategoryCreateDTO) throws DuckwhoException {
-        MultipartFile uploadFile = requestCategoryCreateDTO.getImage();
+    public CategoryResDTO createCategory(User user, CreateCategoryReqDTO createCategoryReqDTO) throws DuckwhoException {
+        MultipartFile uploadFile = createCategoryReqDTO.getImage();
 
         // 이미지 확장자 검증 추가
         if(!FileUtil.isImgExtension(uploadFile.getOriginalFilename())){
@@ -69,10 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         // 카테고리 이름 검증
-        validateCategoryName(requestCategoryCreateDTO.getName());
-
-        // 블랙리스트 검증을 먼저 수행
-        validateBlackUser(user.getUserId());
+        validateCategoryName(createCategoryReqDTO.getName());
         
         // 이미지 처리
         String contentType = uploadFile.getContentType();
@@ -90,10 +87,10 @@ public class CategoryServiceImpl implements CategoryService {
         Image savedImage = imageService.insertImage(Image.of(imageDTO, user));
 
         // 카테고리 생성 및 저장
-        Category category = createCategoryWithRelations(requestCategoryCreateDTO, user, savedImage);
+        Category category = createCategoryWithRelations(createCategoryReqDTO, user, savedImage);
         Category savedCategory = categoryRepository.save(category);
         
-        return modelMapper.map(savedCategory, ResponseCategoryDTO.class);
+        return modelMapper.map(savedCategory, CategoryResDTO.class);
     }
 
 
@@ -102,8 +99,8 @@ public class CategoryServiceImpl implements CategoryService {
      * @param pageable
      * @return
      */
-    public Page<ResponseCategorySeachDTO> searchCategories(RequestCategorySearch requestCategorySearch, Pageable pageable) {
-        return categoryRepository.searchCategories(requestCategorySearch, pageable);
+    public Page<CategorySeachResDTO> searchCategories(CategorySearchReqDTO categorySearchReqDTO, Pageable pageable) {
+        return categoryRepository.searchCategories(categorySearchReqDTO, pageable);
     }
 
     /**
@@ -112,7 +109,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @param user
      * @return
      */
-    public ResponseCategoryDTO findCategoryById(Long id, User user) {
+    public CategoryResDTO findCategoryById(Long id, User user) {
         Category category = categoryRepository.findCategoryById(id, user)
                 .orElseThrow(()-> new DuckwhoException(ErrorCode.NOT_FOUND_CATEGORY));
 
@@ -121,7 +118,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(Optional::isPresent)
                 .orElse(false);
 
-        return ResponseCategoryDTO.of(category, hasBookmark);
+        return CategoryResDTO.of(category, hasBookmark);
     }
 
     @Override
@@ -164,17 +161,6 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    /** TODO : AOP로 변경필요
-     * 블랙리스트 검증
-     * @param userId
-     */
-    private void validateBlackUser(Long userId) {
-        List<BlackUser> blackUser = blackUserService.findByUserId(userId);
-        if(!blackUser.isEmpty()) {
-            throw new DuckwhoException(ErrorCode.BLACK_USER);
-        }
-    }
-
     /**
      * 카테고리 생성 및 관계 설정
      * @param dto
@@ -182,7 +168,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @param image
      * @return
      */
-    private Category createCategoryWithRelations(RequestCategoryCreateDTO dto, User user, Image image) {
+    private Category createCategoryWithRelations(CreateCategoryReqDTO dto, User user, Image image) {
         Category category = Category.from(dto, user);
         
         // 카테고리 이미지 관계 설정
