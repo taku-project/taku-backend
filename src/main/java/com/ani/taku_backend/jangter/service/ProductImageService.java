@@ -1,6 +1,6 @@
 package com.ani.taku_backend.jangter.service;
 
-import com.ani.taku_backend.chatroom.domain.vo.ArticleImages;
+import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import org.springframework.stereotype.Service;
@@ -29,13 +29,13 @@ public class ProductImageService {
      * @param productIds 상품 ID 목록
      * @return 상품 이미지 Value Object
      */
-    public ArticleImages getArticleImages(List<Long> productIds) {
+    public ArticleImage getArticleImages(List<Long> productIds) {
         if (productIds == null || productIds.isEmpty()) {
-            return ArticleImages.empty();
+            return ArticleImage.empty();
         }
         
         Map<Long, String> imageMap = getProductImageMap(productIds);
-        return ArticleImages.of(imageMap);
+        return ArticleImage.of(imageMap);
     }
     
     /**
@@ -44,13 +44,13 @@ public class ProductImageService {
      * @param productId 상품 ID
      * @return 상품 이미지 Value Object
      */
-    public ArticleImages getArticleImage(Long productId) {
+    public ArticleImage getArticleImage(Long productId) {
         if (productId == null) {
-            return ArticleImages.empty();
+            return ArticleImage.empty();
         }
         
         String imageUrl = getProductImageUrl(productId);
-        return ArticleImages.of(productId, imageUrl);
+        return ArticleImage.of(productId, imageUrl);
     }
 
     /**

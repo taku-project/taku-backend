@@ -1,7 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
-import com.ani.taku_backend.chatroom.domain.vo.ChatRoomSummary;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import lombok.Builder;

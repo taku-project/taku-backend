@@ -5,6 +5,7 @@ import java.util.List;
 
 
 public class ChatRoomMetaInfoData {
+
     private final ChatRoomMetaInfos metaInfos;
     private final ChatRoomMessages lastMessages;
     private final UnreadMessageCounts unreadCounts;

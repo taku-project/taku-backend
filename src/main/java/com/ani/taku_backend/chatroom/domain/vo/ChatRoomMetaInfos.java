@@ -13,6 +13,7 @@ import java.util.Optional;
 public class ChatRoomMetaInfos {
     
     private final Map<Long, ChatRoomMetaInfo> metaInfoByChatRoomId;
+    
 
     private ChatRoomMetaInfos(Collection<ChatRoomMetaInfo> metaInfos) {
         Map<Long, ChatRoomMetaInfo> map = new HashMap<>();
@@ -27,7 +28,6 @@ public class ChatRoomMetaInfos {
         
         this.metaInfoByChatRoomId = Collections.unmodifiableMap(map);
     }
-    
 
     public static ChatRoomMetaInfos empty() {
         return new ChatRoomMetaInfos(List.of());
@@ -37,14 +37,9 @@ public class ChatRoomMetaInfos {
     public static ChatRoomMetaInfos of(Collection<ChatRoomMetaInfo> metaInfos) {
         return new ChatRoomMetaInfos(metaInfos);
     }
-    
 
     public Optional<ChatRoomMetaInfo> getMetaInfo(Long chatRoomId) {
         return Optional.ofNullable(metaInfoByChatRoomId.get(chatRoomId));
-    }
-
-    public int size() {
-        return metaInfoByChatRoomId.size();
     }
 
 } 

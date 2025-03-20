@@ -8,7 +8,7 @@ import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.domain.vo.ArticleImages;
+import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
@@ -138,7 +138,7 @@ public class ChatRoomCommandService {
     private ChatRoomResponseDTO createChatRoomResponseDTO(
             ChatRoom savedRoom, ChatRoomMetaInfo metaInfo, User buyer, User seller, Long articleId) {
 
-        ArticleImages articleImages = productImageService.getArticleImage(articleId);
+        ArticleImage articleImage = productImageService.getArticleImage(articleId);
 
         ChatRoomMessages lastMessages = ChatRoomMessages.empty();
         
@@ -156,7 +156,7 @@ public class ChatRoomCommandService {
                 users,
                 lastMessages,
                 unreadCounts,
-                articleImages
+                articleImage
         );
     }
 

@@ -1,9 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.vo;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
-import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
-
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,22 +21,6 @@ public class ChatRoomMessages {
         return new ChatRoomMessages(new HashMap<>());
     }
 
-    public static ChatRoomMessages fromMetaInfos(Collection<ChatRoomMetaInfo> metaInfos) {
-        if (metaInfos == null || metaInfos.isEmpty()) {
-            return empty();
-        }
-        
-        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
-        
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            ChatMessage lastMessage = metaInfo.getLastMessage();
-            if (lastMessage != null) {
-                lastMessageMap.put(metaInfo.getChatRoomId(), lastMessage);
-            }
-        }
-        
-        return new ChatRoomMessages(lastMessageMap);
-    }
 
     public static ChatRoomMessages of(Map<Long, ChatMessage> lastMessageMap) {
         return new ChatRoomMessages(lastMessageMap);
@@ -53,11 +34,11 @@ public class ChatRoomMessages {
         return new ChatRoomMessages(map);
     }
 
+    /**
+     * 채팅방 ID로 마지막 메시지를 조회합니다.
+     */
     public Optional<ChatMessage> getLastMessage(Long chatRoomId) {
         return Optional.ofNullable(lastMessageByChatRoomId.get(chatRoomId));
     }
 
-    public int size() {
-        return lastMessageByChatRoomId.size();
-    }
 } 

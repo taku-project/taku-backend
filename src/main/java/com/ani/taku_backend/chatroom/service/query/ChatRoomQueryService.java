@@ -10,7 +10,7 @@ import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.domain.vo.ArticleImages;
+import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
@@ -60,7 +60,7 @@ public class ChatRoomQueryService {
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-        ArticleImages articleImages = productImageService.getArticleImages(articleIds);
+        ArticleImage articleImage = productImageService.getArticleImages(articleIds);
 
         ChatRoomMessages lastMessages = metaInfoData.getLastMessages();
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
@@ -78,8 +78,8 @@ public class ChatRoomQueryService {
                             metaInfoOpt.get(), 
                             users, 
                             lastMessages, 
-                            unreadCounts, 
-                            articleImages
+                            unreadCounts,
+                            articleImage
                     );
                 })
                 .filter(Objects::nonNull)
@@ -106,7 +106,7 @@ public class ChatRoomQueryService {
                 chatRoomMetaInfo.getUnreadCount(userId)
         );
 
-        ArticleImages articleImages = productImageService.getArticleImage(chatRoom.getArticleId());
+        ArticleImage articleImage = productImageService.getArticleImage(chatRoom.getArticleId());
 
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
 
@@ -115,8 +115,8 @@ public class ChatRoomQueryService {
                 chatRoomMetaInfo, 
                 users,
                 lastMessages, 
-                unreadCounts, 
-                articleImages
+                unreadCounts,
+                articleImage
         );
     }
 
@@ -151,7 +151,7 @@ public class ChatRoomQueryService {
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-        ArticleImages articleImages = productImageService.getArticleImages(articleIds);
+        ArticleImage articleImage = productImageService.getArticleImages(articleIds);
         
         ChatRoomMessages lastMessages = metaInfoData.getLastMessages();
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
@@ -168,8 +168,8 @@ public class ChatRoomQueryService {
                             metaInfoOpt.get(), 
                             users, 
                             lastMessages, 
-                            unreadCounts, 
-                            articleImages
+                            unreadCounts,
+                            articleImage
                     );
                 })
                 .filter(Objects::nonNull)

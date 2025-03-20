@@ -3,20 +3,17 @@ package com.ani.taku_backend.chatroom.domain.dto.response;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.domain.vo.ArticleImages;
+import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
-import com.ani.taku_backend.user.model.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 채팅방 정보를 응답하기 위한 DTO 클래스
@@ -82,7 +79,7 @@ public class ChatRoomResponseDTO {
             ChatRoomUsers users,
             ChatRoomMessages lastMessages,
             UnreadMessageCounts unreadCounts,
-            ArticleImages articleImages) {
+            ArticleImage articleImage) {
         
         if (chatRoom == null || metaInfo == null || !chatRoom.isValid()) {
             return null;
@@ -93,7 +90,7 @@ public class ChatRoomResponseDTO {
                 .withUsers(users)
                 .withLastMessages(lastMessages)
                 .withUnreadCounts(unreadCounts)
-                .withArticleImages(articleImages)
+                .withArticleImages(articleImage)
                 .build();
     }
     
@@ -110,7 +107,7 @@ public class ChatRoomResponseDTO {
         private ChatRoomUsers users;
         private ChatRoomMessages lastMessages;
         private UnreadMessageCounts unreadCounts;
-        private ArticleImages articleImages;
+        private ArticleImage articleImage;
         
         private ResponseDTOBuilder(ChatRoom chatRoom) {
             this.chatRoom = chatRoom;
@@ -148,8 +145,8 @@ public class ChatRoomResponseDTO {
         /**
          * 상품 이미지 정보 설정
          */
-        public ResponseDTOBuilder withArticleImages(ArticleImages articleImages) {
-            this.articleImages = articleImages;
+        public ResponseDTOBuilder withArticleImages(ArticleImage articleImage) {
+            this.articleImage = articleImage;
             return this;
         }
         
@@ -262,7 +259,7 @@ public class ChatRoomResponseDTO {
                 return null;
             }
             
-            return articleImages != null ? articleImages.getImageUrl(articleId) : null;
+            return articleImage != null ? articleImage.getImageUrl(articleId) : null;
         }
         
         /**

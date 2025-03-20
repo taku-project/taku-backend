@@ -95,12 +95,4 @@ public class ChatRoomUsers {
         return user != null ? user.getProfileImg() : null;
     }
 
-    
-    /**
-     * 저장된 모든 사용자 수를 반환합니다.
-     */
-    public int size() {
-        return userById.size();
-    }
-
 } 
