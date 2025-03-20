@@ -6,9 +6,12 @@ import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.domain.mapper.ChatRoomMapper;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.vo.ArticleImages;
+import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
+import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
+import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
@@ -22,9 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 채팅방 애플리케이션 서비스
@@ -42,7 +43,6 @@ public class ChatRoomCommandService {
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
     private final ProductImageService productImageService;
-    private final ChatRoomMapper chatRoomMapper;
 
 
     /**
@@ -129,7 +129,6 @@ public class ChatRoomCommandService {
      * 채팅방 메타 정보를 생성하고 저장합니다.
      */
     private ChatRoomMetaInfo createAndSaveChatRoomMetaInfo(Long chatRoomId, Long buyerId, Long sellerId) {
-        // 팩토리 메서드를 사용하여 완전히 초기화된 객체 생성
         ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.createWithParticipants(
                 chatRoomId, buyerId, sellerId);
         
@@ -138,23 +137,26 @@ public class ChatRoomCommandService {
 
     private ChatRoomResponseDTO createChatRoomResponseDTO(
             ChatRoom savedRoom, ChatRoomMetaInfo metaInfo, User buyer, User seller, Long articleId) {
-            
-        String articleThumbnailUrl = productImageService.getProductImageUrl(articleId);
 
-        Map<Long, User> userMap = new HashMap<>();
-        userMap.put(buyer.getUserId(), buyer);
-        userMap.put(seller.getUserId(), seller);
+        ArticleImages articleImages = productImageService.getArticleImage(articleId);
 
-        Map<Long, String> articleImageMap = new HashMap<>();
-        articleImageMap.put(articleId, articleThumbnailUrl);
+        ChatRoomMessages lastMessages = ChatRoomMessages.empty();
+        
+        // 신규 채팅방은 읽지 않은 메시지가 없음
+        UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(
+                savedRoom.getId(), 
+                0
+        );
 
-        return chatRoomMapper.toChatRoomResponseDTO(
+        ChatRoomUsers users = ChatRoomUsers.of(buyer, seller);
+        
+        return ChatRoomResponseDTO.from(
                 savedRoom,
                 metaInfo,
-                userMap,
-                Map.of(),  // 신규 채팅방은 메시지가 없음
-                Map.of(savedRoom.getId(), 0),  // 신규 채팅방은 읽지 않은 메시지가 없음
-                articleImageMap
+                users,
+                lastMessages,
+                unreadCounts,
+                articleImages
         );
     }
 

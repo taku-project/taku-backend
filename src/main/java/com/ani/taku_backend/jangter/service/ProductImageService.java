@@ -1,5 +1,6 @@
 package com.ani.taku_backend.jangter.service;
 
+import com.ani.taku_backend.chatroom.domain.vo.ArticleImages;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,38 @@ public class ProductImageService {
     }
 
     /**
+     * 상품 ID 목록에 대한 이미지 VO를 생성합니다.
+     * 
+     * @param productIds 상품 ID 목록
+     * @return 상품 이미지 Value Object
+     */
+    public ArticleImages getArticleImages(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return ArticleImages.empty();
+        }
+        
+        Map<Long, String> imageMap = getProductImageMap(productIds);
+        return ArticleImages.of(imageMap);
+    }
+    
+    /**
+     * 단일 상품에 대한 이미지 VO를 생성합니다.
+     * 
+     * @param productId 상품 ID
+     * @return 상품 이미지 Value Object
+     */
+    public ArticleImages getArticleImage(Long productId) {
+        if (productId == null) {
+            return ArticleImages.empty();
+        }
+        
+        String imageUrl = getProductImageUrl(productId);
+        return ArticleImages.of(productId, imageUrl);
+    }
+
+    /**
      * 상품 ID 목록에 해당하는 이미지 URL 맵을 생성합니다.
+     * 하위 호환성을 위해 유지합니다.
      *
      * @param productIds 상품 ID 목록
      * @return 상품 ID를 키로, 이미지 URL을 값으로 하는 맵
@@ -43,6 +75,7 @@ public class ProductImageService {
 
     /**
      * 단일 상품의 이미지 URL을 조회합니다.
+     * 하위 호환성을 위해 유지합니다.
      *
      * @param productId 상품 ID
      * @return 이미지 URL 또는 null

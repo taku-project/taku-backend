@@ -1,6 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
+import com.ani.taku_backend.chatroom.domain.vo.ChatRoomSummary;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import lombok.Builder;
@@ -236,4 +237,14 @@ public class ChatRoomMetaInfo {
         resetUnreadCount(userId);
     }
 
+    /**
+     * 현재 채팅방의 마지막 메시지를 가져옵니다.
+     * @return 마지막 메시지 또는 비어있을 경우 null
+     */
+    public ChatMessage getLastMessage() {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        return messages.get(messages.size() - 1);
+    }
 }

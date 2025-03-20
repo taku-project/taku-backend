@@ -16,6 +16,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 채팅방 정보를 나타내는 엔티티입니다.
@@ -143,4 +145,16 @@ public class ChatRoom extends BaseTimeEntity {
 
         return chatRoom;
     }
+
+    /**
+     * 채팅방의 유효성을 검증합니다.
+     * 필수 참여자(구매자 또는 판매자)가 없는 경우 false를 반환합니다.
+     *
+     * @return 채팅방 유효성 여부
+     */
+    public boolean isValid() {
+        return getBuyer() != null && getSeller() != null;
+    }
+
+
 }

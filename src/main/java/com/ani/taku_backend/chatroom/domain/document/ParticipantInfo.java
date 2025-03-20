@@ -39,6 +39,15 @@ public class ParticipantInfo {
         this.messageStock = INITIAL_MESSAGE_STOCK;
     }
 
+    /**
+     * 참여자의 활성화 상태를 반환합니다.
+     * 
+     * @return 활성화 상태
+     */
+    public boolean isActive() {
+        return Boolean.TRUE.equals(this.isActive);
+    }
+
     public void plusMessage() {
         this.messageStock++;
     }
