@@ -40,7 +40,7 @@ public class ProductFindListResponseDTO {
         this.id = id;
         this.title = title;
         this.price = price;
-        this.imageUrl = imageUrl != null ? imageUrl : "defaultImageUrl";
+        this.imageUrl = imageUrl;
         this.userNickname = userNickname;
         this.viewCount = viewCount;
         this.status = status;
