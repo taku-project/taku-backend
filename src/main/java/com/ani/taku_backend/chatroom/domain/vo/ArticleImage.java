@@ -75,7 +75,7 @@ public class ArticleImage {
         }
         
         List<ArticleImageItem> items = productImages.stream()
-            .filter(dto -> dto.productId() != null)
+            .filter(dto -> dto != null && dto.productId() != null)
             .map(dto -> new ArticleImageItem(dto.productId(), dto.imageUrl()))
             .collect(Collectors.toList());
         
@@ -83,11 +83,12 @@ public class ArticleImage {
     }
 
     public String getImageUrl(Long articleId) {
-        if (articleId == null) {
+        if (articleId == null || imageItems.isEmpty()) {
             return null;
         }
         
         return imageItems.stream()
+            .filter(Objects::nonNull)
             .filter(item -> articleId.equals(item.getArticleId()))
             .map(ArticleImageItem::getImageUrl)
             .findFirst()

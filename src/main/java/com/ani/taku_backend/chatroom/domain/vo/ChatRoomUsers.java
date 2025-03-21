@@ -21,9 +21,6 @@ public class ChatRoomUsers {
     
     private final List<ChatRoomUserItem> users;
 
-    /**
-     * 사용자 정보를 표현하는 내부 클래스
-     */
     public static class ChatRoomUserItem {
         private final Long userId;
         private final String nickname;
@@ -53,10 +50,7 @@ public class ChatRoomUsers {
             users != null ? new ArrayList<>(users) : new ArrayList<>()
         );
     }
-    
-    /**
-     * User 엔티티 컬렉션으로부터 ChatRoomUsers VO를 생성합니다.
-     */
+
     public static ChatRoomUsers fromUserEntities(Collection<User> users) {
         if (users == null || users.isEmpty()) {
             return new ChatRoomUsers(List.of());
@@ -74,35 +68,16 @@ public class ChatRoomUsers {
         return new ChatRoomUsers(items);
     }
     
-    /**
-     * 빈 ChatRoomUsers 객체를 생성합니다.
-     */
+
     public static ChatRoomUsers empty() {
         return new ChatRoomUsers(List.of());
     }
 
-    /**
-     * 구매자와 판매자 정보로 ChatRoomUsers 객체를 생성합니다.
-     */
     public static ChatRoomUsers of(User buyer, User seller) {
         return fromUserEntities(Arrays.asList(buyer, seller));
     }
-    
-    /**
-     * 기존 맵 데이터로부터 ChatRoomUsers 객체를 생성합니다.
-     * 하위 호환성을 위해 제공됩니다.
-     */
-    public static ChatRoomUsers ofMap(Map<Long, User> userMap) {
-        if (userMap == null || userMap.isEmpty()) {
-            return empty();
-        }
-        
-        return fromUserEntities(userMap.values());
-    }
-    
-    /**
-     * 채팅방 목록으로부터 사용자 정보를 추출하여 ChatRoomUsers 객체를 생성합니다.
-     */
+
+
     public static ChatRoomUsers fromChatRooms(List<ChatRoom> chatRooms) {
         if (chatRooms == null || chatRooms.isEmpty()) {
             return empty();
@@ -125,10 +100,8 @@ public class ChatRoomUsers {
         
         return fromUserEntities(users);
     }
-    
-    /**
-     * 단일 채팅방에서 참여자 정보를 추출하여 ChatRoomUsers 객체를 생성합니다.
-     */
+
+
     public static ChatRoomUsers fromChatRoom(ChatRoom chatRoom) {
         if (chatRoom == null) {
             return empty();
@@ -149,10 +122,8 @@ public class ChatRoomUsers {
         
         return fromUserEntities(users);
     }
-    
-    /**
-     * 사용자 ID로 사용자 정보를 조회합니다.
-     */
+
+
     public Optional<ChatRoomUserItem> getUser(Long userId) {
         if (userId == null) {
             return Optional.empty();
@@ -162,29 +133,21 @@ public class ChatRoomUsers {
             .filter(user -> userId.equals(user.getUserId()))
             .findFirst();
     }
-    
-    /**
-     * 사용자 ID로 사용자 닉네임을 조회합니다.
-     * 사용자가 없는 경우 "알 수 없음"을 반환합니다.
-     */
+
+
     public String getUserNicknameOrUnknown(Long userId) {
         return getUser(userId)
             .map(ChatRoomUserItem::getNickname)
             .orElse(MessageConstants.UNKNOWN_USER);
     }
-    
-    /**
-     * 사용자 ID로 프로필 이미지 URL을 조회합니다.
-     */
+
+
     public String getUserProfileImage(Long userId) {
         return getUser(userId)
             .map(ChatRoomUserItem::getProfileImg)
             .orElse(null);
     }
-    
-    /**
-     * 모든 사용자 정보를 반환합니다.
-     */
+
     public List<ChatRoomUserItem> getUsers() {
         return users;
     }

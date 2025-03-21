@@ -17,10 +17,7 @@ import java.util.stream.Collectors;
 public class ChatRoomMetaInfos {
     
     private final List<MetaInfoItem> items;
-    
-    /**
-     * 채팅방 ID와 메타 정보를 표현하는 내부 클래스
-     */
+
     public static class MetaInfoItem {
         private final Long chatRoomId;
         private final ChatRoomMetaInfo metaInfo;
@@ -45,9 +42,7 @@ public class ChatRoomMetaInfos {
         );
     }
     
-    /**
-     * 메타 정보 컬렉션으로부터 ChatRoomMetaInfos 객체를 생성합니다.
-     */
+
     private static ChatRoomMetaInfos fromMetaInfoCollection(Collection<ChatRoomMetaInfo> metaInfos) {
         if (metaInfos == null || metaInfos.isEmpty()) {
             return empty();
@@ -61,23 +56,15 @@ public class ChatRoomMetaInfos {
         return new ChatRoomMetaInfos(items);
     }
 
-    /**
-     * 빈 ChatRoomMetaInfos 객체를 생성합니다.
-     */
     public static ChatRoomMetaInfos empty() {
         return new ChatRoomMetaInfos(List.of());
     }
     
-    /**
-     * 메타 정보 컬렉션으로부터 ChatRoomMetaInfos 객체를 생성합니다.
-     */
+
     public static ChatRoomMetaInfos of(Collection<ChatRoomMetaInfo> metaInfos) {
         return fromMetaInfoCollection(metaInfos);
     }
 
-    /**
-     * 채팅방 ID로 메타 정보를 조회합니다.
-     */
     public Optional<ChatRoomMetaInfo> getMetaInfo(Long chatRoomId) {
         if (chatRoomId == null) {
             return Optional.empty();
@@ -88,10 +75,7 @@ public class ChatRoomMetaInfos {
             .map(MetaInfoItem::getMetaInfo)
             .findFirst();
     }
-    
-    /**
-     * 모든 메타 정보를 반환합니다.
-     */
+
     public List<MetaInfoItem> getItems() {
         return items;
     }

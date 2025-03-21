@@ -22,10 +22,7 @@ public class UnreadMessageCounts {
             items != null ? new ArrayList<>(items) : new ArrayList<>()
         );
     }
-    
-    /**
-     * 채팅방 ID와 읽지 않은 메시지 수를 표현하는 내부 클래스
-     */
+
     public static class UnreadCountItem {
         private final Long chatRoomId;
         private final Integer count;
@@ -44,16 +41,11 @@ public class UnreadMessageCounts {
         }
     }
     
-    /**
-     * 빈 UnreadMessageCounts 객체를 생성합니다.
-     */
+
     public static UnreadMessageCounts empty() {
         return new UnreadMessageCounts(List.of());
     }
-    
-    /**
-     * 채팅방 ID와 읽지 않은 메시지 수로 UnreadMessageCounts 객체를 생성합니다.
-     */
+
     public static UnreadMessageCounts of(Long chatRoomId, Integer unreadCount) {
         if (chatRoomId == null) {
             return empty();
@@ -61,18 +53,13 @@ public class UnreadMessageCounts {
         
         return new UnreadMessageCounts(List.of(new UnreadCountItem(chatRoomId, unreadCount)));
     }
-    
-    /**
-     * 여러 UnreadCountItem으로 UnreadMessageCounts 객체를 생성합니다.
-     */
+
+
     public static UnreadMessageCounts of(List<UnreadCountItem> items) {
         return new UnreadMessageCounts(items);
     }
 
-    
-    /**
-     * 채팅방 메타 정보 목록에서 사용자별 안 읽은 메시지 수를 추출합니다.
-     */
+
     public static UnreadMessageCounts fromMetaInfos(List<ChatRoomMetaInfo> metaInfos, Long userId, List<Long> chatRoomIds) {
         if (metaInfos == null || metaInfos.isEmpty() || userId == null || chatRoomIds == null) {
             return empty();
@@ -86,9 +73,7 @@ public class UnreadMessageCounts {
         return new UnreadMessageCounts(items);
     }
     
-    /**
-     * 채팅방 ID로 안 읽은 메시지 수를 조회합니다.
-     */
+
     public Integer getUnreadCount(Long chatRoomId) {
         if (chatRoomId == null) {
             return 0;
@@ -100,10 +85,7 @@ public class UnreadMessageCounts {
             .findFirst()
             .orElse(0);
     }
-    
-    /**
-     * 모든 안 읽은 메시지 정보를 반환합니다.
-     */
+
     public List<UnreadCountItem> getItems() {
         return items;
     }

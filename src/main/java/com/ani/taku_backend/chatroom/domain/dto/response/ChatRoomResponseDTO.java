@@ -10,6 +10,8 @@ import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -20,6 +22,8 @@ import java.util.Optional;
 @Getter
 @ToString
 public class ChatRoomResponseDTO {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatRoomResponseDTO.class);
 
     private final Long chatRoomId;
     private final String wsRoomId;
@@ -213,28 +217,55 @@ public class ChatRoomResponseDTO {
         
 
         private ChatMessageResponseDTO createLastMessageDTO(Long chatRoomId) {
-            Optional<ChatMessage> messageOpt = 
-                lastMessages != null 
+            if (chatRoomId == null) {
+                return null;
+            }
+            
+            Optional<ChatMessage> messageOpt;
+            try {
+                messageOpt = lastMessages != null 
                     ? lastMessages.getLastMessage(chatRoomId) 
-                    : Optional.ofNullable(metaInfo.getLastMessage());
+                    : Optional.ofNullable(metaInfo != null ? metaInfo.getLastMessage() : null);
+            } catch (Exception e) {
+                log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+                return null;
+            }
             
             if (messageOpt.isEmpty()) {
                 return null;
             }
             
             ChatMessage lastMessage = messageOpt.get();
+            if (lastMessage == null || lastMessage.getSenderId() == null) {
+                return null;
+            }
+            
             String senderName = users != null 
                 ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
                 : UNKNOWN_USER;
             
-            return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
+            try {
+                return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
+            } catch (Exception e) {
+                log.warn("메시지 DTO 생성 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+                return null;
+            }
         }
         
         /**
          * 상품 이미지 URL을 가져옵니다.
          */
         private String getArticleImageUrl(Long articleId) {
-            return articleImage != null ? articleImage.getImageUrl(articleId) : null;
+            if (articleId == null || articleImage == null) {
+                return null;
+            }
+            try {
+                return articleImage.getImageUrl(articleId);
+            } catch (Exception e) {
+                // NPE나 다른 예외 발생 시 로깅하고 null 반환
+                log.warn("상품 이미지 조회 중 오류 발생: articleId={}, error={}", articleId, e.getMessage());
+                return null;
+            }
         }
         
         /**

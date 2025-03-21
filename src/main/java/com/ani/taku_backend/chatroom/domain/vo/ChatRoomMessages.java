@@ -7,7 +7,6 @@ import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,10 +23,7 @@ public class ChatRoomMessages {
             items != null ? new ArrayList<>(items) : new ArrayList<>()
         );
     }
-    
-    /**
-     * 채팅방 ID와 마지막 메시지를 표현하는 내부 클래스
-     */
+
     public static class MessageItem {
         private final Long chatRoomId;
         private final ChatMessage message;
@@ -46,16 +42,11 @@ public class ChatRoomMessages {
         }
     }
 
-    /**
-     * 빈 ChatRoomMessages 객체를 생성합니다.
-     */
+
     public static ChatRoomMessages empty() {
         return new ChatRoomMessages(List.of());
     }
 
-    /**
-     * 채팅방 ID와 마지막 메시지로 ChatRoomMessages 객체를 생성합니다.
-     */
     public static ChatRoomMessages of(Long chatRoomId, ChatMessage lastMessage) {
         if (chatRoomId == null) {
             return empty();
@@ -64,16 +55,12 @@ public class ChatRoomMessages {
         return new ChatRoomMessages(List.of(new MessageItem(chatRoomId, lastMessage)));
     }
     
-    /**
-     * 여러 MessageItem으로 ChatRoomMessages 객체를 생성합니다.
-     */
+
     public static ChatRoomMessages of(List<MessageItem> items) {
         return new ChatRoomMessages(items);
     }
 
-    /**
-     * 채팅방 메타 정보 목록에서 마지막 메시지를 추출하여 생성합니다.
-     */
+
     public static ChatRoomMessages fromMetaInfos(List<ChatRoomMetaInfo> metaInfos) {
         if (metaInfos == null || metaInfos.isEmpty()) {
             return empty();
@@ -87,23 +74,20 @@ public class ChatRoomMessages {
         return ChatRoomMessages.of(items);
     }
 
-    /**
-     * 채팅방 ID로 마지막 메시지를 조회합니다.
-     */
+
     public Optional<ChatMessage> getLastMessage(Long chatRoomId) {
-        if (chatRoomId == null) {
+        if (chatRoomId == null || items.isEmpty()) {
             return Optional.empty();
         }
         
         return items.stream()
+            .filter(Objects::nonNull)
             .filter(item -> chatRoomId.equals(item.getChatRoomId()))
             .map(MessageItem::getMessage)
+            .filter(Objects::nonNull)
             .findFirst();
     }
-    
-    /**
-     * 모든 메시지 정보를 반환합니다.
-     */
+
     public List<MessageItem> getItems() {
         return items;
     }
