@@ -148,10 +148,7 @@ public class ChatRoomResponseDTO {
             this.articleImage = articleImage;
             return this;
         }
-        
-        /**
-         * 지정된 정보를 기반으로 ChatRoomResponseDTO 객체를 생성합니다.
-         */
+
         public ChatRoomResponseDTO build() {
             if (chatRoom == null || metaInfo == null) {
                 return null;

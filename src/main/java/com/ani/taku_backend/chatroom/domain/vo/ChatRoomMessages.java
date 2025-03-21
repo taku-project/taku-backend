@@ -2,6 +2,8 @@ package com.ani.taku_backend.chatroom.domain.vo;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.contansts.MessageConstants;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,13 +25,15 @@ public class ChatRoomMessages {
         );
     }
     
-
+    /**
+     * 채팅방 ID와 마지막 메시지를 표현하는 내부 클래스
+     */
     public static class MessageItem {
         private final Long chatRoomId;
         private final ChatMessage message;
         
         private MessageItem(Long chatRoomId, ChatMessage message) {
-            this.chatRoomId = Objects.requireNonNull(chatRoomId, "채팅방 ID는 null일 수 없습니다");
+            this.chatRoomId = Objects.requireNonNull(chatRoomId, MessageConstants.CHAT_ROOM_ID_NOT_NULL);
             this.message = message; // message는 null 허용
         }
         
@@ -66,24 +70,7 @@ public class ChatRoomMessages {
     public static ChatRoomMessages of(List<MessageItem> items) {
         return new ChatRoomMessages(items);
     }
-    
-    /**
-     * 기존 맵 데이터로부터 ChatRoomMessages 객체를 생성합니다.
-     * 하위 호환성을 위해 제공됩니다.
-     */
-    public static ChatRoomMessages ofMap(Map<Long, ChatMessage> lastMessageMap) {
-        if (lastMessageMap == null || lastMessageMap.isEmpty()) {
-            return empty();
-        }
-        
-        List<MessageItem> items = lastMessageMap.entrySet().stream()
-            .filter(entry -> entry.getKey() != null)
-            .map(entry -> new MessageItem(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
-        
-        return new ChatRoomMessages(items);
-    }
-    
+
     /**
      * 채팅방 메타 정보 목록에서 마지막 메시지를 추출하여 생성합니다.
      */
