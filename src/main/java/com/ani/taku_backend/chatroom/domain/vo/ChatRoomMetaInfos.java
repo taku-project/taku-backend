@@ -2,32 +2,60 @@ package com.ani.taku_backend.chatroom.domain.vo;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-
+/**
+ * 채팅방별 메타 정보를 표현하는 Value Object
+ */
 public class ChatRoomMetaInfos {
     
-    private final Map<Long, ChatRoomMetaInfo> metaInfoByChatRoomId;
+    private final List<MetaInfoItem> items;
     
 
-    private ChatRoomMetaInfos(Collection<ChatRoomMetaInfo> metaInfos) {
-        Map<Long, ChatRoomMetaInfo> map = new HashMap<>();
+    public static class MetaInfoItem {
+        private final Long chatRoomId;
+        private final ChatRoomMetaInfo metaInfo;
         
-        if (metaInfos != null) {
-            for (ChatRoomMetaInfo metaInfo : metaInfos) {
-                if (metaInfo != null && metaInfo.getChatRoomId() != null) {
-                    map.put(metaInfo.getChatRoomId(), metaInfo);
-                }
-            }
+        private MetaInfoItem(Long chatRoomId, ChatRoomMetaInfo metaInfo) {
+            this.chatRoomId = Objects.requireNonNull(chatRoomId, "채팅방 ID는 null일 수 없습니다");
+            this.metaInfo = metaInfo; // metaInfo는 null 허용
         }
         
-        this.metaInfoByChatRoomId = Collections.unmodifiableMap(map);
+        public Long getChatRoomId() {
+            return chatRoomId;
+        }
+        
+        public ChatRoomMetaInfo getMetaInfo() {
+            return metaInfo;
+        }
     }
+    
+    private ChatRoomMetaInfos(List<MetaInfoItem> items) {
+        this.items = Collections.unmodifiableList(
+            items != null ? new ArrayList<>(items) : new ArrayList<>()
+        );
+    }
+    
+
+    private static ChatRoomMetaInfos fromMetaInfoCollection(Collection<ChatRoomMetaInfo> metaInfos) {
+        if (metaInfos == null || metaInfos.isEmpty()) {
+            return empty();
+        }
+        
+        List<MetaInfoItem> items = metaInfos.stream()
+            .filter(metaInfo -> metaInfo != null && metaInfo.getChatRoomId() != null)
+            .map(metaInfo -> new MetaInfoItem(metaInfo.getChatRoomId(), metaInfo))
+            .collect(Collectors.toList());
+        
+        return new ChatRoomMetaInfos(items);
+    }
+
 
     public static ChatRoomMetaInfos empty() {
         return new ChatRoomMetaInfos(List.of());
@@ -35,11 +63,22 @@ public class ChatRoomMetaInfos {
     
 
     public static ChatRoomMetaInfos of(Collection<ChatRoomMetaInfo> metaInfos) {
-        return new ChatRoomMetaInfos(metaInfos);
+        return fromMetaInfoCollection(metaInfos);
     }
+
 
     public Optional<ChatRoomMetaInfo> getMetaInfo(Long chatRoomId) {
-        return Optional.ofNullable(metaInfoByChatRoomId.get(chatRoomId));
+        if (chatRoomId == null) {
+            return Optional.empty();
+        }
+        
+        return items.stream()
+            .filter(item -> chatRoomId.equals(item.getChatRoomId()))
+            .map(MetaInfoItem::getMetaInfo)
+            .findFirst();
     }
 
+    public List<MetaInfoItem> getItems() {
+        return items;
+    }
 } 

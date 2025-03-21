@@ -1,64 +1,93 @@
 package com.ani.taku_backend.chatroom.domain.vo;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+/**
+ * 채팅방별 읽지 않은 메시지 수를 표현하는 Value Object
+ */
 public class UnreadMessageCounts {
     
-    private final Map<Long, Integer> unreadCountByChatRoomId;
-
-    private UnreadMessageCounts(Map<Long, Integer> unreadCountMap) {
-        this.unreadCountByChatRoomId = Collections.unmodifiableMap(
-            unreadCountMap != null ? new HashMap<>(unreadCountMap) : new HashMap<>()
+    private final List<UnreadCountItem> items;
+    
+    private UnreadMessageCounts(List<UnreadCountItem> items) {
+        this.items = Collections.unmodifiableList(
+            items != null ? new ArrayList<>(items) : new ArrayList<>()
         );
     }
-
-    public static UnreadMessageCounts empty() {
-        return new UnreadMessageCounts(new HashMap<>());
+    
+    /**
+     * 채팅방 ID와 읽지 않은 메시지 수를 표현하는 내부 클래스
+     */
+    public static class UnreadCountItem {
+        private final Long chatRoomId;
+        private final Integer count;
+        
+        private UnreadCountItem(Long chatRoomId, Integer count) {
+            this.chatRoomId = Objects.requireNonNull(chatRoomId, "채팅방 ID는 null일 수 없습니다");
+            this.count = count != null ? count : 0;
+        }
+        
+        public Long getChatRoomId() {
+            return chatRoomId;
+        }
+        
+        public Integer getCount() {
+            return count;
+        }
     }
-
-
-    public static UnreadMessageCounts of(Map<Long, Integer> unreadCountMap) {
-        return new UnreadMessageCounts(unreadCountMap);
+    
+    /**
+     * 빈 UnreadMessageCounts 객체를 생성합니다.
+     */
+    public static UnreadMessageCounts empty() {
+        return new UnreadMessageCounts(List.of());
     }
 
     public static UnreadMessageCounts of(Long chatRoomId, Integer unreadCount) {
-        Map<Long, Integer> map = new HashMap<>();
-        if (chatRoomId != null && unreadCount != null) {
-            map.put(chatRoomId, unreadCount);
+        if (chatRoomId == null) {
+            return empty();
         }
-        return new UnreadMessageCounts(map);
+        
+        return new UnreadMessageCounts(List.of(new UnreadCountItem(chatRoomId, unreadCount)));
     }
+    
 
-    /**
-     * 채팅방 메타 정보 목록에서 사용자별 안 읽은 메시지 수를 추출합니다.
-     * 
-     * @param metaInfos 채팅방 메타 정보 목록
-     * @param userId 사용자 ID
-     * @param chatRoomIds 조회할 채팅방 ID 목록 (필터링용)
-     * @return 채팅방별 안 읽은 메시지 수 모음
-     */
+    public static UnreadMessageCounts of(List<UnreadCountItem> items) {
+        return new UnreadMessageCounts(items);
+    }
+    
+
     public static UnreadMessageCounts fromMetaInfos(List<ChatRoomMetaInfo> metaInfos, Long userId, List<Long> chatRoomIds) {
-        Map<Long, Integer> unreadCountMap = new HashMap<>();
-        
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            Long chatRoomId = metaInfo.getChatRoomId();
-            if (chatRoomId != null && chatRoomIds.contains(chatRoomId)) {
-                unreadCountMap.put(chatRoomId, metaInfo.getUnreadCount(userId));
-            }
+        if (metaInfos == null || metaInfos.isEmpty() || userId == null || chatRoomIds == null) {
+            return empty();
         }
         
-        return UnreadMessageCounts.of(unreadCountMap);
+        List<UnreadCountItem> items = metaInfos.stream()
+            .filter(metaInfo -> metaInfo.getChatRoomId() != null && chatRoomIds.contains(metaInfo.getChatRoomId()))
+            .map(metaInfo -> new UnreadCountItem(metaInfo.getChatRoomId(), metaInfo.getUnreadCount(userId)))
+            .collect(Collectors.toList());
+        
+        return new UnreadMessageCounts(items);
     }
 
-    /**
-     * 채팅방 ID로 안 읽은 메시지 수를 조회합니다.
-     */
     public Integer getUnreadCount(Long chatRoomId) {
-        return unreadCountByChatRoomId.getOrDefault(chatRoomId, 0);
+        if (chatRoomId == null) {
+            return 0;
+        }
+        
+        return items.stream()
+            .filter(item -> chatRoomId.equals(item.getChatRoomId()))
+            .map(UnreadCountItem::getCount)
+            .findFirst()
+            .orElse(0);
     }
 
+    public List<UnreadCountItem> getItems() {
+        return items;
+    }
 } 

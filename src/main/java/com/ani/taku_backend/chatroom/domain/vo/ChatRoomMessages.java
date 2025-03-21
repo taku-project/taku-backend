@@ -2,65 +2,122 @@ package com.ani.taku_backend.chatroom.domain.vo;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-
+/**
+ * 채팅방별 마지막 메시지 정보를 표현하는 Value Object
+ */
 public class ChatRoomMessages {
     
-    private final Map<Long, ChatMessage> lastMessageByChatRoomId;
+    private final List<MessageItem> items;
 
-    private ChatRoomMessages(Map<Long, ChatMessage> lastMessageMap) {
-        this.lastMessageByChatRoomId = Collections.unmodifiableMap(
-            lastMessageMap != null ? new HashMap<>(lastMessageMap) : new HashMap<>()
+    private ChatRoomMessages(List<MessageItem> items) {
+        this.items = Collections.unmodifiableList(
+            items != null ? new ArrayList<>(items) : new ArrayList<>()
         );
     }
+    
 
-    public static ChatRoomMessages empty() {
-        return new ChatRoomMessages(new HashMap<>());
-    }
-
-
-    public static ChatRoomMessages of(Map<Long, ChatMessage> lastMessageMap) {
-        return new ChatRoomMessages(lastMessageMap);
-    }
-
-    public static ChatRoomMessages of(Long chatRoomId, ChatMessage lastMessage) {
-        Map<Long, ChatMessage> map = new HashMap<>();
-        if (chatRoomId != null && lastMessage != null) {
-            map.put(chatRoomId, lastMessage);
+    public static class MessageItem {
+        private final Long chatRoomId;
+        private final ChatMessage message;
+        
+        private MessageItem(Long chatRoomId, ChatMessage message) {
+            this.chatRoomId = Objects.requireNonNull(chatRoomId, "채팅방 ID는 null일 수 없습니다");
+            this.message = message; // message는 null 허용
         }
-        return new ChatRoomMessages(map);
+        
+        public Long getChatRoomId() {
+            return chatRoomId;
+        }
+        
+        public ChatMessage getMessage() {
+            return message;
+        }
+    }
+
+    /**
+     * 빈 ChatRoomMessages 객체를 생성합니다.
+     */
+    public static ChatRoomMessages empty() {
+        return new ChatRoomMessages(List.of());
+    }
+
+    /**
+     * 채팅방 ID와 마지막 메시지로 ChatRoomMessages 객체를 생성합니다.
+     */
+    public static ChatRoomMessages of(Long chatRoomId, ChatMessage lastMessage) {
+        if (chatRoomId == null) {
+            return empty();
+        }
+        
+        return new ChatRoomMessages(List.of(new MessageItem(chatRoomId, lastMessage)));
+    }
+    
+    /**
+     * 여러 MessageItem으로 ChatRoomMessages 객체를 생성합니다.
+     */
+    public static ChatRoomMessages of(List<MessageItem> items) {
+        return new ChatRoomMessages(items);
+    }
+    
+    /**
+     * 기존 맵 데이터로부터 ChatRoomMessages 객체를 생성합니다.
+     * 하위 호환성을 위해 제공됩니다.
+     */
+    public static ChatRoomMessages ofMap(Map<Long, ChatMessage> lastMessageMap) {
+        if (lastMessageMap == null || lastMessageMap.isEmpty()) {
+            return empty();
+        }
+        
+        List<MessageItem> items = lastMessageMap.entrySet().stream()
+            .filter(entry -> entry.getKey() != null)
+            .map(entry -> new MessageItem(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+        
+        return new ChatRoomMessages(items);
     }
     
     /**
      * 채팅방 메타 정보 목록에서 마지막 메시지를 추출하여 생성합니다.
-     * 
-     * @param metaInfos 채팅방 메타 정보 목록
-     * @return 채팅방별 마지막 메시지 모음
      */
     public static ChatRoomMessages fromMetaInfos(List<ChatRoomMetaInfo> metaInfos) {
-        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
-        
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            Long chatRoomId = metaInfo.getChatRoomId();
-            ChatMessage lastMessage = metaInfo.getLastMessage();
-            if (chatRoomId != null && lastMessage != null) {
-                lastMessageMap.put(chatRoomId, lastMessage);
-            }
+        if (metaInfos == null || metaInfos.isEmpty()) {
+            return empty();
         }
         
-        return ChatRoomMessages.of(lastMessageMap);
+        List<MessageItem> items = metaInfos.stream()
+            .filter(metaInfo -> metaInfo.getChatRoomId() != null)
+            .map(metaInfo -> new MessageItem(metaInfo.getChatRoomId(), metaInfo.getLastMessage()))
+            .collect(Collectors.toList());
+        
+        return ChatRoomMessages.of(items);
     }
 
     /**
      * 채팅방 ID로 마지막 메시지를 조회합니다.
      */
     public Optional<ChatMessage> getLastMessage(Long chatRoomId) {
-        return Optional.ofNullable(lastMessageByChatRoomId.get(chatRoomId));
+        if (chatRoomId == null) {
+            return Optional.empty();
+        }
+        
+        return items.stream()
+            .filter(item -> chatRoomId.equals(item.getChatRoomId()))
+            .map(MessageItem::getMessage)
+            .findFirst();
     }
-
+    
+    /**
+     * 모든 메시지 정보를 반환합니다.
+     */
+    public List<MessageItem> getItems() {
+        return items;
+    }
 } 
