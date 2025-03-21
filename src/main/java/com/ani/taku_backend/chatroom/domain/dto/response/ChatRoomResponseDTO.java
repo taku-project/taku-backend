@@ -214,9 +214,7 @@ public class ChatRoomResponseDTO {
                     .build();
         }
         
-        /**
-         * 마지막 메시지 DTO를 생성합니다.
-         */
+
         private ChatMessageResponseDTO createLastMessageDTO(Long chatRoomId) {
             Optional<ChatMessage> messageOpt = 
                 lastMessages != null 

@@ -17,7 +17,8 @@ import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import com.ani.taku_backend.jangter.service.ProductImageService;
+import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
+import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class ChatRoomQueryService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
-    private final ProductImageService productImageService;
+    private final DuckuJangterRepository duckuJangterRepository;
 
 
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
@@ -60,7 +61,8 @@ public class ChatRoomQueryService {
         ChatRoomMetaInfos metaInfos = metaInfoData.getMetaInfos();
         
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms);
-        ArticleImage articleImage = productImageService.getArticleImages(articleIds);
+        List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(articleIds);
+        ArticleImage articleImage = ArticleImage.fromProductImageDTOs(productImages);
         
         ChatRoomMessages lastMessages = metaInfoData.getLastMessages();
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
@@ -87,7 +89,9 @@ public class ChatRoomQueryService {
                 metaInfo.getUnreadCount(userId)
         );
 
-        ArticleImage articleImage = productImageService.getArticleImage(chatRoom.getArticleId());
+        List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(List.of(chatRoom.getArticleId()));
+        ArticleImage articleImage = ArticleImage.fromProductImageDTOs(productImages);
+        
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
 
         return ChatRoomResponseDTO.from(

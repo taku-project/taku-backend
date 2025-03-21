@@ -14,10 +14,10 @@ import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
-import com.ani.taku_backend.jangter.service.ProductImageService;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
 
 /**
  * 채팅방 애플리케이션 서비스
@@ -42,7 +43,6 @@ public class ChatRoomCommandService {
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
-    private final ProductImageService productImageService;
 
 
     /**
@@ -138,7 +138,8 @@ public class ChatRoomCommandService {
     private ChatRoomResponseDTO createChatRoomResponseDTO(
             ChatRoom savedRoom, ChatRoomMetaInfo metaInfo, User buyer, User seller, Long articleId) {
 
-        ArticleImage articleImage = productImageService.getArticleImage(articleId);
+        List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(List.of(articleId));
+        ArticleImage articleImage = ArticleImage.fromProductImageDTOs(productImages);
 
         ChatRoomMessages lastMessages = ChatRoomMessages.empty();
         

@@ -9,6 +9,5 @@ public interface ChatRoomMetaRepositoryCustom {
      * 여러 채팅방의 메타 정보와 마지막 메시지를 한 번에 조회합니다.
      */
     List<ChatRoomMetaInfo> findMetaInfoWithLastMessages(List<Long> chatRoomIds);
-    
 
 } 

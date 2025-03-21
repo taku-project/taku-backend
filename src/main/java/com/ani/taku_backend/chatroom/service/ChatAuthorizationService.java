@@ -26,7 +26,7 @@ public class ChatAuthorizationService {
      * @return 참여자인 경우 true, 아닌 경우 false
      */
     public boolean isRoomParticipant(Long userId, Long roomId) {
-        // 채팅방 메타 정보 조회
+
         ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
