@@ -1,5 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.dto.response;
 
+import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
@@ -7,6 +8,8 @@ import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
+
+import com.ani.taku_backend.user.model.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -103,8 +106,6 @@ public class ChatRoomResponseDTO {
      */
     private static class ResponseDTOBuilder {
         
-        private static final String UNKNOWN_USER = "알 수 없음";
-        
         private final ChatRoom chatRoom;
         private ChatRoomMetaInfo metaInfo;
         private ChatRoomUsers users;
@@ -154,13 +155,14 @@ public class ChatRoomResponseDTO {
         }
 
         public ChatRoomResponseDTO build() {
+
             if (chatRoom == null || metaInfo == null) {
                 return null;
             }
             
             Long chatRoomId = chatRoom.getId();
-            var buyer = chatRoom.getBuyer();
-            var seller = chatRoom.getSeller();
+            User buyer = chatRoom.getBuyer();
+            User seller = chatRoom.getSeller();
             
             if (buyer == null && seller == null) {
                 return null;
@@ -169,21 +171,20 @@ public class ChatRoomResponseDTO {
             Long buyerId = buyer != null ? buyer.getUserId() : null;
             Long sellerId = seller != null ? seller.getUserId() : null;
             
-            // 사용자 정보 처리
+
             String buyerNickname;
             String sellerNickname;
             String buyerProfileImg;
             String sellerProfileImg;
             
             if (users != null) {
-                buyerNickname = buyerId != null ? users.getUserNicknameOrUnknown(buyerId) : UNKNOWN_USER;
-                sellerNickname = sellerId != null ? users.getUserNicknameOrUnknown(sellerId) : UNKNOWN_USER;
+                buyerNickname = buyerId != null ? users.getUserNicknameOrUnknown(buyerId) : MessageConstants.UNKNOWN_USER;
+                sellerNickname = sellerId != null ? users.getUserNicknameOrUnknown(sellerId) : MessageConstants.UNKNOWN_USER;
                 buyerProfileImg = buyerId != null ? users.getUserProfileImage(buyerId) : null;
                 sellerProfileImg = sellerId != null ? users.getUserProfileImage(sellerId) : null;
             } else {
-                // 기본값 사용
-                buyerNickname = buyer != null ? buyer.getNickname() : UNKNOWN_USER;
-                sellerNickname = seller != null ? seller.getNickname() : UNKNOWN_USER;
+                buyerNickname = buyer != null ? buyer.getNickname() : MessageConstants.UNKNOWN_USER;
+                sellerNickname = seller != null ? seller.getNickname() : MessageConstants.UNKNOWN_USER;
                 buyerProfileImg = buyer != null ? buyer.getProfileImg() : null;
                 sellerProfileImg = seller != null ? seller.getProfileImg() : null;
             }
@@ -242,7 +243,7 @@ public class ChatRoomResponseDTO {
             
             String senderName = users != null 
                 ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
-                : UNKNOWN_USER;
+                : MessageConstants.UNKNOWN_USER;
             
             try {
                 return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
@@ -262,7 +263,6 @@ public class ChatRoomResponseDTO {
             try {
                 return articleImage.getImageUrl(articleId);
             } catch (Exception e) {
-                // NPE나 다른 예외 발생 시 로깅하고 null 반환
                 log.warn("상품 이미지 조회 중 오류 발생: articleId={}, error={}", articleId, e.getMessage());
                 return null;
             }

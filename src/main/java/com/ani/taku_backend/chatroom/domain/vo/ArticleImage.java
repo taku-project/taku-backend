@@ -95,8 +95,4 @@ public class ArticleImage {
             .orElse(null);
     }
 
-    public List<ArticleImageItem> getImageItems() {
-        return imageItems;
-    }
-
 } 
