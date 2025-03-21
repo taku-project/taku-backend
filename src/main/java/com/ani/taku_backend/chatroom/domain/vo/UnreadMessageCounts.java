@@ -1,7 +1,6 @@
 package com.ani.taku_backend.chatroom.domain.vo;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,22 +20,6 @@ public class UnreadMessageCounts {
         return new UnreadMessageCounts(new HashMap<>());
     }
 
-    public static UnreadMessageCounts fromMetaInfos(
-            Collection<ChatRoomMetaInfo> metaInfos, Long userId) {
-        
-        if (metaInfos == null || metaInfos.isEmpty() || userId == null) {
-            return empty();
-        }
-        
-        Map<Long, Integer> unreadCountMap = new HashMap<>();
-        
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            int unreadCount = metaInfo.getUnreadCount(userId);
-            unreadCountMap.put(metaInfo.getChatRoomId(), unreadCount);
-        }
-        
-        return new UnreadMessageCounts(unreadCountMap);
-    }
 
     public static UnreadMessageCounts of(Map<Long, Integer> unreadCountMap) {
         return new UnreadMessageCounts(unreadCountMap);

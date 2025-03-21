@@ -22,12 +22,7 @@ import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 
 import java.util.List;
 
-/**
- * 채팅방 API 컨트롤러
- * 
- * 채팅방과 관련된 요청을 처리하는 컨트롤러입니다.
- * 서비스 레이어와의 인터페이스 역할을 하며, 사용자의 요청을 받아 적절한 서비스 메서드를 호출합니다.
- */
+
 @RestController
 @RequestMapping("/api/chat/rooms")
 @RequiredArgsConstructor
@@ -77,7 +72,6 @@ public class ChatRoomController {
 
     /**
      * 현재 사용자의 채팅방 목록을 조회합니다.
-     * 최적화된 쿼리로 채팅방 목록, 마지막 메시지, 읽지 않은 메시지 수 등을 효율적으로 조회합니다.
      *
      * @param principalUser 현재 인증된 사용자
      * @return 사용자의 채팅방 목록
@@ -139,6 +133,7 @@ public class ChatRoomController {
      * @param principalUser 현재 인증된 사용자
      * @return 결과가 없는 응답
      */
+
     @Operation(summary = "채팅방 나가기")
     @PostMapping("/leave")
     public CommonResponse<Void> leaveRoom(
