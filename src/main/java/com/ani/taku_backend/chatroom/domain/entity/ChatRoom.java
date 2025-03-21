@@ -12,12 +12,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.UUID;
-import java.util.Optional;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * 채팅방 정보를 나타내는 엔티티입니다.
@@ -153,7 +151,33 @@ public class ChatRoom extends BaseTimeEntity {
      * @return 채팅방 유효성 여부
      */
     public boolean isValid() {
-        return getBuyer() != null && getSeller() != null;
+        return getBuyer() != null || getSeller() != null;
+    }
+
+    /**
+     * 여러 채팅방에서 채팅방 ID 목록을 추출합니다.
+     * 
+     * @param chatRooms 채팅방 목록
+     * @return 채팅방 ID 목록
+     */
+    public static List<Long> extractChatRoomIds(List<ChatRoom> chatRooms) {
+        return chatRooms.stream()
+                .map(ChatRoom::getId)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 여러 채팅방에서 중복 없는 상품 ID 목록을 추출합니다.
+     * 
+     * @param chatRooms 채팅방 목록
+     * @return 중복 없는 상품 ID 목록
+     */
+    public static List<Long> extractArticleIds(List<ChatRoom> chatRooms) {
+        return chatRooms.stream()
+                .map(ChatRoom::getArticleId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
 

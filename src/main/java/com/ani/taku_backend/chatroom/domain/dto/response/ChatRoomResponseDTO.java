@@ -7,7 +7,6 @@ import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
-import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -176,8 +175,8 @@ public class ChatRoomResponseDTO {
             String sellerProfileImg;
             
             if (users != null) {
-                buyerNickname = buyerId != null ? users.getUserNickname(buyerId, UNKNOWN_USER) : UNKNOWN_USER;
-                sellerNickname = sellerId != null ? users.getUserNickname(sellerId, UNKNOWN_USER) : UNKNOWN_USER;
+                buyerNickname = buyerId != null ? users.getUserNicknameOrUnknown(buyerId) : UNKNOWN_USER;
+                sellerNickname = sellerId != null ? users.getUserNicknameOrUnknown(sellerId) : UNKNOWN_USER;
                 buyerProfileImg = buyerId != null ? users.getUserProfileImage(buyerId) : null;
                 sellerProfileImg = sellerId != null ? users.getUserProfileImage(sellerId) : null;
             } else {
@@ -229,36 +228,17 @@ public class ChatRoomResponseDTO {
             }
             
             ChatMessage lastMessage = messageOpt.get();
+            String senderName = users != null 
+                ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
+                : UNKNOWN_USER;
             
-            // 메시지 발신자 정보 확인
-            String senderName = UNKNOWN_USER;
-            Long senderId = lastMessage.getSenderId();
-            
-            if (users != null) {
-                senderName = users.getUserNickname(senderId, UNKNOWN_USER);
-            }
-            
-            return ChatMessageResponseDTO.builder()
-                    .messageId(lastMessage.getId())
-                    .chatRoomId(lastMessage.getChatRoomId())
-                    .wsRoomId(chatRoom.getWsRoomId())
-                    .senderId(String.valueOf(lastMessage.getSenderId()))
-                    .senderName(senderName)
-                    .content(lastMessage.getContent())
-                    .sentAt(lastMessage.getSentAt())
-                    .formattedTime(ChatDateTimeFormatter.formatMessageTime(lastMessage.getSentAt()))
-                    .read(lastMessage.getRead())
-                    .build();
+            return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
         }
         
         /**
          * 상품 이미지 URL을 가져옵니다.
          */
         private String getArticleImageUrl(Long articleId) {
-            if (articleId == null) {
-                return null;
-            }
-            
             return articleImage != null ? articleImage.getImageUrl(articleId) : null;
         }
         

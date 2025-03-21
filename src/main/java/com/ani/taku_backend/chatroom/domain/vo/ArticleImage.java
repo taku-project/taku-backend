@@ -31,7 +31,11 @@ public class ArticleImage {
         return new ArticleImage(imageUrlMap);
     }
 
+
     public String getImageUrl(Long articleId) {
-        return imageUrlByArticleId.get(articleId); //URL이 없는 경우 null을 반환합니다.
+        if (articleId == null) {
+            return null;
+        }
+        return imageUrlByArticleId.get(articleId);
     }
 } 

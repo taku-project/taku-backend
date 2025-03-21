@@ -1,6 +1,5 @@
 package com.ani.taku_backend.chatroom.domain.repository;
 
-import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -29,14 +28,4 @@ public class ChatRoomMetaRepositoryImpl implements ChatRoomMetaRepositoryCustom 
         return results;
     }
 
-
-    @Override
-    public List<ChatRoomMetaInfo> findMetaInfosByChatRoomIds(List<Long> chatRoomIds) {
-        if (chatRoomIds == null || chatRoomIds.isEmpty()) {
-            return List.of();
-        }
-
-        Query query = new Query(Criteria.where("chatRoomId").in(chatRoomIds));
-        return mongoTemplate.find(query, ChatRoomMetaInfo.class);
-    }
 }

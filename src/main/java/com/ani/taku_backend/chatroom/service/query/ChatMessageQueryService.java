@@ -10,11 +10,8 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.Collections;
-import java.util.HashMap;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +29,7 @@ public class ChatMessageQueryService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
+    private final ChatRoomQueryService chatRoomQueryService;
 
     /**
      * 채팅방의 메시지를 조회합니다.
@@ -66,44 +64,13 @@ public class ChatMessageQueryService {
 
     /**
      * 채팅방 접근 권한을 검증합니다.
+     * 
+     * @param wsRoomId 웹소켓 채팅방 ID
+     * @param userId 사용자 ID
+     * @throws DuckwhoException 채팅방이 없거나 접근 권한이 없는 경우
      */
     public void validateChatRoomAccess(String wsRoomId, Long userId) {
-        log.debug("채팅방 접근 권한 검증: wsRoomId={}, userId={}", wsRoomId, userId);
-
-        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        metaInfo.validateUserAccess(userId);
-    }
-
-    /**
-     * 여러 채팅방의 마지막 메시지를 한 번에 가져옵니다.
-     */
-    public Map<Long, ChatMessage> findLastMessageMap(List<Long> chatRoomIds) {
-        if (chatRoomIds == null || chatRoomIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfosByChatRoomIds(chatRoomIds);
-        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
-        
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            List<ChatMessage> messages = metaInfo.getMessages();
-            if (messages != null && !messages.isEmpty()) {
-                ChatMessage lastMessage = messages.get(messages.size() - 1);
-                lastMessageMap.put(metaInfo.getChatRoomId(), lastMessage);
-            }
-        }
-        
-        int missingRooms = chatRoomIds.size() - lastMessageMap.size();
-        if (missingRooms > 0) {
-            log.debug("일부 채팅방({})의 마지막 메시지를 찾을 수 없습니다", missingRooms);
-        }
-        
-        return lastMessageMap;
+        chatRoomQueryService.validateChatRoomAccess(wsRoomId, userId);
     }
 
     /**

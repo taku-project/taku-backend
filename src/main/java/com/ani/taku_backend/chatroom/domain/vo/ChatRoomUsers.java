@@ -15,6 +15,7 @@ import java.util.Optional;
 public class ChatRoomUsers {
     
     private final Map<Long, User> userById;
+    private final String UNKNOWN= "알 수 없음";
 
     public ChatRoomUsers(Collection<User> users) {
         Map<Long, User> userMap = new HashMap<>();
@@ -80,11 +81,11 @@ public class ChatRoomUsers {
     
     /**
      * 사용자 ID로 사용자 닉네임을 조회합니다.
-     * 사용자가 없는 경우 기본값을 반환합니다.
+     * 사용자가 없는 경우 "알 수 없음"을 반환합니다.
      */
-    public String getUserNickname(Long userId, String defaultValue) {
+    public String getUserNicknameOrUnknown(Long userId) {
         User user = userById.get(userId);
-        return user != null ? user.getNickname() : defaultValue;
+        return user != null ? user.getNickname() : UNKNOWN;
     }
     
     /**

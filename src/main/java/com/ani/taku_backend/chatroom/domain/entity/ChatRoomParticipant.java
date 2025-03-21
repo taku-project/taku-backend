@@ -43,7 +43,6 @@ public class ChatRoomParticipant extends BaseTimeEntity {
         this.role = role;
     }
 
-
     /**
      * 참여자가 판매자인지 확인합니다.
      *
@@ -72,25 +71,4 @@ public class ChatRoomParticipant extends BaseTimeEntity {
         return this.user != null && this.user.getUserId().equals(userId);
     }
 
-    /**
-     * 채팅방 정보와 사용자 정보로 참여자 객체를 생성합니다.
-     *
-     * @param chatRoom 채팅방
-     * @param user 사용자
-     * @param role 역할
-     * @return 생성된 참여자 객체
-     */
-    public static ChatRoomParticipant createParticipant(ChatRoom chatRoom, User user, JangterChatRole role) {
-        ChatRoomParticipant participant = ChatRoomParticipant.builder()
-                .chatRoom(chatRoom)
-                .user(user)
-                .role(role)
-                .build();
-
-        if (chatRoom != null) {
-            chatRoom.addParticipant(participant);
-        }
-
-        return participant;
-    }
 }

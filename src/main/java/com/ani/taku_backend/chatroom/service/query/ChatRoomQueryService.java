@@ -6,6 +6,7 @@ import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfoData;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
+import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomCompositeDTO;
 import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 채팅방 조회 서비스
@@ -47,77 +47,71 @@ public class ChatRoomQueryService {
         if (chatRooms.isEmpty()) {
             return List.of();
         }
+        
+        List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms);
 
-        List<Long> chatRoomIds = chatRooms.stream()
-                .map(ChatRoom::getId)
-                .collect(Collectors.toList());
+        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms, chatRoomIds, userId);
+        
+        return dataBundle.toChatRoomResponseDTOs(chatRooms);
+    }
 
+    private ChatRoomCompositeDTO aggregateChatRoomData(List<ChatRoom> chatRooms, List<Long> chatRoomIds, Long userId) {
         ChatRoomMetaInfoData metaInfoData = getChatRoomMetaInfoData(chatRoomIds, userId);
         ChatRoomMetaInfos metaInfos = metaInfoData.getMetaInfos();
-
-        List<Long> articleIds = chatRooms.stream()
-                .map(ChatRoom::getArticleId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
+        
+        List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms);
         ArticleImage articleImage = productImageService.getArticleImages(articleIds);
-
+        
         ChatRoomMessages lastMessages = metaInfoData.getLastMessages();
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
-
+        
         ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms);
-
-        return chatRooms.stream()
-                .map(room -> {
-                    Optional<ChatRoomMetaInfo> metaInfoOpt = metaInfos.getMetaInfo(room.getId());
-                    if (metaInfoOpt.isEmpty()) {
-                        return null;
-                    }
-                    return ChatRoomResponseDTO.from(
-                            room, 
-                            metaInfoOpt.get(), 
-                            users, 
-                            lastMessages, 
-                            unreadCounts,
-                            articleImage
-                    );
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        
+        return new ChatRoomCompositeDTO(metaInfos, articleImage, lastMessages, unreadCounts, users);
     }
 
     public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
 
-        ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(roomId)
+        ChatRoom chatRoom = validateChatRoomAccess(roomId, userId);
+
+        ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        ChatRoomMetaInfo chatRoomMetaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        chatRoomMetaInfo.validateUserAccess(userId);
-
+        
         ChatRoomMessages lastMessages = ChatRoomMessages.of(
                 chatRoom.getId(), 
-                chatRoomMetaInfo.getLastMessage()
+                metaInfo.getLastMessage()
         );
 
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(
                 chatRoom.getId(), 
-                chatRoomMetaInfo.getUnreadCount(userId)
+                metaInfo.getUnreadCount(userId)
         );
 
         ArticleImage articleImage = productImageService.getArticleImage(chatRoom.getArticleId());
-
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
 
         return ChatRoomResponseDTO.from(
                 chatRoom, 
-                chatRoomMetaInfo, 
+                metaInfo, 
                 users,
                 lastMessages, 
                 unreadCounts,
                 articleImage
         );
+    }
+
+    public ChatRoom validateChatRoomAccess(String wsRoomId, Long userId) {
+        log.debug("채팅방 접근 권한 검증: wsRoomId={}, userId={}", wsRoomId, userId);
+
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(wsRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        metaInfo.validateUserAccess(userId);
+        
+        return chatRoom;
     }
 
     public Integer getTotalUnreadCount(Long userId) {
@@ -139,41 +133,11 @@ public class ChatRoomQueryService {
             return Collections.emptyList();
         }
 
-        List<Long> chatRoomIds = chatRooms.stream()
-                .map(ChatRoom::getId)
-                .collect(Collectors.toList());
+        List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms);
 
-        ChatRoomMetaInfoData metaInfoData = getChatRoomMetaInfoData(chatRoomIds, userId);
-        ChatRoomMetaInfos metaInfos = metaInfoData.getMetaInfos();
-
-        List<Long> articleIds = chatRooms.stream()
-                .map(ChatRoom::getArticleId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-        ArticleImage articleImage = productImageService.getArticleImages(articleIds);
+        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms, chatRoomIds, userId);
         
-        ChatRoomMessages lastMessages = metaInfoData.getLastMessages();
-        UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
-        ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms);
-        
-        return chatRooms.stream()
-                .map(room -> {
-                    Optional<ChatRoomMetaInfo> metaInfoOpt = metaInfos.getMetaInfo(room.getId());
-                    if (metaInfoOpt.isEmpty()) {
-                        return null;
-                    }
-                    return ChatRoomResponseDTO.from(
-                            room, 
-                            metaInfoOpt.get(), 
-                            users, 
-                            lastMessages, 
-                            unreadCounts,
-                            articleImage
-                    );
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return dataBundle.toChatRoomResponseDTOs(chatRooms);
     }
 
     private ChatRoomMetaInfoData getChatRoomMetaInfoData(List<Long> chatRoomIds, Long userId) {
@@ -182,46 +146,10 @@ public class ChatRoomQueryService {
         }
 
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
-
-        ChatRoomMessages lastMessages = getLastMessagesFromMetaInfos(metaInfos);
-        UnreadMessageCounts unreadCounts = findUnreadCountsFromMetaInfos(metaInfos, userId, chatRoomIds);
+        
+        ChatRoomMessages lastMessages = ChatRoomMessages.fromMetaInfos(metaInfos);
+        UnreadMessageCounts unreadCounts = UnreadMessageCounts.fromMetaInfos(metaInfos, userId, chatRoomIds);
 
         return new ChatRoomMetaInfoData(metaInfos, lastMessages, unreadCounts);
-    }
-
-
-    private ChatRoomMessages getLastMessagesFromMetaInfos(List<ChatRoomMetaInfo> metaInfos) {
-        Map<Long, ChatMessage> lastMessageMap = new HashMap<>();
-
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            Long chatRoomId = metaInfo.getChatRoomId();
-
-            List<ChatMessage> messages = metaInfo.getMessages();
-            if (messages != null && !messages.isEmpty()) {
-                lastMessageMap.put(chatRoomId, messages.get(messages.size() - 1));
-            }
-        }
-
-        return ChatRoomMessages.of(lastMessageMap);
-    }
-
-    private UnreadMessageCounts findUnreadCountsFromMetaInfos(
-            List<ChatRoomMetaInfo> metaInfos, Long userId, List<Long> chatRoomIds) {
-
-        Map<Long, Integer> unreadCountMap = new HashMap<>();
-
-        if (userId == null) {
-            // userId가 null이면 모든 채팅방의 읽지 않은 메시지 수를 0으로 설정
-            chatRoomIds.forEach(id -> unreadCountMap.put(id, 0));
-            return UnreadMessageCounts.of(unreadCountMap);
-        }
-
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            Long chatRoomId = metaInfo.getChatRoomId();
-            Integer unreadCount = metaInfo.getUnreadCount(userId);
-            unreadCountMap.put(chatRoomId, unreadCount);
-        }
-
-        return UnreadMessageCounts.of(unreadCountMap);
     }
 }
