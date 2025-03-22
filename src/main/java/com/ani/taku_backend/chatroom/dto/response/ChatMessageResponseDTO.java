@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.domain.dto.response;
+package com.ani.taku_backend.chatroom.dto.response;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;

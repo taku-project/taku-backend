@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

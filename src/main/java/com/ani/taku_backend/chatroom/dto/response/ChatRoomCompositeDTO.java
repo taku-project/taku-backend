@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.domain.dto.response;
+package com.ani.taku_backend.chatroom.dto.response;
 
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;

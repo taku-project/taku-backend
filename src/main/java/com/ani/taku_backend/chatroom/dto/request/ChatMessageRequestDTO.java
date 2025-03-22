@@ -1,4 +1,4 @@
-package com.ani.taku_backend.chatroom.domain.dto.request;
+package com.ani.taku_backend.chatroom.dto.request;
 
 /**
  * WebSocket을 통한 채팅 메시지 요청 DTO입니다.

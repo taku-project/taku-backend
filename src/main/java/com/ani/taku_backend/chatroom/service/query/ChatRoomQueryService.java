@@ -2,12 +2,11 @@ package com.ani.taku_backend.chatroom.service.query;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
-import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfoData;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomCompositeDTO;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomCompositeDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;

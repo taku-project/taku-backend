@@ -1,8 +1,8 @@
 package com.ani.taku_backend.chatroom.controller;
 
-import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageListResponseDTO;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.service.ChatRoomService;
 import com.ani.taku_backend.chatroom.service.ChatMessageService;
 import com.ani.taku_backend.common.response.CommonResponse;

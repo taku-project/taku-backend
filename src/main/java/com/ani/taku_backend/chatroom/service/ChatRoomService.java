@@ -1,8 +1,8 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
-import com.ani.taku_backend.chatroom.domain.dto.request.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.service.command.ChatRoomCommandService;
 import com.ani.taku_backend.chatroom.service.query.ChatRoomQueryService;
 import lombok.RequiredArgsConstructor;

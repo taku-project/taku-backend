@@ -2,7 +2,7 @@ package com.ani.taku_backend.chatroom.service.query;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
-import com.ani.taku_backend.chatroom.domain.dto.response.ChatMessageListResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
