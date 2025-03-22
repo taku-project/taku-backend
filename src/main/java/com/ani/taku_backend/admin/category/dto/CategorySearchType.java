@@ -1,4 +1,4 @@
-package com.ani.taku_backend.admin.category.domain.dto;
+package com.ani.taku_backend.admin.category.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

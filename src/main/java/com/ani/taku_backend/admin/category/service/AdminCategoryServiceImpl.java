@@ -2,11 +2,11 @@ package com.ani.taku_backend.admin.category.service;
 
 import com.ani.taku_backend.admin.category.domain.CategoryLog;
 import com.ani.taku_backend.admin.category.domain.CategoryLogType;
-import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryCreateReqDTO;
-import com.ani.taku_backend.admin.category.domain.dto.req.AdminCategoryListReqDTO;
-import com.ani.taku_backend.admin.category.domain.dto.req.UpdateCategoryReqDTO;
-import com.ani.taku_backend.admin.category.domain.dto.res.AdminCategoryListResDTO;
-import com.ani.taku_backend.admin.category.domain.dto.res.AdminCategoryResDTO;
+import com.ani.taku_backend.admin.category.dto.req.AdminCategoryCreateReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.AdminCategoryListReqDTO;
+import com.ani.taku_backend.admin.category.dto.req.UpdateCategoryReqDTO;
+import com.ani.taku_backend.admin.category.dto.res.AdminCategoryListResDTO;
+import com.ani.taku_backend.admin.category.dto.res.AdminCategoryResDTO;
 import com.ani.taku_backend.admin.category.repository.AdminCategoryRepository;
 import com.ani.taku_backend.admin.category.repository.CategoryLogRepository;
 import com.ani.taku_backend.category.domain.entity.Category;

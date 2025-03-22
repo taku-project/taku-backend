@@ -1,4 +1,4 @@
-package com.ani.taku_backend.admin.category.domain.dto.req;
+package com.ani.taku_backend.admin.category.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
