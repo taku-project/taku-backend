@@ -155,29 +155,7 @@ public class ChatRoomMetaInfo {
         }
         return new ArrayList<>(messages.subList(size - limit, size));
     }
-    
-    /**
-     * 특정 시간 이전의 메시지를 조회합니다. (무한 스크롤용)
-     *
-     * @param before 기준 시간
-     * @param limit 조회할 메시지 수
-     * @return 조건에 맞는 메시지 목록
-     */
-    public List<ChatMessage> getMessagesBeforeTime(LocalDateTime before, int limit) {
-        List<ChatMessage> result = new ArrayList<>();
-        int count = 0;
-        
-        // 최신 메시지부터 역순으로 조회
-        for (int i = messages.size() - 1; i >= 0 && count < limit; i--) {
-            ChatMessage message = messages.get(i);
-            if (message.getSentAt().isBefore(before)) {
-                result.add(message);
-                count++;
-            }
-        }
-        
-        return result;
-    }
+
     
     /**
      * 채팅방의 모든 메시지를 읽음 처리합니다.

@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +54,7 @@ public class ChatMessageQueryService {
             
             if (targetMessage.isPresent()) {
                 LocalDateTime sentAt = targetMessage.get().getSentAt();
-                messages = metaInfo.getMessagesBeforeTime(sentAt, limit);
+                messages = getMessagesBeforeTime(chatRoom.getId(), sentAt, limit);
             } else {
                 messages = new ArrayList<>();
             }
@@ -60,6 +63,20 @@ public class ChatMessageQueryService {
         boolean hasMore = messages.size() >= limit;
 
         return new ChatMessageListResponseDTO(ChatMessage.toResponseDTOList(messages), hasMore);
+    }
+
+    /**
+     * 특정 시간 이전의 메시지를 조회합니다. (무한 스크롤용)
+     *
+     * @param chatRoomId 채팅방 ID
+     * @param before 기준 시간
+     * @param limit 조회할 메시지 수
+     * @return 조건에 맞는 메시지 목록
+     */
+    public List<ChatMessage> getMessagesBeforeTime(Long chatRoomId, LocalDateTime before, int limit) {
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "sentAt"));
+        return chatRoomMetaRepository.findMessagesByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
+            chatRoomId, before, pageable);
     }
 
     /**
