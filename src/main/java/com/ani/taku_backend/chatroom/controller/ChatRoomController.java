@@ -120,7 +120,7 @@ public class ChatRoomController {
     })
     @GetMapping("/{wsRoomId}")
     public CommonResponse<ChatRoomResponseDTO> getChatRoom(
-            @PathVariable String wsRoomId,
+            @PathVariable("wsRoomId") String wsRoomId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
         ChatRoomResponseDTO chatRoom = chatRoomFacadeService.findChatRoom(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(chatRoom);
