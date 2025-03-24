@@ -126,21 +126,21 @@ public class ChatRoomWebSocketTest {
     }
 
     private void setupTestData() {
-        // 테스트 사용자 생성
-        testUser = userRepository.findByEmail("test@example.com")
-                .orElseGet(() -> userRepository.save(User.builder()
-                        .email("test@example.com")
-                        .nickname("테스트유저")
-                        .role(UserRole.USER)
-                        .status(UserStatus.ACTIVE)
-                        .providerType(ProviderType.KAKAO.name())
-                        .build()));
+        // // 테스트 사용자 생성
+        // testUser = userRepository.findByEmail("test@example.com")
+        //         .orElseGet(() -> userRepository.save(User.builder()
+        //                 .email("test@example.com")
+        //                 .nickname("테스트유저")
+        //                 .role(UserRole.USER)
+        //                 .status(UserStatus.ACTIVE)
+        //                 .providerType(ProviderType.KAKAO.name())
+        //                 .build()));
 
-        // 테스트 채팅방 생성
-        testRoom = chatRoomRepository.save(ChatRoom.testBuilder()
-                .articleId(1L)
-                .wsRoomId("test-room-id")
-                .build());
+        // // 테스트 채팅방 생성
+        // testRoom = chatRoomRepository.save(ChatRoom.testBuilder()
+        //         .articleId(1L)
+        //         .wsRoomId("test-room-id")
+        //         .build());
     }
 
     /**

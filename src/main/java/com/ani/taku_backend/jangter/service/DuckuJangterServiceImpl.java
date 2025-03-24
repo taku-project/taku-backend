@@ -515,7 +515,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
 
             // 월간 랭킹 조회 (yyyy-MM 형식)
-            String monthlyPeriodKey = String.format("%d-%02d", now.getYear(), now.getMonthValue());
+            String monthlyPeriodKey = String.format("%d-%02d", now.getYear(), now.getMonthValue() - 1);
             List<JangterRankBase> monthlyRanks = jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
                 PeriodType.MONTH,
                 monthlyPeriodKey
