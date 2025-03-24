@@ -60,22 +60,20 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             throw new DuckwhoException(UNSUPPORTED_PROVIDER);   // 제공하지 않은 OAuth로 인증 시도
         }
 
-        // 이메일 구하기
-        String email;
+        // 이메일로 찾기 -> domesticId로 찾기로 변경, email이 null 이여도 로그인 됨
+        String domesticId;
         switch (providerType) {
             case GOOGLE:
-                email = (String) attributes.get("email");
+                domesticId = attributes.get("sub").toString();
                 break;
             case KAKAO:
-                Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-                email = (String) kakaoAccount.get("email");
+                domesticId = attributes.get("id").toString();
                 break;
             default:
                 throw new DuckwhoException(UNSUPPORTED_PROVIDER);   // 제공하지 않은 OAuth로 인증 시도
         }
 
-        // User Select
-        Optional<User> findOptUser = userRepository.findByEmail(email);
+        Optional<User> findOptUser = userRepository.findByDomesticId(domesticId);
 
         // HttpServletRequest 가져오기
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -127,6 +125,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                 break;
             case KAKAO:
                 getOAuth2User = new DefaultOAuth2User(AuthorityUtils.createAuthorityList(findOptUser.get().getRole().name()), attributes, "id");
+
                 break;
         }
         return getOAuth2User;

@@ -36,7 +36,6 @@ public class UserJangterControllerImpl implements UserJangterController {
             @ParameterObject
             Pageable pageable) {
         User user = principalUser.getUser();
-//        CompleteJangterSortType.ID;
         PageImpl<UserPurchaseResponseDTO> userPurchasePageList =  userJangterService.findUserPurchaseList(userId, pageable);
 
         return CommonResponse.ok(userPurchasePageList);

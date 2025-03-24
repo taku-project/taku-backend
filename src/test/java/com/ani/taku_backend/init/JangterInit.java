@@ -41,12 +41,12 @@ public class JangterInit {
     @Autowired
     ItemCategoriesRepository itemCategoriesRepository;
 
-    @Test
+//    @Test
     void init() throws InterruptedException {
         int minPrice = 1000;
         int maxPrice = 100000;
         int batchSize = 500;
-        int totalJangters = 10000;
+        int totalJangters = 500;
         int threadCount = 4;
 
         List<User> allUser = userRepository.findAll();

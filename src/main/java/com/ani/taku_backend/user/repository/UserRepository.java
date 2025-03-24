@@ -27,8 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Query("UPDATE User u SET u.status = :status WHERE u.userId = :userId")
   int updateUserStatus(@Param("userId") Long userId, @Param("status") UserStatus status);
 
-  // 이메일로 유저 조회
-  Optional<User> findByEmail(String email);
+  // 도메스틱 아이디로 유저 조회
+  Optional<User> findByDomesticId(String domesticId);
 
   Optional<User> findById(Long userId);
 
