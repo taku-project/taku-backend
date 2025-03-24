@@ -58,21 +58,21 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                         duckuJangter.id,
                         duckuJangter.title,
                         duckuJangter.price,
-                        jangterImages.image.imageUrl, // 이미지 컬렉션을 조인한 후 첫 번째 이미지 URL을 가져옴
+                        jangterImages.image.imageUrl,
                         duckuJangter.user.nickname,
-                        duckuJangter.viewCount
+                        duckuJangter.viewCount,
+                        duckuJangter.status
                 ))
                 .from(duckuJangter)
                 .leftJoin(duckuJangter.jangterImages, jangterImages)
                 .leftJoin(jangterImages.image, image)
                 .join(duckuJangter.user, user)
                 .join(duckuJangter.itemCategories, itemCategories)
-                 // left join을 사용하여 이미지 컬렉션을 안전하게 가져옴
                 .where(
-                    duckuJangter.deletedAt.isNull(),
-                    applyFilters(keyword, categoryId, minPrice, maxPrice),
-                    applyPaginationCondition(sort, order, lastId)
-                )
+                        duckuJangter.deletedAt.isNull(),
+                        applyFilters(keyword, categoryId, minPrice, maxPrice),
+                        applyPaginationCondition(sort, order, lastId))
+                .groupBy(duckuJangter.id)
                 .orderBy(buildOrder(sort,order))
                 .limit(limit)
                 .fetch();
@@ -85,7 +85,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
     private BooleanExpression applyFilters(String keyword, Long categoryId, Integer minPrice, Integer maxPrice) {
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
-        BooleanExpression predicate = duckuJangter.deletedAt.isNull(); // 기본 조건
+        BooleanExpression predicate = duckuJangter.deletedAt.isNull();
 
         if (StringUtils.hasText(keyword)) {
             predicate = predicate.and(

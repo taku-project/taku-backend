@@ -106,6 +106,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {
 
         return duckuJangterRepository.findFilteredProducts(request);
+
     }
 
 

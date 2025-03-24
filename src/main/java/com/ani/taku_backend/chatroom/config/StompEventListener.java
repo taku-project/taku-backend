@@ -30,6 +30,7 @@ public class StompEventListener {
     @EventListener
     public void connectHandler(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
         String sessionId = accessor.getSessionId();
         
         if (sessionId != null) {

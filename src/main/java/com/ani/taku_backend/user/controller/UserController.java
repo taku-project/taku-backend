@@ -204,7 +204,7 @@ public class UserController {
 			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
-	public CommonResponse<UserDetailDTO>findUserDetail(@PathVariable Long userId){
+	public CommonResponse<UserDetailDTO> findUserDetail(@PathVariable Long userId){
 
 		UserDetailDTO userDetail = userService.getUserDetail(userId);
 
@@ -220,7 +220,7 @@ public class UserController {
 			summary = "유저 정보 수정",
 			description = "유저 프로필, 닉네임 정보 수정"
 	)
-	public CommonResponse<String>editUserDetail(@PathVariable Long userId
+	public CommonResponse<String> editUserDetail(@PathVariable Long userId
 		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart("request") UserEditDTO request
 
 	){
