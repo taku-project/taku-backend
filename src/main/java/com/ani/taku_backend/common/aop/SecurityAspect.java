@@ -12,7 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import com.ani.taku_backend.admin.service.ProfanityFilterService;
+import com.ani.taku_backend.admin.profanity.service.ProfanityFilterService;
 import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.aop.annotation.ValidateProfanity;
 import com.ani.taku_backend.common.enums.UserRole;

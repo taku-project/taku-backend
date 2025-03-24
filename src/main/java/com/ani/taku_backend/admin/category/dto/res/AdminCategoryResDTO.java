@@ -1,4 +1,4 @@
-package com.ani.taku_backend.admin.category.domain.dto.res;
+package com.ani.taku_backend.admin.category.dto.res;
 
 import com.ani.taku_backend.category.domain.dto.AniGenreResDTO;
 import com.ani.taku_backend.category.domain.entity.Category;

@@ -1,11 +1,11 @@
-package com.ani.taku_backend.admin.domain.repository;
+package com.ani.taku_backend.admin.profanity.repository;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import com.ani.taku_backend.admin.domain.entity.ProfanityFilter;
+import com.ani.taku_backend.admin.profanity.domain.ProfanityFilter;
 
 public interface ProfanityFilterRepository extends JpaRepository<ProfanityFilter, Long> , JpaSpecificationExecutor<ProfanityFilter> {
 

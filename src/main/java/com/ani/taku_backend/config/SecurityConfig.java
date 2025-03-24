@@ -49,14 +49,12 @@ public class SecurityConfig {
                 // TODO : 개발 과정에서 현재 모든 요청을 허용하고 있음. 추후 권한 관리 필요
                 .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
                     .permitAll()
-                // .requestMatchers("/api/shorts/**", "/api/shorts")
-                //     .permitAll()
                 .requestMatchers("/js/**", "/assets/**", "/css/**")
                     .permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
-                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll()                   // GET - post,jangter
+                .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll() // GET - post,jangter
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
-                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).permitAll()
+                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
                 .requestMatchers(SecurityPathConfig.WEBSOCKET_PATHS).permitAll()                    // WebSocket 관련 경로 허용
                 .anyRequest().authenticated()
