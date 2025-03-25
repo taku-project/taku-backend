@@ -67,7 +67,7 @@ public class ChatRoomController {
     @PostMapping
     public CommonResponse<ChatRoomResponseDTO> createChatRoom(
             @Parameter(description = "상품 ID", required = true, example = "1")
-            @RequestParam Long articleId,
+            @RequestParam(name = "articleId") Long articleId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
         ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, principalUser.getUserId());
         ChatRoomResponseDTO responseDto = chatRoomFacadeService.createChatRoom(requestDto);
@@ -147,7 +147,7 @@ public class ChatRoomController {
     @Operation(summary = "채팅방 나가기")
     @PostMapping("/leave")
     public CommonResponse<Void> leaveRoom(
-            @RequestParam String wsRoomId,
+            @RequestParam(name = "wsRoomId") String wsRoomId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
         chatMessageFacadeService.leaveRoom(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(null);
@@ -160,10 +160,10 @@ public class ChatRoomController {
      * @param principalUser 현재 인증된 사용자
      * @return 결과가 없는 응답
      */
-    @Operation(summary = "읽은 메세지 처리", description = "마지막으로 읽은 메세지 id 반환")
+    @Operation(summary = "읽은 메세지 처리", description = "마지막으로 읽은 메시지 id 반환")
     @PostMapping("/mark-as-read")
     public CommonResponse<Void> markMessagesAsRead(
-            @RequestParam String wsRoomId,
+            @RequestParam(name = "wsRoomId") String wsRoomId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
         chatMessageFacadeService.markMessagesAsRead(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(null);
