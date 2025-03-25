@@ -107,7 +107,6 @@ public class OAuth2AuthenticationHandler {
             Cookie refreshTokenCookie = new Cookie("Refresh-Token", refreshToken);
             refreshTokenCookie.setHttpOnly(true); // 클라이언트에서 직접 접근 불가
 
-            //TODO: 추후 HTTPS 적용 시 활성화
             refreshTokenCookie.setSecure(true); // HTTPS에서만 전송
 
             refreshTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
