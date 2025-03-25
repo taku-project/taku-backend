@@ -142,9 +142,9 @@ public class UserController {
 
 		// 유저 등록
 		User savedUser = this.userService.registerUser(userInfo);
-
+		String accessToken = jwtUtil.createAccessToken(savedUser);
 		// TODO : 바로 로그인한다면 토큰을 던져주고 , 바로로그인 안한면 아무것도 던지지 않을 예정
-		return CommonResponse.created(null);
+		return CommonResponse.created(accessToken);
 	}
 
 	
