@@ -7,15 +7,11 @@ import java.util.Map;
 
 /**
  * 채팅방 참여자 정보 모음을 관리하는 클래스
- * 여러 참여자들의 정보를 맵 형태로 관리합니다.
  */
 @Getter
 public class Participants {
     private Map<Long, ParticipantInfo> info = new ConcurrentHashMap<>();
 
-    /**
-     * 새로운 참여자 정보 컬렉션을 생성합니다.
-     */
     public Participants() {
     }
 
@@ -28,24 +24,6 @@ public class Participants {
     public void addParticipant(Long userId, JangterChatRole role) {
         info.put(userId, new ParticipantInfo(userId, role));
     }
-
-    /**
-     * 특정 사용자의 메시지 스톡을 업데이트합니다.
-     *
-     * @param userId 사용자 ID
-     * @param increase true면 증가, false면 초기화
-     */
-    public synchronized void updateMessageStock(Long userId, boolean increase) {
-        ParticipantInfo participant = this.info.get(userId);
-        if (participant != null) {
-            if (increase) {
-                participant.plusMessage();
-            } else {
-                participant.resetMessageStock();
-            }
-        }
-    }
-
 
     /**
      * 모든 참가자가 비활성화 상태인지 확인합니다.

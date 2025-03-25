@@ -8,10 +8,6 @@ import java.time.Instant;
 /**
  * 채팅방 참가자 정보를 나타냅니다.
  * 사용자 ID, 역할, 활성화 상태, 메세지 스톡, 마지막 비활성화 시간을 관리합니다.
- * 
- * 주요 책임:
- * 1. 실시간 상태 관리 (활성화 상태, 메시지 읽음 여부)
- * 2. 자주 변경되는 데이터 처리
  */
 @Getter
 public class ParticipantInfo {
