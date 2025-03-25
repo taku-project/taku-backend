@@ -1,8 +1,10 @@
 package com.ani.taku_backend.chatroom;
 
-import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.service.ChatAuthorizationService;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -17,7 +19,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -51,13 +52,13 @@ public class StompHandler implements ChannelInterceptor {
             }
         } catch (ExpiredJwtException e) {
             log.error("토큰이 만료되었습니다", e);
-            throw new AuthenticationServiceException("토큰이 만료되었습니다");
+            throw new DuckwhoException(ErrorCode.EXPIRED_TOKEN);
         } catch (MalformedJwtException | SignatureException e) {
             log.error("유효하지 않은 토큰입니다", e);
-            throw new AuthenticationServiceException("유효하지 않은 토큰입니다");
+            throw new DuckwhoException(ErrorCode.INVALID_TOKEN);
         } catch (Exception e) {
-            log.error("WebSocket 인증 처리 중 오류 발생", e);
-            throw new AuthenticationServiceException("WebSocket 인증 처리 중 오류: " + e.getMessage());
+            log.error("WebSocket 인증 처리 중 오류 발생: {}", e.getMessage(), e);
+            throw new DuckwhoException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         return message;
@@ -122,7 +123,7 @@ public class StompHandler implements ChannelInterceptor {
         // 해당 채팅방 참여 권한 확인 - userId 직접 사용하여 오버헤드 감소
         if (!chatAuthorizationService.isRoomParticipant(userId, chatRoom.getId())) {
             log.error("사용자 ID: {}는 채팅방 {}에 접근 권한이 없습니다", userId, chatRoom.getId());
-            throw new AuthenticationServiceException("해당 채팅방에 접근 권한이 없습니다.");
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
         log.info("채팅방 구독 권한 확인 완료 - 사용자 ID: {}, 채팅방: {}", userId, chatRoom.getId());
@@ -142,7 +143,7 @@ public class StompHandler implements ChannelInterceptor {
         return chatRoomRepository.findByWsRoomId(wsRoomId)
                 .orElseThrow(() -> {
                     log.error("사용자 ID: {}의 구독 요청 처리 중 채팅방을 찾을 수 없습니다: {}", userId, wsRoomId);
-                    return new AuthenticationServiceException("채팅방을 찾을 수 없습니다");
+                    return new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND);
                 });
     }
     
@@ -166,12 +167,12 @@ public class StompHandler implements ChannelInterceptor {
 
         if (bearerToken == null) {
             log.error("토큰을 찾을 수 없습니다: 세션 ID = {}", accessor.getSessionId());
-            throw new AuthenticationServiceException("인증 토큰을 찾을 수 없습니다.");
+            throw new DuckwhoException(ErrorCode.EMPTY_TOKEN);
         }
 
         if (!bearerToken.startsWith("Bearer ")) {
             log.error("토큰 형식이 올바르지 않습니다: {}", bearerToken);
-            throw new AuthenticationServiceException("토큰 형식이 올바르지 않습니다.");
+            throw new DuckwhoException(ErrorCode.INVALID_TOKEN);
         }
 
         return bearerToken.substring(7);

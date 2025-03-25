@@ -1,13 +1,13 @@
 package com.ani.taku_backend.chatroom;
 
-import com.ani.taku_backend.chatroom.model.constant.ParticipantRole;
-import com.ani.taku_backend.chatroom.model.document.ChatMessage;
-import com.ani.taku_backend.chatroom.model.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.model.dto.request.ChatMessageRequestDTO;
-import com.ani.taku_backend.chatroom.model.dto.ChatReadStatusDTO;
-import com.ani.taku_backend.chatroom.model.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.repository.ChatRoomMetaRepository;
-import com.ani.taku_backend.chatroom.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
+import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.dto.request.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.dto.ChatReadStatusDTO;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.common.enums.ProviderType;
 import com.ani.taku_backend.common.enums.UserRole;
 import com.ani.taku_backend.user.model.entity.User;
@@ -66,7 +66,7 @@ public class ChatRoomWebSocketTest {
     private ChatRoomRepository chatRoomRepository;
 
     @Autowired
-    private ChatRoomMetaRepository  chatRoomMetaRepository;
+    private ChatRoomMetaRepository chatRoomMetaRepository;
 
     @Value("${jwt.secret}")
     private String secretKeyBase64; // JWT 시크릿 키(base64 인코딩)
@@ -88,14 +88,13 @@ public class ChatRoomWebSocketTest {
         testToken = "Bearer " + rawToken;
 
         ChatRoomMetaInfo metaInfo = new ChatRoomMetaInfo(testRoom.getId());
-        metaInfo.getParticipants().addParticipant(testUser.getUserId(), ParticipantRole.BUYER);
+        metaInfo.getParticipants().addParticipant(testUser.getUserId(), JangterChatRole.BUYER);
         chatRoomMetaRepository.save(metaInfo);
     }
 
 
     /**
-     * 테스트용 JWT 액세스 토큰 생성 메서드
-     * JwtUtil의 createAccessToken() 메서드와 유사한 형태로 구현
+     * 테스트용 JWT 액세스 토큰 생성 메서드 JwtUtil의 createAccessToken() 메서드와 유사한 형태로 구현
      */
     private String generateTestJwtToken() {
         Map<String, Object> claims = new HashMap<>();
@@ -115,7 +114,6 @@ public class ChatRoomWebSocketTest {
         Date now = new Date();
         Date validity = new Date(now.getTime() + 3600000); // 1시간
 
-
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(testUser.getEmail())
@@ -126,21 +124,25 @@ public class ChatRoomWebSocketTest {
     }
 
     private void setupTestData() {
-        // // 테스트 사용자 생성
-        // testUser = userRepository.findByEmail("test@example.com")
-        //         .orElseGet(() -> userRepository.save(User.builder()
-        //                 .email("test@example.com")
-        //                 .nickname("테스트유저")
-        //                 .role(UserRole.USER)
-        //                 .status(UserStatus.ACTIVE)
-        //                 .providerType(ProviderType.KAKAO.name())
-        //                 .build()));
 
-        // // 테스트 채팅방 생성
-        // testRoom = chatRoomRepository.save(ChatRoom.testBuilder()
-        //         .articleId(1L)
-        //         .wsRoomId("test-room-id")
-        //         .build());
+        // 테스트 사용자 생성
+        testUser = userRepository.findByEmail("test@example.com")
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .email("test@example.com")
+                        .nickname("테스트유저")
+                        .role(UserRole.USER)
+                        .status(UserStatus.ACTIVE)
+                        .providerType(ProviderType.KAKAO.name())
+                        .build()));
+
+        // 고유한 wsRoomId 생성 (UUID 활용)
+        String uniqueRoomId = "test-room-id-" + java.util.UUID.randomUUID().toString();
+
+        // 테스트 채팅방 생성
+        testRoom = chatRoomRepository.save(ChatRoom.builder()
+                .articleId(1L)
+                .wsRoomId(uniqueRoomId)
+                .build());
     }
 
     /**
@@ -280,12 +282,11 @@ public class ChatRoomWebSocketTest {
         SockJsClient sockJsClient = new SockJsClient(transports);
 
         WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
-        
 
         MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
         messageConverter.getObjectMapper().registerModule(new JavaTimeModule());
         stompClient.setMessageConverter(messageConverter);
-        
+
         return stompClient;
     }
 
@@ -302,7 +303,7 @@ public class ChatRoomWebSocketTest {
             receivedMessages.offer((ChatMessage) payload);
         }
     }
-    
+
     // ReadStatus용 STOMP 프레임 핸들러
     private class ReadStatusStompFrameHandler implements StompFrameHandler {
         @Override
