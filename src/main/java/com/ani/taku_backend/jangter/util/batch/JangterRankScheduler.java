@@ -66,6 +66,6 @@ public class JangterRankScheduler {
     public void init() {
         // createJangterDailyRank();
         // createJangterWeeklyRank();
-        // createJangterMonthlyRank();
+        // createJangaterMonthlyRank();
     }
 }

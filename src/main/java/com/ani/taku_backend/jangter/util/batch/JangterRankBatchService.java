@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -258,20 +259,29 @@ public class JangterRankBatchService {
 
     private List<ProductViewAndBookmarkDTO> getCategoryGroupCount() {
         List<CategoryGroupCountDTO> categoryGroupCount = duckuJangterRepository.findCategoryGroupCount();
-        log.info("카테고리 그룹 조회 완료 : {}", categoryGroupCount);
-    
-        // 병렬처리
-        List<ProductViewAndBookmarkDTO> allProducts = categoryGroupCount.parallelStream()
-            .map(categoryGroupCountDTO -> 
-                duckuJangterRepository.findProductViewAndBookmark(categoryGroupCountDTO.getItemCategoryId())
-            )
+        log.info("카테고리 그룹 조회 완료, 개수: {}", categoryGroupCount.size());
+        // try {
+        //     for (CategoryGroupCountDTO categoryGroupCountDTO : categoryGroupCount) {
+        //         List<ProductViewAndBookmarkDTO> products = duckuJangterRepository.findProductViewAndBookmark(
+        //             categoryGroupCountDTO.getItemCategoryId());
+        //         allProducts.addAll(products);
+        //     }
+        // } catch (Exception e) {
+        //     log.error("카테고리 그룹 조회 실패 : {}", e.getMessage());
+        // }
+        // 각 카테고리별 상품 수 확인 로깅 추가
+        List<ProductViewAndBookmarkDTO> allProducts = categoryGroupCount.stream()
+            .map(categoryGroupCountDTO -> {
+                List<ProductViewAndBookmarkDTO> products = duckuJangterRepository.findProductViewAndBookmark(
+                    categoryGroupCountDTO.getItemCategoryId());
+                log.info("카테고리 ID: {}, 조회된 상품 수: {}", 
+                    categoryGroupCountDTO.getItemCategoryId(), products.size());
+                return products;
+            })
             .flatMap(List::stream)
             .collect(Collectors.toList());
     
-        // 각 카테고리별 조회수 , 북마크 조회
-        allProducts.forEach(productViewAndBookmarkDTO -> {
-            log.info("카테고리 그룹 조회 완료 : {}", productViewAndBookmarkDTO);
-        });
+        log.info("전체 상품 조회 완료, 총 개수: {}", allProducts.size());
         return allProducts;
     }
 

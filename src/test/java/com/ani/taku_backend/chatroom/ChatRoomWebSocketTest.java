@@ -124,6 +124,7 @@ public class ChatRoomWebSocketTest {
     }
 
     private void setupTestData() {
+
         // 테스트 사용자 생성
         testUser = userRepository.findByEmail("test@example.com")
                 .orElseGet(() -> userRepository.save(User.builder()
