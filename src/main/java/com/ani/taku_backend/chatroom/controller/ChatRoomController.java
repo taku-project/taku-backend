@@ -19,6 +19,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -73,12 +77,14 @@ public class ChatRoomController {
     /**
      * 현재 사용자의 채팅방 목록을 조회합니다.
      *
+     * @param page 페이지 번호 (기본값: 0)
+     * @param size 조회할 채팅방 개수 (기본값: 20)
      * @param principalUser 현재 인증된 사용자
      * @return 사용자의 채팅방 목록
      */
     @Operation(
             summary = "채팅방 목록 가져오기", 
-            description = "사용자가 참여한 모든 채팅방 목록 조회 API입니다. 채팅방 정보, 마지막 메시지, 읽지 않은 메시지 수 등을 포함합니다."
+            description = "사용자가 참여한 모든 채팅방 목록 조회 API입니다. 채팅방 정보, 마지막 메시지, 읽지 않은 메시지 수 등을 포함합니다. 무한 스크롤을 위한 페이징을 지원합니다."
     )
     @ApiResponses({
             @ApiResponse(
@@ -88,10 +94,14 @@ public class ChatRoomController {
             )
     })
     @GetMapping
-    public CommonResponse<List<ChatRoomResponseDTO>> getChatRoomList(
+    public CommonResponse<Slice<ChatRoomResponseDTO>> getChatRoomList(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        List<ChatRoomResponseDTO> chatRooms = chatRoomFacadeService.findChatRoomList(
-                principalUser.getUserId());
+        // 업데이트 시간 내림차순, ID 내림차순으로 정렬
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt", "id"));
+        Slice<ChatRoomResponseDTO> chatRooms = chatRoomFacadeService.findChatRoomListWithSlice(
+                principalUser.getUserId(), pageable);
         return CommonResponse.ok(chatRooms);
     }
 
@@ -198,9 +208,9 @@ public class ChatRoomController {
     })
     @GetMapping("/{wsRoomId}/messages")
     public CommonResponse<ChatMessageListResponseDTO> getChatMessages(
-            @PathVariable String wsRoomId,
-            @RequestParam(required = false) String messageId,
-            @RequestParam(defaultValue = "30") int limit,
+            @PathVariable("wsRoomId") String wsRoomId,
+            @RequestParam(name = "messageId", required = false) String messageId,
+            @RequestParam(name = "limit", defaultValue = "30") int limit,
             @AuthenticationPrincipal PrincipalUser principalUser) {
 
         // 권한 검사 (사용자가 해당 채팅방에 접근 권한이 있는지 확인)

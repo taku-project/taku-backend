@@ -20,6 +20,9 @@ import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +56,30 @@ public class ChatRoomQueryService {
         ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms, chatRoomIds, userId);
         
         return dataBundle.toChatRoomResponseDTOs(chatRooms);
+    }
+
+    /**
+     * 사용자의 채팅방 목록을 페이징하여 조회합니다(무한 스크롤).
+     * 
+     * @param userId 사용자 ID
+     * @param pageable 페이징 정보
+     * @return 채팅방 응답 DTO 목록의 Slice
+     */
+    public Slice<ChatRoomResponseDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
+        Slice<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithSlice(
+                userId, pageable, ChatRoomStatus.ACTIVE);
+
+        if (!chatRooms.hasContent()) {
+            return new SliceImpl<>(Collections.emptyList(), pageable, false);
+        }
+        
+        List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms.getContent());
+
+        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms.getContent(), chatRoomIds, userId);
+        
+        List<ChatRoomResponseDTO> responseDTOs = dataBundle.toChatRoomResponseDTOs(chatRooms.getContent());
+        
+        return new SliceImpl<>(responseDTOs, pageable, chatRooms.hasNext());
     }
 
     private ChatRoomCompositeDTO aggregateChatRoomData(List<ChatRoom> chatRooms, List<Long> chatRoomIds, Long userId) {

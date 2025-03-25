@@ -5,10 +5,12 @@ import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 
 @Repository
 public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo, String>, ChatRoomMetaRepositoryCustom {
@@ -39,8 +41,8 @@ public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo
      */
     @Query(value = "{ 'chatRoomId': ?0 }", fields = "{ 'messages': { $elemMatch: { 'sentAt': { $lt: ?1 } } } }")
     List<ChatMessage> findMessagesByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
-        Long chatRoomId, 
-        LocalDateTime sentAt, 
-        Pageable pageable
+        @Param("chatRoomId") Long chatRoomId,
+        @Param("sentAt") LocalDateTime sentAt, 
+        @Param("pageable") Pageable pageable
     );
 }

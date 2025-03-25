@@ -8,6 +8,9 @@ import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+
 public interface ChatRoomRepositoryCustom {
     
     /**
@@ -27,4 +30,14 @@ public interface ChatRoomRepositoryCustom {
      * @return 채팅방과 연관 데이터
      */
     Optional<ChatRoom> findByWsRoomIdWithParticipantsAndUsers(String wsRoomId);
+    
+    /**
+     * 무한 스크롤을 위한 채팅방 목록 조회
+     * 
+     * @param userId 사용자 ID
+     * @param pageable 페이징 정보
+     * @param status 채팅방 상태
+     * @return 채팅방 목록 (Slice 형태)
+     */
+    Slice<ChatRoom> findChatRoomsWithSlice(Long userId, Pageable pageable, ChatRoomStatus status);
 } 

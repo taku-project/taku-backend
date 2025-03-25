@@ -7,6 +7,8 @@ import com.ani.taku_backend.chatroom.service.command.ChatRoomCommandService;
 import com.ani.taku_backend.chatroom.service.query.ChatRoomQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +41,25 @@ public class ChatRoomService {
 
     /**
      * 사용자의 채팅방 목록을 조회합니다.
+     * 
+     * @param userId 사용자 ID
+     * @return 채팅방 응답 DTO 목록
      */
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
         return queryService.findChatRoomList(userId);
+    }
+    
+    /**
+     * 사용자의 채팅방 목록을 페이징하여 조회합니다(무한 스크롤).
+     * 
+     * @param userId 사용자 ID
+     * @param pageable 페이징 정보
+     * @return 채팅방 응답 DTO 목록의 Slice
+     */
+    @Transactional(readOnly = true)
+    public Slice<ChatRoomResponseDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
+        return queryService.findChatRoomListWithSlice(userId, pageable);
     }
 
     /**

@@ -76,7 +76,10 @@ public class ChatMessageQueryService {
     public List<ChatMessage> getMessagesBeforeTime(Long chatRoomId, LocalDateTime before, int limit) {
         Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "sentAt"));
         return chatRoomMetaRepository.findMessagesByChatRoomIdAndSentAtBeforeOrderBySentAtDesc(
-            chatRoomId, before, pageable);
+            chatRoomId,
+            before,
+            pageable
+        );
     }
 
     /**
