@@ -50,20 +50,6 @@ public class ChatRoomQueryService {
     private final ChatRoomDtoConverter chatRoomDtoConverter;
 
 
-    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-        List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithParticipantsAndUsers(userId, ChatRoomStatus.ACTIVE);
-
-        if (chatRooms.isEmpty()) {
-            return List.of();
-        }
-        
-        List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms);
-
-        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms, chatRoomIds, userId);
-        
-        return dataBundle.toChatRoomResponseDTOs(chatRooms);
-    }
-
     /**
      * 사용자의 채팅방 목록을 페이징하여 조회합니다(무한 스크롤).
      * 
@@ -187,7 +173,8 @@ public class ChatRoomQueryService {
         List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(List.of(articleId));
         return ArticleImage.fromProductImageDTOs(productImages);
     }
-    
+
+
     /**
      * 마지막 메시지 DTO 생성
      */
@@ -202,31 +189,64 @@ public class ChatRoomQueryService {
             return null;
         }
 
-        Optional<ChatMessage> messageOpt;
-        try {
-            messageOpt = lastMessages != null
-                    ? lastMessages.getLastMessage(chatRoomId)
-                    : Optional.ofNullable(metaInfo != null ? metaInfo.getLastMessage() : null);
-        } catch (Exception e) {
-            log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
-            return null;
-        }
-
+        // 1. 마지막 메시지 조회
+        Optional<ChatMessage> messageOpt = findLastMessage(chatRoomId, lastMessages, metaInfo);
         if (messageOpt.isEmpty()) {
             return null;
         }
 
+        // 2. 메시지 검증
         ChatMessage lastMessage = messageOpt.get();
-        if (lastMessage == null || lastMessage.getSenderId() == null) {
+        if (lastMessage.getSenderId() == null) {
             return null;
         }
 
-        String senderName = users != null
-                ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
-                : MessageConstants.UNKNOWN_USER;
+        // 3. 발신자 이름 획득
+        String senderName = resolveSenderName(users, lastMessage.getSenderId());
 
+        // 4. DTO 생성
+        return createResponseDTO(lastMessage, senderName, chatRoom.getWsRoomId(), chatRoomId);
+    }
+
+
+    /**
+     * 채팅방의 마지막 메시지를 조회합니다.
+     */
+    private Optional<ChatMessage> findLastMessage(
+            Long chatRoomId, 
+            ChatRoomMessages lastMessages, 
+            ChatRoomMetaInfo metaInfo) {
+        
         try {
-            return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
+            return lastMessages != null
+                    ? lastMessages.getLastMessage(chatRoomId)
+                    : Optional.ofNullable(metaInfo != null ? metaInfo.getLastMessage() : null);
+        } catch (Exception e) {
+            log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+            return Optional.empty();
+        }
+    }
+    
+    /**
+     * 발신자 이름을 결정합니다.
+     */
+    private String resolveSenderName(ChatRoomUsers users, Long senderId) {
+        return users != null
+                ? users.getUserNicknameOrUnknown(senderId)
+                : MessageConstants.UNKNOWN_USER;
+    }
+    
+    /**
+     * 채팅 메시지 응답 DTO를 생성합니다.
+     */
+    private ChatMessageResponseDTO createResponseDTO(
+            ChatMessage message, 
+            String senderName, 
+            String wsRoomId,
+            Long chatRoomId) {
+        
+        try {
+            return ChatMessageResponseDTO.from(message, senderName, wsRoomId);
         } catch (Exception e) {
             log.warn("메시지 DTO 생성 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
             return null;
@@ -295,6 +315,9 @@ public class ChatRoomQueryService {
 
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        chatRoom.validateStatus();
+        chatRoom.validateUserAccess(userId);
 
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));

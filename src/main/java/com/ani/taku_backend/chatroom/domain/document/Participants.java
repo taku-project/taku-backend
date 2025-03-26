@@ -10,6 +10,7 @@ import java.util.Map;
  */
 @Getter
 public class Participants {
+
     private Map<Long, ParticipantInfo> info = new ConcurrentHashMap<>();
 
     public Participants() {
