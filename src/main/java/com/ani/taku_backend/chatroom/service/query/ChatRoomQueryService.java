@@ -95,7 +95,7 @@ public class ChatRoomQueryService {
      * @return 채팅방 응답 DTO 목록의 Slice
      */
     public Slice<ChatRoomResponseDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
-        // 채팅방과 참여자, 사용자를 함께 조회하도록 쿼리 최적화
+        // 채팅방과 참여자, 사용자를 함께 조회
         Slice<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithSlice(
                 userId, pageable, ChatRoomStatus.ACTIVE);
 
@@ -106,7 +106,7 @@ public class ChatRoomQueryService {
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms.getContent());
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms.getContent());
 
-        // 필요한 모든 데이터를 한 번에 배치로 조회
+        // 필요한 모든 데이터를 한 번에 조회
         ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(
                 chatRooms.getContent(), chatRoomIds, articleIds, userId);
         
