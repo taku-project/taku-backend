@@ -1,9 +1,7 @@
 package com.ani.taku_backend.chatroom.service.query;
 
-import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
-import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfoData;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
@@ -31,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -106,7 +103,7 @@ public class ChatRoomQueryService {
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms.getContent());
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms.getContent());
 
-        // 필요한 모든 데이터를 한 번에 조회
+        // 필요한 모든 데이터를 한 번에  조회
         ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(
                 chatRooms.getContent(), chatRoomIds, articleIds, userId);
         
@@ -115,74 +112,6 @@ public class ChatRoomQueryService {
         return new SliceImpl<>(responseDTOs, pageable, chatRooms.hasNext());
     }
 
-
-    /**
-     * 마지막 메시지 DTO 생성
-     */
-    private ChatMessageResponseDTO createLastMessageDTO(
-            ChatRoom chatRoom,
-            Long chatRoomId,
-            ChatRoomMessages lastMessages,
-            ChatRoomMetaInfo metaInfo,
-            ChatRoomUsers users) {
-
-        if (chatRoomId == null) {
-            return null;
-        }
-
-        // 1. 마지막 메시지 조회
-        return getLastMessage(chatRoomId, lastMessages, metaInfo)
-                .filter(msg -> msg.getSenderId() != null)
-                .map(lastMessage -> createResponseDTO(
-                        lastMessage, 
-                        getUserName(users, lastMessage.getSenderId()), 
-                        chatRoom.getWsRoomId(), 
-                        chatRoomId))
-                .orElse(null);
-    }
-
-
-    /**
-     * 채팅방의 마지막 메시지를 조회합니다.
-     */
-    private Optional<ChatMessage> getLastMessage(
-            Long chatRoomId, 
-            ChatRoomMessages lastMessages, 
-            ChatRoomMetaInfo metaInfo) {
-        
-        try {
-            return lastMessages.getLastMessage(chatRoomId)
-                    .or(() -> Optional.ofNullable(metaInfo.getLastMessage()));
-        } catch (Exception e) {
-            log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
-            return Optional.empty();
-        }
-    }
-    
-    /**
-     * 발신자 이름을 결정합니다.
-     */
-    private String getUserName(ChatRoomUsers users, Long senderId) {
-        return users.getUserNicknameOrUnknown(senderId);
-    }
-    
-    /**
-     * 채팅 메시지 응답 DTO를 생성합니다.
-     */
-    private ChatMessageResponseDTO createResponseDTO(
-            ChatMessage message, 
-            String senderName, 
-            String wsRoomId,
-            Long chatRoomId) {
-        
-        try {
-            return ChatMessageResponseDTO.from(message, senderName, wsRoomId);
-        } catch (Exception e) {
-            log.warn("메시지 DTO 생성 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
-            return null;
-        }
-    }
-    
     /**
      * 상품 이미지 URL 조회
      */
@@ -215,8 +144,7 @@ public class ChatRoomQueryService {
             ArticleImage articleImage) {
         
         // 마지막 메시지 조회
-        ChatMessageResponseDTO lastMessageDTO = createLastMessageDTO(
-            chatRoom, chatRoom.getId(), lastMessages, metaInfo, users);
+        ChatMessageResponseDTO lastMessageDTO = lastMessages.createLastMessageDTO(chatRoom, metaInfo, users);
         
         // 이미지 URL 조회
         String articleImageUrl = getArticleImageUrl(chatRoom.getArticleId(), articleImage);
