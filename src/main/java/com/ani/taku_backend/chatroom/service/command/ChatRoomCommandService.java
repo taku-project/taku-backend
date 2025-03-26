@@ -91,15 +91,7 @@ public class ChatRoomCommandService {
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        if (!metaInfo.getParticipants().containsUser(userId)) {
-            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
-        }
-        
-        if (active) {
-            metaInfo.getParticipants().getInfo().get(userId).activate();
-        } else {
-            metaInfo.getParticipants().getInfo().get(userId).deactivate();
-        }
+        metaInfo.updateParticipantStatus(userId, active);
 
         chatRoomMetaRepository.save(metaInfo);
     }
