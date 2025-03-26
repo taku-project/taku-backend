@@ -14,6 +14,7 @@ import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
+import com.ani.taku_backend.chatroom.mapper.ChatRoomDtoConverter;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
@@ -42,6 +43,7 @@ public class ChatRoomQueryService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final DuckuJangterRepository duckuJangterRepository;
+    private final ChatRoomDtoConverter chatRoomDtoConverter;
 
 
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
@@ -96,7 +98,7 @@ public class ChatRoomQueryService {
         
         ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms);
         
-        return new ChatRoomCompositeDTO(metaInfos, articleImage, lastMessages, unreadCounts, users);
+        return new ChatRoomCompositeDTO(metaInfos, articleImage, lastMessages, unreadCounts, users, chatRoomDtoConverter);
     }
 
 
@@ -122,7 +124,7 @@ public class ChatRoomQueryService {
         
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
 
-        return ChatRoomResponseDTO.from(
+        return chatRoomDtoConverter.toResponseDto(
                 chatRoom, 
                 metaInfo, 
                 users,
