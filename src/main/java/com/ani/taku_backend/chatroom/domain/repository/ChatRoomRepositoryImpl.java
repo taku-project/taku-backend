@@ -134,7 +134,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         QUser user = QUser.user;
 
-        // 첫 번째 쿼리로 사용자가 참여한 채팅방 ID 목록을 가져옵니다
         List<Long> chatRoomIds = queryFactory
                 .select(participant.chatRoom.id)
                 .from(participant)
@@ -152,7 +151,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
             return new SliceImpl<>(Collections.emptyList(), pageable, false);
         }
 
-        // 두 번째 쿼리로 상세 정보를 한 번에 가져옵니다
         List<ChatRoom> results = queryFactory
                 .selectFrom(chatRoom)
                 .distinct()
@@ -163,11 +161,9 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
                 .fetch();
 
         log.debug("페이징 조회된 채팅방 수: {}", results.size());
-        
-        // 페이지 사이즈보다 많은 결과가 있는지 확인하여 hasNext 결정
+
         boolean hasNext = results.size() > pageable.getPageSize();
-        
-        // 만약 다음 페이지가 있다면 마지막 요소는 제거
+
         if (hasNext) {
             results = results.subList(0, pageable.getPageSize());
         }
