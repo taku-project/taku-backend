@@ -1,10 +1,13 @@
 package com.ani.taku_backend.chatroom.service.query;
 
+import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfoData;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
 import com.ani.taku_backend.chatroom.dto.response.ChatRoomCompositeDTO;
 import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.Optional;
 
 /**
  * 채팅방 조회 서비스
@@ -98,42 +102,218 @@ public class ChatRoomQueryService {
         
         ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms);
         
-        return new ChatRoomCompositeDTO(metaInfos, articleImage, lastMessages, unreadCounts, users, chatRoomDtoConverter);
+        return new ChatRoomCompositeDTO(metaInfos, articleImage, lastMessages, unreadCounts, users, this);
     }
 
 
     public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
-
-        ChatRoom chatRoom = validateChatRoomAccess(roomId, userId);
-
-        ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+        // 1. 채팅방 조회 및 검증
+        ChatRoom chatRoom = findAndValidateChatRoom(roomId, userId);
         
-        ChatRoomMessages lastMessages = ChatRoomMessages.of(
-                chatRoom.getId(), 
-                metaInfo.getLastMessage()
-        );
-
-        UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(
-                chatRoom.getId(), 
-                metaInfo.getUnreadCount(userId)
-        );
-
-        List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(List.of(chatRoom.getArticleId()));
-        ArticleImage articleImage = ArticleImage.fromProductImageDTOs(productImages);
+        // 2. 메타 정보 조회
+        ChatRoomMetaInfo metaInfo = findChatRoomMetaInfo(chatRoom.getId());
         
-        ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
-
+        // 3. 필요한 데이터 준비
+        ChatRoomUsers users = prepareUserInfo(chatRoom);
+        ChatRoomMessages lastMessages = prepareLastMessages(chatRoom.getId(), metaInfo);
+        UnreadMessageCounts unreadCounts = prepareUnreadCounts(chatRoom.getId(), userId, metaInfo);
+        ArticleImage articleImage = prepareArticleImage(chatRoom.getArticleId());
+        
+        // 4. 추가 데이터 처리
+        ChatMessageResponseDTO lastMessageDTO = createLastMessageDTO(chatRoom, chatRoom.getId(), lastMessages, metaInfo, users);
+        String articleImageUrl = getArticleImageUrl(chatRoom.getArticleId(), articleImage);
+        Integer unreadCount = getUnreadCount(chatRoom.getId(), unreadCounts);
+        
+        // 5. DTO 변환
         return chatRoomDtoConverter.toResponseDto(
                 chatRoom, 
                 metaInfo, 
                 users,
                 lastMessages, 
                 unreadCounts,
-                articleImage
+                articleImage,
+                lastMessageDTO,
+                articleImageUrl,
+                unreadCount
         );
     }
+    
+    /**
+     * 채팅방 조회 및 기본 검증
+     */
+    private ChatRoom findAndValidateChatRoom(String roomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(roomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+        
+        validateChatRoomStatus(chatRoom);
+        validateUserAccess(chatRoom, userId);
+        
+        return chatRoom;
+    }
+    
+    /**
+     * 채팅방 상태 검증
+     */
+    private void validateChatRoomStatus(ChatRoom chatRoom) {
+        if (!chatRoom.isValid()) {
+            throw new DuckwhoException(ErrorCode.INACTIVE_CHAT_ROOM);
+        }
+        
+        if (chatRoom.getStatus() != ChatRoomStatus.ACTIVE) {
+            throw new DuckwhoException(ErrorCode.INACTIVE_CHAT_ROOM);
+        }
+    }
+    
+    /**
+     * 사용자 접근 권한 검증
+     */
+    private void validateUserAccess(ChatRoom chatRoom, Long userId) {
+        boolean isParticipant = chatRoom.getParticipants().stream()
+                .anyMatch(p -> p.isUser(userId));
+                
+        if (!isParticipant) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+    
+    /**
+     * 메타 정보 조회
+     */
+    private ChatRoomMetaInfo findChatRoomMetaInfo(Long chatRoomId) {
+        return chatRoomMetaRepository.findByChatRoomId(chatRoomId)
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+    }
+    
+    /**
+     * 사용자 정보 준비
+     */
+    private ChatRoomUsers prepareUserInfo(ChatRoom chatRoom) {
+        return ChatRoomUsers.fromChatRoom(chatRoom);
+    }
+    
+    /**
+     * 마지막 메시지 정보 준비
+     */
+    private ChatRoomMessages prepareLastMessages(Long chatRoomId, ChatRoomMetaInfo metaInfo) {
+        return ChatRoomMessages.of(chatRoomId, metaInfo.getLastMessage());
+    }
+    
+    /**
+     * 읽지 않은 메시지 수 준비
+     */
+    private UnreadMessageCounts prepareUnreadCounts(Long chatRoomId, Long userId, ChatRoomMetaInfo metaInfo) {
+        return UnreadMessageCounts.of(chatRoomId, metaInfo.getUnreadCount(userId));
+    }
+    
+    /**
+     * 상품 이미지 준비
+     */
+    private ArticleImage prepareArticleImage(Long articleId) {
+        List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(List.of(articleId));
+        return ArticleImage.fromProductImageDTOs(productImages);
+    }
+    
+    /**
+     * 마지막 메시지 DTO 생성
+     */
+    private ChatMessageResponseDTO createLastMessageDTO(
+            ChatRoom chatRoom,
+            Long chatRoomId,
+            ChatRoomMessages lastMessages,
+            ChatRoomMetaInfo metaInfo,
+            ChatRoomUsers users) {
 
+        if (chatRoomId == null) {
+            return null;
+        }
+
+        Optional<ChatMessage> messageOpt;
+        try {
+            messageOpt = lastMessages != null
+                    ? lastMessages.getLastMessage(chatRoomId)
+                    : Optional.ofNullable(metaInfo != null ? metaInfo.getLastMessage() : null);
+        } catch (Exception e) {
+            log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+            return null;
+        }
+
+        if (messageOpt.isEmpty()) {
+            return null;
+        }
+
+        ChatMessage lastMessage = messageOpt.get();
+        if (lastMessage == null || lastMessage.getSenderId() == null) {
+            return null;
+        }
+
+        String senderName = users != null
+                ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
+                : MessageConstants.UNKNOWN_USER;
+
+        try {
+            return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
+        } catch (Exception e) {
+            log.warn("메시지 DTO 생성 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * 상품 이미지 URL 조회
+     */
+    private String getArticleImageUrl(Long articleId, ArticleImage articleImage) {
+        if (articleId == null || articleImage == null) {
+            return null;
+        }
+        try {
+            return articleImage.getImageUrl(articleId);
+        } catch (Exception e) {
+            log.warn("상품 이미지 조회 중 오류 발생: articleId={}, error={}", articleId, e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * 읽지 않은 메시지 수 조회
+     */
+    private Integer getUnreadCount(Long chatRoomId, UnreadMessageCounts unreadCounts) {
+        return unreadCounts != null ? unreadCounts.getUnreadCount(chatRoomId) : 0;
+    }
+
+    /**
+     * 채팅방 응답 DTO를 생성합니다.
+     * 각 계산값(lastMessageDTO, articleImageUrl, unreadCount)을 직접 계산하여 DTO 생성에 사용합니다.
+     */
+    public ChatRoomResponseDTO createChatRoomResponseDTO(
+            ChatRoom chatRoom,
+            ChatRoomMetaInfo metaInfo,
+            ChatRoomUsers users,
+            ChatRoomMessages lastMessages,
+            UnreadMessageCounts unreadCounts,
+            ArticleImage articleImage) {
+        
+        // 마지막 메시지 조회
+        ChatMessageResponseDTO lastMessageDTO = createLastMessageDTO(
+            chatRoom, chatRoom.getId(), lastMessages, metaInfo, users);
+        
+        // 이미지 URL 조회
+        String articleImageUrl = getArticleImageUrl(chatRoom.getArticleId(), articleImage);
+        
+        // 읽지 않은 메시지 수 조회
+        Integer unreadCount = getUnreadCount(chatRoom.getId(), unreadCounts);
+        
+        return chatRoomDtoConverter.toResponseDto(
+                chatRoom, 
+                metaInfo, 
+                users,
+                lastMessages, 
+                unreadCounts,
+                articleImage,
+                lastMessageDTO,
+                articleImageUrl,
+                unreadCount
+        );
+    }
 
     public ChatRoom validateChatRoomAccess(String wsRoomId, Long userId) {
         log.debug("채팅방 접근 권한 검증: wsRoomId={}, userId={}", wsRoomId, userId);

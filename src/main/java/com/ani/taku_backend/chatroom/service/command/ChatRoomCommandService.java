@@ -21,6 +21,7 @@ import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
+import com.ani.taku_backend.chatroom.service.query.ChatRoomQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class ChatRoomCommandService {
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
     private final ChatRoomDtoConverter chatRoomDtoConverter;
+    private final ChatRoomQueryService chatRoomQueryService;
 
 
     /**
@@ -137,6 +139,7 @@ public class ChatRoomCommandService {
         return chatRoomMetaRepository.save(metaInfo);
     }
 
+
     private ChatRoomResponseDTO createChatRoomResponseDTO(
             ChatRoom savedRoom, ChatRoomMetaInfo metaInfo, User buyer, User seller, Long articleId) {
 
@@ -153,7 +156,7 @@ public class ChatRoomCommandService {
 
         ChatRoomUsers users = ChatRoomUsers.of(buyer, seller);
 
-        return chatRoomDtoConverter.toResponseDto(
+        return chatRoomQueryService.createChatRoomResponseDTO(
                 savedRoom,
                 metaInfo,
                 users,
@@ -162,6 +165,7 @@ public class ChatRoomCommandService {
                 articleImage
         );
     }
+
 
     /**
      * 중복 채팅방 생성을 방지하기 위한 검증 로직
