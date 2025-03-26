@@ -51,6 +51,42 @@ public class ChatRoomQueryService {
 
 
     /**
+     * 특정 채팅방의 정보를 조회합니다.
+     *
+     * @param roomId 채팅방 ID
+     * @param userId 사용자 ID
+     * @return 채팅방 정보
+     */
+    public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
+        // 1. 채팅방 조회 및 검증
+        ChatRoom chatRoom = findChatRoomByWsRoomId(roomId);
+
+        chatRoom.validateStatus();
+        chatRoom.validateUserAccess(userId);
+
+        // 2. 메타 정보 조회
+        ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 3. 필요한 데이터 준비
+        ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
+        ChatRoomMessages lastMessages = ChatRoomMessages.of(chatRoom.getId(), metaInfo.getLastMessage());
+        UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(chatRoom.getId(), metaInfo.getUnreadCount(userId));
+        ArticleImage articleImage = fetchArticleImagesBatch(List.of(chatRoom.getArticleId()));
+
+        // 4. DTO 변환 및 반환
+        return createChatRoomResponseDTO(
+                chatRoom,
+                metaInfo,
+                users,
+                lastMessages,
+                unreadCounts,
+                articleImage
+        );
+    }
+
+
+    /**
      * 사용자의 채팅방 목록을 페이징하여 조회합니다(무한 스크롤).
      * 
      * @param userId 사용자 ID
@@ -325,7 +361,7 @@ public class ChatRoomQueryService {
     }
     
     /**
-     * 상품 이미지를 배치로 효율적으로 조회합니다.
+     * 상품 이미지를 조회합니다.
      */
     private ArticleImage fetchArticleImagesBatch(List<Long> articleIds) {
         if (articleIds == null || articleIds.isEmpty()) {
@@ -342,4 +378,16 @@ public class ChatRoomQueryService {
         List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(distinctArticleIds);
         return ArticleImage.fromProductImageDTOs(productImages);
     }
+
+    /**
+     * 사용자의 모든 채팅방 목록을 조회합니다.
+     * 
+     * @param userId 사용자 ID
+     * @return 채팅방 응답 DTO 목록
+     */
+    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
+        Slice<ChatRoomResponseDTO> slice = findChatRoomListWithSlice(userId, Pageable.unpaged());
+        return slice.getContent();
+    }
+
 }
