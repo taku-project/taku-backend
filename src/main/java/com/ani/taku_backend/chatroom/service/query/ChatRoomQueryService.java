@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 채팅방 조회 서비스
@@ -72,7 +73,7 @@ public class ChatRoomQueryService {
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
         ChatRoomMessages lastMessages = ChatRoomMessages.of(chatRoom.getId(), metaInfo.getLastMessage());
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(chatRoom.getId(), metaInfo.getUnreadCount(userId));
-        ArticleImage articleImage = fetchArticleImagesBatch(List.of(chatRoom.getArticleId()));
+        ArticleImage articleImage = findArticleImage(List.of(chatRoom.getArticleId()));
 
         // 4. DTO 변환 및 반환
         return createChatRoomResponseDTO(
@@ -130,37 +131,28 @@ public class ChatRoomQueryService {
         }
 
         // 1. 마지막 메시지 조회
-        Optional<ChatMessage> messageOpt = findLastMessage(chatRoomId, lastMessages, metaInfo);
-        if (messageOpt.isEmpty()) {
-            return null;
-        }
-
-        // 2. 메시지 검증
-        ChatMessage lastMessage = messageOpt.get();
-        if (lastMessage.getSenderId() == null) {
-            return null;
-        }
-
-        // 3. 발신자 이름 획득
-        String senderName = resolveSenderName(users, lastMessage.getSenderId());
-
-        // 4. DTO 생성
-        return createResponseDTO(lastMessage, senderName, chatRoom.getWsRoomId(), chatRoomId);
+        return getLastMessage(chatRoomId, lastMessages, metaInfo)
+                .filter(msg -> msg.getSenderId() != null)
+                .map(lastMessage -> createResponseDTO(
+                        lastMessage, 
+                        getUserName(users, lastMessage.getSenderId()), 
+                        chatRoom.getWsRoomId(), 
+                        chatRoomId))
+                .orElse(null);
     }
 
 
     /**
      * 채팅방의 마지막 메시지를 조회합니다.
      */
-    private Optional<ChatMessage> findLastMessage(
+    private Optional<ChatMessage> getLastMessage(
             Long chatRoomId, 
             ChatRoomMessages lastMessages, 
             ChatRoomMetaInfo metaInfo) {
         
         try {
-            return lastMessages != null
-                    ? lastMessages.getLastMessage(chatRoomId)
-                    : Optional.ofNullable(metaInfo != null ? metaInfo.getLastMessage() : null);
+            return lastMessages.getLastMessage(chatRoomId)
+                    .or(() -> Optional.ofNullable(metaInfo.getLastMessage()));
         } catch (Exception e) {
             log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
             return Optional.empty();
@@ -170,10 +162,8 @@ public class ChatRoomQueryService {
     /**
      * 발신자 이름을 결정합니다.
      */
-    private String resolveSenderName(ChatRoomUsers users, Long senderId) {
-        return users != null
-                ? users.getUserNicknameOrUnknown(senderId)
-                : MessageConstants.UNKNOWN_USER;
+    private String getUserName(ChatRoomUsers users, Long senderId) {
+        return users.getUserNicknameOrUnknown(senderId);
     }
     
     /**
@@ -197,9 +187,6 @@ public class ChatRoomQueryService {
      * 상품 이미지 URL 조회
      */
     private String getArticleImageUrl(Long articleId, ArticleImage articleImage) {
-        if (articleId == null || articleImage == null) {
-            return null;
-        }
         try {
             return articleImage.getImageUrl(articleId);
         } catch (Exception e) {
@@ -212,7 +199,7 @@ public class ChatRoomQueryService {
      * 읽지 않은 메시지 수 조회
      */
     private Integer getUnreadCount(Long chatRoomId, UnreadMessageCounts unreadCounts) {
-        return unreadCounts != null ? unreadCounts.getUnreadCount(chatRoomId) : 0;
+        return unreadCounts.getUnreadCount(chatRoomId);
     }
 
     /**
@@ -298,7 +285,7 @@ public class ChatRoomQueryService {
         List<ChatRoomMetaInfo> userChatrooms = chatRoomMetaRepository
                 .findChatRoomMetaInfosByParticipantUserId(userId);
 
-        if (userChatrooms == null || userChatrooms.isEmpty()) {
+        if (userChatrooms.isEmpty()) {
             return 0;
         }
 
@@ -307,7 +294,6 @@ public class ChatRoomQueryService {
 
 
     public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
-        // 채팅방과 참여자, 사용자를 함께 조회하도록 쿼리 최적화
         List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserIdAndRole(
                 userId, role, ChatRoomStatus.ACTIVE);
 
@@ -318,7 +304,6 @@ public class ChatRoomQueryService {
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms);
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms);
 
-        // 필요한 모든 데이터를 한 번에 배치로 조회
         ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(
                 chatRooms, chatRoomIds, articleIds, userId);
         
@@ -327,11 +312,10 @@ public class ChatRoomQueryService {
 
 
     private ChatRoomMetaInfoData getChatRoomMetaInfoData(List<Long> chatRoomIds, Long userId) {
-        if (chatRoomIds == null || chatRoomIds.isEmpty()) {
+        if (chatRoomIds.isEmpty()) {
             return ChatRoomMetaInfoData.empty();
         }
 
-        // 한 번의 쿼리로 모든 메타 정보 조회 (마지막 메시지 포함)
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
         
         ChatRoomMessages lastMessages = ChatRoomMessages.fromMetaInfos(metaInfos);
@@ -349,7 +333,7 @@ public class ChatRoomQueryService {
         ChatRoomMetaInfoData metaInfoData = getChatRoomMetaInfoData(chatRoomIds, userId);
         ChatRoomMetaInfos metaInfos = metaInfoData.getMetaInfos();
 
-        ArticleImage articleImage = fetchArticleImagesBatch(articleIds);
+        ArticleImage articleImage = findArticleImage(articleIds);
         
         ChatRoomMessages lastMessages = metaInfoData.getLastMessages();
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
@@ -363,8 +347,8 @@ public class ChatRoomQueryService {
     /**
      * 상품 이미지를 조회합니다.
      */
-    private ArticleImage fetchArticleImagesBatch(List<Long> articleIds) {
-        if (articleIds == null || articleIds.isEmpty()) {
+    private ArticleImage findArticleImage(List<Long> articleIds) {
+        if (articleIds.isEmpty()) {
             return ArticleImage.empty();
         }
         
@@ -372,7 +356,11 @@ public class ChatRoomQueryService {
         List<Long> distinctArticleIds = articleIds.stream()
                 .filter(Objects::nonNull)
                 .distinct()
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
+        
+        if (distinctArticleIds.isEmpty()) {
+            return ArticleImage.empty();
+        }
         
         // 모든 상품 이미지 조회
         List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(distinctArticleIds);
