@@ -145,37 +145,12 @@ public class ChatRoomQueryService {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(roomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
         
-        validateChatRoomStatus(chatRoom);
-        validateUserAccess(chatRoom, userId);
+        chatRoom.validateStatus();
+        chatRoom.validateUserAccess(userId);
         
         return chatRoom;
     }
-    
-    /**
-     * 채팅방 상태 검증
-     */
-    private void validateChatRoomStatus(ChatRoom chatRoom) {
-        if (!chatRoom.isValid()) {
-            throw new DuckwhoException(ErrorCode.INACTIVE_CHAT_ROOM);
-        }
-        
-        if (chatRoom.getStatus() != ChatRoomStatus.ACTIVE) {
-            throw new DuckwhoException(ErrorCode.INACTIVE_CHAT_ROOM);
-        }
-    }
-    
-    /**
-     * 사용자 접근 권한 검증
-     */
-    private void validateUserAccess(ChatRoom chatRoom, Long userId) {
-        boolean isParticipant = chatRoom.getParticipants().stream()
-                .anyMatch(p -> p.isUser(userId));
-                
-        if (!isParticipant) {
-            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
-    }
-    
+
     /**
      * 메타 정보 조회
      */

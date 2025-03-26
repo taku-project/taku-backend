@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import java.util.Objects;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 
 /**
  * 채팅방 정보를 나타내는 엔티티입니다.
@@ -155,6 +157,38 @@ public class ChatRoom extends BaseTimeEntity {
     }
 
     /**
+     * 채팅방의 상태를 검증합니다.
+     * 비활성화된 채팅방이거나 유효하지 않은 경우 예외를 발생시킵니다.
+     * 
+     * @throws DuckwhoException 채팅방이 비활성 상태이거나 유효하지 않은 경우
+     */
+    public void validateStatus() {
+        if (!isValid()) {
+            throw new DuckwhoException(ErrorCode.INACTIVE_CHAT_ROOM);
+        }
+        
+        if (this.status != ChatRoomStatus.ACTIVE) {
+            throw new DuckwhoException(ErrorCode.INACTIVE_CHAT_ROOM);
+        }
+    }
+    
+    /**
+     * 사용자가 채팅방에 참여 가능한지 검증합니다.
+     * 해당 사용자가 채팅방 참여자가 아닌 경우 예외를 발생시킵니다.
+     * 
+     * @param userId 검증할 사용자 ID
+     * @throws DuckwhoException 사용자가 참여자가 아닌 경우
+     */
+    public void validateUserAccess(Long userId) {
+        boolean isParticipant = this.participants.stream()
+                .anyMatch(p -> p.isUser(userId));
+                
+        if (!isParticipant) {
+            throw new DuckwhoException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+
+    /**
      * 여러 채팅방에서 채팅방 ID 목록을 추출합니다.
      * 
      * @param chatRooms 채팅방 목록
@@ -180,5 +214,31 @@ public class ChatRoom extends BaseTimeEntity {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 특정 사용자가 특정 역할로 참여하고 있는지 확인합니다.
+     * 
+     * @param userId 확인할 사용자 ID
+     * @param role 확인할 역할
+     * @return 해당 사용자가 지정된 역할로 참여하고 있으면 true
+     */
+    public boolean hasUserWithRole(Long userId, JangterChatRole role) {
+        return this.participants.stream()
+                .anyMatch(participant -> 
+                        participant.isUser(userId) && 
+                        participant.getRole() == role);
+    }
+    
+    /**
+     * 활성 상태의 채팅방 목록에서 특정 사용자가 구매자로 참여하고 있는 채팅방이 있는지 확인합니다.
+     * 
+     * @param chatRooms 확인할 채팅방 목록
+     * @param buyerId 확인할 구매자 ID
+     * @return 구매자로 참여중인 활성 채팅방이 있으면 true
+     */
+    public static boolean hasActiveBuyerInRooms(List<ChatRoom> chatRooms, Long buyerId) {
+        return chatRooms.stream()
+                .filter(room -> room.getStatus() == ChatRoomStatus.ACTIVE)
+                .anyMatch(room -> room.hasUserWithRole(buyerId, JangterChatRole.BUYER));
+    }
 
 }
