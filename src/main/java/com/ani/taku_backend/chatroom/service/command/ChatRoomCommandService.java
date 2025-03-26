@@ -12,6 +12,7 @@ import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
+import com.ani.taku_backend.chatroom.mapper.ChatRoomDtoConverter;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
@@ -43,6 +44,7 @@ public class ChatRoomCommandService {
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
+    private final ChatRoomDtoConverter chatRoomDtoConverter;
 
 
     /**
@@ -142,16 +144,16 @@ public class ChatRoomCommandService {
         ArticleImage articleImage = ArticleImage.fromProductImageDTOs(productImages);
 
         ChatRoomMessages lastMessages = ChatRoomMessages.empty();
-        
+
         // 신규 채팅방은 읽지 않은 메시지가 없음
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(
-                savedRoom.getId(), 
+                savedRoom.getId(),
                 0
         );
 
         ChatRoomUsers users = ChatRoomUsers.of(buyer, seller);
-        
-        return ChatRoomResponseDTO.from(
+
+        return chatRoomDtoConverter.toResponseDto(
                 savedRoom,
                 metaInfo,
                 users,

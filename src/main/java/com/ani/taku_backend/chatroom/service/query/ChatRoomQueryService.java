@@ -82,6 +82,7 @@ public class ChatRoomQueryService {
         return new SliceImpl<>(responseDTOs, pageable, chatRooms.hasNext());
     }
 
+
     private ChatRoomCompositeDTO aggregateChatRoomData(List<ChatRoom> chatRooms, List<Long> chatRoomIds, Long userId) {
         ChatRoomMetaInfoData metaInfoData = getChatRoomMetaInfoData(chatRoomIds, userId);
         ChatRoomMetaInfos metaInfos = metaInfoData.getMetaInfos();
@@ -97,6 +98,7 @@ public class ChatRoomQueryService {
         
         return new ChatRoomCompositeDTO(metaInfos, articleImage, lastMessages, unreadCounts, users);
     }
+
 
     public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
 
@@ -130,6 +132,7 @@ public class ChatRoomQueryService {
         );
     }
 
+
     public ChatRoom validateChatRoomAccess(String wsRoomId, Long userId) {
         log.debug("채팅방 접근 권한 검증: wsRoomId={}, userId={}", wsRoomId, userId);
 
@@ -144,6 +147,7 @@ public class ChatRoomQueryService {
         return chatRoom;
     }
 
+
     public Integer getTotalUnreadCount(Long userId) {
         List<ChatRoomMetaInfo> userChatrooms = chatRoomMetaRepository
                 .findChatRoomMetaInfosByParticipantUserId(userId);
@@ -154,6 +158,7 @@ public class ChatRoomQueryService {
 
         return ChatRoomMetaInfo.calculateTotalUnreadCount(userChatrooms, userId);
     }
+
 
     public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
         List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserIdAndRole(
@@ -169,6 +174,7 @@ public class ChatRoomQueryService {
         
         return dataBundle.toChatRoomResponseDTOs(chatRooms);
     }
+
 
     private ChatRoomMetaInfoData getChatRoomMetaInfoData(List<Long> chatRoomIds, Long userId) {
         if (chatRoomIds == null || chatRoomIds.isEmpty()) {
