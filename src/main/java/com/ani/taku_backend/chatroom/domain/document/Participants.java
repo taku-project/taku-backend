@@ -86,4 +86,19 @@ public class Participants {
         return (role == JangterChatRole.BUYER && participant.isBuyer()) ||
                (role == JangterChatRole.SELLER && participant.isSeller());
     }
+
+    /**
+     * 특정 사용자가 활성 상태인지 확인합니다.
+     *
+     * @param userId 확인할 사용자 ID
+     * @return 사용자가 활성 상태면 true, 그렇지 않으면 false
+     */
+    public boolean isParticipantActive(Long userId) {
+        ParticipantInfo participant = info.get(userId);
+        if (participant == null) {
+            return false;
+        }
+        
+        return participant.isActive();
+    }
 }

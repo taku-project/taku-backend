@@ -62,9 +62,12 @@ public class ChatRoomQueryService {
         chatRoom.validateStatus();
         chatRoom.validateUserAccess(userId);
 
-        // 2. 메타 정보 조회
+        // 2. 메타 정보 조회 및 사용자 접근 검증
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+                
+        // 사용자가 채팅방을 나갔는지 확인 (비활성 상태 체크)
+        validateMetaInfoAccess(chatRoom.getId(), userId);
 
         // 3. 필요한 데이터 준비
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
@@ -205,7 +208,13 @@ public class ChatRoomQueryService {
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
                 
+        // 1. 기본 사용자 권한 검증
         metaInfo.validateUserAccess(userId);
+        
+        // 2. 사용자가 채팅방을 나갔는지 확인 (비활성 상태 체크)
+        if (!metaInfo.getParticipants().isParticipantActive(userId)) {
+            throw new DuckwhoException(ErrorCode.CHAT_ROOM_LEFT_USER);
+        }
     }
 
 
@@ -245,6 +254,15 @@ public class ChatRoomQueryService {
         }
 
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
+        
+        // 해당 사용자가 활성 상태인 채팅방만 필터링
+        metaInfos = metaInfos.stream()
+                .filter(metaInfo -> metaInfo.getParticipants().isParticipantActive(userId))
+                .collect(Collectors.toList());
+        
+        if (metaInfos.isEmpty()) {
+            return ChatRoomMetaInfoData.empty();
+        }
         
         ChatRoomMessages lastMessages = ChatRoomMessages.fromMetaInfos(metaInfos);
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.fromMetaInfos(metaInfos, userId, chatRoomIds);
