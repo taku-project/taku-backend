@@ -32,40 +32,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
-    @Override
-    public List<ChatRoom> findChatRoomsWithParticipantsAndUsers(Long userId, ChatRoomStatus status) {
-        log.debug("사용자 ID: {}, 상태: {}로 채팅방 조회 시작", userId, status);
-        
-        QChatRoom chatRoom = QChatRoom.chatRoom;
-        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
-        QUser user = QUser.user;
-
-        List<Long> chatRoomIds = queryFactory
-                .select(participant.chatRoom.id)
-                .from(participant)
-                .where(
-                    participant.user.userId.eq(userId),
-                    participant.chatRoom.status.eq(status)
-                )
-                .fetch();
-
-        if (chatRoomIds.isEmpty()) {
-            log.debug("사용자가 참여한 채팅방이 없습니다: userId={}", userId);
-            return Collections.emptyList();
-        }
-
-        List<ChatRoom> results = queryFactory
-                .selectFrom(chatRoom)
-                .distinct()
-                .leftJoin(chatRoom.participants, participant).fetchJoin()
-                .leftJoin(participant.user, user).fetchJoin()
-                .where(chatRoom.id.in(chatRoomIds))
-                .fetch();
-
-        log.debug("조회된 채팅방 수: {}", results.size());
-        
-        return results;
-    }
 
     @Override
     public List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, JangterChatRole role, ChatRoomStatus status) {
