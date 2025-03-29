@@ -50,7 +50,7 @@ public class UserService {
       .ageRange(userInfo.getAgeRange())
       .role(UserRole.USER)
       .build();
-
+    log.info("유저 등록 완료 {}", user);
     User savedUser = userRepository.save(user);
     log.info("savedUser : {}", savedUser);
 
