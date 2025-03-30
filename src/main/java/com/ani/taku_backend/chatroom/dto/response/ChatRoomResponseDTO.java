@@ -10,6 +10,7 @@ import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 
 import com.ani.taku_backend.user.model.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -36,8 +37,13 @@ public class ChatRoomResponseDTO {
     private final String buyerNickname;
     private final String sellerNickname;
     private final ChatMessageResponseDTO lastMessage;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private final LocalDateTime createdAt;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private final LocalDateTime updatedAt;
+    
     private final String articleImageUrl;
     private final Integer unreadMessageCount;
     private final String buyerProfileImageUrl;
