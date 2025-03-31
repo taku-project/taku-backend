@@ -71,7 +71,9 @@ public class ChatRoomController {
                             "articleImageUrl": null,
                             "unreadMessageCount": 0,
                             "buyerProfileImageUrl": "https://example.com/image.jpg",
-                            "sellerProfileImageUrl": "https://example.com/image.png"
+                            "sellerProfileImageUrl": "https://example.com/image.png",
+                            "articleName": "맥북 프로 M2 512GB",
+                            "articlePrice": 1800000.00
                           },
                           "error": null
                         }
@@ -217,7 +219,9 @@ public class ChatRoomController {
                             "articleImageUrl": null,
                             "unreadMessageCount": 0,
                             "buyerProfileImageUrl": "https://example.com/image.jpg",
-                            "sellerProfileImageUrl": "https://example.com/image.png"
+                            "sellerProfileImageUrl": "https://example.com/image.png",
+                            "articleName": "맥북 프로 M2 512GB",
+                            "articlePrice": 1800000.00
                           },
                           "error": null
                         }
@@ -381,7 +385,9 @@ public class ChatRoomController {
                               "articleImageUrl": null,
                               "unreadMessageCount": 0,
                               "buyerProfileImageUrl": "https://example.com/image.jpg",
-                              "sellerProfileImageUrl": "https://example.com/image.png"
+                              "sellerProfileImageUrl": "https://example.com/image.png",
+                              "articleName": "맥북 프로 M2 512GB",
+                              "articlePrice": 1800000.00
                             }
                           ],
                           "error": null
@@ -430,7 +436,9 @@ public class ChatRoomController {
                               "articleImageUrl": null,
                               "unreadMessageCount": 0,
                               "buyerProfileImageUrl": "https://example.com/image.jpg",
-                              "sellerProfileImageUrl": "https://example.com/image.png"
+                              "sellerProfileImageUrl": "https://example.com/image.png",
+                              "articleName": "맥북 프로 M2 512GB",
+                              "articlePrice": 1800000.00
                             }
                           ],
                           "error": null

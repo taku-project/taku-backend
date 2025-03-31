@@ -1,7 +1,9 @@
 package com.ani.taku_backend.chatroom.service.query;
 
+import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
+import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfoData;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
@@ -19,6 +21,7 @@ import com.ani.taku_backend.chatroom.mapper.ChatRoomDtoConverter;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
+import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,15 +78,24 @@ public class ChatRoomQueryService {
         ChatRoomMessages lastMessages = ChatRoomMessages.of(chatRoom.getId(), metaInfo.getLastMessage());
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(chatRoom.getId(), metaInfo.getUnreadCount(userId));
         ArticleImage articleImage = findArticleImage(List.of(chatRoom.getArticleId()));
+        
+        // 상품 정보 조회
+        DuckuJangter article = null;
+        try {
+            article = duckuJangterRepository.findById(chatRoom.getArticleId()).orElse(null);
+        } catch (Exception e) {
+            log.warn("상품 정보 조회 중 오류 발생: articleId={}, error={}", chatRoom.getArticleId(), e.getMessage());
+        }
 
-        // 4. DTO 변환 및 반환
-        return createChatRoomResponseDTO(
+        // 4. 매퍼를 통한 DTO 변환
+        return chatRoomDtoConverter.toChatRoomResponseDTO(
                 chatRoom,
                 metaInfo,
                 users,
                 lastMessages,
                 unreadCounts,
-                articleImage
+                articleImage,
+                article
         );
     }
 
@@ -95,7 +108,6 @@ public class ChatRoomQueryService {
      * @return 채팅방 응답 DTO 목록의 Slice
      */
     public Slice<ChatRoomResponseDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
-        // 채팅방과 참여자, 사용자를 함께 조회
         Slice<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithSlice(
                 userId, pageable, ChatRoomStatus.ACTIVE);
 
@@ -105,12 +117,26 @@ public class ChatRoomQueryService {
         
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms.getContent());
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms.getContent());
-
-        // 필요한 모든 데이터를 한 번에  조회
-        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(
-                chatRooms.getContent(), chatRoomIds, articleIds, userId);
         
-        List<ChatRoomResponseDTO> responseDTOs = dataBundle.toChatRoomResponseDTOs(chatRooms.getContent());
+        // 상품 정보 한 번에 조회
+        Map<Long, DuckuJangter> articleMap = findArticlesByIds(articleIds);
+
+        // 복합 데이터 준비
+        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms.getContent(), chatRoomIds, userId);
+        
+        // DTO 변환 - 매퍼 활용
+        List<ChatRoomResponseDTO> responseDTOs = chatRooms.getContent().stream()
+                .map(room -> chatRoomDtoConverter.toChatRoomResponseDto(
+                        room,
+                        dataBundle.getMetaInfos().getMetaInfo(room.getId()).orElse(null),
+                        dataBundle.getUsers(),
+                        dataBundle.getLastMessages(),
+                        dataBundle.getUnreadCounts(),
+                        dataBundle.getArticleImage(),
+                        articleMap.get(room.getArticleId())
+                ))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         
         return new SliceImpl<>(responseDTOs, pageable, chatRooms.hasNext());
     }
@@ -146,26 +172,39 @@ public class ChatRoomQueryService {
             UnreadMessageCounts unreadCounts,
             ArticleImage articleImage) {
         
-        // 마지막 메시지 조회
-        ChatMessageResponseDTO lastMessageDTO = lastMessages.createLastMessageDTO(chatRoom, metaInfo, users);
+        // DuckuJangter 정보 가져오기
+        DuckuJangter article = null;
+        String articleName = null;
+        BigDecimal articlePrice = null;
         
-        // 이미지 URL 조회
-        String articleImageUrl = getArticleImageUrl(chatRoom.getArticleId(), articleImage);
+        try {
+            article = duckuJangterRepository.findById(chatRoom.getArticleId()).orElse(null);
+            if (article != null) {
+                articleName = article.getTitle();
+                articlePrice = article.getPrice();
+            }
+        } catch (Exception e) {
+            log.warn("상품 정보 조회 중 오류 발생: articleId={}, error={}", chatRoom.getArticleId(), e.getMessage());
+        }
         
-        // 읽지 않은 메시지 수 조회
-        Integer unreadCount = getUnreadCount(chatRoom.getId(), unreadCounts);
-        
-        return chatRoomDtoConverter.toResponseDto(
-                chatRoom, 
-                metaInfo, 
-                users,
-                lastMessages, 
-                unreadCounts,
-                articleImage,
-                lastMessageDTO,
-                articleImageUrl,
-                unreadCount
-        );
+        return ChatRoomResponseDTO.builder()
+                .chatRoomId(chatRoom.getId())
+                .wsRoomId(chatRoom.getWsRoomId())
+                .articleId(chatRoom.getArticleId())
+                .buyerId(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null)
+                .sellerId(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null)
+                .buyerNickname(users.getUserNicknameOrUnknown(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null))
+                .sellerNickname(users.getUserNicknameOrUnknown(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null))
+                .lastMessage(getLastMessage(chatRoom.getId(), lastMessages, chatRoom.getWsRoomId(), users))
+                .createdAt(chatRoom.getCreatedAt())
+                .updatedAt(chatRoom.getUpdatedAt())
+                .articleImageUrl(articleImage.getImageUrl(chatRoom.getArticleId()))
+                .unreadMessageCount(unreadCounts.getUnreadCount(chatRoom.getId()))
+                .buyerProfileImageUrl(users.getUserProfileImage(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null))
+                .sellerProfileImageUrl(users.getUserProfileImage(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null))
+                .articleName(articleName)
+                .articlePrice(articlePrice)
+                .build();
     }
 
     public ChatRoom validateChatRoomAccess(String wsRoomId, Long userId) {
@@ -240,11 +279,25 @@ public class ChatRoomQueryService {
 
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms);
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms);
-
-        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(
-                chatRooms, chatRoomIds, articleIds, userId);
         
-        return dataBundle.toChatRoomResponseDTOs(chatRooms);
+        // 상품 정보 한 번에 조회
+        Map<Long, DuckuJangter> articleMap = findArticlesByIds(articleIds);
+
+        ChatRoomCompositeDTO dataBundle = aggregateChatRoomData(chatRooms, chatRoomIds, userId);
+        
+        // 매퍼를 통한 DTO 변환
+        return chatRooms.stream()
+                .map(room -> chatRoomDtoConverter.toChatRoomResponseDto(
+                        room,
+                        dataBundle.getMetaInfos().getMetaInfo(room.getId()).orElse(null),
+                        dataBundle.getUsers(),
+                        dataBundle.getLastMessages(),
+                        dataBundle.getUnreadCounts(),
+                        dataBundle.getArticleImage(),
+                        articleMap.get(room.getArticleId())
+                ))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
 
@@ -322,6 +375,97 @@ public class ChatRoomQueryService {
     public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
         Slice<ChatRoomResponseDTO> slice = findChatRoomListWithSlice(userId, Pageable.unpaged());
         return slice.getContent();
+    }
+
+    private ChatMessageResponseDTO getLastMessage(Long chatRoomId, ChatRoomMessages lastMessages, String wsRoomId, ChatRoomUsers users) {
+        if (chatRoomId == null || lastMessages == null) {
+            return null;
+        }
+        
+        try {
+            Optional<ChatMessage> messageOpt = lastMessages.getLastMessage(chatRoomId);
+            if (messageOpt.isEmpty()) {
+                return null;
+            }
+            
+            ChatMessage lastMessage = messageOpt.get();
+            if (lastMessage == null || lastMessage.getSenderId() == null) {
+                return null;
+            }
+            
+            String senderName = users != null 
+                ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
+                : MessageConstants.UNKNOWN_USER;
+            
+            return ChatMessageResponseDTO.from(lastMessage, senderName, wsRoomId);
+        } catch (Exception e) {
+            log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+            return null;
+        }
+    }
+
+    // 상품 정보를 포함하는 새로운 헬퍼 메서드 추가
+    private ChatRoomResponseDTO createChatRoomResponseDTOWithArticle(
+            ChatRoom chatRoom,
+            ChatRoomMetaInfo metaInfo,
+            ChatRoomUsers users,
+            ChatRoomMessages lastMessages,
+            UnreadMessageCounts unreadCounts,
+            ArticleImage articleImage,
+            DuckuJangter article) {
+        
+        if (chatRoom == null || metaInfo == null || !chatRoom.isValid()) {
+            return null;
+        }
+        
+        String articleName = null;
+        BigDecimal articlePrice = null;
+        
+        if (article != null) {
+            articleName = article.getTitle();
+            articlePrice = article.getPrice();
+        }
+        
+        return ChatRoomResponseDTO.builder()
+                .chatRoomId(chatRoom.getId())
+                .wsRoomId(chatRoom.getWsRoomId())
+                .articleId(chatRoom.getArticleId())
+                .buyerId(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null)
+                .sellerId(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null)
+                .buyerNickname(users.getUserNicknameOrUnknown(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null))
+                .sellerNickname(users.getUserNicknameOrUnknown(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null))
+                .lastMessage(getLastMessage(chatRoom.getId(), lastMessages, chatRoom.getWsRoomId(), users))
+                .createdAt(chatRoom.getCreatedAt())
+                .updatedAt(chatRoom.getUpdatedAt())
+                .articleImageUrl(articleImage.getImageUrl(chatRoom.getArticleId()))
+                .unreadMessageCount(unreadCounts.getUnreadCount(chatRoom.getId()))
+                .buyerProfileImageUrl(users.getUserProfileImage(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null))
+                .sellerProfileImageUrl(users.getUserProfileImage(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null))
+                .articleName(articleName)
+                .articlePrice(articlePrice)
+                .build();
+    }
+
+    private ChatRoomCompositeDTO aggregateChatRoomData(
+            List<ChatRoom> chatRooms, 
+            List<Long> chatRoomIds, 
+            Long userId) {
+        
+        List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms);
+        return aggregateChatRoomData(chatRooms, chatRoomIds, articleIds, userId);
+    }
+
+    private Map<Long, DuckuJangter> findArticlesByIds(List<Long> articleIds) {
+        if (articleIds == null || articleIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        
+        return duckuJangterRepository.findByIdIn(articleIds).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(
+                        DuckuJangter::getId, 
+                        article -> article, 
+                        (existing, replacement) -> existing));
     }
 
 }

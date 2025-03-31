@@ -1,20 +1,11 @@
 package com.ani.taku_backend.chatroom.dto.response;
 
-import com.ani.taku_backend.chatroom.contansts.MessageConstants;
-import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
-import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
-import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
-import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
-import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
-
-import com.ani.taku_backend.user.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -43,8 +34,10 @@ public class ChatRoomResponseDTO {
     private final Integer unreadMessageCount;
     private final String buyerProfileImageUrl;
     private final String sellerProfileImageUrl;
+    private final String articleName;
+    private final BigDecimal articlePrice;
 
-    @Builder
+    @Builder(toBuilder = true)
     public ChatRoomResponseDTO(
             Long chatRoomId,
             String wsRoomId,
@@ -59,7 +52,9 @@ public class ChatRoomResponseDTO {
             String articleImageUrl,
             Integer unreadMessageCount,
             String buyerProfileImageUrl,
-            String sellerProfileImageUrl) {
+            String sellerProfileImageUrl,
+            String articleName,
+            BigDecimal articlePrice) {
         this.chatRoomId = chatRoomId;
         this.wsRoomId = wsRoomId;
         this.articleId = articleId;
@@ -74,5 +69,7 @@ public class ChatRoomResponseDTO {
         this.unreadMessageCount = unreadMessageCount;
         this.buyerProfileImageUrl = buyerProfileImageUrl;
         this.sellerProfileImageUrl = sellerProfileImageUrl;
+        this.articleName = articleName;
+        this.articlePrice = articlePrice;
     }
 }

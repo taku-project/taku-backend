@@ -1,6 +1,5 @@
 package com.ani.taku_backend.chatroom.service.command;
 
-import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
