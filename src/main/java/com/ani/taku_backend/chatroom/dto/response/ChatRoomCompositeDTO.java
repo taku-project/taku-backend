@@ -6,6 +6,7 @@ import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
+import com.ani.taku_backend.chatroom.service.query.ChatRoomQueryService;
 import lombok.Value;
 
 import java.util.List;
@@ -21,6 +22,22 @@ public class ChatRoomCompositeDTO {
     ChatRoomMessages lastMessages;
     UnreadMessageCounts unreadCounts;
     ChatRoomUsers users;
+    ChatRoomQueryService chatRoomQueryService;
+
+    public ChatRoomCompositeDTO(
+            ChatRoomMetaInfos metaInfos,
+            ArticleImage articleImage,
+            ChatRoomMessages lastMessages,
+            UnreadMessageCounts unreadCounts,
+            ChatRoomUsers users,
+            ChatRoomQueryService chatRoomQueryService) {
+        this.metaInfos = metaInfos;
+        this.articleImage = articleImage;
+        this.lastMessages = lastMessages;
+        this.unreadCounts = unreadCounts;
+        this.users = users;
+        this.chatRoomQueryService = chatRoomQueryService;
+    }
 
     public List<ChatRoomResponseDTO> toChatRoomResponseDTOs(List<ChatRoom> chatRooms) {
         return chatRooms.stream()
@@ -29,10 +46,9 @@ public class ChatRoomCompositeDTO {
                 .collect(java.util.stream.Collectors.toList());
     }
     
-
     public ChatRoomResponseDTO toChatRoomResponseDTO(ChatRoom room) {
         return metaInfos.getMetaInfo(room.getId())
-                .map(metaInfo -> ChatRoomResponseDTO.from(
+                .map(metaInfo -> chatRoomQueryService.createChatRoomResponseDTO(
                         room,
                         metaInfo,
                         users,

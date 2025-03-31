@@ -214,6 +214,26 @@ public class ChatRoomMetaInfo {
     }
 
     /**
+     * 참여자의 활성화 상태를 변경합니다.
+     * 참여자 검증 및 상태 변경을 캡슐화합니다.
+     *
+     * @param userId 상태를 변경할 사용자 ID
+     * @param active 활성화 여부 (true: 활성화, false: 비활성화)
+     * @throws DuckwhoException 유효하지 않은 사용자인 경우 발생
+     */
+    public void updateParticipantStatus(Long userId, boolean active) {
+        if (!this.participants.containsUser(userId)) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
+        
+        if (active) {
+            this.participants.getInfo().get(userId).activate();
+        } else {
+            this.participants.getInfo().get(userId).deactivate();
+        }
+    }
+
+    /**
      * 현재 채팅방의 마지막 메시지를 가져옵니다.
      * @return 마지막 메시지 또는 비어있을 경우 null
      */

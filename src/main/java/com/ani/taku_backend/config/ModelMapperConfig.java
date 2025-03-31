@@ -11,7 +11,6 @@ import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
-import org.modelmapper.Converter;
 import java.util.List;
 import java.util.ArrayList;
 

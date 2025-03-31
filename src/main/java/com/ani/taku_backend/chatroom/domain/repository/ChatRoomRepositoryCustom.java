@@ -14,11 +14,6 @@ import org.springframework.data.domain.Slice;
 public interface ChatRoomRepositoryCustom {
     
     /**
-     * 사용자의 채팅방 목록을 모든 연관 엔티티와 함께 한 번에 조회합니다.
-     */
-    List<ChatRoom> findChatRoomsWithParticipantsAndUsers(Long userId, ChatRoomStatus status);
-    
-    /**
      * 사용자의 특정 역할 채팅방 목록을 모든 연관 엔티티와 함께 한 번에 조회합니다.
      */
     List<ChatRoom> findChatRoomsByUserIdAndRole(Long userId, JangterChatRole role, ChatRoomStatus status);

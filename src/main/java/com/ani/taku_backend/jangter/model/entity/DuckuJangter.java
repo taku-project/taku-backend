@@ -2,6 +2,8 @@ package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
 import com.ani.taku_backend.common.enums.StatusType;
+import com.ani.taku_backend.common.exception.DuckwhoException;
+import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
@@ -136,6 +138,30 @@ public class DuckuJangter extends BaseTimeEntity {
 
     public boolean isOwner(Long userId) {
         return this.user != null && this.user.getUserId().equals(userId);
+    }
+    
+    /**
+     * 채팅방 생성을 위한 상품 상태 검증
+     * 상품이 판매 중 상태가 아니면 예외를 발생시킵니다.
+     * 
+     * @throws DuckwhoException 상품이 판매 중이 아닌 경우
+     */
+    public void validateForChatRoom() {
+        if (this.status != ProductStatus.FOR_SALE) {
+            throw new DuckwhoException(ErrorCode.INVALID_PRODUCT_STATUS);
+        }
+    }
+    
+    /**
+     * 판매자와 구매자가 동일인물인지 검증합니다.
+     * 
+     * @param buyerId 구매자 ID
+     * @throws DuckwhoException 판매자와 구매자가 동일인물인 경우
+     */
+    public void validateDifferentUsers(Long buyerId) {
+        if (this.user != null && this.user.getUserId().equals(buyerId)) {
+            throw new DuckwhoException(ErrorCode.INVALID_CHAT_USER);
+        }
     }
 
 }

@@ -3,6 +3,8 @@ package com.ani.taku_backend.chatroom.domain.vo;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.contansts.MessageConstants;
+import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,6 +88,38 @@ public class ChatRoomMessages {
             .map(MessageItem::getMessage)
             .filter(Objects::nonNull)
             .findFirst();
+    }
+
+    /**
+     * 채팅방의 마지막 메시지를 DTO로 변환.
+     *
+     * @param chatRoom 채팅방 객체
+     * @param metaInfo 채팅방 메타 정보
+     * @param users 채팅방 사용자 정보
+     * @return 마지막 메시지 DTO, 없거나 조건을 만족하지 않으면 null
+     */
+    public ChatMessageResponseDTO createLastMessageDTO(
+            ChatRoom chatRoom,
+            ChatRoomMetaInfo metaInfo,
+            ChatRoomUsers users) {
+            
+        Long chatRoomId = chatRoom.getId();
+        if (chatRoomId == null) {
+            return null;
+        }
+        
+        // 1. 마지막 메시지 조회 (현재 객체에서 먼저 찾고, 없으면 metaInfo에서 찾음)
+        return getLastMessage(chatRoomId)
+                .or(() -> Optional.ofNullable(metaInfo.getLastMessage()))
+                .filter(msg -> msg.getSenderId() != null)
+                .map(lastMessage -> {
+                    // 2. 발신자 이름 획득
+                    String senderName = users.getUserNicknameOrUnknown(lastMessage.getSenderId());
+                    
+                    // 3. DTO 생성 및 반환
+                    return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
+                })
+                .orElse(null);
     }
 
     public List<MessageItem> getItems() {
