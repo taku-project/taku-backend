@@ -43,22 +43,35 @@ public class PublicEndpointFilter extends OncePerRequestFilter {
 
         // SecurityContext에서 인증 객체 확인
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         // TODO: jwt 인증 완료된 요청 처리 공통 함수 처리
         if (authentication != null && authentication.isAuthenticated()) {
             log.info("JWT 인증 완료된 요청: {}", authentication.getName());
         } else {
-
+            String accessToken = null;
             String authorizationHeader = request.getHeader("Authorization");
+
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                String accessToken = authorizationHeader.substring(7);
+                accessToken = authorizationHeader.substring(7);
+                log.info("Authorization 헤더에서 토큰 추출됨, {}", accessToken);
+
+            } else {
+
+                String registrationHeader = request.getHeader("X-Registration-Token");
+
+                if (registrationHeader != null && registrationHeader.startsWith("Bearer ")) {
+                    accessToken = registrationHeader.substring(7);
+                    log.info("X-Registration-Token 헤더에서 토큰 추출됨, {}", accessToken);
+                }
+            }
+            if (accessToken != null) {
 
                 try {
                     PrincipalUser principalUser = new PrincipalUser(jwtUtil.getUserFromToken(accessToken));
                     log.info("principalUser : {}", principalUser);
                     response.setHeader("Authorization", "Bearer " + accessToken);
                     SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(principalUser, null, null)
+                            new UsernamePasswordAuthenticationToken(principalUser, null, null)
                     );
 
                 } catch (ExpiredJwtException e) {
@@ -70,14 +83,15 @@ public class PublicEndpointFilter extends OncePerRequestFilter {
                     handleInvalidToken(response, e);
                     return;
                 }
-            }else{
+            } else {
                 log.info("anonymous user");
             }
         }
-        
+
         filterChain.doFilter(request, response);
     }
-        // 유효하지 않은 토큰 처리
+
+    // 유효하지 않은 토큰 처리
     private void handleInvalidToken(HttpServletResponse response, Exception e) throws IOException {
         log.error("유효하지 않은 토큰", e);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());

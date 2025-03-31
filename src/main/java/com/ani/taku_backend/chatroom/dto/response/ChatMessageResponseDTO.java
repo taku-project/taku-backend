@@ -2,6 +2,7 @@ package com.ani.taku_backend.chatroom.dto.response;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.util.ChatDateTimeFormatter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ public record ChatMessageResponseDTO(
         String senderId,
         String senderName,
         String content,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime sentAt,
         String formattedTime,
         Boolean read

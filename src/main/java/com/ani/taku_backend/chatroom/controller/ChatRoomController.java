@@ -51,7 +51,32 @@ public class ChatRoomController {
             @ApiResponse(
                     responseCode = "201",
                     description = "채팅방 생성 성공",
-                    content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+                    content = @Content(schema = @Schema(
+                        description = "생성된 채팅방 응답",
+                        implementation = Object.class,
+                        example = """
+                        {
+                          "success": true,
+                          "data": {
+                            "chatRoomId": 190,
+                            "wsRoomId": "2b642a78-e535-4973-bc02-a4c5f37b13a2",
+                            "articleId": 134,
+                            "buyerId": 70,
+                            "sellerId": 1,
+                            "buyerNickname": "예지_카카오",
+                            "sellerNickname": "업로드할 닉네임",
+                            "lastMessage": null,
+                            "createdAt": "2025-03-30 22:40:15",
+                            "updatedAt": "2025-03-30 22:40:15",
+                            "articleImageUrl": null,
+                            "unreadMessageCount": 0,
+                            "buyerProfileImageUrl": "https://example.com/image.jpg",
+                            "sellerProfileImageUrl": "https://example.com/image.png"
+                          },
+                          "error": null
+                        }
+                        """
+                    ))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -90,7 +115,59 @@ public class ChatRoomController {
             @ApiResponse(
                     responseCode = "200",
                     description = "채팅방 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+                    content = @Content(schema = @Schema(
+                        description = "채팅방 목록 페이징 응답",
+                        implementation = Object.class,
+                        example = """
+                        {
+                          "success": true,
+                          "data": {
+                            "content": [
+                              {
+                                "chatRoomId": 190,
+                                "wsRoomId": "2b642a78-e535-4973-bdc02-a4c5f37b13a2",
+                                "articleId": 134,
+                                "buyerId": 70,
+                                "sellerId": 1,
+                                "buyerNickname": "예지_카카오",
+                                "sellerNickname": "업로드할 닉네임",
+                                "lastMessage": null,
+                                "createdAt": "2025-03-30 22:40:15",
+                                "updatedAt": "2025-03-30 22:40:15",
+                                "articleImageUrl": null,
+                                "unreadMessageCount": 0,
+                                "buyerProfileImageUrl": "https://example.com/image.jpg",
+                                "sellerProfileImageUrl": "https://example.com/image.png"
+                              }
+                            ],
+                            "pageable": {
+                              "pageNumber": 0,
+                              "pageSize": 20,
+                              "sort": {
+                                "empty": false,
+                                "unsorted": false,
+                                "sorted": true
+                              },
+                              "offset": 0,
+                              "unpaged": false,
+                              "paged": true
+                            },
+                            "first": true,
+                            "last": false,
+                            "size": 20,
+                            "number": 0,
+                            "sort": {
+                              "empty": false,
+                              "unsorted": false,
+                              "sorted": true
+                            },
+                            "numberOfElements": 17,
+                            "empty": false
+                          },
+                          "error": null
+                        }
+                        """
+                    ))
             )
     })
     @GetMapping
@@ -120,7 +197,32 @@ public class ChatRoomController {
             @ApiResponse(
                     responseCode = "200",
                     description = "채팅방 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+                    content = @Content(schema = @Schema(
+                        description = "특정 채팅방 응답",
+                        implementation = Object.class,
+                        example = """
+                        {
+                          "success": true,
+                          "data": {
+                            "chatRoomId": 190,
+                            "wsRoomId": "2b642a78-e535-4973-bcffd02-a4c5f37b13a2",
+                            "articleId": 134,
+                            "buyerId": 70,
+                            "sellerId": 1,
+                            "buyerNickname": "예지_카카오",
+                            "sellerNickname": "업로드할 닉네임",
+                            "lastMessage": null,
+                            "createdAt": "2025-03-30 22:40:15",
+                            "updatedAt": "2025-03-30 22:40:15",
+                            "articleImageUrl": null,
+                            "unreadMessageCount": 0,
+                            "buyerProfileImageUrl": "https://example.com/image.jpg",
+                            "sellerProfileImageUrl": "https://example.com/image.png"
+                          },
+                          "error": null
+                        }
+                        """
+                    ))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -198,7 +300,32 @@ public class ChatRoomController {
             @ApiResponse(
                     responseCode = "200",
                     description = "메시지 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ChatMessageListResponseDTO.class))
+                    content = @Content(schema = @Schema(
+                        description = "채팅 메시지 목록 응답",
+                        implementation = Object.class,
+                        example = """
+                        {
+                          "success": true,
+                          "data": {
+                            "messages": [
+                              {
+                                "messageId": "67ce9212b316fff4eb79f3ae0",
+                                "chatRoomId": null,
+                                "wsRoomId": "47120e2b-b047-4bcd-bf38-10724d2e6808",
+                                "senderId": "70",
+                                "senderName": "예지_카카오",
+                                "content": "안녕하세요",
+                                "sentAt": "2025-03-10 16:17:38",
+                                "formattedTime": "3월 10일",
+                                "read": false
+                              }
+                            ],
+                            "hasMore": false
+                          },
+                          "error": null
+                        }
+                        """
+                    ))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -233,7 +360,34 @@ public class ChatRoomController {
             @ApiResponse(
                     responseCode = "200",
                     description = "채팅방 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+                    content = @Content(schema = @Schema(
+                        description = "판매 중인 채팅방 목록 응답",
+                        implementation = Object.class,
+                        example = """
+                        {
+                          "success": true,
+                          "data": [
+                            {
+                              "chatRoomId": 190,
+                              "wsRoomId": "2b642a78-e535-4973-bc02-a4c5f37b13g2",
+                              "articleId": 134,
+                              "buyerId": 70,
+                              "sellerId": 1,
+                              "buyerNickname": "예지_카카오",
+                              "sellerNickname": "업로드할 닉네임",
+                              "lastMessage": null,
+                              "createdAt": "2025-03-30 22:40:15",
+                              "updatedAt": "2025-03-30 22:40:15",
+                              "articleImageUrl": null,
+                              "unreadMessageCount": 0,
+                              "buyerProfileImageUrl": "https://example.com/image.jpg",
+                              "sellerProfileImageUrl": "https://example.com/image.png"
+                            }
+                          ],
+                          "error": null
+                        }
+                        """
+                    ))
             )
     })
     @GetMapping("/selling")
@@ -255,7 +409,34 @@ public class ChatRoomController {
             @ApiResponse(
                     responseCode = "200",
                     description = "채팅방 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ChatRoomResponseDTO.class))
+                    content = @Content(schema = @Schema(
+                        description = "구매 중인 채팅방 목록 응답",
+                        implementation = Object.class,
+                        example = """
+                        {
+                          "success": true,
+                          "data": [
+                            {
+                              "chatRoomId": 190,
+                              "wsRoomId": "2b642a78-e535-4973-bc02-a4c5f37b13a4",
+                              "articleId": 134,
+                              "buyerId": 70,
+                              "sellerId": 1,
+                              "buyerNickname": "예지_카카오",
+                              "sellerNickname": "업로드할 닉네임",
+                              "lastMessage": null,
+                              "createdAt": "2025-03-30 22:40:15",
+                              "updatedAt": "2025-03-30 22:40:15",
+                              "articleImageUrl": null,
+                              "unreadMessageCount": 0,
+                              "buyerProfileImageUrl": "https://example.com/image.jpg",
+                              "sellerProfileImageUrl": "https://example.com/image.png"
+                            }
+                          ],
+                          "error": null
+                        }
+                        """
+                    ))
             )
     })
     @GetMapping("/buying")

@@ -139,12 +139,11 @@ public class UserController {
 				throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
 			}
 		}
+		log.info("컨트롤러 검증 로직 저장");
 
 		// 유저 등록
 		User savedUser = this.userService.registerUser(userInfo);
-		String accessToken = jwtUtil.createAccessToken(savedUser);
-		// TODO : 바로 로그인한다면 토큰을 던져주고 , 바로로그인 안한면 아무것도 던지지 않을 예정
-		return CommonResponse.created(accessToken);
+		return CommonResponse.created(null);
 	}
 
 	
