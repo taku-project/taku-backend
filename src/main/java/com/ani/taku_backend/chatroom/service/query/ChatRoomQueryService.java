@@ -68,7 +68,7 @@ public class ChatRoomQueryService {
         // 2. 메타 정보 조회 및 사용자 접근 검증
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-                
+
         // 사용자가 채팅방을 나갔는지 확인 (비활성 상태 체크)
         validateMetaInfoAccess(chatRoom.getId(), userId);
 
@@ -76,12 +76,12 @@ public class ChatRoomQueryService {
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
         ChatRoomMessages lastMessages = ChatRoomMessages.of(chatRoom.getId(), metaInfo.getLastMessage());
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.of(chatRoom.getId(), metaInfo.getUnreadCount(userId));
-        
+
         // 상품 이미지와 상품 정보 조회
         Long articleId = chatRoom.getArticleId();
         ArticleImage articleImage = findArticleImage(List.of(articleId));
         ArticleInfo articleInfo = findArticleInfos(List.of(articleId));
-        
+
         // 4. DTO 생성 및 반환
         return createChatRoomResponseDTO(
                 chatRoom,
@@ -98,7 +98,7 @@ public class ChatRoomQueryService {
 
     /**
      * 사용자의 채팅방 목록을 페이징하여 조회합니다(무한 스크롤).
-     * 
+     *
      * @param userId 사용자 ID
      * @param pageable 페이징 정보
      * @return 채팅방 응답 DTO 목록의 Slice
@@ -110,10 +110,10 @@ public class ChatRoomQueryService {
         if (!chatRooms.hasContent()) {
             return new SliceImpl<>(Collections.emptyList(), pageable, false);
         }
-        
+
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms.getContent());
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms.getContent());
-        
+
         // 1. 상품 정보 효율적으로 조회
         ArticleInfo articleInfo = findArticleInfos(articleIds);
 
@@ -124,7 +124,7 @@ public class ChatRoomQueryService {
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
         ArticleImage articleImage = findArticleImage(articleIds);
         ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms.getContent());
-        
+
         // 3. DTO 변환
         List<ChatRoomResponseDTO> responseDTOs = chatRooms.getContent().stream()
                 .map(room -> {
@@ -132,7 +132,7 @@ public class ChatRoomQueryService {
                     Long articleId = room.getArticleId();
                     String title = articleInfo.getTitle(articleId);
                     BigDecimal price = articleInfo.getPrice(articleId);
-                    
+
                     return createChatRoomResponseDTO(
                             room,
                             metaInfos.getMetaInfo(room.getId()).orElse(null),
@@ -146,7 +146,7 @@ public class ChatRoomQueryService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        
+
         return new SliceImpl<>(responseDTOs, pageable, chatRooms.hasNext());
     }
 
@@ -161,7 +161,7 @@ public class ChatRoomQueryService {
             return null;
         }
     }
-    
+
     /**
      * 읽지 않은 메시지 수 조회
      */
@@ -182,7 +182,17 @@ public class ChatRoomQueryService {
             ArticleImage articleImage,
             String articleName,
             BigDecimal articlePrice) {
-        
+
+        String imageUrl = null;
+        try {
+            if (articleImage != null && chatRoom.getArticleId() != null) {
+                imageUrl = articleImage.getImageUrl(chatRoom.getArticleId());
+            }
+        } catch (Exception e) {
+            log.warn("상품 이미지 URL 조회 중 오류 발생: articleId={}, error={}",
+                     chatRoom.getArticleId(), e.getMessage());
+        }
+
         return ChatRoomResponseDTO.builder()
                 .chatRoomId(chatRoom.getId())
                 .wsRoomId(chatRoom.getWsRoomId())
@@ -194,7 +204,7 @@ public class ChatRoomQueryService {
                 .lastMessage(getLastMessage(chatRoom.getId(), lastMessages, chatRoom.getWsRoomId(), users))
                 .createdAt(chatRoom.getCreatedAt())
                 .updatedAt(chatRoom.getUpdatedAt())
-                .articleImageUrl(articleImage.getImageUrl(chatRoom.getArticleId()))
+                .articleImageUrl(imageUrl)
                 .unreadMessageCount(unreadCounts.getUnreadCount(chatRoom.getId()))
                 .buyerProfileImageUrl(users.getUserProfileImage(chatRoom.getBuyer() != null ? chatRoom.getBuyer().getUserId() : null))
                 .sellerProfileImageUrl(users.getUserProfileImage(chatRoom.getSeller() != null ? chatRoom.getSeller().getUserId() : null))
@@ -208,20 +218,20 @@ public class ChatRoomQueryService {
 
         // 1. 채팅방 조회
         ChatRoom chatRoom = findChatRoomByWsRoomId(wsRoomId);
-        
+
         // 2. 채팅방 상태 및 사용자 권한 검증
         chatRoom.validateStatus();
         chatRoom.validateUserAccess(userId);
-        
+
         // 3. 메타 정보 검증
         validateMetaInfoAccess(chatRoom.getId(), userId);
-        
+
         return chatRoom;
     }
-    
+
     /**
      * WebSocket 룸 ID로 채팅방을 조회합니다.
-     * 
+     *
      * @param wsRoomId WebSocket 룸 ID
      * @return 조회된 채팅방
      * @throws DuckwhoException 채팅방을 찾을 수 없는 경우
@@ -231,10 +241,10 @@ public class ChatRoomQueryService {
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
     }
 
-    
+
     /**
      * 채팅방 메타 정보의 접근 권한을 검증합니다.
-     * 
+     *
      * @param chatRoomId 채팅방 ID
      * @param userId 사용자 ID
      * @throws DuckwhoException 메타 정보를 찾을 수 없거나 접근 권한이 없는 경우
@@ -242,10 +252,10 @@ public class ChatRoomQueryService {
     private void validateMetaInfoAccess(Long chatRoomId, Long userId) {
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-                
+
         // 1. 기본 사용자 권한 검증
         metaInfo.validateUserAccess(userId);
-        
+
         // 2. 사용자가 채팅방을 나갔는지 확인 (비활성 상태 체크)
         if (!metaInfo.getParticipants().isParticipantActive(userId)) {
             throw new DuckwhoException(ErrorCode.CHAT_ROOM_LEFT_USER);
@@ -275,10 +285,10 @@ public class ChatRoomQueryService {
 
         List<Long> chatRoomIds = ChatRoom.extractChatRoomIds(chatRooms);
         List<Long> articleIds = ChatRoom.extractArticleIds(chatRooms);
-        
+
         // 1. 상품 정보 조회
         ArticleInfo articleInfo = findArticleInfos(articleIds);
-        
+
         // 2. 필요한 데이터 개별 준비
         ChatRoomMetaInfoData metaInfoData = getChatRoomMetaInfoData(chatRoomIds, userId);
         ChatRoomMetaInfos metaInfos = metaInfoData.getMetaInfos();
@@ -286,7 +296,7 @@ public class ChatRoomQueryService {
         UnreadMessageCounts unreadCounts = metaInfoData.getUnreadCounts();
         ArticleImage articleImage = findArticleImage(articleIds);
         ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms);
-        
+
         // 3. DTO 변환
         return chatRooms.stream()
                 .map(room -> {
@@ -294,7 +304,7 @@ public class ChatRoomQueryService {
                     Long articleId = room.getArticleId();
                     String title = articleInfo.getTitle(articleId);
                     BigDecimal price = articleInfo.getPrice(articleId);
-                    
+
                     return createChatRoomResponseDTO(
                             room,
                             metaInfos.getMetaInfo(room.getId()).orElse(null),
@@ -317,16 +327,16 @@ public class ChatRoomQueryService {
         }
 
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findMetaInfoWithLastMessages(chatRoomIds);
-        
+
         // 해당 사용자가 활성 상태인 채팅방만 필터링
         metaInfos = metaInfos.stream()
                 .filter(metaInfo -> metaInfo.getParticipants().isParticipantActive(userId))
                 .collect(Collectors.toList());
-        
+
         if (metaInfos.isEmpty()) {
             return ChatRoomMetaInfoData.empty();
         }
-        
+
         ChatRoomMessages lastMessages = ChatRoomMessages.fromMetaInfos(metaInfos);
         UnreadMessageCounts unreadCounts = UnreadMessageCounts.fromMetaInfos(metaInfos, userId, chatRoomIds);
 
@@ -340,17 +350,17 @@ public class ChatRoomQueryService {
         if (articleIds.isEmpty()) {
             return ArticleImage.empty();
         }
-        
+
         // 중복 제거 및 null 필터링
         List<Long> distinctArticleIds = articleIds.stream()
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-        
+
         if (distinctArticleIds.isEmpty()) {
             return ArticleImage.empty();
         }
-        
+
         // 모든 상품 이미지 조회
         List<ProductImageDTO> productImages = duckuJangterRepository.findProductImagesById(distinctArticleIds);
         return ArticleImage.fromProductImageDTOs(productImages);
@@ -358,7 +368,7 @@ public class ChatRoomQueryService {
 
     /**
      * 사용자의 모든 채팅방 목록을 조회합니다.
-     * 
+     *
      * @param userId 사용자 ID
      * @return 채팅방 응답 DTO 목록
      */
@@ -371,22 +381,22 @@ public class ChatRoomQueryService {
         if (chatRoomId == null || lastMessages == null) {
             return null;
         }
-        
+
         try {
             Optional<ChatMessage> messageOpt = lastMessages.getLastMessage(chatRoomId);
             if (messageOpt.isEmpty()) {
                 return null;
             }
-            
+
             ChatMessage lastMessage = messageOpt.get();
             if (lastMessage == null || lastMessage.getSenderId() == null) {
                 return null;
             }
-            
-            String senderName = users != null 
+
+            String senderName = users != null
                 ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
                 : MessageConstants.UNKNOWN_USER;
-            
+
             return ChatMessageResponseDTO.from(lastMessage, senderName, wsRoomId);
         } catch (Exception e) {
             log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
@@ -402,8 +412,7 @@ public class ChatRoomQueryService {
         if (articleIds == null || articleIds.isEmpty()) {
             return ArticleInfo.empty();
         }
-        
-        // QueryDSL 기반 효율적인 조회 사용
+
         List<ArticleInfoDTO> articleInfoDTOs = duckuJangterRepository.findArticleInfosByIds(articleIds);
         return ArticleInfo.from(articleInfoDTOs);
     }
