@@ -141,19 +141,4 @@ public class ChatRoomDtoConverter {
         }
     }
 
-    /**
-     * 채팅방 엔티티와 관련 정보를 DTO로 변환합니다.
-     * 상품 정보(DuckuJangter)를 포함하여 변환합니다.
-     */
-    public ChatRoomResponseDTO toChatRoomResponseDto(
-            ChatRoom chatRoom,
-            ChatRoomMetaInfo metaInfo,
-            ChatRoomUsers users,
-            ChatRoomMessages lastMessages,
-            UnreadMessageCounts unreadCounts,
-            ArticleImage articleImage,
-            DuckuJangter article) {
-        return toChatRoomResponseDTO(
-                chatRoom, metaInfo, users, lastMessages, unreadCounts, articleImage, article);
-    }
 }

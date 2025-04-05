@@ -89,7 +89,7 @@ public class ArticleImage {
         
         return imageItems.stream()
             .filter(Objects::nonNull)
-            .filter(item -> articleId.equals(item.getArticleId()))
+            .filter(item -> Objects.equals(articleId, item.getArticleId()))
             .map(ArticleImageItem::getImageUrl)
             .findFirst()
             .orElse(null);

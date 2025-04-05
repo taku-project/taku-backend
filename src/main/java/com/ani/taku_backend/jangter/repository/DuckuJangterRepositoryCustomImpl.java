@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.jangter.model.dto.ArticleInfoDTO;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
@@ -294,5 +295,31 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                 .fetch();
     }
 
+    @Override
+    public List<ArticleInfoDTO> findArticleInfosByIds(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QJangterImages jangterImages = QJangterImages.jangterImages;
+
+        return queryFactory
+                .select(Projections.constructor(
+                        ArticleInfoDTO.class,
+                        duckuJangter.id,
+                        duckuJangter.title,
+                        duckuJangter.price,
+                        jangterImages.image.imageUrl
+                ))
+                .from(duckuJangter)
+                .leftJoin(duckuJangter.jangterImages, jangterImages)
+                .where(
+                        duckuJangter.id.in(productIds),
+                        duckuJangter.deletedAt.isNull()
+                )
+                .groupBy(duckuJangter.id)  // 각 상품 ID당 하나의 결과만 반환
+                .fetch();
+    }
 
 }

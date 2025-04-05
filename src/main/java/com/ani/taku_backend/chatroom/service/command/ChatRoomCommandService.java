@@ -8,6 +8,7 @@ import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
 import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
+import com.ani.taku_backend.chatroom.domain.vo.ArticleInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
@@ -73,13 +74,26 @@ public class ChatRoomCommandService {
 
         ChatRoomMetaInfo metaInfo = createAndSaveChatRoomMetaInfo(savedRoom.getId(), requestDto.buyerId(), sellerId);
 
+        // 상품 이미지 조회
+        ArticleImage articleImage = ArticleImage.fromProductImageDTOs(
+                duckuJangterRepository.findProductImagesById(List.of(requestDto.articleId())));
+                
+        // 상품 정보 조회
+        ArticleInfo articleInfo = ArticleInfo.from(
+                duckuJangterRepository.findArticleInfosByIds(List.of(requestDto.articleId())));
+                
+        String articleName = articleInfo.getTitle(requestDto.articleId());
+        java.math.BigDecimal articlePrice = articleInfo.getPrice(requestDto.articleId());
+
         return chatRoomQueryService.createChatRoomResponseDTO(
                 savedRoom,
                 metaInfo,
                 ChatRoomUsers.of(buyer, seller),
                 ChatRoomMessages.empty(),
                 UnreadMessageCounts.of(savedRoom.getId(), 0),
-                ArticleImage.fromProductImageDTOs(duckuJangterRepository.findProductImagesById(List.of(requestDto.articleId())))
+                articleImage,
+                articleName,
+                articlePrice
         );
     }
 
