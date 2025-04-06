@@ -5,13 +5,14 @@ import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -43,9 +44,17 @@ public class ChatMessage {
     @Column(name = "status")
     private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
+    /**
+     * 채팅 메시지를 생성합니다.
+     * 
+     * 참고: 메시지에 명시적으로 UUID를 할당하는 이유
+     * 1. 채팅 메시지는 ChatRoomMetaInfo 내부에 임베디드 문서로 저장됨
+     * 2. MongoDB는 임베디드 문서에 자동으로 ID를 생성하지 않음 (최상위 문서만 자동 생성)
+     * 3. 모든 메시지에 고유 ID를 보장하기 위해 UUID 사용
+     */
     public static ChatMessage of(Long roomId, Long articleId, Long senderId, String content) {
         return new ChatMessage(
-                null, // MongoDB의 경우 ID는 자동 생성
+                UUID.randomUUID().toString(), // 명시적으로 UUID 생성하여 메시지 ID 할당
                 roomId,
                 articleId,
                 senderId,
@@ -55,7 +64,6 @@ public class ChatMessage {
                 ChatRoomStatus.ACTIVE // 기본 상태
         );
     }
-
 
     /**
      * 메시지를 읽음 상태로 표시합니다.
