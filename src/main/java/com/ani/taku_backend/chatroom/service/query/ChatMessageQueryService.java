@@ -3,15 +3,19 @@ package com.ani.taku_backend.chatroom.service.query;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
+import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,10 +37,12 @@ public class ChatMessageQueryService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final ChatRoomQueryService chatRoomQueryService;
+    private final UserRepository userRepository;
 
     /**
      * 채팅방의 메시지를 조회합니다.
      * messageId가 없으면 최신 메시지를, 있으면 해당 메시지 이전의 메시지를 반환합니다.
+     * 발신자 이름 정보가 포함된 메시지 DTO를 반환합니다.
      */
     public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
@@ -60,9 +66,21 @@ public class ChatMessageQueryService {
             }
         }
 
+        // 사용자 정보 로드 (메시지 발신자 이름 표시용)
+        ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
+        
+        // 발신자 이름이 포함된 응답 DTO 생성
+        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+                .map(message -> {
+                    Long senderId = message.getSenderId();
+                    String senderName = users.getUserNicknameOrUnknown(senderId);
+                    return ChatMessageResponseDTO.from(message, senderName, wsRoomId);
+                })
+                .collect(Collectors.toList());
+
         boolean hasMore = messages.size() >= limit;
 
-        return new ChatMessageListResponseDTO(ChatMessage.toResponseDTOList(messages), hasMore);
+        return new ChatMessageListResponseDTO(messageDTOs, hasMore);
     }
 
     /**

@@ -11,7 +11,7 @@ public record ChatMessageResponseDTO(
         String messageId,
         Long chatRoomId,
         String wsRoomId,
-        String senderId,
+        Long senderId,
         String senderName,
         String content,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -27,7 +27,7 @@ public record ChatMessageResponseDTO(
         return ChatMessageResponseDTO.builder()
                 .messageId(message.getId())
                 .chatRoomId(message.getChatRoomId())
-                .senderId(String.valueOf(message.getSenderId()))
+                .senderId(message.getSenderId())
                 .content(message.getContent())
                 .sentAt(message.getSentAt())
                 .formattedTime(ChatDateTimeFormatter.formatMessageTime(message.getSentAt()))
@@ -45,7 +45,7 @@ public record ChatMessageResponseDTO(
                 .messageId(message.getId())
                 .chatRoomId(message.getChatRoomId())
                 .wsRoomId(wsRoomId)
-                .senderId(String.valueOf(message.getSenderId()))
+                .senderId(message.getSenderId())
                 .senderName(senderName)
                 .content(message.getContent())
                 .sentAt(message.getSentAt())
