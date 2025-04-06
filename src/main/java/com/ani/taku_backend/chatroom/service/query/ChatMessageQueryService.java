@@ -45,7 +45,8 @@ public class ChatMessageQueryService {
      * 발신자 이름 정보가 포함된 메시지 DTO를 반환합니다.
      */
     public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
-        ChatRoom chatRoom = chatRoomRepository.findByWsRoomId(wsRoomId)
+
+        ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
         ChatRoomMetaInfo metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoom.getId())
