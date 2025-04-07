@@ -16,6 +16,7 @@ public class ProductFindListRequestDTO {
     @Schema(description = "정렬 기준 오른차순 (asc) 내림 차순(desc)", example = "asc")
     private String order;
 
+
     @Schema(description = "마지막으로 본 id", example = "0")
     private Long lastId;
 

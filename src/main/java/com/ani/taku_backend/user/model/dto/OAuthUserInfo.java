@@ -61,8 +61,8 @@ public class OAuthUserInfo {
         OAuthUserInfo userInfo = new OAuthUserInfo();
         userInfo.email = claims.get("email", String.class);
         userInfo.domesticId = claims.get("id", String.class);
-        userInfo.nickname = claims.get("name", String.class);
-        userInfo.imageUrl = claims.get("picture", String.class);
+        userInfo.nickname = claims.get("nickname", String.class);
+        userInfo.imageUrl = claims.get("profile_image_url", String.class);
         userInfo.gender = claims.get("gender", String.class);
         userInfo.ageRange = claims.get("age_range", String.class);
         userInfo.providerType = ProviderType.GOOGLE;

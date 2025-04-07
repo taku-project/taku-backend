@@ -139,11 +139,10 @@ public class UserController {
 				throw new DuckwhoException(ErrorCode.FILE_UPLOAD_ERROR);
 			}
 		}
+		log.info("컨트롤러 검증 로직 저장");
 
 		// 유저 등록
 		User savedUser = this.userService.registerUser(userInfo);
-
-		// TODO : 바로 로그인한다면 토큰을 던져주고 , 바로로그인 안한면 아무것도 던지지 않을 예정
 		return CommonResponse.created(null);
 	}
 
@@ -185,6 +184,7 @@ public class UserController {
 		Optional<User> user = this.userService.findByUserIdAndStatus(userId, UserStatus.ACTIVE);
 		user.orElseThrow(() -> new UserException.UserNotFoundException("존재 하지 않거나,이미 삭제된 유저입니다."));
 
+
 		// 유저 삭제
 		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), UserStatus.INACTIVE);
 		if(updateUserStatus == 0) {
@@ -201,7 +201,7 @@ public class UserController {
 			description = "유저 프로필, 닉네임, 성별, 나이대 조회"
 	)
 	@Parameters({@Parameter(name="userId", description = "유저 개인 id")})
-	public CommonResponse<UserDetailDTO>findUserDetail(@PathVariable Long userId){
+	public CommonResponse<UserDetailDTO> findUserDetail(@PathVariable Long userId){
 
 		UserDetailDTO userDetail = userService.getUserDetail(userId);
 
@@ -217,7 +217,7 @@ public class UserController {
 			summary = "유저 정보 수정",
 			description = "유저 프로필, 닉네임 정보 수정"
 	)
-	public CommonResponse<String>editUserDetail(@PathVariable Long userId
+	public CommonResponse<String> editUserDetail(@PathVariable Long userId
 		 , @RequestPart(value = "image", required = false) MultipartFile multipartFile,  @RequestPart("request") UserEditDTO request
 
 	){

@@ -24,7 +24,6 @@ import com.ani.taku_backend.jangter.model.dto.requestDto.ProductFindListRequestD
 import com.ani.taku_backend.jangter.model.dto.requestDto.ProductStatusUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.dto.responseDto.ProductFindListResponseDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangterBookmark;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.model.entity.JangterImages;
 import com.ani.taku_backend.jangter.model.entity.UserInteraction;
@@ -105,6 +104,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
     public List<ProductFindListResponseDTO> getProducts(ProductFindListRequestDTO request) {
 
         return duckuJangterRepository.findFilteredProducts(request);
+
     }
 
 
@@ -513,7 +513,7 @@ public class DuckuJangterServiceImpl implements DuckuJangterService {
 
 
             // 월간 랭킹 조회 (yyyy-MM 형식)
-            String monthlyPeriodKey = String.format("%d-%02d", now.getYear(), now.getMonthValue());
+            String monthlyPeriodKey = String.format("%d-%02d", now.getYear(), now.getMonthValue() - 1);
             List<JangterRankBase> monthlyRanks = jangterRankBaseRepository.findRanksByPeriodTypeAndDateRange(
                 PeriodType.MONTH,
                 monthlyPeriodKey

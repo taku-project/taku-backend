@@ -2,6 +2,7 @@ package com.ani.taku_backend.jangter.repository;
 
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.jangter.model.dto.ArticleInfoDTO;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
@@ -58,20 +59,21 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                         duckuJangter.id,
                         duckuJangter.title,
                         duckuJangter.price,
-                        jangterImages.image.imageUrl, // 이미지 컬렉션을 조인한 후 첫 번째 이미지 URL을 가져옴
+                        jangterImages.image.imageUrl,
                         duckuJangter.user.nickname,
-                        duckuJangter.viewCount
+                        duckuJangter.viewCount,
+                        duckuJangter.status
                 ))
                 .from(duckuJangter)
                 .leftJoin(duckuJangter.jangterImages, jangterImages)
                 .leftJoin(jangterImages.image, image)
                 .join(duckuJangter.user, user)
                 .join(duckuJangter.itemCategories, itemCategories)
-                 // left join을 사용하여 이미지 컬렉션을 안전하게 가져옴
                 .where(
                         duckuJangter.deletedAt.isNull(),
                         applyFilters(keyword, categoryId, minPrice, maxPrice),
                         applyPaginationCondition(sort, order, lastId))
+                .groupBy(duckuJangter.id)
                 .orderBy(buildOrder(sort,order))
                 .limit(limit)
                 .fetch();
@@ -84,7 +86,7 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
     private BooleanExpression applyFilters(String keyword, Long categoryId, Integer minPrice, Integer maxPrice) {
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
 
-        BooleanExpression predicate = duckuJangter.deletedAt.isNull(); // 기본 조건
+        BooleanExpression predicate = duckuJangter.deletedAt.isNull();
 
         if (StringUtils.hasText(keyword)) {
             predicate = predicate.and(
@@ -93,24 +95,20 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
             );
         }
 
-        if(categoryId==0){}else{
+        if(categoryId!=0) {
             predicate = predicate.and(duckuJangter.itemCategories.id.eq(categoryId));
-
         }
 
-        if (minPrice == null){}else{
-
+        if(minPrice != null) {
             predicate = predicate.and(duckuJangter.price.goe(minPrice));
         }
 
-        if (maxPrice == null){}else {
+        if(maxPrice == null) {
             predicate = predicate.and(duckuJangter.price.loe(maxPrice));
         }
 
         return predicate;
     }
-
-
 
     private BooleanExpression applyPaginationCondition(String sort, String order, Long lastId) {
         QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
@@ -127,16 +125,16 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                     .where(duckuJangter.id.eq(lastId))
                     .fetchOne();
 
-
-
             // 같은 price인 경우 id로 정렬
             if (sortOrder == Order.ASC) {
                 if (lastPrice == null) {
                     lastPrice = BigDecimal.ZERO;
                 }
                 return duckuJangter.price.gt(lastPrice)
-                        .or(duckuJangter.price.eq(lastPrice)
-                                .and(duckuJangter.id.gt(lastId)));
+                        .or(
+                            duckuJangter.price.eq(lastPrice)
+                            .and(duckuJangter.id.gt(lastId))
+                        );
             } else {
                 if (lastPrice == null) {
                     lastPrice = new BigDecimal(Long.MAX_VALUE);
@@ -159,12 +157,16 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
             // 같은 createdAt인 경우 id로 정렬
             if (sortOrder == Order.ASC) {
                 return duckuJangter.createdAt.gt(lastCreatedAt)
-                        .or(duckuJangter.createdAt.eq(lastCreatedAt)
-                                .and(duckuJangter.id.gt(lastId)));
+                        .or(
+                            duckuJangter.createdAt.eq(lastCreatedAt)
+                            .and(duckuJangter.id.gt(lastId))
+                        );
             } else {
                 return duckuJangter.createdAt.lt(lastCreatedAt)
-                        .or(duckuJangter.createdAt.eq(lastCreatedAt)
-                                .and(duckuJangter.id.gt(lastId)));
+                        .or(
+                            duckuJangter.createdAt.eq(lastCreatedAt)
+                            .and(duckuJangter.id.gt(lastId))
+                        );
             }
         }
 
@@ -217,17 +219,14 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
 
         List<DuckuJangter> fetch = this.queryFactory.selectFrom(duckuJangter)
                 .where(
-                        titleConditions,
-                        duckuJangter.price.between(minPrice, maxPrice),
-                        duckuJangter.itemCategories.id.eq(itemCategoryId),
-                        duckuJangter.status.eq(status),
-                        duckuJangter.id.ne(productId)
+                    titleConditions,
+                    duckuJangter.price.between(minPrice, maxPrice),
+                    duckuJangter.itemCategories.id.eq(itemCategoryId),
+                    duckuJangter.status.eq(status),
+                    duckuJangter.id.ne(productId)
                 )
                 .distinct()
                 .fetch();
-
-        log.info("fetch : {}", fetch);
-
         return fetch;
     }
 
@@ -237,10 +236,14 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         QItemCategories itemCategories = QItemCategories.itemCategories;
 
         return queryFactory
-                .select(Projections.constructor(CategoryGroupCountDTO.class,
+                .select(
+                    Projections.constructor(
+                        CategoryGroupCountDTO.class,
                         itemCategories.id,
                         itemCategories.name,
-                        duckuJangter.count()))
+                        duckuJangter.count()
+                    )
+                )
                 .from(duckuJangter)
                 .leftJoin(duckuJangter.itemCategories, itemCategories)
                 .where(duckuJangter.deletedAt.isNull())
@@ -255,10 +258,14 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         QDuckuJangterBookmark duckuJangterBookmark = QDuckuJangterBookmark.duckuJangterBookmark;
 
         return queryFactory
-                .select(Projections.constructor(ProductViewAndBookmarkDTO.class,
+                .select(
+                    Projections.constructor(
+                        ProductViewAndBookmarkDTO.class,
                         duckuJangter.id,
                         duckuJangter.viewCount,
-                        duckuJangterBookmark.isNotNull()))
+                        duckuJangterBookmark.isNotNull()
+                    )
+                )
                 .from(duckuJangter)
                 .leftJoin(duckuJangterBookmark)
                 .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
@@ -273,10 +280,14 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
         QDuckuJangterBookmark duckuJangterBookmark = QDuckuJangterBookmark.duckuJangterBookmark;
 
         return queryFactory
-                .select(Projections.constructor(ProductViewAndBookmarkDTO.class,
+                .select(
+                    Projections.constructor(
+                        ProductViewAndBookmarkDTO.class,
                         duckuJangter.id,
                         duckuJangter.viewCount,
-                        duckuJangterBookmark.isNotNull()))
+                        duckuJangterBookmark.isNotNull()
+                    )
+                )
                 .from(duckuJangter)
                 .leftJoin(duckuJangterBookmark)
                 .on(duckuJangter.id.eq(duckuJangterBookmark.jangter.id))
@@ -284,5 +295,31 @@ public class DuckuJangterRepositoryCustomImpl implements DuckuJangterRepositoryC
                 .fetch();
     }
 
+    @Override
+    public List<ArticleInfoDTO> findArticleInfosByIds(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        QDuckuJangter duckuJangter = QDuckuJangter.duckuJangter;
+        QJangterImages jangterImages = QJangterImages.jangterImages;
+
+        return queryFactory
+                .select(Projections.constructor(
+                        ArticleInfoDTO.class,
+                        duckuJangter.id,
+                        duckuJangter.title,
+                        duckuJangter.price,
+                        jangterImages.image.imageUrl
+                ))
+                .from(duckuJangter)
+                .leftJoin(duckuJangter.jangterImages, jangterImages)
+                .where(
+                        duckuJangter.id.in(productIds),
+                        duckuJangter.deletedAt.isNull()
+                )
+                .groupBy(duckuJangter.id)  // 각 상품 ID당 하나의 결과만 반환
+                .fetch();
+    }
 
 }

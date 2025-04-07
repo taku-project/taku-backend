@@ -1,6 +1,7 @@
 package com.ani.taku_backend.jangter.repository;
 
 
+import com.ani.taku_backend.jangter.model.dto.ArticleInfoDTO;
 import com.ani.taku_backend.jangter.model.dto.CategoryGroupCountDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductViewAndBookmarkDTO;
 import com.ani.taku_backend.jangter.model.dto.requestDto.FindRecommendFilteredProductsRequestDTO;
@@ -27,5 +28,13 @@ public interface DuckuJangterRepositoryCustom{
     List<ProductViewAndBookmarkDTO> findProductViewAndBookmark(Long categoryId);
 
     List<ProductViewAndBookmarkDTO> findProductViewAndBookmarkByProductId(Long productId);
+    
+    /**
+     * 상품 ID 목록으로 채팅방에 필요한 간결한 상품 정보를 조회합니다.
+     *
+     * @param productIds 상품 ID 목록
+     * @return 채팅방에 필요한 상품 정보 목록
+     */
+    List<ArticleInfoDTO> findArticleInfosByIds(List<Long> productIds);
 
 }

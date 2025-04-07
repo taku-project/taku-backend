@@ -57,6 +57,8 @@ public class JwtUtil {
                 claims.put("nickname", attributes.get("name"));
                 claims.put("profile_image_url", attributes.get("picture"));
                 claims.put("type", "TEMPORARY");
+                claims.put("role", UserRole.USER.name());
+                claims.put("status", UserStatus.ACTIVE.name());
                 break;
             case KAKAO:
                 // 카카오 계정 정보 추출
@@ -72,6 +74,8 @@ public class JwtUtil {
                 claims.put("nickname", profile.get("nickname"));
                 claims.put("profile_image_url", profile.get("profile_image_url"));
                 claims.put("type", "TEMPORARY");
+                claims.put("role", UserRole.USER.name());
+                claims.put("status", UserStatus.ACTIVE.name());
                 break;
         }
         
