@@ -182,9 +182,8 @@ public class UserController {
 
 		// 유저 조회 
 		Optional<User> user = this.userService.findByUserIdAndStatus(userId, UserStatus.ACTIVE);
-		user.orElseThrow(() -> {
-			return new UserException.UserNotFoundException("존재 하지 않거나,이미 삭제된 유저입니다.");
-		});
+		user.orElseThrow(() -> new UserException.UserNotFoundException("존재 하지 않거나,이미 삭제된 유저입니다."));
+
 
 		// 유저 삭제
 		int updateUserStatus = this.userService.updateUserStatus(user.get().getUserId(), UserStatus.INACTIVE);

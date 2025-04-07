@@ -1,13 +1,10 @@
 package com.ani.taku_backend.shorts_interaction.controller;
 
-import com.ani.taku_backend.common.exception.DuckwhoException;
-import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.shorts_interaction.domain.dto.CreateShortsViewDTO;
 import com.ani.taku_backend.shorts_interaction.domain.dto.req.CreateShortsViewReqDTO;
 import com.ani.taku_backend.shorts_interaction.service.InteractionService;
 import com.ani.taku_backend.user.model.dto.PrincipalUser;
-import com.ani.taku_backend.user.model.entity.BlackUser;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.service.BlackUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,8 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Tag(name = "Shorts 상호작용 API", description = "Shorts 관련 좋아요, 싫어요 등 상호작용 API")
 @Validated
@@ -46,7 +41,6 @@ public class ShortsInteractionController {
     public CommonResponse<Void> addLike(@AuthenticationPrincipal PrincipalUser userPrincipal,
                                         @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
         User user = userPrincipal.getUser();
-        validateBlackUser(user.getUserId());
 
         interactionService.addLike(user, shortsId);
 
@@ -63,7 +57,6 @@ public class ShortsInteractionController {
     public CommonResponse<Void> cancelLike(@AuthenticationPrincipal PrincipalUser userPrincipal,
                                            @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
         User user = userPrincipal.getUser();
-        validateBlackUser(user.getUserId());
 
         interactionService.cancelLike(user, shortsId);
 
@@ -81,7 +74,6 @@ public class ShortsInteractionController {
                                            @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId,
                                            @Valid @RequestBody CreateShortsViewReqDTO createShortsViewReqDTO) {
         User user = userPrincipal.getUser();
-        validateBlackUser(user.getUserId());
 
         CreateShortsViewDTO createShortsViewDTO = CreateShortsViewDTO.builder()
                 .shortsId(shortsId)
@@ -104,7 +96,6 @@ public class ShortsInteractionController {
                                            @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId
     ) {
         User user = userPrincipal.getUser();
-        validateBlackUser(user.getUserId());
 
         interactionService.addDislike(user, shortsId);
 
@@ -121,17 +112,9 @@ public class ShortsInteractionController {
     public CommonResponse<Void> cancelDislike(@AuthenticationPrincipal PrincipalUser userPrincipal,
                                               @Parameter(description = "쇼츠 아이디", required = true) @PathVariable("shortsId") String shortsId) {
         User user = userPrincipal.getUser();
-        validateBlackUser(user.getUserId());
 
         interactionService.cancelDislike(user, shortsId);
 
         return CommonResponse.ok(null);
-    }
-
-    private void validateBlackUser(Long userId) {
-        List<BlackUser> blackUser = blackUserService.findByUserId(userId);
-        if(!blackUser.isEmpty()) {
-            throw new DuckwhoException(ErrorCode.BLACK_USER);
-        }
     }
 }

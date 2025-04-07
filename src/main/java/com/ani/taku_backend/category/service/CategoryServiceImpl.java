@@ -47,7 +47,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryBookmarkRepository categoryBookmarkRepository;
     private final AnimationGenreRepository animationGenreRepository;
     private final ImageService imageService;
-    private final BlackUserService blackUserService;
     private final ModelMapper modelMapper;
     private final RemoteFileServiceFactory remoteFileServiceFactory;
 
@@ -71,9 +70,6 @@ public class CategoryServiceImpl implements CategoryService {
         // 카테고리 이름 검증
         validateCategoryName(requestCategoryCreateDTO.getName());
 
-        // 블랙리스트 검증을 먼저 수행
-        validateBlackUser(user.getUserId());
-        
         // 이미지 처리
         String contentType = uploadFile.getContentType();
         RemoteFileService remoteFileService = remoteFileServiceFactory.getService(contentType);
@@ -161,17 +157,6 @@ public class CategoryServiceImpl implements CategoryService {
             if (similarity >= StringSimilarity.SIMILARITY_THRESHOLD) {
                 throw new DuckwhoException(ErrorCode.DUPLICATE_CATEGORY_NAME);
             }
-        }
-    }
-
-    /** TODO : AOP로 변경필요
-     * 블랙리스트 검증
-     * @param userId
-     */
-    private void validateBlackUser(Long userId) {
-        List<BlackUser> blackUser = blackUserService.findByUserId(userId);
-        if(!blackUser.isEmpty()) {
-            throw new DuckwhoException(ErrorCode.BLACK_USER);
         }
     }
 
