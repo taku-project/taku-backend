@@ -38,6 +38,18 @@ jobs:
         run: |
           cp -r repo2/* repo1/src/main/resources/
           ls repo1/src/main/resources/
+      
+      # Gradle 의존성 캐싱 설정
+      - name: Setup Gradle Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            repo1/.gradle/caches
+            repo1/.gradle/wrapper
+            repo1/build/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('repo1/**/*.gradle*', 'repo1/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
      # (4) Gradle Build
       - name: Gradle build
