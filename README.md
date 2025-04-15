@@ -1,29 +1,24 @@
-# taku-Backend
+## 💡 서비스 소개
 
-**taku-backend**는 ~한 서비스를 제공합니다.
+- 애니를 좋아하는 사용자들을 위한 커뮤니티 플랫폼
+- 숏폼 컨텐츠, 피규어 등 중고물품 매매, 애니별 게시판 기능 등 덕후들을 위한 기능
 
-<br><br>
+## 🤹🏻 기술 스택
 
-## 🔧 **기술 스택**
+### 언어
 
-- **프레임워크:** Spring Boot 2.7.15
-- **ORM:** JPA / QueryDSL
-- **언어:** Java 11
-- **데이터베이스:** 
-- **CI/CD:** 
-- **클라우드:** 
+- Java
 
-<br><br>
+### 프레임워크
 
-## 🛠️ **주요 기능**
+- Spring boot
 
+### ORM
 
-<br><br>
+- Spring Data JPA
+- Spring Data MongoDB
+- QueryDSL
 
-## 🏗️ **프로젝트 ERD**
+### DataBase
 
-
-<br><br>
-
-## 🧐 **트러블슈팅**
-
+- MySQL, MongoDB
