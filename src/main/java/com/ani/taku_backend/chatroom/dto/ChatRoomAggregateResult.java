@@ -1,5 +1,6 @@
 package com.ani.taku_backend.chatroom.dto;
 
+import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.user.model.entity.User;
@@ -29,10 +30,10 @@ public class ChatRoomAggregateResult {
             String articleImage,
             String articleTitle,
             BigDecimal articlePrice) {
-        this.chatRoom = Objects.requireNonNull(chatRoom, "Chat room cannot be null");
-        this.metaInfo = Objects.requireNonNull(metaInfo, "Meta info cannot be null");
-        this.buyer = Objects.requireNonNull(buyer, "Buyer cannot be null");
-        this.seller = Objects.requireNonNull(seller, "Seller cannot be null");
+        this.chatRoom = Objects.requireNonNull(chatRoom, MessageConstants.CHAT_ROOM_NOT_NULL);
+        this.metaInfo = Objects.requireNonNull(metaInfo, MessageConstants.META_INFO_NOT_NULL);
+        this.buyer = Objects.requireNonNull(buyer, MessageConstants.BUYER_NOT_NULL);
+        this.seller = Objects.requireNonNull(seller, MessageConstants.SELLER_NOT_NULL);
         this.articleImage = articleImage;
         this.articleTitle = articleTitle;
         this.articlePrice = articlePrice;

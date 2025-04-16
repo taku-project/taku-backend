@@ -1,5 +1,6 @@
 package com.ani.taku_backend.chatroom.dto;
 
+import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.user.model.entity.User;
 import lombok.Getter;
@@ -28,9 +29,9 @@ public class ChatRoomDomainContext {
             String articleTitle,
             BigDecimal articlePrice,
             boolean hasActiveChatRoom) {
-        this.product = Objects.requireNonNull(product, "Product cannot be null");
-        this.buyer = Objects.requireNonNull(buyer, "Buyer cannot be null");
-        this.seller = Objects.requireNonNull(seller, "Seller cannot be null");
+        this.product = Objects.requireNonNull(product, MessageConstants.PRODUCT_NOT_NULL);
+        this.buyer = Objects.requireNonNull(buyer, MessageConstants.BUYER_NOT_NULL);
+        this.seller = Objects.requireNonNull(seller, MessageConstants.SELLER_NOT_NULL);
         this.articleImage = articleImage;
         this.articleTitle = articleTitle;
         this.articlePrice = articlePrice;
