@@ -10,4 +10,13 @@ public interface ChatRoomMetaRepositoryCustom {
      */
     List<ChatRoomMetaInfo> findMetaInfoWithLastMessages(List<Long> chatRoomIds);
 
+    /**
+     * 채팅방의 특정 참여자를 재활성화합니다.
+     * 
+     * @param chatRoomId 채팅방 ID
+     * @param userId 사용자 ID
+     * @return 업데이트 성공 여부
+     */
+    boolean reactivateParticipant(Long chatRoomId, Long userId);
+
 } 

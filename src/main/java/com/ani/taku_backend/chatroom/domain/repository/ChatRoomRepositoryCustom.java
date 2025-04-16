@@ -38,4 +38,13 @@ public interface ChatRoomRepositoryCustom {
 
     // 활성 채팅방 존재 여부 확인 (QueryDSL)
     boolean existsActiveChatRoomByArticleIdAndBuyerId(Long articleId, Long buyerId);
+
+    /**
+     * 비활성화된 채팅방과 메타정보를 함께 조회합니다.
+     * 
+     * @param articleId 상품 ID
+     * @param buyerId 구매자 ID
+     * @return 채팅방과 메타정보를 포함한 결과
+     */
+    Optional<ChatRoomRepositoryImpl.ChatRoomWithMeta> findInactiveChatRoomWithMeta(Long articleId, Long buyerId);
 } 

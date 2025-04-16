@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -17,9 +18,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 @Slf4j
+@Repository
 public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
     @PersistenceContext
@@ -27,9 +31,12 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
     
     private JPAQueryFactory queryFactory;
     
-    public ChatRoomRepositoryImpl(EntityManager entityManager) {
+    private final ChatRoomMetaRepository chatRoomMetaRepository;
+
+    public ChatRoomRepositoryImpl(EntityManager entityManager, ChatRoomMetaRepository chatRoomMetaRepository) {
         this.entityManager = entityManager;
         this.queryFactory = new JPAQueryFactory(entityManager);
+        this.chatRoomMetaRepository = chatRoomMetaRepository;
     }
 
 
@@ -142,16 +149,98 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         QChatRoom chatRoom = QChatRoom.chatRoom;
         QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
         
-        Integer result = queryFactory
-            .selectOne()
+        // 1. 먼저 활성 채팅방이 존재하는지 확인
+        List<Long> chatRoomIds = queryFactory
+            .select(chatRoom.id)
             .from(chatRoom)
             .join(chatRoom.participants, participant)
             .where(chatRoom.articleId.eq(articleId)
                 .and(participant.user.userId.eq(buyerId))
                 .and(participant.role.eq(JangterChatRole.BUYER))
                 .and(chatRoom.status.eq(ChatRoomStatus.ACTIVE)))
-            .fetchFirst();
+            .fetch();
             
-        return result != null;
+        if (chatRoomIds.isEmpty()) {
+            return false;
+        }
+        
+        // 2. 메타 정보에서 사용자가 활성 상태인지 확인
+        for (Long chatRoomId : chatRoomIds) {
+            Optional<ChatRoomMetaInfo> metaInfo = chatRoomMetaRepository.findByChatRoomId(chatRoomId);
+            if (metaInfo.isPresent() && metaInfo.get().getParticipants().isParticipantActive(buyerId)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // 채팅방 및 메타정보를 함께 반환하는 결과 클래스 추가
+    public static class ChatRoomWithMeta {
+        private final ChatRoom chatRoom;
+        private final ChatRoomMetaInfo metaInfo;
+        
+        public ChatRoomWithMeta(ChatRoom chatRoom, ChatRoomMetaInfo metaInfo) {
+            this.chatRoom = chatRoom;
+            this.metaInfo = metaInfo;
+        }
+        
+        public ChatRoom getChatRoom() {
+            return chatRoom;
+        }
+        
+        public ChatRoomMetaInfo getMetaInfo() {
+            return metaInfo;
+        }
+    }
+
+    /**
+     * 비활성화된 채팅방과 메타정보를 함께 조회합니다.
+     */
+    public Optional<ChatRoomWithMeta> findInactiveChatRoomWithMeta(Long articleId, Long buyerId) {
+        QChatRoom chatRoom = QChatRoom.chatRoom;
+        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
+        QUser user = QUser.user;
+        
+        // 1. 활성 상태인 채팅방 찾기 (JPA)
+        List<Long> chatRoomIds = queryFactory
+            .select(chatRoom.id)
+            .from(chatRoom)
+            .join(chatRoom.participants, participant)
+            .where(chatRoom.articleId.eq(articleId)
+                .and(participant.user.userId.eq(buyerId))
+                .and(participant.role.eq(JangterChatRole.BUYER))
+                .and(chatRoom.status.eq(ChatRoomStatus.ACTIVE)))
+            .fetch();
+        
+        if (chatRoomIds.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        // 2. 구매자가 비활성 상태인 채팅방 찾기 (MongoDB 조회)
+        for (Long chatRoomId : chatRoomIds) {
+            Optional<ChatRoomMetaInfo> metaInfoOpt = chatRoomMetaRepository.findByChatRoomId(chatRoomId);
+            
+            // 메타 정보가 있고, 구매자가 비활성 상태인 경우
+            if (metaInfoOpt.isPresent()) {
+                ChatRoomMetaInfo metaInfo = metaInfoOpt.get();
+                if (!metaInfo.getParticipants().isParticipantActive(buyerId)) {
+                    // 해당 채팅방 전체 정보 조회
+                    ChatRoom foundChatRoom = queryFactory
+                        .selectFrom(chatRoom)
+                        .distinct()
+                        .leftJoin(chatRoom.participants, participant).fetchJoin()
+                        .leftJoin(participant.user, user).fetchJoin()
+                        .where(chatRoom.id.eq(chatRoomId))
+                        .fetchOne();
+                        
+                    if (foundChatRoom != null) {
+                        return Optional.of(new ChatRoomWithMeta(foundChatRoom, metaInfo));
+                    }
+                }
+            }
+        }
+        
+        return Optional.empty();
     }
 }

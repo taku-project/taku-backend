@@ -8,7 +8,7 @@ import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.mapper.ChatRoomDtoConverter;
+import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepositoryImpl;
 import com.ani.taku_backend.chatroom.mapper.ChatRoomMapper;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
@@ -18,12 +18,14 @@ import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import com.ani.taku_backend.chatroom.service.query.ChatRoomQueryService;
-import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -34,21 +36,34 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ChatRoomCommandService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMetaRepository chatRoomMetaRepository;
     private final DuckuJangterRepository duckuJangterRepository;
     private final UserRepository userRepository;
-    private final ChatRoomDtoConverter chatRoomDtoConverter;
     private final ChatRoomQueryService chatRoomQueryService;
     private final ChatRoomMapper chatRoomMapper;
+    
+    public ChatRoomCommandService(
+            ChatRoomRepository chatRoomRepository,
+            ChatRoomMetaRepository chatRoomMetaRepository,
+            DuckuJangterRepository duckuJangterRepository,
+            UserRepository userRepository,
+            ChatRoomQueryService chatRoomQueryService,
+            ChatRoomMapper chatRoomMapper) {
+        this.chatRoomRepository = chatRoomRepository;
+        this.chatRoomMetaRepository = chatRoomMetaRepository;
+        this.duckuJangterRepository = duckuJangterRepository;
+        this.userRepository = userRepository;
+        this.chatRoomQueryService = chatRoomQueryService;
+        this.chatRoomMapper = chatRoomMapper;
+    }
 
 
     /**
      * 새로운 채팅방을 생성합니다.
-     * DB 접근 3회로 최적화 (상품+유저 조회, 채팅방 저장, 메타정보 저장)
+     * 최적화: 기존 채팅방 재활성화 시 DB 접근 최소화 (1-2회)
      */
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
         // 1. 필수 데이터 한 번에 조회
@@ -56,11 +71,48 @@ public class ChatRoomCommandService {
         
         // 2. 도메인 검증
         validateChatRoomCreation(context);
-
-        // 3. 도메인 객체 생성 및 저장
+        
+        // 3. 비활성화된 채팅방이 있는지 확인
+        Optional<ChatRoomRepositoryImpl.ChatRoomWithMeta> inactiveChatRoomWithMeta = 
+                chatRoomRepository.findInactiveChatRoomWithMeta(requestDto.articleId(), requestDto.buyerId());
+        
+        if (inactiveChatRoomWithMeta.isPresent()) {
+            // 3.1 비활성화된 채팅방과 메타정보가 있으면 재활성화
+            ChatRoom chatRoom = inactiveChatRoomWithMeta.get().getChatRoom();
+            ChatRoomMetaInfo metaInfo = inactiveChatRoomWithMeta.get().getMetaInfo();
+            
+            // 메타 정보에서 사용자 재활성화 (메타정보 이미 조회된 상태)
+            boolean updated = metaInfo.getParticipants().activateParticipant(requestDto.buyerId());
+            
+            if (updated) {
+                // 변경된 메타정보 저장 (1회 DB 접근)
+                chatRoomMetaRepository.save(metaInfo);
+                
+                log.debug("기존 채팅방 재활성화: chatRoomId={}, buyerId={}", chatRoom.getId(), requestDto.buyerId());
+                
+                // 현재 채팅방 상태로 응답 DTO 생성을 위한 데이터 준비
+                // 판매자와 구매자 정보 가져오기
+                User buyer = context.getBuyer();
+                User seller = context.getSeller();
+                
+                // 상품 정보 사용
+                String articleImage = context.getArticleImage();
+                String articleTitle = context.getArticleTitle();
+                BigDecimal articlePrice = context.getArticlePrice();
+                
+                // 집계 결과 생성
+                ChatRoomAggregateResult result = new ChatRoomAggregateResult(
+                        chatRoom, metaInfo, buyer, seller, articleImage, articleTitle, articlePrice);
+                
+                // DTO 변환 및 반환
+                return chatRoomMapper.toChatRoomResponseDTO(result);
+            }
+        }
+        
+        // 4. 비활성화된 채팅방이 없거나 재활성화에 실패한 경우 새 채팅방 생성
         ChatRoomAggregateResult result = createAndSaveChatRoomAggregate(context);
         
-        // 4. DTO 변환
+        // 5. DTO 변환
         return chatRoomMapper.toChatRoomResponseDTO(result);
     }
 

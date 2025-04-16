@@ -101,4 +101,19 @@ public class Participants {
         
         return participant.isActive();
     }
+
+    /**
+     * 특정 참가자를 활성화 상태로 설정합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 상태가 변경되었으면 true, 사용자가 없거나 이미 활성화 상태면 false
+     */
+    public synchronized boolean activateParticipant(Long userId) {
+        ParticipantInfo participant = info.get(userId);
+        if (participant == null || participant.isActive()) {
+            return false;
+        }
+        participant.activate();
+        return true;
+    }
 }
