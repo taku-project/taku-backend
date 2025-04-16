@@ -3,6 +3,7 @@ package com.ani.taku_backend.jangter.repository;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.dto.ProductStatusDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
+import com.ani.taku_backend.jangter.dto.ProductAggregateDTO;
 
 import org.springframework.data.repository.query.Param;
 
@@ -83,4 +84,12 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
     @Query("SELECT new com.ani.taku_backend.jangter.model.dto.ProductImageDTO(j.id, COALESCE((SELECT ji.image.imageUrl FROM JangterImages ji WHERE ji.duckuJangter.id = j.id ORDER BY ji.id ASC LIMIT 1), null)) " +
            "FROM DuckuJangter j WHERE j.id IN :productIds")
     List<ProductImageDTO> findProductImagesById(@Param("productIds") List<Long> productIds);
+
+    // 상품 및 관련 정보를 한 번에 조회하는 최적화된 쿼리
+    @Query("SELECT new com.ani.taku_backend.jangter.dto.ProductAggregateDTO(" +
+           "j, " +
+           "(SELECT ji.image.imageUrl FROM JangterImages ji WHERE ji.duckuJangter.id = j.id ORDER BY ji.id ASC LIMIT 1), " +
+           "j.title, j.price, j.user.id) " +
+           "FROM DuckuJangter j WHERE j.id = :id")
+    Optional<ProductAggregateDTO> findProductAggregateById(@Param("id") Long id);
 }

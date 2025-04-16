@@ -17,7 +17,4 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatR
     //ChatRoomId로 채팅방 찾기
     Optional<ChatRoom> findById(Long id);
 
-    // 판매글 ID와 구매자, 판매자 ID로 채팅방을 찾기
-    List<ChatRoom> findByArticleId(Long articleId);
-
 }
