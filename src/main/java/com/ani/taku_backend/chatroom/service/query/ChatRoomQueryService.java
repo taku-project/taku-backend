@@ -128,6 +128,12 @@ public class ChatRoomQueryService {
         // 3. DTO 변환
         List<ChatRoomResponseDTO> responseDTOs = chatRooms.getContent().stream()
                 .map(room -> {
+                    // 메타 정보에서 사용자가 활성 상태인지 확인
+                    Optional<ChatRoomMetaInfo> metaInfoOpt = metaInfos.getMetaInfo(room.getId());
+                    if (metaInfoOpt.isEmpty() || !metaInfoOpt.get().getParticipants().isParticipantActive(userId)) {
+                        return null; // 사용자가 방을 나갔거나 비활성 상태인 경우 null 반환
+                    }
+
                     // 각 채팅방에 필요한 상품 정보 제공
                     Long articleId = room.getArticleId();
                     String title = articleInfo.getTitle(articleId);
@@ -135,7 +141,7 @@ public class ChatRoomQueryService {
 
                     return createChatRoomResponseDTO(
                             room,
-                            metaInfos.getMetaInfo(room.getId()).orElse(null),
+                            metaInfoOpt.get(),
                             users,
                             lastMessages,
                             unreadCounts,
@@ -271,6 +277,11 @@ public class ChatRoomQueryService {
             return 0;
         }
 
+        // 사용자가 활성 상태인 채팅방만 필터링
+        userChatrooms = userChatrooms.stream()
+                .filter(metaInfo -> metaInfo.getParticipants().isParticipantActive(userId))
+                .collect(Collectors.toList());
+        
         return ChatRoomMetaInfo.calculateTotalUnreadCount(userChatrooms, userId);
     }
 

@@ -159,7 +159,9 @@ public class ChatRoomCommandService {
         List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findByChatRoomIdIn(chatRoomIds);
 
         for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            if (metaInfo.getParticipants().hasUserWithRole(requestDto.buyerId(), JangterChatRole.BUYER)) {
+            // 사용자가 해당 채팅방에서 구매자 역할을 가지고 있고, 활성 상태인 경우에만 중복으로 판단
+            if (metaInfo.getParticipants().hasUserWithRole(requestDto.buyerId(), JangterChatRole.BUYER) && 
+                metaInfo.getParticipants().isParticipantActive(requestDto.buyerId())) {
                 throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
             }
         }
