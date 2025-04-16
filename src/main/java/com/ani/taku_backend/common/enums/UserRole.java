@@ -25,7 +25,7 @@ public enum UserRole implements EnumCode {
    * 시스템 관리 및 모든 기능에 접근 가능한 관리자
    */
   ADMIN("ROLE_ADMIN"),
-  BLACKLIST("ROLE_BLACKLIST"),
+  BLACKLIST("BLACKLIST"),
   ANONYMOUS("ROLE_ANONYMOUS"),
   ;
 
