@@ -21,11 +21,6 @@ public interface ChatRoomMetaRepository extends MongoRepository<ChatRoomMetaInfo
     Optional<ChatRoomMetaInfo> findByChatRoomId(Long chatRoomId);
 
     /**
-     * 채팅방 ID 목록으로 메타정보 조회
-     */
-    List<ChatRoomMetaInfo> findByChatRoomIdIn(List<Long> chatRoomIds);
-
-    /**
      * 사용자가 참여한 모든 채팅방 메타정보 조회
      */
     @Query(value = "{'participants.info.?0': {$exists: true}}")

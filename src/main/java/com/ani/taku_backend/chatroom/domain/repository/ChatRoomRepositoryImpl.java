@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 @Slf4j

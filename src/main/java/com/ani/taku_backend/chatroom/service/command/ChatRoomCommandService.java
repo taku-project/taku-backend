@@ -156,7 +156,7 @@ public class ChatRoomCommandService {
     }
 
     /**
-     * 비즈니스 규칙 검증 (메모리 내 처리)
+     * 비즈니스 규칙 검증
      */
     private void validateChatRoomCreation(ChatRoomDomainContext context) {
         DuckuJangter product = context.getProduct();

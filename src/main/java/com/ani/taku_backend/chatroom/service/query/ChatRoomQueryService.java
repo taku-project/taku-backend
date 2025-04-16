@@ -417,7 +417,6 @@ public class ChatRoomQueryService {
 
     /**
      * 상품 ID 목록으로 상품 정보를 효율적으로 조회합니다.
-     * QueryDSL 기반의 Projection을 활용하여 필요한 정보만 가져옵니다.
      */
     private ArticleInfo findArticleInfos(List<Long> articleIds) {
         if (articleIds == null || articleIds.isEmpty()) {
