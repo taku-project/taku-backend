@@ -18,15 +18,15 @@ public enum UserRole implements EnumCode {
    * 일반 사용자 권한
    * 기본적인 서비스 이용이 가능한 일반 사용자
    */
-  USER("ROLE_USER"),
+  USER("USER"),
   
   /**
    * 관리자 권한
    * 시스템 관리 및 모든 기능에 접근 가능한 관리자
    */
-  ADMIN("ROLE_ADMIN"),
+  ADMIN("ADMIN"),
   BLACKLIST("BLACKLIST"),
-  ANONYMOUS("ROLE_ANONYMOUS"),
+  ANONYMOUS("ANONYMOUS"),
   ;
 
   private final String value;
