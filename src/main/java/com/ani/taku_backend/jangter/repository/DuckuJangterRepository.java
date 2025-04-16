@@ -90,6 +90,6 @@ public interface DuckuJangterRepository extends JpaRepository<DuckuJangter, Long
            "j, " +
            "(SELECT ji.image.imageUrl FROM JangterImages ji WHERE ji.duckuJangter.id = j.id ORDER BY ji.id ASC LIMIT 1), " +
            "j.title, j.price, j.user.id) " +
-           "FROM DuckuJangter j WHERE j.id = :id AND j.status = 'ACTIVE'")
+           "FROM DuckuJangter j WHERE j.id = :id")
     Optional<ProductAggregateDTO> findProductAggregateById(@Param("id") Long id);
 }
