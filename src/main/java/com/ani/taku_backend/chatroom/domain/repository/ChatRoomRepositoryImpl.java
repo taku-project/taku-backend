@@ -136,4 +136,22 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         
         return new SliceImpl<>(results, pageable, hasNext);
     }
+
+    @Override
+    public boolean existsActiveChatRoomByArticleIdAndBuyerId(Long articleId, Long buyerId) {
+        QChatRoom chatRoom = QChatRoom.chatRoom;
+        QChatRoomParticipant participant = QChatRoomParticipant.chatRoomParticipant;
+        
+        Integer result = queryFactory
+            .selectOne()
+            .from(chatRoom)
+            .join(chatRoom.participants, participant)
+            .where(chatRoom.articleId.eq(articleId)
+                .and(participant.user.userId.eq(buyerId))
+                .and(participant.role.eq(JangterChatRole.BUYER))
+                .and(chatRoom.status.eq(ChatRoomStatus.ACTIVE)))
+            .fetchFirst();
+            
+        return result != null;
+    }
 }

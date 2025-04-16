@@ -35,4 +35,7 @@ public interface ChatRoomRepositoryCustom {
      * @return 채팅방 목록 (Slice 형태)
      */
     Slice<ChatRoom> findChatRoomsWithSlice(Long userId, Pageable pageable, ChatRoomStatus status);
+
+    // 활성 채팅방 존재 여부 확인 (QueryDSL)
+    boolean existsActiveChatRoomByArticleIdAndBuyerId(Long articleId, Long buyerId);
 } 

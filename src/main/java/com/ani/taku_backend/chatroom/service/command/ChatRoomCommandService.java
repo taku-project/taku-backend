@@ -1,20 +1,18 @@
 package com.ani.taku_backend.chatroom.service.command;
 
-import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
+import com.ani.taku_backend.chatroom.dto.ChatRoomAggregateResult;
+import com.ani.taku_backend.chatroom.dto.ChatRoomDomainContext;
 import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
 import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
-import com.ani.taku_backend.chatroom.domain.vo.ArticleImage;
-import com.ani.taku_backend.chatroom.domain.vo.ArticleInfo;
-import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMessages;
-import com.ani.taku_backend.chatroom.domain.vo.ChatRoomUsers;
-import com.ani.taku_backend.chatroom.domain.vo.UnreadMessageCounts;
 import com.ani.taku_backend.chatroom.mapper.ChatRoomDtoConverter;
+import com.ani.taku_backend.chatroom.mapper.ChatRoomMapper;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
+import com.ani.taku_backend.jangter.dto.ProductAggregateDTO;
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import com.ani.taku_backend.user.model.entity.User;
@@ -45,55 +43,116 @@ public class ChatRoomCommandService {
     private final UserRepository userRepository;
     private final ChatRoomDtoConverter chatRoomDtoConverter;
     private final ChatRoomQueryService chatRoomQueryService;
+    private final ChatRoomMapper chatRoomMapper;
 
 
     /**
      * 새로운 채팅방을 생성합니다.
-     *
-     * @param requestDto 채팅방 생성 요청 정보
-     * @return 생성된 채팅방 정보
+     * DB 접근 3회로 최적화 (상품+유저 조회, 채팅방 저장, 메타정보 저장)
      */
     public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
-
-        DuckuJangter product = findProduct(requestDto.articleId());
+        // 1. 필수 데이터 한 번에 조회
+        ChatRoomDomainContext context = fetchDomainEntities(requestDto);
         
-        // 도메인 객체의 검증 메서드 호출
+        // 2. 도메인 검증
+        validateChatRoomCreation(context);
+
+        // 3. 도메인 객체 생성 및 저장
+        ChatRoomAggregateResult result = createAndSaveChatRoomAggregate(context);
+        
+        // 4. DTO 변환
+        return chatRoomMapper.toChatRoomResponseDTO(result);
+    }
+
+    /**
+     * 필요한 도메인 엔티티를 한 번에 조회
+     */
+    private ChatRoomDomainContext fetchDomainEntities(ChatRoomRequestDTO requestDto) {
+
+        ProductAggregateDTO productAggregate = duckuJangterRepository
+                .findProductAggregateById(requestDto.articleId())
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
+
+        Long buyerId = requestDto.buyerId();
+        Long sellerId = productAggregate.getSellerId();
+        
+        List<User> users = userRepository.findByUserIdIn(List.of(buyerId, sellerId));
+        User buyer = findUserById(users, buyerId);
+        User seller = findUserById(users, sellerId);
+        
+        // 활성 채팅방 존재 여부 확인
+        boolean hasActiveChatRoom = chatRoomRepository
+                .existsActiveChatRoomByArticleIdAndBuyerId(
+                        requestDto.articleId(), buyerId);
+        
+        return new ChatRoomDomainContext(
+                productAggregate.getProduct(),
+                buyer,
+                seller,
+                productAggregate.getArticleImage(),
+                productAggregate.getArticleTitle(),
+                productAggregate.getArticlePrice(),
+                hasActiveChatRoom
+        );
+    }
+
+    private User findUserById(List<User> users, Long userId) {
+        return users.stream()
+                .filter(user -> user.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    /**
+     * 비즈니스 규칙 검증 (메모리 내 처리)
+     */
+    private void validateChatRoomCreation(ChatRoomDomainContext context) {
+        DuckuJangter product = context.getProduct();
+        
+        // 도메인 검증 로직
         product.validateForChatRoom();
-        product.validateDifferentUsers(requestDto.buyerId());
+        
+        // 구매자와 판매자가 동일한지 검증
+        if (context.getBuyer().getUserId().equals(context.getSeller().getUserId())) {
+            throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        
+        // 활성 채팅방 중복 검증
+        if (context.isHasActiveChatRoom()) {
+            throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
+        }
+    }
 
-        Long sellerId = product.getUser().getUserId();
-
-        validateNewChatRoom(requestDto);
-
-        User buyer = findUser(requestDto.buyerId());
-        User seller = findUser(sellerId);
-
-        ChatRoom chatRoom = ChatRoom.createChatRoom(requestDto.articleId(), buyer, seller);
-
+    /**
+     * 도메인 객체 생성 및 저장
+     */
+    private ChatRoomAggregateResult createAndSaveChatRoomAggregate(ChatRoomDomainContext context) {
+        // 1. 채팅방 생성 및 저장
+        ChatRoom chatRoom = ChatRoom.createChatRoom(
+                context.getProduct().getId(),
+                context.getBuyer(),
+                context.getSeller()
+        );
+        
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
-
-        ChatRoomMetaInfo metaInfo = createAndSaveChatRoomMetaInfo(savedRoom.getId(), requestDto.buyerId(), sellerId);
-
-        // 상품 이미지 조회
-        ArticleImage articleImage = ArticleImage.fromProductImageDTOs(
-                duckuJangterRepository.findProductImagesById(List.of(requestDto.articleId())));
-                
-        // 상품 정보 조회
-        ArticleInfo articleInfo = ArticleInfo.from(
-                duckuJangterRepository.findArticleInfosByIds(List.of(requestDto.articleId())));
-                
-        String articleName = articleInfo.getTitle(requestDto.articleId());
-        java.math.BigDecimal articlePrice = articleInfo.getPrice(requestDto.articleId());
-
-        return chatRoomQueryService.createChatRoomResponseDTO(
+        
+        // 2. 메타정보 생성 및 저장
+        ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.createWithParticipants(
+                savedRoom.getId(),
+                context.getBuyer().getUserId(),
+                context.getSeller().getUserId()
+        );
+        
+        ChatRoomMetaInfo savedMetaInfo = chatRoomMetaRepository.save(metaInfo);
+        
+        return new ChatRoomAggregateResult(
                 savedRoom,
-                metaInfo,
-                ChatRoomUsers.of(buyer, seller),
-                ChatRoomMessages.empty(),
-                UnreadMessageCounts.of(savedRoom.getId(), 0),
-                articleImage,
-                articleName,
-                articlePrice
+                savedMetaInfo,
+                context.getBuyer(),
+                context.getSeller(),
+                context.getArticleImage(),
+                context.getArticleTitle(),
+                context.getArticlePrice()
         );
     }
 
@@ -107,63 +166,5 @@ public class ChatRoomCommandService {
         metaInfo.updateParticipantStatus(userId, active);
 
         chatRoomMetaRepository.save(metaInfo);
-    }
-
-    /**
-     * 상품을 조회합니다.
-     */
-    private DuckuJangter findProduct(Long articleId) {
-        return duckuJangterRepository.findById(articleId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.NOT_FOUND_POST));
-    }
-
-
-    /**
-     * 사용자를 조회합니다.
-     */
-    private User findUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new DuckwhoException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    /**
-     * 채팅방 메타 정보를 생성하고 저장합니다.
-     */
-    private ChatRoomMetaInfo createAndSaveChatRoomMetaInfo(Long chatRoomId, Long buyerId, Long sellerId) {
-        ChatRoomMetaInfo metaInfo = ChatRoomMetaInfo.createWithParticipants(
-                chatRoomId, buyerId, sellerId);
-        
-        return chatRoomMetaRepository.save(metaInfo);
-    }
-
-    /**
-     * 중복 채팅방 생성을 방지하기 위한 검증 로직
-     */
-    private void validateNewChatRoom(ChatRoomRequestDTO requestDto) {
-        // 1. 상품에 대한 모든 채팅방 조회
-        List<ChatRoom> chatRooms = chatRoomRepository.findByArticleId(requestDto.articleId());
-        if (chatRooms.isEmpty()) {
-            return;
-        }
-
-        // 2. 활성 채팅방에 구매자로 참여 중인지 확인
-        if (ChatRoom.hasActiveBuyerInRooms(chatRooms, requestDto.buyerId())) {
-            throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
-        }
-
-        // 3. 메타 정보에서도 역할 확인 (모든 상태의 채팅방 고려)
-        List<Long> chatRoomIds = chatRooms.stream()
-                .map(ChatRoom::getId)
-                .toList();
-
-        List<ChatRoomMetaInfo> metaInfos = chatRoomMetaRepository.findByChatRoomIdIn(chatRoomIds);
-
-        for (ChatRoomMetaInfo metaInfo : metaInfos) {
-            // 사용자가 해당 채팅방에서 구매자 역할을 가지고 있고, 활성 상태인 경우에만 중복으로 판단
-            if (metaInfo.getParticipants().hasUserWithRole(requestDto.buyerId(), JangterChatRole.BUYER) && 
-                metaInfo.getParticipants().isParticipantActive(requestDto.buyerId())) {
-                throw new DuckwhoException(ErrorCode.DUPLICATE_CHAT_ROOM);
-            }
-        }
     }
 } 
