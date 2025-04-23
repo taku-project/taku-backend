@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .requestMatchers(SecurityPathConfig.PUBLIC_STATIC_PATHS).permitAll()
                 .requestMatchers(SecurityPathConfig.PUBLIC_GET_PATHS).permitAll() // GET - post,jangter
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.USER_API_PATH).permitAll()
-                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).not().hasRole(UserRole.BLACKLIST.getValue())
+                .requestMatchers(HttpMethod.POST, SecurityPathConfig.USER_API_PATH).not().hasRole(UserRole.BLACKLIST.name())
                 .requestMatchers(HttpMethod.GET, SecurityPathConfig.SHORTS_API_PATH).permitAll()    // 쇼츠 관련 API 허용
                 .requestMatchers(SecurityPathConfig.WEBSOCKET_PATHS).permitAll()                    // WebSocket 관련 경로 허용
                 .anyRequest().authenticated()
