@@ -19,7 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import com.ani.taku_backend.common.dto.CustomPageResponseDTO;
+import com.ani.taku_backend.common.dto.CustomPageResDTO;
 
 @Tag(name = "장터 북마크 API", description = "장터 상품 북마크 관련 API")
 @Slf4j
@@ -86,7 +86,7 @@ public class DuckuJangterBookmarkController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 카테고리")
     })
     @GetMapping
-    public CommonResponse<CustomPageResponseDTO<BookmarkListResponseDTO>> getBookmarkList(
+    public CommonResponse<CustomPageResDTO<BookmarkListResponseDTO>> getBookmarkList(
             @AuthenticationPrincipal PrincipalUser principal,
             @RequestParam(name = "categoryId", defaultValue = "0") Long categoryId,
             @ParameterObject
@@ -97,6 +97,6 @@ public class DuckuJangterBookmarkController {
             categoryId, 
             pageable
         );
-        return CommonResponse.ok(CustomPageResponseDTO.of(bookmarks));
+        return CommonResponse.ok(CustomPageResDTO.of(bookmarks));
     }
 }

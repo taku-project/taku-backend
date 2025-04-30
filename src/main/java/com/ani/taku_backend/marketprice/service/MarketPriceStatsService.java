@@ -7,9 +7,9 @@ import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.model.entity.ItemCategories;
 import com.ani.taku_backend.jangter.repository.ItemCategoriesRepository;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
-import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO;
+import com.ani.taku_backend.marketprice.model.dto.PriceGraphResDTO;
+import com.ani.taku_backend.marketprice.model.dto.SimilarProductResDTO;
+import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResDTO;
 import com.ani.taku_backend.marketprice.model.entity.CompletedDeal;
 import com.ani.taku_backend.marketprice.model.entity.MarketPriceStats;
 import com.ani.taku_backend.marketprice.repository.CompletedDealRepository;
@@ -47,7 +47,7 @@ public class MarketPriceStatsService {
                     "(#toDate != null ? #toDate.toString() : 'NULL_TO') + '_' + " +
                     "(#option != null ? #option.name() : 'NULL_OPTION')"
     )
-    public PriceGraphResponseDTO getPriceGraph(
+    public PriceGraphResDTO getPriceGraph(
             String keyword, LocalDate fromDate, LocalDate toDate, GraphDisplayOption option) {
 
         return marketPriceStatsRepository.getPriceGraph(keyword, fromDate, toDate, option);
@@ -57,7 +57,7 @@ public class MarketPriceStatsService {
             value = "weeklyStats",
             key = "T(String).valueOf(#keyword != null ? #keyword : 'NULL_KEYWEEKLY')"
     )
-    public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
+    public WeeklyStatsResDTO getWeeklyStats(String keyword) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(7);
 
@@ -67,7 +67,7 @@ public class MarketPriceStatsService {
     /**
      * 유사 상품 찾기
      */
-    public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
+    public List<SimilarProductResDTO> findSimilarProducts(String keyword, Pageable pageable) {
         List<String> extractedKeywords = extractKeywordService.extractKeywords(keyword);
         if (extractedKeywords.isEmpty()) {
             throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
@@ -77,7 +77,7 @@ public class MarketPriceStatsService {
                 tfidfService.calculateProductSimilarities(keyword, extractedKeywords);
 
         return similarProducts.stream()
-                .map(productWithSimilarity -> SimilarProductResponseDTO.from(productWithSimilarity))
+                .map(productWithSimilarity -> SimilarProductResDTO.from(productWithSimilarity))
                 .limit(pageable.getPageSize())
                 .collect(Collectors.toList());
     }

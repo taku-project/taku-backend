@@ -1,9 +1,9 @@
 package com.ani.taku_backend.marketprice.repository;
 
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
-import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO.PriceDataPoint;
-import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO;
+import com.ani.taku_backend.marketprice.model.dto.PriceGraphResDTO;
+import com.ani.taku_backend.marketprice.model.dto.PriceGraphResDTO.PriceDataPoint;
+import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResDTO;
 import com.ani.taku_backend.marketprice.model.entity.QMarketPriceStats;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
@@ -24,7 +24,7 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
     private final QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
 
     @Override
-    public PriceGraphResponseDTO getPriceGraph(
+    public PriceGraphResDTO getPriceGraph(
             @Parameter(description = "검색할 상품 제목") String title,
             @Parameter(description = "조회 시작 날짜") LocalDate fromDate,
             @Parameter(description = "조회 종료 날짜") LocalDate toDate,
@@ -109,19 +109,19 @@ public class MarketPriceStatsQueryRepositoryImpl implements MarketPriceStatsQuer
             dataPoints = new ArrayList<>(mergedData.values());
         }
 
-        return PriceGraphResponseDTO.builder()
+        return PriceGraphResDTO.builder()
                 .dataPoints(dataPoints)
                 .build();
     }
 
     @Override
-    public WeeklyStatsResponseDTO getWeeklyStats(
+    public WeeklyStatsResDTO getWeeklyStats(
             @Parameter(description = "검색할 상품 키워드") String keyword) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(7);
 
         return queryFactory
-                .select(Projections.constructor(WeeklyStatsResponseDTO.class,
+                .select(Projections.constructor(WeeklyStatsResDTO.class,
                         stats.soldPrice.avg(),
                         stats.soldPrice.max(),
                         stats.soldPrice.min(),

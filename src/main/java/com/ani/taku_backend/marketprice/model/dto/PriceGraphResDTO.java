@@ -13,12 +13,12 @@ import lombok.Builder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "시세 그래프 응답 DTO")
-public record PriceGraphResponseDTO(
+public record PriceGraphResDTO(
     @Schema(description = "날짜별 데이터")
     List<PriceDataPoint> dataPoints
 ) {
-    public static PriceGraphResponseDTO empty() {
-        return new PriceGraphResponseDTO(Collections.emptyList());
+    public static PriceGraphResDTO empty() {
+        return new PriceGraphResDTO(Collections.emptyList());
     }
 
     @Builder

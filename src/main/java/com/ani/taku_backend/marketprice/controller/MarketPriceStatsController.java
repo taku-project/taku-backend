@@ -2,9 +2,9 @@ package com.ani.taku_backend.marketprice.controller;
 
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
-import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO;
+import com.ani.taku_backend.marketprice.model.dto.PriceGraphResDTO;
+import com.ani.taku_backend.marketprice.model.dto.SimilarProductResDTO;
+import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResDTO;
 import com.ani.taku_backend.marketprice.service.MarketPriceStatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,7 +26,7 @@ public class MarketPriceStatsController {
 
     @Operation(summary = "시세 그래프 조회")
     @GetMapping("/graph")
-    public CommonResponse<PriceGraphResponseDTO> getPriceGraph(
+    public CommonResponse<PriceGraphResDTO> getPriceGraph(
             @Parameter(description = "검색할 상품 키워드", required = true)
             @RequestParam String keyword,
             
@@ -46,7 +46,7 @@ public class MarketPriceStatsController {
 
     @Operation(summary = "주간 통계 조회")
     @GetMapping("/weekly-stats")
-    public CommonResponse<WeeklyStatsResponseDTO> getWeeklyStats(
+    public CommonResponse<WeeklyStatsResDTO> getWeeklyStats(
             @Parameter(description = "검색할 상품 키워드", required = true)
             @RequestParam String keyword) {
         return CommonResponse.ok(marketPriceStatsService.getWeeklyStats(keyword));
@@ -54,7 +54,7 @@ public class MarketPriceStatsController {
 
     @Operation(summary = "유사 상품 조회")
     @GetMapping("/similar")
-    public CommonResponse<List<SimilarProductResponseDTO>> findSimilarProducts(
+    public CommonResponse<List<SimilarProductResDTO>> findSimilarProducts(
             @Parameter(description = "검색할 상품 키워드", required = true)
             @RequestParam String keyword,
             

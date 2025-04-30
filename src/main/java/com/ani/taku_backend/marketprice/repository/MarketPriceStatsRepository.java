@@ -1,7 +1,7 @@
 package com.ani.taku_backend.marketprice.repository;
 
 import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
-import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO;
+import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResDTO;
 import com.ani.taku_backend.marketprice.model.entity.MarketPriceStats;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +20,7 @@ public interface MarketPriceStatsRepository extends JpaRepository<MarketPriceSta
     Optional<MarketPriceStats> findLatestByProductId(@Param("productId") Long productId);
 
     @Query("""
-            SELECT new com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO(
+            SELECT new com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResDTO(
                 AVG(m.registeredPrice),
                 MAX(m.registeredPrice),
                 MIN(m.registeredPrice),
@@ -31,7 +31,7 @@ public interface MarketPriceStatsRepository extends JpaRepository<MarketPriceSta
             AND m.registeredDate >= :startDate
             AND m.registeredDate <= :endDate
             """)
-    WeeklyStatsResponseDTO getWeeklyStats(
+    WeeklyStatsResDTO getWeeklyStats(
             @Param("keyword") String keyword,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate

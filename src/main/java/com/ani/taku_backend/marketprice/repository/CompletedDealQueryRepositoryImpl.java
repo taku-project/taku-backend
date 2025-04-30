@@ -1,9 +1,9 @@
 package com.ani.taku_backend.marketprice.repository;
 
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
-import com.ani.taku_backend.marketprice.model.dto.PriceGraphResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.SimilarProductResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResponseDTO;
+import com.ani.taku_backend.marketprice.model.dto.PriceGraphResDTO;
+import com.ani.taku_backend.marketprice.model.dto.SimilarProductResDTO;
+import com.ani.taku_backend.marketprice.model.dto.WeeklyStatsResDTO;
 import com.ani.taku_backend.marketprice.model.entity.QMarketPriceStats;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
@@ -24,8 +24,8 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public PriceGraphResponseDTO getPriceGraph(String keyword, LocalDate fromDate, LocalDate toDate,
-                                               GraphDisplayOption option) {
+    public PriceGraphResDTO getPriceGraph(String keyword, LocalDate fromDate, LocalDate toDate,
+                                          GraphDisplayOption option) {
         QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
 
         List<Tuple> results = queryFactory
@@ -44,13 +44,13 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 .orderBy(stats.registeredDate.asc())
                 .fetch();
 
-        List<PriceGraphResponseDTO.PriceDataPoint> dataPoints = results.stream()
+        List<PriceGraphResDTO.PriceDataPoint> dataPoints = results.stream()
                 .map(tuple -> {
                     LocalDate date = tuple.get(stats.registeredDate);
                     Double avgRegPrice = tuple.get(stats.registeredPrice.avg());
                     Double avgSoldPrice = tuple.get(stats.soldPrice.avg().coalesce(0.0));
 
-                    return PriceGraphResponseDTO.PriceDataPoint.builder()
+                    return PriceGraphResDTO.PriceDataPoint.builder()
                             .date(date)
                             .registeredPrice(BigDecimal.valueOf(
                                     avgRegPrice != null ? avgRegPrice : 0.0
@@ -63,17 +63,17 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
                 })
                 .collect(Collectors.toList());
 
-        return PriceGraphResponseDTO.builder()
+        return PriceGraphResDTO.builder()
                 .dataPoints(dataPoints)
                 .build();
     }
     @Override
-    public WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
+    public WeeklyStatsResDTO getWeeklyStats(String keyword) {
         QMarketPriceStats stats = QMarketPriceStats.marketPriceStats;
         LocalDate weekAgo = LocalDate.now().minusWeeks(1);
 
         return queryFactory
-                .select(Projections.constructor(WeeklyStatsResponseDTO.class,
+                .select(Projections.constructor(WeeklyStatsResDTO.class,
                         stats.registeredPrice.avg(),
                         stats.registeredPrice.max(),
                         stats.registeredPrice.min(),
@@ -88,10 +88,10 @@ public class CompletedDealQueryRepositoryImpl implements CompletedDealQueryRepos
     }
 
     @Override
-    public List<SimilarProductResponseDTO> findSimilarProducts(String keyword, Pageable pageable) {
+    public List<SimilarProductResDTO> findSimilarProducts(String keyword, Pageable pageable) {
         return queryFactory
                 .select(Projections.constructor(
-                        SimilarProductResponseDTO.class,
+                        SimilarProductResDTO.class,
                         duckuJangter.id,
                         duckuJangter.title,
                         duckuJangter.price,

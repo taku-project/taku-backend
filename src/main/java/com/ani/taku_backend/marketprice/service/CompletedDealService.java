@@ -37,7 +37,7 @@ public class CompletedDealService {
                     "(#requestDTO.toDate != null ? #requestDTO.toDate : '') + " +
                     "(#requestDTO.displayOption != null ? #requestDTO.displayOption : '') " +
                     ": ''")
-    public MarketPriceSearchResponseDTO searchMarketPrice(PriceGraphRequestDTO requestDTO, Pageable pageable) {
+    public MarketPriceSearchResDTO searchMarketPrice(PriceGraphReqDTO requestDTO, Pageable pageable) {
         try {
             if (requestDTO == null || requestDTO.keyword() == null) {
                 throw new DuckwhoException(ErrorCode.INVALID_INPUT_VALUE);
@@ -52,7 +52,7 @@ public class CompletedDealService {
 
             String processedKeyword = processKeyword(requestDTO.keyword());
 
-            return MarketPriceSearchResponseDTO.builder()
+            return MarketPriceSearchResDTO.builder()
                     .keyword(requestDTO.keyword())
                     .priceGraph(getPriceGraphData(processedKeyword, startDate, endDate, requestDTO.displayOption()))
                     .weeklyStats(getWeeklyStats(processedKeyword))
@@ -79,37 +79,37 @@ public class CompletedDealService {
         return String.join(" ", extractedKeywords);
     }
 
-    private PriceGraphResponseDTO getPriceGraphData(String keyword, LocalDate startDate, LocalDate endDate, GraphDisplayOption option) {
+    private PriceGraphResDTO getPriceGraphData(String keyword, LocalDate startDate, LocalDate endDate, GraphDisplayOption option) {
         try {
-            PriceGraphResponseDTO data = completedDealRepository.getPriceGraph(keyword, startDate, endDate, option);
+            PriceGraphResDTO data = completedDealRepository.getPriceGraph(keyword, startDate, endDate, option);
             if (data == null || data.dataPoints().isEmpty()) {
                 log.warn("키워드 '{}' 에 대한 가격 데이터를 찾을 수 없습니다.", keyword);
-                return PriceGraphResponseDTO.empty();
+                return PriceGraphResDTO.empty();
             }
             return data;
         } catch (Exception e) {
             log.error("가격 데이터 조회 중 오류 발생: {}", e.getMessage(), e);
-            return PriceGraphResponseDTO.empty();
+            return PriceGraphResDTO.empty();
         }
     }
 
-    WeeklyStatsResponseDTO getWeeklyStats(String keyword) {
+    WeeklyStatsResDTO getWeeklyStats(String keyword) {
         try {
-            WeeklyStatsResponseDTO stats = completedDealRepository.getWeeklyStats(keyword);
+            WeeklyStatsResDTO stats = completedDealRepository.getWeeklyStats(keyword);
             if (stats == null) {
                 log.warn("키워드 '{}' 에 대한 주간 통계를 찾을 수 없습니다.", keyword);
-                return WeeklyStatsResponseDTO.empty();
+                return WeeklyStatsResDTO.empty();
             }
             return stats;
         } catch (Exception e) {
             log.error("주간 통계 조회 중 오류 발생: {}", e.getMessage(), e);
-            return WeeklyStatsResponseDTO.empty();
+            return WeeklyStatsResDTO.empty();
         }
     }
 
-    List<SimilarProductResponseDTO> getSimilarProducts(String keyword, Pageable pageable) {
+    List<SimilarProductResDTO> getSimilarProducts(String keyword, Pageable pageable) {
         try {
-            List<SimilarProductResponseDTO> products = completedDealRepository.findSimilarProducts(keyword, pageable);
+            List<SimilarProductResDTO> products = completedDealRepository.findSimilarProducts(keyword, pageable);
             if (products.isEmpty()) {
                 log.warn("키워드 '{}' 에 대한 유사 상품을 찾을 수 없습니다.", keyword);
                 return List.of();

@@ -13,7 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.WRAPPER_ARRAY)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "시세 그래프 요청 DTO")
-public record PriceGraphRequestDTO(
+public record PriceGraphReqDTO(
         @Schema(description = "검색 키워드", example = "원피스 루피 피규어")
         @NotBlank(message = "키워드는 필수입니다")
         String keyword,

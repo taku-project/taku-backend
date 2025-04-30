@@ -12,7 +12,7 @@ import lombok.Builder;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.WRAPPER_ARRAY)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "유사 상품 정보 DTO")
-public record SimilarProductResponseDTO(
+public record SimilarProductResDTO(
         @Schema(description = "상품 ID", example = "123")
         Long productId,
 
@@ -35,8 +35,8 @@ public record SimilarProductResponseDTO(
                 .orElse(null);
     }
 
-    private static SimilarProductResponseDTO createFrom(DuckuJangter product, String imageUrl) {
-        return new SimilarProductResponseDTO(
+    private static SimilarProductResDTO createFrom(DuckuJangter product, String imageUrl) {
+        return new SimilarProductResDTO(
                 product.getId(),
                 product.getTitle(),
                 product.getPrice(),
@@ -45,11 +45,11 @@ public record SimilarProductResponseDTO(
         );
     }
 
-    public static SimilarProductResponseDTO from(DuckuJangter product) {
+    public static SimilarProductResDTO from(DuckuJangter product) {
         return createFrom(product, extractImageUrl(product));
     }
 
-    public static SimilarProductResponseDTO from(TfidfService.ProductWithSimilarity productWithSimilarity) {
+    public static SimilarProductResDTO from(TfidfService.ProductWithSimilarity productWithSimilarity) {
         DuckuJangter product = productWithSimilarity.getProduct();
         return createFrom(product, extractImageUrl(product));
     }

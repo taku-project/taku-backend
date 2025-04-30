@@ -2,8 +2,8 @@ package com.ani.taku_backend.marketprice.controller;
 
 import com.ani.taku_backend.common.response.CommonResponse;
 import com.ani.taku_backend.marketprice.model.constant.GraphDisplayOption;
-import com.ani.taku_backend.marketprice.model.dto.MarketPriceSearchResponseDTO;
-import com.ani.taku_backend.marketprice.model.dto.PriceGraphRequestDTO;
+import com.ani.taku_backend.marketprice.model.dto.MarketPriceSearchResDTO;
+import com.ani.taku_backend.marketprice.model.dto.PriceGraphReqDTO;
 import com.ani.taku_backend.marketprice.service.CompletedDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +31,7 @@ public class CompletedDealController {
 
     @Operation(summary = "시세 조회", description = "키워드로 상품 시세를 조회합니다.")
     @GetMapping("/search")
-    public CommonResponse<MarketPriceSearchResponseDTO> searchMarketPrice(
+    public CommonResponse<MarketPriceSearchResDTO> searchMarketPrice(
             @Parameter(description = "검색 키워드", required = true)
             @RequestParam("keyword") String keyword,
 
@@ -56,8 +56,8 @@ public class CompletedDealController {
 
     ) {
         try {
-            var requestDTO = new PriceGraphRequestDTO(keyword, startDate, endDate, displayOption);
-            MarketPriceSearchResponseDTO response = completedDealService.searchMarketPrice(requestDTO, pageable);
+            var requestDTO = new PriceGraphReqDTO(keyword, startDate, endDate, displayOption);
+            MarketPriceSearchResDTO response = completedDealService.searchMarketPrice(requestDTO, pageable);
             log.debug("시세 조회 응답: {}", response);
             return CommonResponse.ok(response);
         } catch (Exception e) {

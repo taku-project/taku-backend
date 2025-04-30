@@ -11,14 +11,14 @@ import org.springframework.data.domain.Page;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomPageResponseDTO<T> {
+public class CustomPageResDTO<T> {
     private List<T> content;          // 현재 페이지 컨텐츠
     private int totalPages;           // 전체 페이지 수
     private long totalElements;       // 전체 아이템 수
     private int number;               // 현재 페이지 번호
 
-    public static <T> CustomPageResponseDTO<T> of(Page<T> page) {
-        return CustomPageResponseDTO.<T>builder()
+    public static <T> CustomPageResDTO<T> of(Page<T> page) {
+        return CustomPageResDTO.<T>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
