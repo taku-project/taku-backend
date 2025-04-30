@@ -2,8 +2,8 @@ package com.ani.taku_backend.chatroom.service.query;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResponseDTO;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
@@ -44,7 +44,7 @@ public class ChatMessageQueryService {
      * messageId가 없으면 최신 메시지를, 있으면 해당 메시지 이전의 메시지를 반환합니다.
      * 발신자 이름 정보가 포함된 메시지 DTO를 반환합니다.
      */
-    public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
+    public ChatMessageListResDTO getChatMessages(String wsRoomId, String messageId, int limit) {
 
         ChatRoom chatRoom = chatRoomRepository.findByWsRoomIdWithParticipantsAndUsers(wsRoomId)
                 .orElseThrow(() -> new DuckwhoException(ErrorCode.CHAT_ROOM_NOT_FOUND));
@@ -71,17 +71,17 @@ public class ChatMessageQueryService {
         ChatRoomUsers users = ChatRoomUsers.fromChatRoom(chatRoom);
         
         // 발신자 이름이 포함된 응답 DTO 생성
-        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+        List<ChatMessageResDTO> messageDTOs = messages.stream()
                 .map(message -> {
                     Long senderId = message.getSenderId();
                     String senderName = users.getUserNicknameOrUnknown(senderId);
-                    return ChatMessageResponseDTO.from(message, senderName, wsRoomId);
+                    return ChatMessageResDTO.from(message, senderName, wsRoomId);
                 })
                 .collect(Collectors.toList());
 
         boolean hasMore = messages.size() >= limit;
 
-        return new ChatMessageListResponseDTO(messageDTOs, hasMore);
+        return new ChatMessageListResDTO(messageDTOs, hasMore);
     }
 
     /**

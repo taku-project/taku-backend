@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.controller;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
-import com.ani.taku_backend.chatroom.dto.request.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatMessageReqDTO;
 import com.ani.taku_backend.chatroom.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
@@ -36,7 +36,7 @@ public class ChatMessageController {
      * @param messageRequest 클라이언트가 보낸 채팅 메시지 요청 객체
      */
     @MessageMapping("/chat/message")
-    public void sendMessage(@Payload ChatMessageRequestDTO messageRequest) {
+    public void sendMessage(@Payload ChatMessageReqDTO messageRequest) {
         String roomId = messageRequest.roomId();
         Long senderId = messageRequest.senderId();
         
@@ -87,7 +87,7 @@ public class ChatMessageController {
      * @param request 읽음 상태 업데이트 요청 (roomId와 userId 포함)
      */
     @MessageMapping("/chat/read")
-    public void markAsRead(@Payload ChatMessageRequestDTO request) {
+    public void markAsRead(@Payload ChatMessageReqDTO request) {
         String roomId = request.roomId();
         Long userId = request.senderId();
         

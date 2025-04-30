@@ -1,8 +1,8 @@
 package com.ani.taku_backend.chatroom.controller;
 
-import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResponseDTO;
-import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatRoomReqDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResDTO;
 import com.ani.taku_backend.chatroom.service.ChatRoomService;
 import com.ani.taku_backend.chatroom.service.ChatMessageService;
 import com.ani.taku_backend.common.response.CommonResponse;
@@ -92,12 +92,12 @@ public class ChatRoomController {
             )
     })
     @PostMapping
-    public CommonResponse<ChatRoomResponseDTO> createChatRoom(
+    public CommonResponse<ChatRoomResDTO> createChatRoom(
             @Parameter(description = "상품 ID", required = true, example = "1")
             @RequestParam(name = "articleId") Long articleId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        ChatRoomRequestDTO requestDto = new ChatRoomRequestDTO(articleId, principalUser.getUserId());
-        ChatRoomResponseDTO responseDto = chatRoomFacadeService.createChatRoom(requestDto);
+        ChatRoomReqDTO requestDto = new ChatRoomReqDTO(articleId, principalUser.getUserId());
+        ChatRoomResDTO responseDto = chatRoomFacadeService.createChatRoom(requestDto);
         return CommonResponse.created(responseDto);
     }
 
@@ -173,13 +173,13 @@ public class ChatRoomController {
             )
     })
     @GetMapping
-    public CommonResponse<Slice<ChatRoomResponseDTO>> getChatRoomList(
+    public CommonResponse<Slice<ChatRoomResDTO>> getChatRoomList(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @AuthenticationPrincipal PrincipalUser principalUser) {
         // 업데이트 시간 내림차순, ID 내림차순으로 정렬
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt", "id"));
-        Slice<ChatRoomResponseDTO> chatRooms = chatRoomFacadeService.findChatRoomListWithSlice(
+        Slice<ChatRoomResDTO> chatRooms = chatRoomFacadeService.findChatRoomListWithSlice(
                 principalUser.getUserId(), pageable);
         return CommonResponse.ok(chatRooms);
     }
@@ -235,10 +235,10 @@ public class ChatRoomController {
             )
     })
     @GetMapping("/{wsRoomId}")
-    public CommonResponse<ChatRoomResponseDTO> getChatRoom(
+    public CommonResponse<ChatRoomResDTO> getChatRoom(
             @PathVariable("wsRoomId") String wsRoomId,
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        ChatRoomResponseDTO chatRoom = chatRoomFacadeService.findChatRoom(wsRoomId, principalUser.getUserId());
+        ChatRoomResDTO chatRoom = chatRoomFacadeService.findChatRoom(wsRoomId, principalUser.getUserId());
         return CommonResponse.ok(chatRoom);
     }
 
@@ -338,7 +338,7 @@ public class ChatRoomController {
             )
     })
     @GetMapping("/{wsRoomId}/messages")
-    public CommonResponse<ChatMessageListResponseDTO> getChatMessages(
+    public CommonResponse<ChatMessageListResDTO> getChatMessages(
             @PathVariable("wsRoomId") String wsRoomId,
             @RequestParam(name = "messageId", required = false) String messageId,
             @RequestParam(name = "limit", defaultValue = "30") int limit,
@@ -348,7 +348,7 @@ public class ChatRoomController {
         chatMessageFacadeService.validateChatRoomAccess(wsRoomId, principalUser.getUserId());
 
         // 메시지 이력 조회
-        ChatMessageListResponseDTO messages = chatMessageFacadeService.getChatMessages(wsRoomId, messageId, limit);
+        ChatMessageListResDTO messages = chatMessageFacadeService.getChatMessages(wsRoomId, messageId, limit);
 
         return CommonResponse.ok(messages);
     }
@@ -397,9 +397,9 @@ public class ChatRoomController {
             )
     })
     @GetMapping("/selling")
-    public CommonResponse<List<ChatRoomResponseDTO>> getSellingChatRooms(
+    public CommonResponse<List<ChatRoomResDTO>> getSellingChatRooms(
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        List<ChatRoomResponseDTO> chatRooms = chatRoomFacadeService.findChatRoomListByRole(
+        List<ChatRoomResDTO> chatRooms = chatRoomFacadeService.findChatRoomListByRole(
                 principalUser.getUserId(), JangterChatRole.SELLER);
         return CommonResponse.ok(chatRooms);
     }
@@ -448,9 +448,9 @@ public class ChatRoomController {
             )
     })
     @GetMapping("/buying")
-    public CommonResponse<List<ChatRoomResponseDTO>> getBuyingChatRooms(
+    public CommonResponse<List<ChatRoomResDTO>> getBuyingChatRooms(
             @AuthenticationPrincipal PrincipalUser principalUser) {
-        List<ChatRoomResponseDTO> chatRooms = chatRoomFacadeService.findChatRoomListByRole(
+        List<ChatRoomResDTO> chatRooms = chatRoomFacadeService.findChatRoomListByRole(
                 principalUser.getUserId(), JangterChatRole.BUYER);
         return CommonResponse.ok(chatRooms);
     }

@@ -7,7 +7,7 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record ChatMessageResponseDTO(
+public record ChatMessageResDTO(
         String messageId,
         Long chatRoomId,
         String wsRoomId,
@@ -19,12 +19,12 @@ public record ChatMessageResponseDTO(
         String formattedTime,
         Boolean read
 ) {
-    public static ChatMessageResponseDTO from(ChatMessage message) {
+    public static ChatMessageResDTO from(ChatMessage message) {
         if (message == null) {
             return null;
         }
         
-        return ChatMessageResponseDTO.builder()
+        return ChatMessageResDTO.builder()
                 .messageId(message.getId())
                 .chatRoomId(message.getChatRoomId())
                 .senderId(message.getSenderId())
@@ -36,12 +36,12 @@ public record ChatMessageResponseDTO(
     }
     
 
-    public static ChatMessageResponseDTO from(ChatMessage message, String senderName, String wsRoomId) {
+    public static ChatMessageResDTO from(ChatMessage message, String senderName, String wsRoomId) {
         if (message == null) {
             return null;
         }
         
-        return ChatMessageResponseDTO.builder()
+        return ChatMessageResDTO.builder()
                 .messageId(message.getId())
                 .chatRoomId(message.getChatRoomId())
                 .wsRoomId(wsRoomId)

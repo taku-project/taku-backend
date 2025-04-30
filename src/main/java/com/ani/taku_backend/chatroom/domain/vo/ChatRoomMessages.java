@@ -4,7 +4,7 @@ import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.contansts.MessageConstants;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +98,7 @@ public class ChatRoomMessages {
      * @param users 채팅방 사용자 정보
      * @return 마지막 메시지 DTO, 없거나 조건을 만족하지 않으면 null
      */
-    public ChatMessageResponseDTO createLastMessageDTO(
+    public ChatMessageResDTO createLastMessageDTO(
             ChatRoom chatRoom,
             ChatRoomMetaInfo metaInfo,
             ChatRoomUsers users) {
@@ -117,7 +117,7 @@ public class ChatRoomMessages {
                     String senderName = users.getUserNicknameOrUnknown(lastMessage.getSenderId());
                     
                     // 3. DTO 생성 및 반환
-                    return ChatMessageResponseDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
+                    return ChatMessageResDTO.from(lastMessage, senderName, chatRoom.getWsRoomId());
                 })
                 .orElse(null);
     }

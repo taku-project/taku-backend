@@ -8,8 +8,8 @@ import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ArticleInfo;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfoData;
 import com.ani.taku_backend.chatroom.domain.vo.ChatRoomMetaInfos;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
-import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
@@ -21,7 +21,6 @@ import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
 import com.ani.taku_backend.jangter.model.dto.ArticleInfoDTO;
 import com.ani.taku_backend.jangter.model.dto.ProductImageDTO;
-import com.ani.taku_backend.jangter.model.entity.DuckuJangter;
 import com.ani.taku_backend.jangter.repository.DuckuJangterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +57,7 @@ public class ChatRoomQueryService {
      * @param userId 사용자 ID
      * @return 채팅방 정보
      */
-    public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
+    public ChatRoomResDTO findChatRoom(String roomId, Long userId) {
         // 1. 채팅방 조회 및 검증
         ChatRoom chatRoom = findChatRoomByWsRoomId(roomId);
 
@@ -103,7 +102,7 @@ public class ChatRoomQueryService {
      * @param pageable 페이징 정보
      * @return 채팅방 응답 DTO 목록의 Slice
      */
-    public Slice<ChatRoomResponseDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
+    public Slice<ChatRoomResDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
         Slice<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsWithSlice(
                 userId, pageable, ChatRoomStatus.ACTIVE);
 
@@ -126,7 +125,7 @@ public class ChatRoomQueryService {
         ChatRoomUsers users = ChatRoomUsers.fromChatRooms(chatRooms.getContent());
 
         // 3. DTO 변환
-        List<ChatRoomResponseDTO> responseDTOs = chatRooms.getContent().stream()
+        List<ChatRoomResDTO> responseDTOs = chatRooms.getContent().stream()
                 .map(room -> {
                     // 메타 정보에서 사용자가 활성 상태인지 확인
                     Optional<ChatRoomMetaInfo> metaInfoOpt = metaInfos.getMetaInfo(room.getId());
@@ -179,7 +178,7 @@ public class ChatRoomQueryService {
      * 채팅방 응답 DTO를 생성합니다.
      * 각 계산값(lastMessageDTO, articleImageUrl, unreadCount)을 직접 계산하여 DTO 생성에 사용합니다.
      */
-    public ChatRoomResponseDTO createChatRoomResponseDTO(
+    public ChatRoomResDTO createChatRoomResponseDTO(
             ChatRoom chatRoom,
             ChatRoomMetaInfo metaInfo,
             ChatRoomUsers users,
@@ -199,7 +198,7 @@ public class ChatRoomQueryService {
                      chatRoom.getArticleId(), e.getMessage());
         }
 
-        return ChatRoomResponseDTO.builder()
+        return ChatRoomResDTO.builder()
                 .chatRoomId(chatRoom.getId())
                 .wsRoomId(chatRoom.getWsRoomId())
                 .articleId(chatRoom.getArticleId())
@@ -286,7 +285,7 @@ public class ChatRoomQueryService {
     }
 
 
-    public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
+    public List<ChatRoomResDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
         List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserIdAndRole(
                 userId, role, ChatRoomStatus.ACTIVE);
 
@@ -383,12 +382,12 @@ public class ChatRoomQueryService {
      * @param userId 사용자 ID
      * @return 채팅방 응답 DTO 목록
      */
-    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
-        Slice<ChatRoomResponseDTO> slice = findChatRoomListWithSlice(userId, Pageable.unpaged());
+    public List<ChatRoomResDTO> findChatRoomList(Long userId) {
+        Slice<ChatRoomResDTO> slice = findChatRoomListWithSlice(userId, Pageable.unpaged());
         return slice.getContent();
     }
 
-    private ChatMessageResponseDTO getLastMessage(Long chatRoomId, ChatRoomMessages lastMessages, String wsRoomId, ChatRoomUsers users) {
+    private ChatMessageResDTO getLastMessage(Long chatRoomId, ChatRoomMessages lastMessages, String wsRoomId, ChatRoomUsers users) {
         if (chatRoomId == null || lastMessages == null) {
             return null;
         }
@@ -408,7 +407,7 @@ public class ChatRoomQueryService {
                 ? users.getUserNicknameOrUnknown(lastMessage.getSenderId())
                 : MessageConstants.UNKNOWN_USER;
 
-            return ChatMessageResponseDTO.from(lastMessage, senderName, wsRoomId);
+            return ChatMessageResDTO.from(lastMessage, senderName, wsRoomId);
         } catch (Exception e) {
             log.warn("마지막 메시지 조회 중 오류 발생: chatRoomId={}, error={}", chatRoomId, e.getMessage());
             return null;

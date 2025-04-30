@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.domain.document;
 
 import com.ani.taku_backend.chatroom.domain.constant.ChatRoomStatus;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageResDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -72,9 +72,9 @@ public class ChatMessage {
         this.read = true;
     }
 
-    public static List<ChatMessageResponseDTO> toResponseDTOList(List<ChatMessage> messages) {
+    public static List<ChatMessageResDTO> toResponseDTOList(List<ChatMessage> messages) {
         return messages.stream()
-                .map(ChatMessageResponseDTO::from)
+                .map(ChatMessageResDTO::from)
                 .collect(Collectors.toList());
     }
 }

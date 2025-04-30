@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @ToString
-public class ChatRoomResponseDTO {
+public class ChatRoomResDTO {
 
     private final Long chatRoomId;
     private final String wsRoomId;
@@ -22,7 +22,7 @@ public class ChatRoomResponseDTO {
     private final Long sellerId;
     private final String buyerNickname;
     private final String sellerNickname;
-    private final ChatMessageResponseDTO lastMessage;
+    private final ChatMessageResDTO lastMessage;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private final LocalDateTime createdAt;
@@ -38,7 +38,7 @@ public class ChatRoomResponseDTO {
     private final BigDecimal articlePrice;
 
     @Builder(toBuilder = true)
-    public ChatRoomResponseDTO(
+    public ChatRoomResDTO(
             Long chatRoomId,
             String wsRoomId,
             Long articleId,
@@ -46,7 +46,7 @@ public class ChatRoomResponseDTO {
             Long sellerId,
             String buyerNickname,
             String sellerNickname,
-            ChatMessageResponseDTO lastMessage,
+            ChatMessageResDTO lastMessage,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             String articleImageUrl,

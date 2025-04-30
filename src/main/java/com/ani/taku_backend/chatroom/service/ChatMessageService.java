@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
-import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatMessageListResDTO;
 import com.ani.taku_backend.chatroom.service.command.ChatMessageCommandService;
 import com.ani.taku_backend.chatroom.service.query.ChatMessageQueryService;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ public class ChatMessageService {
     /**
      * 채팅방의 메시지를 조회합니다.
      */
-    public ChatMessageListResponseDTO getChatMessages(String wsRoomId, String messageId, int limit) {
+    public ChatMessageListResDTO getChatMessages(String wsRoomId, String messageId, int limit) {
         return queryService.getChatMessages(wsRoomId, messageId, limit);
     }
 

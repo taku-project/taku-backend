@@ -1,7 +1,7 @@
 package com.ani.taku_backend.chatroom.mapper;
 
 import com.ani.taku_backend.chatroom.dto.ChatRoomAggregateResult;
-import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -28,5 +28,5 @@ public interface ChatRoomMapper {
     @Mapping(target = "sellerProfileImageUrl", source = "result.seller.profileImg")
     @Mapping(target = "articleName", source = "result.articleTitle")
     @Mapping(target = "articlePrice", source = "result.articlePrice")
-    ChatRoomResponseDTO toChatRoomResponseDTO(ChatRoomAggregateResult result);
+    ChatRoomResDTO toChatRoomResponseDTO(ChatRoomAggregateResult result);
 } 

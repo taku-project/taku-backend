@@ -1,8 +1,8 @@
 package com.ani.taku_backend.chatroom.service;
 
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
-import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatRoomReqDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResDTO;
 import com.ani.taku_backend.chatroom.service.command.ChatRoomCommandService;
 import com.ani.taku_backend.chatroom.service.query.ChatRoomQueryService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class ChatRoomService {
      * @return 생성된 채팅방 정보
      */
     @Transactional
-    public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
+    public ChatRoomResDTO createChatRoom(ChatRoomReqDTO requestDto) {
         return  commandService.createChatRoom(requestDto);
     }
     
@@ -46,7 +46,7 @@ public class ChatRoomService {
      * @return 채팅방 응답 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<ChatRoomResponseDTO> findChatRoomList(Long userId) {
+    public List<ChatRoomResDTO> findChatRoomList(Long userId) {
         return queryService.findChatRoomList(userId);
     }
     
@@ -58,7 +58,7 @@ public class ChatRoomService {
      * @return 채팅방 응답 DTO 목록의 Slice
      */
     @Transactional(readOnly = true)
-    public Slice<ChatRoomResponseDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
+    public Slice<ChatRoomResDTO> findChatRoomListWithSlice(Long userId, Pageable pageable) {
         return queryService.findChatRoomListWithSlice(userId, pageable);
     }
 
@@ -70,7 +70,7 @@ public class ChatRoomService {
      * @return 채팅방 정보
      */
     @Transactional(readOnly = true)
-    public ChatRoomResponseDTO findChatRoom(String roomId, Long userId) {
+    public ChatRoomResDTO findChatRoom(String roomId, Long userId) {
         return queryService.findChatRoom(roomId, userId);
     }
 
@@ -98,7 +98,7 @@ public class ChatRoomService {
      * @return 채팅방 응답 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<ChatRoomResponseDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
+    public List<ChatRoomResDTO> findChatRoomListByRole(Long userId, JangterChatRole role) {
         return queryService.findChatRoomListByRole(userId, role);
     }
 }

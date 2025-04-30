@@ -3,8 +3,8 @@ package com.ani.taku_backend.chatroom.service.command;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
 import com.ani.taku_backend.chatroom.dto.ChatRoomAggregateResult;
 import com.ani.taku_backend.chatroom.dto.ChatRoomDomainContext;
-import com.ani.taku_backend.chatroom.dto.request.ChatRoomRequestDTO;
-import com.ani.taku_backend.chatroom.dto.response.ChatRoomResponseDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatRoomReqDTO;
+import com.ani.taku_backend.chatroom.dto.response.ChatRoomResDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomRepository;
@@ -65,7 +65,7 @@ public class ChatRoomCommandService {
      * 새로운 채팅방을 생성합니다.
      * 최적화: 기존 채팅방 재활성화 시 DB 접근 최소화 (1-2회)
      */
-    public ChatRoomResponseDTO createChatRoom(ChatRoomRequestDTO requestDto) {
+    public ChatRoomResDTO createChatRoom(ChatRoomReqDTO requestDto) {
         // 1. 필수 데이터 한 번에 조회
         ChatRoomDomainContext context = fetchDomainEntities(requestDto);
         
@@ -119,7 +119,7 @@ public class ChatRoomCommandService {
     /**
      * 필요한 도메인 엔티티를 한 번에 조회
      */
-    private ChatRoomDomainContext fetchDomainEntities(ChatRoomRequestDTO requestDto) {
+    private ChatRoomDomainContext fetchDomainEntities(ChatRoomReqDTO requestDto) {
 
         ProductAggregateDTO productAggregate = duckuJangterRepository
                 .findProductAggregateById(requestDto.articleId())

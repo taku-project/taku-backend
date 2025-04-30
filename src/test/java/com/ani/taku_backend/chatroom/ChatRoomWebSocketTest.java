@@ -3,7 +3,7 @@ package com.ani.taku_backend.chatroom;
 import com.ani.taku_backend.chatroom.domain.constant.JangterChatRole;
 import com.ani.taku_backend.chatroom.domain.document.ChatMessage;
 import com.ani.taku_backend.chatroom.domain.document.ChatRoomMetaInfo;
-import com.ani.taku_backend.chatroom.dto.request.ChatMessageRequestDTO;
+import com.ani.taku_backend.chatroom.dto.request.ChatMessageReqDTO;
 import com.ani.taku_backend.chatroom.dto.ChatReadStatusDTO;
 import com.ani.taku_backend.chatroom.domain.entity.ChatRoom;
 import com.ani.taku_backend.chatroom.domain.repository.ChatRoomMetaRepository;
@@ -201,7 +201,7 @@ public class ChatRoomWebSocketTest {
 
         //테스트 메세지 생성.
         String messageContent = "안녕하세요! 테스트 메시지입니다.";
-        ChatMessageRequestDTO messageRequest = new ChatMessageRequestDTO(
+        ChatMessageReqDTO messageRequest = new ChatMessageReqDTO(
                 testRoom.getWsRoomId(),
                 testUser.getUserId(),
                 messageContent
@@ -261,7 +261,7 @@ public class ChatRoomWebSocketTest {
 
         // 읽음 처리 DTO
         session.send(sendHeaders,
-                ChatMessageRequestDTO.forReadStatus(testRoom.getWsRoomId(), testUser.getUserId()));
+                ChatMessageReqDTO.forReadStatus(testRoom.getWsRoomId(), testUser.getUserId()));
 
         // 읽음 상태 메시지 수신 확인 (5초 타임아웃)
         ChatReadStatusDTO readStatus = receivedReadStatuses.poll(5, TimeUnit.SECONDS);

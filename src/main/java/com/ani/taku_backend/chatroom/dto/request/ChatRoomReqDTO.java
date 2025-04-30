@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "채팅방 생성 요청 DTO")
-public record ChatRoomRequestDTO(
+public record ChatRoomReqDTO(
         @Schema(description = "상품 ID", example = "1")
         @NotNull(message = "상품 ID는 필수입니다.")
         Long articleId,
