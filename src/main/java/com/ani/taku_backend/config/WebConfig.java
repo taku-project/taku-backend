@@ -41,11 +41,11 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns("*")  // 개발 환경에서는 모든 오리진 허용
                 .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(),
-                        HttpMethod.PUT.name(),
-                        HttpMethod.DELETE.name(),
-                        HttpMethod.OPTIONS.name()
+                    HttpMethod.GET.name(),
+                    HttpMethod.POST.name(),
+                    HttpMethod.PUT.name(),
+                    HttpMethod.DELETE.name(),
+                    HttpMethod.OPTIONS.name()
                 )
                 .exposedHeaders("location")
                 .allowedHeaders("*")
@@ -56,9 +56,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/ws/**")
                 .allowedOriginPatterns("*")  // 개발 환경에서는 모든 오리진 허용
                 .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(),
-                        HttpMethod.OPTIONS.name()
+                    HttpMethod.GET.name(),
+                    HttpMethod.POST.name(),
+                    HttpMethod.OPTIONS.name()
                 )
                 .allowedHeaders("*")
                 .allowCredentials(true)
@@ -68,9 +68,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/pub/**")
                 .allowedOriginPatterns("*")
                 .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(),
-                        HttpMethod.OPTIONS.name()
+                    HttpMethod.GET.name(),
+                    HttpMethod.POST.name(),
+                    HttpMethod.OPTIONS.name()
                 )
                 .allowedHeaders("*")
                 .allowCredentials(true)
@@ -79,9 +79,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/sub/**")
                 .allowedOriginPatterns("*")
                 .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(),
-                        HttpMethod.OPTIONS.name()
+                    HttpMethod.GET.name(),
+                    HttpMethod.POST.name(),
+                    HttpMethod.OPTIONS.name()
                 )
                 .allowedHeaders("*")
                 .allowCredentials(true)

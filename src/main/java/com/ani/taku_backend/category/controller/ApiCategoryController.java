@@ -1,10 +1,10 @@
 package com.ani.taku_backend.category.controller;
 
 import com.ani.taku_backend.category.domain.dto.AniGenreListReqDTO;
-import com.ani.taku_backend.category.domain.dto.RequestCategoryCreateDTO;
-import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
-import com.ani.taku_backend.category.domain.dto.ResponseCategoryDTO;
-import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
+import com.ani.taku_backend.category.domain.dto.CategoryCreateReqDTO;
+import com.ani.taku_backend.category.domain.dto.CategorySearchReqDTO;
+import com.ani.taku_backend.category.domain.dto.CategoryResDTO;
+import com.ani.taku_backend.category.domain.dto.CategorySeachResDTO;
 import com.ani.taku_backend.category.service.CategoryService;
 import com.ani.taku_backend.common.aop.annotation.RequireUser;
 import com.ani.taku_backend.common.exception.ExceptionDto;
@@ -51,26 +51,26 @@ public class ApiCategoryController {
         description = "새로운 카테고리를 생성합니다. 카테고리 정보와 이미지를 함께 업로드해야 합니다."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "카테고리 생성 성공", content = @Content(schema = @Schema(implementation = ResponseCategoryDTO.class))),
+        @ApiResponse(responseCode = "201", description = "카테고리 생성 성공", content = @Content(schema = @Schema(implementation = CategoryResDTO.class))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = ExceptionDto.class))),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content(schema = @Schema(implementation = ExceptionDto.class))),
         @ApiResponse(responseCode = "404", description = "존재하지 않은 장르", content = @Content(schema = @Schema(implementation = ExceptionDto.class)))
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RequireUser
-    public CommonResponse<ResponseCategoryDTO> createCategory(
+    public CommonResponse<CategoryResDTO> createCategory(
         @RequestPart("category_name") String categoryName,
         @RequestParam("ani_genre_id") List<Long> aniGenreIds,
         @RequestPart("image") MultipartFile image,
         @Parameter(hidden = true) @AuthenticationPrincipal PrincipalUser principalUser){
 
         User user = principalUser.getUser();
-        RequestCategoryCreateDTO requestCategoryCreateDTO = RequestCategoryCreateDTO.builder()
+        CategoryCreateReqDTO categoryCreateReqDTO = CategoryCreateReqDTO.builder()
                 .name(categoryName)
                 .aniGenreId(aniGenreIds)
                 .image(image)
                 .build();
-        return CommonResponse.created(categoryService.createCategory(user, requestCategoryCreateDTO));
+        return CommonResponse.created(categoryService.createCategory(user, categoryCreateReqDTO));
     }
 
     @Operation(
@@ -104,11 +104,11 @@ public class ApiCategoryController {
         )
     })
     @GetMapping
-    public CommonResponse<Page<ResponseCategorySeachDTO>> searchCategories(
-        @Parameter(hidden = true) @ModelAttribute RequestCategorySearch requestCategorySearch,
+    public CommonResponse<Page<CategorySeachResDTO>> searchCategories(
+        @Parameter(hidden = true) @ModelAttribute CategorySearchReqDTO categorySearchReqDTO,
         @Parameter(hidden = true) @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        Page<ResponseCategorySeachDTO> result = categoryService.searchCategories(requestCategorySearch, pageable);
+        Page<CategorySeachResDTO> result = categoryService.searchCategories(categorySearchReqDTO, pageable);
         return CommonResponse.ok(result);
     }
 
@@ -124,12 +124,12 @@ public class ApiCategoryController {
         schema = @Schema(type = "integer", format = "int64")
     )
     @GetMapping("/{id}")
-    public CommonResponse<ResponseCategoryDTO> findCategoryById(
+    public CommonResponse<CategoryResDTO> findCategoryById(
         @PathVariable("id") Long id,
         @AuthenticationPrincipal PrincipalUser principalUser
     ) {
         User user = principalUser != null ? principalUser.getUser() : null;
-        ResponseCategoryDTO result = categoryService.findCategoryById(id, user);
+        CategoryResDTO result = categoryService.findCategoryById(id, user);
         return CommonResponse.ok(result);
     }
 

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +18,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class RequestCategoryCreateDTO {
+public class CategoryCreateReqDTO {
     @NotEmpty
     @Schema(name = "category_name", description = "카테고리 이름", example = "원피스")
     @JsonProperty("category_name")

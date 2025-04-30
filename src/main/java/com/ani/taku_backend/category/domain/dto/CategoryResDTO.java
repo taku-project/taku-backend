@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseCategoryDTO {
+public class CategoryResDTO {
     private Long id;
     private String name;
     private String status;
@@ -32,9 +32,9 @@ public class ResponseCategoryDTO {
     private List<CategoryGenreDTO> categoryGenres;
 
 
-    public static ResponseCategoryDTO of(Category category, boolean hasBookmark) {
+    public static CategoryResDTO of(Category category, boolean hasBookmark) {
 
-        return ResponseCategoryDTO.builder()
+        return CategoryResDTO.builder()
             .id(category.getId())
             .name(category.getName())
             .status(category.getStatus().name())

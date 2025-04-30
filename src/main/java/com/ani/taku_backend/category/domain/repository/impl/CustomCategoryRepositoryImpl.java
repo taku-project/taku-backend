@@ -1,7 +1,7 @@
 package com.ani.taku_backend.category.domain.repository.impl;
 
-import com.ani.taku_backend.category.domain.dto.RequestCategorySearch;
-import com.ani.taku_backend.category.domain.dto.ResponseCategorySeachDTO;
+import com.ani.taku_backend.category.domain.dto.CategorySearchReqDTO;
+import com.ani.taku_backend.category.domain.dto.CategorySeachResDTO;
 import com.ani.taku_backend.category.domain.entity.Category;
 import com.ani.taku_backend.category.domain.entity.CategoryGenre;
 import com.ani.taku_backend.category.domain.entity.CategoryImage;
@@ -37,13 +37,13 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * 카테고리 검색 조건과 페이징 정보를 기반으로 카테고리 목록을 조회합니다.
      * 카테고리와 연관된 장르, 이미지 정보를 함께 조회하여 DTO로 변환합니다.
      *
-     * @param requestCategorySearch 카테고리 검색 조건 (이름, 장르ID 등)
+     * @param categorySearchReqDTO 카테고리 검색 조건 (이름, 장르ID 등)
      * @param pageable 페이징 정보
      * @return 카테고리 검색 결과 DTO 페이지
      */
     @Override
-    public Page<ResponseCategorySeachDTO> searchCategories(RequestCategorySearch requestCategorySearch, Pageable pageable) {
-        List<Category> fetchCategories = getCategories(requestCategorySearch, pageable);
+    public Page<CategorySeachResDTO> searchCategories(CategorySearchReqDTO categorySearchReqDTO, Pageable pageable) {
+        List<Category> fetchCategories = getCategories(categorySearchReqDTO, pageable);
         List<Long> categoryIds = fetchCategories.stream()
             .map(Category::getId)
             .collect(Collectors.toList());
@@ -57,7 +57,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
                 .map(category -> createResponseDTO(category, genreMap, imageMap))
                 .collect(Collectors.toList()),
             pageable,
-            getTotalCount(requestCategorySearch)
+            getTotalCount(categorySearchReqDTO)
         );
     }
 
@@ -78,17 +78,17 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * 검색 조건에 맞는 카테고리 기본 정보를 조회합니다.
      * 카테고리와 연관된 사용자 정보를 함께 조회합니다 (fetch join 사용).
      *
-     * @param requestCategorySearch 카테고리 검색 조건
+     * @param categorySearchReqDTO 카테고리 검색 조건
      * @param pageable 페이징 정보
      * @return 조회된 카테고리 목록
      */
-    private List<Category> getCategories(RequestCategorySearch requestCategorySearch, Pageable pageable) {
+    private List<Category> getCategories(CategorySearchReqDTO categorySearchReqDTO, Pageable pageable) {
         return jpaQueryFactory
             .selectFrom(QCategory.category)
             .leftJoin(QCategory.category.user).fetchJoin()
             .where(
-                nameContains(requestCategorySearch.getName(), QCategory.category),
-                genreIdEquals(requestCategorySearch.getGenreIds(), QCategoryGenre.categoryGenre)
+                nameContains(categorySearchReqDTO.getName(), QCategory.category),
+                genreIdEquals(categorySearchReqDTO.getGenreIds(), QCategoryGenre.categoryGenre)
             )
             .orderBy(QCategory.category.name.asc())
             .offset(pageable.getOffset())
@@ -139,13 +139,13 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * @param imageMap 카테고리별 이미지 정보 Map
      * @return 변환된 카테고리 검색 결과 DTO
      */
-    private ResponseCategorySeachDTO createResponseDTO(
+    private CategorySeachResDTO createResponseDTO(
             Category category, 
             Map<Long, List<CategoryGenre>> genreMap, 
             Map<Long, List<CategoryImage>> imageMap) {
         
         // 기본 매핑 수행
-        ResponseCategorySeachDTO dto = modelMapper.map(category, ResponseCategorySeachDTO.class);
+        CategorySeachResDTO dto = modelMapper.map(category, CategorySeachResDTO.class);
         
         // 디버깅을 위한 로그 추가
         log.info("Category ID: {}", category.getId());
@@ -179,7 +179,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
      * @param condition 카테고리 검색 조건
      * @return 검색 조건에 맞는 전체 카테고리 수
      */
-    private long getTotalCount(RequestCategorySearch condition) {
+    private long getTotalCount(CategorySearchReqDTO condition) {
         return jpaQueryFactory
             .selectFrom(QCategory.category)
             .where(

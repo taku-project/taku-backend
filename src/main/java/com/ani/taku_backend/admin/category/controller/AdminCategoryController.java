@@ -57,7 +57,6 @@ public class AdminCategoryController {
         return "category/list";
     }
 
-
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String createCategory(@AuthenticationPrincipal PrincipalUser principalUser,
         @ModelAttribute AdminCategoryCreateReqDTO createReqDTO) {

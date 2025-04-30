@@ -37,16 +37,16 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
     @Override
     public AdminCategoryListResDTO findCategoryList(User user, AdminCategoryListReqDTO categoryListReqDTO) {
-        User findUser = userRepository.findById(user.getUserId())
-                .orElseThrow(UserException.UserNotFoundException::new);
+        userRepository.findById(user.getUserId())
+            .orElseThrow(UserException.UserNotFoundException::new);
+
         Page<Category> categoryList = categoryRepository.findCategoryList(user.getUserId(), categoryListReqDTO);
         List<AdminCategoryResDTO> adminCategoryResDTOList = categoryList.map(AdminCategoryResDTO::new).toList();
 
-        return AdminCategoryListResDTO.builder()
+        return AdminCategoryListResDTO
+                .builder()
                 .categoryList(
-                    new PageImpl<>(
-                        adminCategoryResDTOList, categoryList.getPageable(), categoryList.getTotalElements()
-                    )
+                    new PageImpl<>(adminCategoryResDTOList, categoryList.getPageable(), categoryList.getTotalElements())
                 )
                 .build();
     }

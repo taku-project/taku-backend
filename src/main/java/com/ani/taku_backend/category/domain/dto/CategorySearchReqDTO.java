@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class RequestCategorySearch {
+public class CategorySearchReqDTO {
     
     private String name;
     private List<Long> genreIds;
