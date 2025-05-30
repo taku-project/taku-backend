@@ -64,7 +64,7 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // Redis용 ObjectMapper 설정
+        // Redis용 ObjectMapper 설정\
         ObjectMapper redisObjectMapper = createRedisObjectMapper();
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper);
 

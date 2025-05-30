@@ -1,12 +1,11 @@
 package com.ani.taku_backend.admin.profanity.dto.res;
 
-import java.time.LocalDateTime;
-
 import com.ani.taku_backend.admin.profanity.domain.ProfanityFilter;
 import com.ani.taku_backend.common.enums.StatusType;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder

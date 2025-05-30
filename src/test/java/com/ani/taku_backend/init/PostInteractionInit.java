@@ -1,9 +1,10 @@
-package com.ani.taku_backend.post.service;
+package com.ani.taku_backend.init;
 
 
 import com.ani.taku_backend.common.enums.InteractionType;
 import com.ani.taku_backend.post.model.entity.Post;
 import com.ani.taku_backend.post.repository.PostRepository;
+import com.ani.taku_backend.post.service.PostInteractionService;
 import com.ani.taku_backend.user.model.entity.User;
 import com.ani.taku_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -11,19 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.LongStream;
-
-import static com.ani.taku_backend.post.model.entity.QPost.post;
 
 @SpringBootTest
-class PostInteractionServiceTest {
+class PostInteractionInit {
 
-    @Autowired PostInteractionService postInteractionService;
+    @Autowired
+    PostInteractionService postInteractionService;
     @Autowired PostRepository postRepository;
     @Autowired UserRepository userRepository;
 

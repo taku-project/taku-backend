@@ -1,10 +1,8 @@
 package com.ani.taku_backend.jangter.model.entity;
 
 import com.ani.taku_backend.common.baseEntity.BaseTimeEntity;
-import com.ani.taku_backend.common.enums.StatusType;
 import com.ani.taku_backend.common.exception.DuckwhoException;
 import com.ani.taku_backend.common.exception.ErrorCode;
-import com.ani.taku_backend.common.model.entity.Image;
 import com.ani.taku_backend.jangter.model.dto.ProductUpdateRequestDTO;
 import com.ani.taku_backend.jangter.model.enums.ProductStatus;
 import com.ani.taku_backend.user.model.entity.User;
